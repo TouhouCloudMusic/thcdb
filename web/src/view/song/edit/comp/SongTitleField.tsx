@@ -1,13 +1,24 @@
 import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 
-import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
+import { formStyles } from "~/style/primitives"
 
 import type { SongFormStore } from "./types"
 
-export function SongTitleField(props: { of: SongFormStore; class?: string }) {
+const styles = stylex.create({
+	column: {
+		display: "flex",
+		flexDirection: "column",
+	},
+})
+
+export function SongTitleField(props: {
+	of: SongFormStore
+	styles?: StyleXStyles
+}) {
 	const { t } = useLingui()
 	return (
 		<Field
@@ -15,8 +26,8 @@ export function SongTitleField(props: { of: SongFormStore; class?: string }) {
 			path={["data", "title"]}
 		>
 			{(field) => (
-				<InputField.Root class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>{t`Title`}</FormComp.Label>
+				<InputField.Root styles={[styles.column, props.styles]}>
+					<label {...stylex.attrs(formStyles.label)}>{t`Title`}</label>
 					<InputField.Input
 						{...field.props}
 						placeholder={t`Title`}

@@ -7,15 +7,21 @@ import { ReleaseExplore } from "~/view/release/explore"
 const DEFAULT_LIMIT = 20
 
 const exploreSearch = v.object({
-	page: v.fallback(v.pipe(v.number(), v.minValue(1)), 1),
-	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+	page: v.optional(v.fallback(v.pipe(v.number(), v.minValue(1)), 1), 1),
+	limit: v.optional(
+		v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+		DEFAULT_LIMIT,
+	),
 	release_type: v.fallback(v.optional(v.picklist(RELEASE_TYPES)), undefined),
 	sort_by: v.fallback(
 		v.optional(v.picklist(["release_date", "created_at", "updated_at"])),
 		"release_date",
 	),
 	order_by: v.fallback(v.optional(v.picklist(["asc", "desc"])), undefined),
-	display_type: v.fallback(v.picklist(["grid", "list"]), "grid"),
+	display_type: v.optional(
+		v.fallback(v.picklist(["grid", "list"]), "grid"),
+		"grid",
+	),
 })
 
 export const Route = createFileRoute("/release/explore")({

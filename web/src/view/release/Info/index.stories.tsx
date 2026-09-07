@@ -1,12 +1,23 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Release } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { MOCK_CORRECTION_HISTORY } from "~/mock/correction"
 import { withEntityDetailStoryState } from "~/storybook/entityDetail"
 import { YABBA_RAGGA_TOHO_3_COVER_URL } from "~/storybook/fixtures"
+import { palette } from "~/style/color/palette.stylex"
+import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { ReleaseInfoPage } from "."
+
+const styles = stylex.create({
+	preview: {
+		minHeight: "900px",
+		backgroundColor: palette.slate[100],
+		padding: px[24],
+	},
+})
 
 const RELEASE: Release = {
 	id: 101,
@@ -100,7 +111,7 @@ const RELEASE: Release = {
 
 function StoryRoot() {
 	return (
-		<div class="min-h-[900px] bg-slate-100 p-6">
+		<div {...stylex.attrs(styles.preview)}>
 			<ReleaseInfoPage
 				release={RELEASE}
 				correctionHistory={MOCK_CORRECTION_HISTORY}

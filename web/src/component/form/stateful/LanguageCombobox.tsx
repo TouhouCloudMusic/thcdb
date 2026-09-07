@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import type { Language } from "@thc/api"
 import { CheckIcon } from "@thc/icons/radix"
@@ -6,7 +7,13 @@ import { LanguagesQuery } from "@thc/query"
 
 import { Combobox } from "~/component/atomic/Combobox"
 
+import { colors } from "../../../style/tokens.stylex"
+
 // TODO: global singleton
+const styles = stylex.create({
+	selectedIcon: { color: colors.textPrimary },
+})
+
 const useLang = () => useQuery(LanguagesQuery.findAll)
 let langs: ReturnType<typeof useLang> | undefined
 
@@ -49,7 +56,7 @@ export function LanguageCombobox(props: {
 						{itemProps.item.rawValue.name}
 					</Combobox.ItemLabel>
 					<Combobox.ItemIndicator>
-						<CheckIcon class="text-primary" />
+						<CheckIcon {...stylex.attrs(styles.selectedIcon)} />
 					</Combobox.ItemIndicator>
 				</Combobox.Item>
 			)}

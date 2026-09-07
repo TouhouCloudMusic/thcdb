@@ -67,7 +67,7 @@ type Markdown = {
 // 	}
 // }
 
-async function createMarked() {
+async function createMarked(): Promise<Markdown> {
 	const highlighter = await createHighlighter({
 		langs: [],
 		themes: ["catppuccin-latte", "catppuccin-mocha"],
@@ -120,7 +120,7 @@ async function createMarked() {
 		async render(text: string) {
 			return marked.parse(text)
 		},
-	} as Markdown
+	}
 }
 
 export const useMarkdown = createRoot(() => {

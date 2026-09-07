@@ -1,15 +1,27 @@
 import { Field, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { For, createMemo } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
 import { FormComp } from "~/component/atomic/form"
 import { DateWithPrecision as DateWithPrecisionInput } from "~/component/form/DateWithPrecision"
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { useLabelForm } from "../context"
 
+const styles = stylex.create({
+	field: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		rowGap: px[8],
+	},
+	label: { gridColumn: "1 / -1", margin: "0rem" },
+})
+
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 }
 
 type DateFieldDescriptor = {
@@ -43,12 +55,10 @@ export function LabelDateFields(props: Props) {
 						})
 
 						return (
-							<div
-								class={twMerge("grid grid-cols-subgrid gap-y-2", props.class)}
-							>
-								<FormComp.Label class="col-span-full m-0">
+							<div {...stylex.attrs(styles.field, props.styles)}>
+								<label {...stylex.attrs(formStyles.label, styles.label)}>
 									{descriptor.label}
-								</FormComp.Label>
+								</label>
 								<DateWithPrecisionInput
 									value={currentValue()}
 									setValue={(value) =>

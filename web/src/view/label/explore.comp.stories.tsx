@@ -1,11 +1,29 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Divider } from "~/component/atomic/Divider"
 import { Intersperse } from "~/component/data/Intersperse"
 import type { LabelListItem } from "~/hey-api"
+import { dividerStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { LabelItem } from "./LabelItem"
+
+const styles = stylex.create({
+	preview: {
+		marginInline: "auto",
+		width: "100%",
+		backgroundColor: colors.backgroundPrimary,
+	},
+	narrowPreview: { maxWidth: px[384] },
+	fullPreview: { maxWidth: px[768] },
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+})
 
 const ENGLISH = { id: 1, code: "en", name: "English" }
 const JAPANESE = { id: 2, code: "ja", name: "日本語" }
@@ -48,12 +66,15 @@ type StoryRootProps = {
 function StoryRoot(props: StoryRootProps) {
 	return (
 		<div
-			class={`mx-auto w-full bg-primary ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+			{...stylex.attrs(
+				styles.preview,
+				props.width === "narrow" ? styles.narrowPreview : styles.fullPreview,
+			)}
 		>
-			<div class="flex flex-col gap-2 p-4">
+			<div {...stylex.attrs(styles.list)}>
 				<Intersperse
 					of={props.labels}
-					with={<Divider horizontal />}
+					with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 				>
 					{(label) => <LabelItem label={label} />}
 				</Intersperse>

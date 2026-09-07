@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { createEffect, createMemo, on, untrack } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 
@@ -9,7 +10,7 @@ import type { Store } from "./state"
 import { setDay, setMonth, setYear, storeToValue, valueToStore } from "./state"
 
 export interface DateWithPrecisionProps {
-	class?: string
+	styles?: StyleXStyles
 	value?: TDateWithPrecision.In
 	setValue(val?: TDateWithPrecision.In): void
 }
@@ -53,7 +54,7 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 
 	return (
 		<>
-			<InputField.Root class={props.class}>
+			<InputField.Root styles={props.styles}>
 				<InputField.Input
 					inputMode="numeric"
 					maxLength={4}
@@ -64,7 +65,7 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 					value={store.year ?? ""}
 				/>
 			</InputField.Root>
-			<InputField.Root class={props.class}>
+			<InputField.Root styles={props.styles}>
 				<InputField.Input
 					disabled={store.year === undefined}
 					inputMode="numeric"
@@ -76,7 +77,7 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 					value={store.month ?? ""}
 				/>
 			</InputField.Root>
-			<InputField.Root class={props.class}>
+			<InputField.Root styles={props.styles}>
 				<InputField.Input
 					disabled={store.year === undefined || store.month === undefined}
 					inputMode="numeric"

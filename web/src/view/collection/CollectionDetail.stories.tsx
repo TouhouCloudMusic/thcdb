@@ -1,7 +1,9 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { UserCollection } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
+import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
 import type {
@@ -10,6 +12,27 @@ import type {
 } from "~/view/collection/CollectionDetail"
 import { CollectionDetailPage } from "~/view/collection/CollectionDetail"
 import type { UserCollectionItemDetail } from "~/view/collection/CollectionItemCard"
+
+const styles = stylex.create({
+	pageLayout: {
+		paddingTop: {
+			default: px[16],
+			"@container (min-width: 36rem)": px[24],
+		},
+		paddingRight: {
+			default: px[16],
+			"@container (min-width: 36rem)": px[32],
+		},
+		paddingBottom: {
+			default: px[16],
+			"@container (min-width: 36rem)": px[32],
+		},
+		paddingLeft: {
+			default: px[16],
+			"@container (min-width: 36rem)": px[32],
+		},
+	},
+})
 
 const MOCK_OWNER_NAME = "Hakurei Reimu"
 
@@ -192,7 +215,7 @@ function StoryRoot(props: StoryRootProps) {
 	})
 
 	return (
-		<PageLayout class="p-4 @xl:p-8 @xl:pt-6">
+		<PageLayout styles={styles.pageLayout}>
 			<CollectionDetailPage
 				model={model()}
 				controller={COLLECTION_DETAIL_CONTROLLER}

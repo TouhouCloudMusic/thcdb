@@ -1,10 +1,32 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Divider } from "~/component/atomic/Divider"
 import { Intersperse } from "~/component/data/Intersperse"
 import type { SongListItem } from "~/hey-api"
+import { dividerStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { SongItem } from "~/view/song/SongItem"
+
+const styles = stylex.create({
+	story: {
+		marginInline: "auto",
+		width: "100%",
+		backgroundColor: colors.backgroundPrimary,
+	},
+	narrow: {
+		maxWidth: px[384],
+	},
+	wide: {
+		maxWidth: px[768],
+	},
+	results: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+})
 
 const SONGS: SongListItem[] = [
 	{
@@ -48,12 +70,15 @@ type StoryRootProps = {
 function StoryRoot(props: StoryRootProps) {
 	return (
 		<div
-			class={`mx-auto w-full bg-primary ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+			{...stylex.attrs(
+				styles.story,
+				props.width === "narrow" ? styles.narrow : styles.wide,
+			)}
 		>
-			<div class="flex flex-col gap-2 p-4">
+			<div {...stylex.attrs(styles.results)}>
 				<Intersperse
 					of={props.songs}
-					with={<Divider horizontal />}
+					with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 				>
 					{(song) => <SongItem song={song} />}
 				</Intersperse>

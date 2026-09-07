@@ -1,8 +1,8 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { Show } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Divider } from "~/component/atomic/Divider"
 import { Intersperse } from "~/component/data/Intersperse"
 import {
 	CorrectionSortFieldSelect,
@@ -11,14 +11,45 @@ import {
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
 import type { LabelListItem } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles } from "~/style/primitives"
+import { radius, colors, px } from "~/style/tokens.stylex"
 
+import { animationStyles } from "../../style/animations.stylex"
 import { LabelItem } from "./LabelItem"
+
+const styles = stylex.create({
+	skeletonName: {
+		marginBottom: px[8],
+		height: px[20],
+		width: "50%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonDetails: {
+		height: px[16],
+		width: "66.66666666666666%",
+		borderRadius: radius.sm,
+		backgroundColor: colors.backgroundSecondary,
+	},
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	pagination: {
+		display: "flex",
+		justifyContent: "center",
+		paddingBlock: px[24],
+	},
+})
 
 export function LabelItemSkeleton() {
 	return (
-		<div class="animate-pulse">
-			<div class="mb-2 h-5 w-1/2 rounded bg-slate-200"></div>
-			<div class="h-4 w-2/3 rounded bg-secondary"></div>
+		<div {...stylex.attrs(animationStyles.pulse)}>
+			<div {...stylex.attrs(styles.skeletonName)}></div>
+			<div {...stylex.attrs(styles.skeletonDetails)}></div>
 		</div>
 	)
 }
@@ -70,20 +101,20 @@ export function LabelExploreList(props: LabelExploreListProps) {
 			<Show
 				when={props.labels.length > 0 || props.isFetching || props.isLoading}
 			>
-				<div class="flex flex-col gap-2 p-4">
+				<div {...stylex.attrs(styles.list)}>
 					<Intersperse
 						of={props.labels}
-						with={<Divider horizontal />}
+						with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					>
 						{(label) => <LabelItem label={label} />}
 					</Intersperse>
 					<Show when={props.isFetching || props.isLoading}>
 						<Show when={props.labels.length > 0}>
-							<Divider horizontal />
+							<span {...stylex.attrs(dividerStyles.horizontal)}></span>
 						</Show>
 						<Intersperse
 							of={Array.from({ length: props.limit })}
-							with={<Divider horizontal />}
+							with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 						>
 							{() => <LabelItemSkeleton />}
 						</Intersperse>
@@ -92,7 +123,7 @@ export function LabelExploreList(props: LabelExploreListProps) {
 			</Show>
 
 			<Show when={props.totalPages > 1}>
-				<div class="flex justify-center py-6">
+				<div {...stylex.attrs(styles.pagination)}>
 					<Pagination
 						current={props.page}
 						total={props.totalPages}

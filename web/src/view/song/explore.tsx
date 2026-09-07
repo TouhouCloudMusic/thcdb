@@ -1,10 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Divider } from "~/component/atomic/Divider"
 import { Select } from "~/component/atomic/form/select"
 import { Intersperse } from "~/component/data/Intersperse"
 import {
@@ -17,7 +17,55 @@ import {
 } from "~/component/feature/entity_explore"
 import type { SongListItem } from "~/hey-api"
 import { exploreSongOptions } from "~/hey-api/@tanstack/solid-query.gen"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles } from "~/style/primitives"
+import { radius, colors, px } from "~/style/tokens.stylex"
 import { SongItem } from "~/view/song/SongItem"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	resultRow: {
+		display: "grid",
+		gridTemplateColumns: "3lh minmax(0,1fr)",
+		alignItems: "flex-start",
+		gap: px[12],
+		lineHeight: "1.5rem",
+	},
+	coverPlaceholder: {
+		aspectRatio: "1 / 1",
+		borderRadius: radius.xs,
+		backgroundColor: colors.backgroundSecondary,
+	},
+	titlePlaceholder: {
+		marginBottom: px[8],
+		height: px[20],
+		width: "50%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	detailPlaceholder: {
+		height: px[16],
+		width: "33.33333333333333%",
+		borderRadius: radius.sm,
+		backgroundColor: colors.backgroundSecondary,
+	},
+	filterTrigger: {
+		height: px[40],
+		width: "100%",
+	},
+	results: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	pagination: {
+		display: "flex",
+		justifyContent: "center",
+		paddingBlock: px[24],
+	},
+})
 
 const route = getRouteApi("/song/explore")
 
@@ -28,11 +76,11 @@ const LANGUAGE_OPTIONS = [
 
 function SongItemSkeleton() {
 	return (
-		<div class="motion-safe:animate-pulse grid grid-cols-[3lh_minmax(0,1fr)] items-start gap-3 leading-6">
-			<div class="aspect-square rounded-sm bg-secondary"></div>
+		<div {...stylex.attrs(styles.resultRow, animationStyles.motionSafePulse)}>
+			<div {...stylex.attrs(styles.coverPlaceholder)}></div>
 			<div>
-				<div class="mb-2 h-5 w-1/2 rounded bg-slate-200"></div>
-				<div class="h-4 w-1/3 rounded bg-secondary"></div>
+				<div {...stylex.attrs(styles.titlePlaceholder)}></div>
+				<div {...stylex.attrs(styles.detailPlaceholder)}></div>
 			</div>
 		</div>
 	)
@@ -76,7 +124,7 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 						</Select.Item>
 					)}
 				>
-					<Select.Trigger class="h-10 w-full">
+					<Select.Trigger styles={[styles.filterTrigger]}>
 						<Select.Value<string>>
 							{(state) => languageLabel(state.selectedOption())}
 						</Select.Value>
@@ -127,20 +175,20 @@ function SongExploreList(props: SongExploreListProps) {
 			<Show
 				when={props.songs.length > 0 || props.isFetching || props.isLoading}
 			>
-				<div class="flex flex-col gap-2 p-4">
+				<div {...stylex.attrs(styles.results)}>
 					<Intersperse
 						of={props.songs}
-						with={<Divider horizontal />}
+						with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					>
 						{(song) => <SongItem song={song} />}
 					</Intersperse>
 					<Show when={props.isFetching || props.isLoading}>
 						<Show when={props.songs.length > 0}>
-							<Divider horizontal />
+							<span {...stylex.attrs(dividerStyles.horizontal)}></span>
 						</Show>
 						<Intersperse
 							of={Array.from({ length: props.limit })}
-							with={<Divider horizontal />}
+							with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 						>
 							{() => <SongItemSkeleton />}
 						</Intersperse>
@@ -149,7 +197,7 @@ function SongExploreList(props: SongExploreListProps) {
 			</Show>
 
 			<Show when={props.totalPages > 1}>
-				<div class="flex justify-center py-6">
+				<div {...stylex.attrs(styles.pagination)}>
 					<Pagination
 						current={props.page}
 						total={props.totalPages}

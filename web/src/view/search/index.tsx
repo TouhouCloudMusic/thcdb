@@ -1,12 +1,11 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { createMemo, For, Show } from "solid-js"
 import type { JSX } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
-import { Divider } from "~/component/atomic/Divider"
 import { Intersperse } from "~/component/data/Intersperse"
 import {
 	searchArtistInfiniteOptions,
@@ -18,6 +17,15 @@ import {
 	searchUserCollectionsInfiniteOptions,
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 import { ArtistItem } from "~/view/artist/ArtistItem"
 import { CollectionListItem } from "~/view/collection/CollectionListItem"
@@ -26,6 +34,120 @@ import { LabelItem } from "~/view/label/LabelItem"
 import { ReleaseItem } from "~/view/release/ReleaseItems"
 import { SongItem } from "~/view/song/SongItem"
 import { TagItem } from "~/view/tag/TagItem"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	tabs: { minWidth: "max-content" },
+	empty: {
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	fillEmpty: {
+		display: "grid",
+		flex: "1",
+		placeItems: "center",
+		padding: px[32],
+	},
+	compactEmpty: {
+		maxHeight: px[160],
+		overflow: "auto",
+		paddingInline: px[16],
+		paddingBlock: px[32],
+	},
+	page: {
+		padding: { default: px[16], "@media (min-width: 40rem)": px[32] },
+	},
+	content: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[24],
+	},
+	results: {
+		display: "flex",
+		minHeight: "0rem",
+		flex: "1",
+		flexDirection: "column",
+	},
+	header: {
+		display: "flex",
+		flexDirection: "column",
+		borderBottomStyle: "solid",
+		borderBottomWidth: "1px",
+		borderColor: palette.slate[200],
+		paddingBottom: px[16],
+	},
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		overflowWrap: "anywhere",
+		color: colors.textPrimary,
+	},
+	term: { color: colors.textSecondary },
+	tabViewport: { overflowX: "auto" },
+	tabTrigger: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[8],
+		paddingBlock: px[12],
+	},
+	count: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontVariantNumeric: "tabular-nums",
+		color: colors.textTertiary,
+	},
+	resultList: {
+		position: "relative",
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	loading: {
+		paddingBlock: px[32],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	emptySection: { display: "flex", flexDirection: "column" },
+	listEnd: {
+		display: "flex",
+		height: px[64],
+		alignItems: "center",
+		justifyContent: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+	progress: {
+		position: "absolute",
+		inset: "NaNrem",
+		bottom: "0rem",
+		height: px[4],
+	},
+	skeleton: {
+		minWidth: "0rem",
+	},
+	skeletonTitle: {
+		height: px[16],
+		width: "40%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonDescription: {
+		marginTop: px[8],
+		height: px[12],
+		width: "25%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+})
 
 type SearchTab =
 	| "artist"
@@ -71,14 +193,14 @@ export function SearchPage() {
 	const enabled = () => term().length > 0
 
 	return (
-		<PageLayout class="p-4 sm:p-8">
-			<div class="flex h-full flex-col gap-6">
+		<PageLayout styles={styles.page}>
+			<div {...stylex.attrs(styles.content)}>
 				<SearchHeader
 					enabled={enabled()}
 					term={term()}
 				/>
 
-				<div class="flex min-h-0 flex-1 flex-col">
+				<div {...stylex.attrs(styles.results)}>
 					<Show
 						when={enabled()}
 						fallback={<EmptyState text={t`Type a keyword to search.`} />}
@@ -101,10 +223,11 @@ export function SearchPage() {
 function SearchHeader(props: { enabled: boolean; term: string }) {
 	const { t } = useLingui()
 	return (
-		<div class="flex flex-col border-b border-slate-200 pb-4">
+		<div {...stylex.attrs(styles.header)}>
 			<Show when={props.enabled}>
-				<h1 class="text-2xl font-light wrap-anywhere text-primary">
-					{t`Search result of`} <span class="text-secondary">{props.term}</span>
+				<h1 {...stylex.attrs(styles.title)}>
+					{t`Search result of`}{" "}
+					<span {...stylex.attrs(styles.term)}>{props.term}</span>
 				</h1>
 			</Show>
 		</div>
@@ -367,8 +490,8 @@ function SearchResults(props: {
 					props.onTabChange(value)
 				}}
 			>
-				<div class="overflow-x-auto">
-					<Tab.List class={twJoin(Tab.CONTAINER_CLASS, "min-w-max")}>
+				<div {...stylex.attrs(styles.tabViewport)}>
+					<Tab.List styles={[Tab.containerStyles, styles.tabs]}>
 						<For each={visibleTabs()}>
 							{(tab) => (
 								<TabTrigger
@@ -483,26 +606,22 @@ type EmptyStateVariant = "compact" | "fill"
 function EmptyState(props: { text: string; variant?: EmptyStateVariant }) {
 	const variant = () => {
 		if (props.variant === "fill") {
-			return "grid flex-1 place-items-center p-8"
+			return styles.fillEmpty
 		}
-		return "max-h-40 overflow-auto px-4 py-8"
+		return styles.compactEmpty
 	}
 
-	return (
-		<div class={`text-center text-sm text-tertiary ${variant()}`}>
-			{props.text}
-		</div>
-	)
+	return <div {...stylex.attrs(styles.empty, variant())}>{props.text}</div>
 }
 
 function TabTrigger(props: { tab: SearchTab; count: number }) {
 	return (
 		<Tab.Trigger
 			value={props.tab}
-			class="flex items-center gap-2 py-3"
+			styles={styles.tabTrigger}
 		>
 			<SearchTabLabel tab={props.tab} />
-			<span class="text-sm tabular-nums text-tertiary">{props.count}</span>
+			<span {...stylex.attrs(styles.count)}>{props.count}</span>
 		</Tab.Trigger>
 	)
 }
@@ -554,36 +673,32 @@ function ResultList<T>(props: ResultListProps<T>) {
 	const { t } = useLingui()
 
 	return (
-		<div class="relative flex flex-col gap-2 p-4">
+		<div {...stylex.attrs(styles.resultList)}>
 			<Show when={!props.isLoading && props.items.length === 0}>
-				<div class="py-8 text-center text-sm text-tertiary">
-					{props.emptyText}
-				</div>
+				<div {...stylex.attrs(styles.loading)}>{props.emptyText}</div>
 			</Show>
 
 			<Intersperse
 				of={props.items}
-				with={<Divider horizontal />}
+				with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 			>
 				{(item) => props.renderItem(item)}
 			</Intersperse>
 
 			<Show when={props.items.length > 0 && !props.hasNextPage}>
-				<div class="flex flex-col">
-					<Divider horizontal />
-					<div class="flex h-16 items-center justify-center text-sm text-slate-500">
-						{t`No more results`}
-					</div>
+				<div {...stylex.attrs(styles.emptySection)}>
+					<span {...stylex.attrs(dividerStyles.horizontal)}></span>
+					<div {...stylex.attrs(styles.listEnd)}>{t`No more results`}</div>
 				</div>
 			</Show>
 
 			<Show when={props.isFetchingNextPage || props.isLoading}>
 				<Show when={props.items.length > 0}>
-					<Divider horizontal />
+					<span {...stylex.attrs(dividerStyles.horizontal)}></span>
 				</Show>
 				<Intersperse
 					of={Array.from({ length: props.limit })}
-					with={<Divider horizontal />}
+					with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 				>
 					{() => <RowSkeleton />}
 				</Intersperse>
@@ -591,7 +706,7 @@ function ResultList<T>(props: ResultListProps<T>) {
 
 			<div
 				ref={props.setSentinelRef}
-				class="absolute inset-x-0 bottom-0 h-1"
+				{...stylex.attrs(styles.progress)}
 			></div>
 		</div>
 	)
@@ -599,9 +714,16 @@ function ResultList<T>(props: ResultListProps<T>) {
 
 function RowSkeleton() {
 	return (
-		<div class="motion-safe:animate-pulse min-w-0">
-			<div class="h-4 w-2/5 rounded bg-slate-200"></div>
-			<div class="mt-2 h-3 w-1/4 rounded bg-slate-100"></div>
+		<div {...stylex.attrs(animationStyles.motionSafePulse, styles.skeleton)}>
+			<div
+				{...stylex.attrs(animationStyles.motionSafePulse, styles.skeletonTitle)}
+			></div>
+			<div
+				{...stylex.attrs(
+					animationStyles.motionSafePulse,
+					styles.skeletonDescription,
+				)}
+			></div>
 		</div>
 	)
 }

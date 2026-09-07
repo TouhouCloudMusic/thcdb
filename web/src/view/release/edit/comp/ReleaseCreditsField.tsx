@@ -1,12 +1,13 @@
 import { Field, getInput, insert, remove, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { ReleaseCredit, SimpleArtist } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { pick } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
 import { createMemo, For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
@@ -15,9 +16,75 @@ import {
 	ArtistSearchDialog,
 	CreditRoleSearchDialog,
 } from "~/component/form/SearchDialog"
+import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 
 import { ArtistInfo, CreditRoleInfo } from "./EntityInfo"
 import type { ReleaseFormStore } from "./types"
+
+const styles = stylex.create({
+	placeholder: { color: colors.textTertiary },
+	icon: { width: px[16], height: px[16], color: palette.slate[600] },
+	tracks: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[4],
+	},
+	trackLabel: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	checkbox: { height: px[16], width: px[16] },
+	item: {
+		display: "grid",
+		gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+		gap: px[8],
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		padding: px[12],
+	},
+	controls: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto 1fr auto auto",
+		alignItems: "center",
+		gap: px[8],
+	},
+	removeButton: { height: "100%", padding: px[8] },
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		width: "100%",
+		flexDirection: "column",
+	},
+	header: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: { margin: "0rem" },
+	addButton: { height: "max-content", padding: px[8] },
+	addIcon: { width: px[16], height: px[16] },
+	list: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[16],
+	},
+})
 
 function createReleaseCreditsState(p: {
 	of: ReleaseFormStore
@@ -74,7 +141,7 @@ function ReleaseCreditArtist(props: {
 			{props.artist ? (
 				<ArtistInfo value={props.artist} />
 			) : (
-				<span class="text-tertiary">{t`Select artist`}</span>
+				<span {...stylex.attrs(styles.placeholder)}>{t`Select artist`}</span>
 			)}
 
 			<Field
@@ -100,7 +167,7 @@ function ReleaseCreditArtist(props: {
 			</Field>
 			<ArtistSearchDialog
 				onSelect={props.onSelectArtist}
-				icon={<PlusIcon class="size-4 text-slate-600" />}
+				icon={<PlusIcon {...stylex.attrs(styles.icon)} />}
 			/>
 		</>
 	)
@@ -118,7 +185,7 @@ function ReleaseCreditRole(props: {
 			{props.role ? (
 				<CreditRoleInfo value={props.role} />
 			) : (
-				<span class="text-tertiary">{t`Select role`}</span>
+				<span {...stylex.attrs(styles.placeholder)}>{t`Select role`}</span>
 			)}
 			<Field
 				of={props.of}
@@ -142,7 +209,7 @@ function ReleaseCreditRole(props: {
 			</Field>
 			<CreditRoleSearchDialog
 				onSelect={props.onSelectRole}
-				icon={<PlusIcon class="size-4 text-slate-600" />}
+				icon={<PlusIcon {...stylex.attrs(styles.icon)} />}
 			/>
 		</>
 	)
@@ -193,15 +260,15 @@ function ReleaseCreditTracks(props: {
 	}
 
 	return (
-		<div class="flex flex-col gap-1">
-			<FormComp.Label>{t`On Tracks`}</FormComp.Label>
+		<div {...stylex.attrs(styles.tracks)}>
+			<label {...stylex.attrs(formStyles.label)}>{t`On Tracks`}</label>
 			<For each={props.sortedTrackIndices}>
 				{(trackIdx) => (
-					<label class="flex items-center gap-2 text-sm">
+					<label {...stylex.attrs(styles.trackLabel)}>
 						<input
 							checked={getChecked(trackIdx)}
 							onChange={(e) => updateInput(trackIdx, e)}
-							class="h-4 w-4"
+							{...stylex.attrs(styles.checkbox)}
 							type="checkbox"
 							aria-label={renderTrackLabel(trackIdx)}
 						/>
@@ -224,8 +291,8 @@ function ReleaseCreditItem(props: {
 	onSelectRole: (r: { id: number; name: string }) => void
 }): JSX.Element {
 	return (
-		<li class="grid grid-cols-1 gap-2 rounded border border-slate-200 p-3">
-			<div class="grid grid-cols-[1fr_auto_1fr_auto_auto] items-center gap-2">
+		<li {...stylex.attrs(styles.item)}>
+			<div {...stylex.attrs(styles.controls)}>
 				<ReleaseCreditArtist
 					of={props.of}
 					artist={props.artist}
@@ -239,10 +306,11 @@ function ReleaseCreditItem(props: {
 					onSelectRole={props.onSelectRole}
 				/>
 				<Button
-					variant="Tertiary"
-					size="Sm"
-					class="h-full p-2"
 					onClick={props.onRemove}
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+					styles={styles.removeButton}
 				>
 					<Cross1Icon />
 				</Button>
@@ -260,7 +328,7 @@ function ReleaseCreditItem(props: {
 export function ReleaseCreditsField(props: {
 	of: ReleaseFormStore
 	initCredits?: ReleaseCredit[]
-	class?: string
+	styles?: StyleXStyles
 }): JSX.Element {
 	const { t } = useLingui()
 	const {
@@ -299,18 +367,21 @@ export function ReleaseCreditsField(props: {
 	})
 
 	return (
-		<div class={twMerge("flex min-h-32 w-full flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Credits`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.header)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Credits`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addCreditRow}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.addButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.addIcon)} />
 				</Button>
 			</div>
-			<ul class="flex h-full flex-col gap-4">
+			<ul {...stylex.attrs(styles.list)}>
 				<For
 					each={creditRows()}
 					fallback={<FieldArrayFallback />}

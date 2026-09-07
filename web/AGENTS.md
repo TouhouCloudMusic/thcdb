@@ -62,39 +62,12 @@ JavaScript是动态语言，build的检查很宽松，不要使用build来进行
 - 对 `createStore` 的更新，统一使用 `produce` 而不是路径方法，如`setStore("path", value)`
 - 不要使用 `classList`
 
-## Tailwind CSS
+## StyleX
 
-twMerge和twJoin是两个用于合并Tailwind CSS类名的工具。twMerge会智能地合并类名，避免重复和冲突，而twJoin则简单地连接类名，不进行任何优化。
-当场景简单时（即已知所有的类名），使用twJoin，否则使用twMerge以避免潜在的类名冲突和冗余。
-twMerge和twJoin都接受false作为参数，因此在条件类名时，可以直接传入条件表达式，例如：
-
-```tsx
-twMerge("base-class", condition && "conditional-class")
-```
-
-而不是
-
-```tsx
-twMerge("base-class", condition ? "conditional-class" : "")
-```
-
-### v3 -> v4
-
-Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是替换列表：
-
-- break-words -> wrap-break-word
-- [background-*:<value>] -> bg-\*-[<value>] # 同样适用于fg
-- `*-gradient-to-*` -> `*-linear-to-*`
-- `outline-offset-[-<number>px]` -> `-outline-offset-<number>`
-- `aspect-[x/y]` -> `aspect-x/y` only if y is int
-
-### 设计系统
-
-优先使用设计系统定义的样式，如：
-
-- 颜色：`text-primary`、`bg-secondary` 等
-
-不要使用自定义设置，如`text-[11px]`, `tracking-[0.22em]`
+- 组件样式使用 StyleX，优先引用 `src/style/tokens.stylex.ts` 中已有的设计 token。编译期 token 直接从 `.stylex.ts` 文件导入，支持 `~/` 项目别名。
+- 原生元素使用 `stylex.attrs`；组件的样式覆盖参数使用 `styles?: StyleXStyles`，在最终 DOM 所属组件中组合。覆盖某个属性时保留该属性仍需生效的交互和响应式条件。
+- 将重复且具有共同语义的样式提取为语义 style 变量；只承载样式的包装使用原生元素和 style 变量表达。
+- 字体声明、全局 reset 和生成内容的关系选择器可保留普通 CSS。
 
 ## UI 文案
 

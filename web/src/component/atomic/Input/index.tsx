@@ -1,40 +1,37 @@
-import type { ComponentProps, JSX } from "solid-js"
-import { mergeProps } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
 
-import { tw } from "~/utils"
+import { palette } from "~/style/color/palette.stylex"
+import { radius, colors, px } from "~/style/tokens.stylex"
 
 // TODO: border color
-export const INPUT_LIKE_BASE_CLASS = tw(`
-	bg-primary
-
-	rounded
-
-	border border-slate-300
-	aria-invalid:border-reimu-600
-
-	disabled:bg-slate-100
-	disabled:text-slate-400
-
-	outline-1 outline-transparent -outline-offset-1
-	focus:outline-reimu-600
-	not-disabled:hover:outline-reimu-500
-
-	transition-all duration-100
-	`)
-
-export const INPUT_BASE_CLASSNAME = tw(`
-		${INPUT_LIKE_BASE_CLASS}
-
-	`)
-
-export const INPUT_CLASSNAME = twMerge(INPUT_BASE_CLASSNAME, `pl-2 h-8`)
-
-export function Input(props: ComponentProps<"input">): JSX.Element {
-	const finalProps = mergeProps(props, {
-		get class() {
-			return twMerge(INPUT_CLASSNAME, props.class)
+export const inputStyles = stylex.create({
+	like: {
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":disabled": palette.slate[100],
 		},
-	})
-	return <input {...finalProps} />
-}
+		borderRadius: radius.sm,
+		borderWidth: 1,
+		borderStyle: "solid",
+		borderColor: {
+			default: palette.slate[300],
+			':is([aria-invalid="true"])': palette.reimu[600],
+		},
+		color: { default: null, ":disabled": palette.slate[400] },
+		outlineWidth: 1,
+		outlineStyle: "solid",
+		outlineOffset: -1,
+		outlineColor: {
+			default: "transparent",
+			":focus": palette.reimu[600],
+			"@media (hover: hover)": {
+				default: null,
+				":is(:not(:disabled):hover)": palette.reimu[500],
+			},
+		},
+		transitionProperty: "all",
+		transitionDuration: "100ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+	input: { paddingLeft: px[8], height: px[32] },
+})

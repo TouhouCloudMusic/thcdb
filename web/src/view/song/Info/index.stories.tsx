@@ -1,3 +1,4 @@
+import * as stylex from "@stylexjs/stylex"
 import type { CorrectionHistoryItem, Song } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
@@ -8,8 +9,18 @@ import {
 	TOHOHUM_COVER_URL,
 	YABBA_RAGGA_TOHO_3_COVER_URL,
 } from "~/storybook/fixtures"
+import { palette } from "~/style/color/palette.stylex"
+import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { SongInfoPage } from "~/view/song/Info"
+
+const styles = stylex.create({
+	story: {
+		minHeight: "900px",
+		backgroundColor: palette.slate[100],
+		padding: px[24],
+	},
+})
 
 const FULL_SONG: Song = {
 	id: 42,
@@ -158,7 +169,7 @@ function StoryRoot(props: StoryRootProps) {
 		props.displayMode === "full" ? CORRECTION_HISTORY : []
 
 	return (
-		<div class="min-h-[900px] bg-slate-100 p-6">
+		<div {...stylex.attrs(styles.story)}>
 			<SongInfoPage
 				song={song()}
 				correctionHistory={correctionHistory()}

@@ -1,25 +1,63 @@
 /* @refresh skip */
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { Artist } from "@thc/api"
-import type { ParentProps } from "solid-js"
 import { createMemo, For, Show } from "solid-js"
 
 import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { DateWithPrecision } from "~/domain/shared"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
 
 import { ArtistContext } from ".."
 
+const styles = stylex.create({
+	column: {
+		display: "flex",
+		flexDirection: "column",
+	},
+	name: {
+		overflowWrap: "break-word",
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+		fontWeight: 600,
+	},
+	details: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		marginTop: px[16],
+	},
+	links: { overflowWrap: "anywhere" },
+	aliases: {
+		display: "flex",
+		flexWrap: "wrap",
+		gap: px[4],
+	},
+	date: {
+		color: palette.slate[900],
+	},
+	subtitle: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	description: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+})
+
 export function ArtistInfo() {
 	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	return (
-		<div class="flex flex-col">
-			<h1 class="wrap-break-word text-xl font-semibold">
-				{context.artist.name}
-			</h1>
-			<div class="mt-4 space-y-2">
+		<div {...stylex.attrs(styles.column)}>
+			<h1 {...stylex.attrs(styles.name)}>{context.artist.name}</h1>
+			<div {...stylex.attrs(styles.details)}>
 				<Show when={context.artist.artist_type !== "Unknown"}>
 					<DateInfo
 						value={context.artist.start_date}
@@ -38,7 +76,7 @@ export function ArtistInfo() {
 				<Membership />
 				<ExternalLinks
 					links={context.artist.links}
-					class="[&_a]:wrap-anywhere"
+					linkStyles={styles.links}
 				/>
 				<EntityTags
 					entityType="artist"
@@ -56,8 +94,8 @@ function Aliases() {
 	return (
 		<Show when={aliases().length > 0}>
 			<div>
-				<InfoLabel>{t`Aliases`}</InfoLabel>
-				<ul class="flex flex-wrap gap-1">
+				<span {...stylex.attrs(styles.description)}>{t`Aliases`}</span>
+				<ul {...stylex.attrs(styles.aliases)}>
 					<For each={aliases()}>
 						{(alias, index) => (
 							<>
@@ -89,9 +127,9 @@ function DateInfo(props: { value?: Artist["start_date"]; label: string }) {
 	})
 	return (
 		<Show when={props.value}>
-			<div class="flex flex-col">
-				<InfoLabel>{props.label}</InfoLabel>
-				<span class="text-slate-900">{parsedDate()}</span>
+			<div {...stylex.attrs(styles.column)}>
+				<span {...stylex.attrs(styles.description)}>{props.label}</span>
+				<span {...stylex.attrs(styles.date)}>{parsedDate()}</span>
 			</div>
 		</Show>
 	)
@@ -115,7 +153,7 @@ function Membership() {
 			}
 		>
 			<div>
-				<span class="text-sm text-secondary">{label()}</span>
+				<span {...stylex.attrs(styles.subtitle)}>{label()}</span>
 				<ul>
 					<For each={context.artist.memberships}>
 						{(membership) => <li>{membership.artist_id}</li>}
@@ -136,10 +174,6 @@ function Location(props: { location?: Artist["start_location"] }) {
 			</div>
 		</Show>
 	)
-}
-
-function InfoLabel(props: ParentProps) {
-	return <span class="text-sm text-tertiary">{props.children}</span>
 }
 
 // Data utils

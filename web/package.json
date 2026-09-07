@@ -44,7 +44,6 @@
 		"shiki": "^3.21.0",
 		"solid-cropper": "workspace:*",
 		"solid-js": "^1.9.12",
-		"tailwind-merge": "^3.4.0",
 		"valibot": "1.4.2",
 		"zxcvbn": "^4.4.2"
 	},
@@ -69,7 +68,6 @@
 		"@storybook/builder-vite": "10.3.5",
 		"@stylexjs/eslint-plugin": "^0.19.0",
 		"@stylexjs/unplugin": "^0.19.0",
-		"@tailwindcss/vite": "^4.1.18",
 		"@tanstack/devtools-vite": "^0.6.0",
 		"@tanstack/eslint-plugin-query": "^5.91.5",
 		"@tanstack/router-plugin": "^1.153.2",
@@ -97,7 +95,6 @@
 		"solid-devtools": "^0.34.5",
 		"storybook": "10.3.5",
 		"storybook-solidjs-vite": "10.0.12",
-		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.1",
 		"vite": "8.2.2",
@@ -110,7 +107,6 @@
 		]
 	},
 	"trustedDependencies": [
-		"@tailwindcss/oxide",
 		"esbuild"
 	]
 }

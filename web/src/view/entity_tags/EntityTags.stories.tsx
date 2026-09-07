@@ -1,11 +1,45 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { PRIMARY_TAG_RELEVANCE_THRESHOLD } from "~/domain/tag/constants"
+import { palette } from "~/style/color/palette.stylex"
+import { radius, px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
 
 import { EntityTagsView } from "./EntityTags"
 import type { EntityTagsViewProps } from "./EntityTags"
+
+const styles = stylex.create({
+	canvas: {
+		minHeight: "480px",
+		backgroundColor: palette.slate[100],
+		paddingTop: px[24],
+		paddingRight: px[24],
+		paddingBottom: px[24],
+		paddingLeft: px[24],
+	},
+	panel: {
+		marginLeft: "auto",
+		marginRight: "auto",
+		maxWidth: px[768],
+		borderRadius: radius.sm,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.white,
+		paddingTop: px[24],
+		paddingRight: px[24],
+		paddingBottom: px[24],
+		paddingLeft: px[24],
+	},
+})
 
 const MOCK_TAGS: EntityTagsViewProps["tags"] = [
 	{
@@ -99,8 +133,8 @@ function StoryRoot(props: {
 	pendingKey?: string
 }) {
 	return (
-		<div class="min-h-[480px] bg-slate-100 p-6">
-			<div class="mx-auto max-w-3xl rounded border border-slate-200 bg-white p-6">
+		<div {...stylex.attrs(styles.canvas)}>
+			<div {...stylex.attrs(styles.panel)}>
 				<EntityTagsView
 					tags={TAGS_BY_STATE[props.state]}
 					isSignedIn={props.isSignedIn}

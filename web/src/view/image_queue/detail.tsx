@@ -1,12 +1,13 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import { Link } from "@tanstack/solid-router"
 import { ArtistQueryOption, ReleaseQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import type { JSX } from "solid-js"
 
 import { Badge } from "~/component/atomic/Badge"
-import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { Image } from "~/component/image"
@@ -31,19 +32,342 @@ import {
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { EntityComments } from "~/view/comment/EntityComments"
 import type { EntityCommentsModel } from "~/view/comment/EntityComments"
 import { useEntityComments } from "~/view/comment/useEntityComments"
 
+const styles = stylex.create({
+	destructiveAction: {
+		backgroundColor: {
+			default: palette.reimu[700],
+			":hover": { default: null, "@media (hover: hover)": palette.reimu[800] },
+			":active": palette.reimu[900],
+		},
+	},
+	page: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[12],
+		padding: px[16],
+	},
+	breadcrumb: { display: "flex", alignItems: "center", gap: px[8] },
+	backLink: {
+		display: "inline-flex",
+		alignItems: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: {
+			default: colors.textSecondary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+	},
+	eyebrow: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.05em",
+		color: colors.textSecondary,
+	},
+	loadingNotice: {
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+		padding: px[24],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	errorNotice: {
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+		padding: px[24],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[700],
+	},
+	detail: { containerType: "inline-size", display: "grid", gap: px[20] },
+	header: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: "minmax(0,1fr) auto",
+			"@container (min-width: 56rem)": "auto minmax(0,1fr) auto",
+		},
+		columnGap: px[16],
+		rowGap: px[12],
+		borderBottomStyle: "solid",
+		borderBottomWidth: "1px",
+		borderColor: palette.slate[200],
+		paddingBottom: px[20],
+		alignItems: { default: null, "@container (min-width: 56rem)": "center" },
+	},
+	status: {
+		gridColumnStart: "1",
+		gridRowStart: "1",
+		alignSelf: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	title: {
+		gridColumnEnd: {
+			default: "span 2",
+			"@container (min-width: 56rem)": "span 1",
+		},
+		gridRowStart: { default: "2", "@container (min-width: 56rem)": "1" },
+		fontSize: {
+			default: fontSizes.xl,
+			"@container (min-width: 56rem)": fontSizes["2xl"],
+		},
+		lineHeight: {
+			default: "calc(1.75 / 1.25)",
+			"@container (min-width: 56rem)": "calc(2 / 1.5)",
+		},
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+		gridColumnStart: {
+			default: "span 2",
+			"@container (min-width: 56rem)": "2",
+		},
+	},
+	comparisonLayout: {
+		display: "grid",
+		gap: px[16],
+		gridTemplateColumns: {
+			default: null,
+			"@container (min-width: 56rem)": "minmax(0,1fr) 16rem",
+		},
+		alignItems: {
+			default: null,
+			"@container (min-width: 56rem)": "flex-start",
+		},
+	},
+	comparison: {
+		display: "grid",
+		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		overflow: "hidden",
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+	},
+	sidebar: {
+		display: "grid",
+		gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,16rem),1fr))",
+		alignItems: "flex-start",
+		gap: px[16],
+		borderTopStyle: "solid",
+		borderTopWidth: { default: "1px", "@container (min-width: 56rem)": "0" },
+		borderColor: palette.slate[200],
+		paddingTop: { default: px[20], "@container (min-width: 56rem)": "0rem" },
+	},
+	metadata: {
+		display: "grid",
+		gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,10rem),1fr))",
+		columnGap: px[32],
+		rowGap: px[16],
+	},
+	metadataLink: { fontSize: fontSizes.sm, lineHeight: lineHeights.sm },
+	metadataValue: {
+		color: colors.textPrimary,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	comments: {
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+		padding: px[16],
+	},
+	navigation: {
+		gridColumnStart: { default: "2", "@container (min-width: 56rem)": "3" },
+		gridRowStart: "1",
+		display: "grid",
+		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		gap: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+	},
+	previousUnavailable: {
+		display: "inline-flex",
+		minHeight: px[32],
+		alignItems: "center",
+		gap: px[4],
+		justifySelf: "flex-start",
+		borderRadius: radius.sm,
+		paddingInline: px[8],
+		color: colors.textTertiary,
+	},
+	previousLink: {
+		display: "inline-flex",
+		minHeight: px[32],
+		alignItems: "center",
+		gap: px[4],
+		justifySelf: "flex-start",
+		borderRadius: radius.sm,
+		paddingInline: px[8],
+		color: {
+			default: colors.textSecondary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+		backgroundColor: {
+			default: null,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": colors.backgroundSecondary,
+			},
+		},
+	},
+	navigationLabel: {
+		textUnderlineOffset: "4px",
+		textDecorationLine: {
+			default: null,
+			"@media (hover: hover)": {
+				default: null,
+				[stylex.when.ancestor(":hover")]: "underline",
+			},
+		},
+	},
+	nextUnavailable: {
+		display: "inline-flex",
+		minHeight: px[32],
+		alignItems: "center",
+		gap: px[4],
+		justifySelf: "flex-end",
+		borderRadius: radius.sm,
+		paddingInline: px[8],
+		color: colors.textTertiary,
+	},
+	nextLink: {
+		display: "inline-flex",
+		minHeight: px[32],
+		alignItems: "center",
+		gap: px[4],
+		justifySelf: "flex-end",
+		borderRadius: radius.sm,
+		paddingInline: px[8],
+		color: {
+			default: colors.textSecondary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+		backgroundColor: {
+			default: null,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": colors.backgroundSecondary,
+			},
+		},
+	},
+	imageSection: {
+		display: "grid",
+		minWidth: "0rem",
+		gridTemplateRows: "auto 1fr",
+	},
+	imageHeader: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+		borderBottomStyle: "solid",
+		borderBottomWidth: "1px",
+		borderColor: palette.slate[200],
+		backgroundColor: colors.backgroundSecondary,
+		paddingInline: px[12],
+		paddingBlock: px[8],
+	},
+	label: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		color: colors.textSecondary,
+	},
+	loadingImage: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	imageViewport: {
+		position: "relative",
+		aspectRatio: "4 / 3",
+		maxHeight: px[320],
+		overflow: "hidden",
+		backgroundColor: colors.backgroundSecondary,
+	},
+	imagePlaceholder: {
+		position: "absolute",
+		inset: "0rem",
+		display: "grid",
+		placeItems: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	image: {
+		width: "100%",
+		height: "100%",
+		objectFit: "contain",
+		padding: px[12],
+	},
+	metadataField: { display: "grid", gap: px[4] },
+	actions: { display: "grid", gap: px[8] },
+	actionsHeader: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+	},
+	workingHint: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textSecondary,
+	},
+	actionDescription: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	actionButton: { height: px[28], width: "100%" },
+	actionError: {
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.reimu[200],
+		paddingInline: px[12],
+		paddingBlock: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[800],
+	},
+	comparisonChild: {
+		borderInlineStartWidth: { default: null, ":not(:last-child)": 0 },
+		borderInlineEndWidth: { default: null, ":not(:last-child)": "1px" },
+		borderInlineStartStyle: { default: null, ":not(:last-child)": "solid" },
+		borderInlineEndStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: { default: null, ":not(:last-child)": palette.slate[300] },
+	},
+})
+
 const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	dateStyle: "medium",
 	timeStyle: "short",
 })
-
-const LABEL_CLASS = "text-xs font-medium text-secondary"
-
-const SURFACE_CARD_CLASS = "rounded-sm border border-slate-300 bg-primary"
 
 function statusTone(status: ImageQueueStatus) {
 	switch (status) {
@@ -200,29 +524,24 @@ export function ImageQueueDetailPage(props: Props) {
 	})
 
 	return (
-		<PageLayout class="flex flex-col gap-3 p-4">
-			<div class="flex items-center gap-2">
+		<PageLayout styles={styles.page}>
+			<div {...stylex.attrs(styles.breadcrumb)}>
 				<Link
 					{...IMAGE_QUEUE_LIST_LINK}
-					underline={false}
-					class="inline-flex items-center text-sm text-secondary hover:text-primary"
+					class={stylex.attrs(link.base, styles.backLink).class}
 				>
 					<span aria-hidden="true">←</span>
 				</Link>
-				<div class="text-xs font-medium tracking-wider text-secondary">
-					IMAGE QUEUE
-				</div>
+				<div {...stylex.attrs(styles.eyebrow)}>IMAGE QUEUE</div>
 			</div>
 
 			<Switch>
 				<Match when={detailQuery.isLoading}>
-					<div class={`${SURFACE_CARD_CLASS} p-6 text-sm text-secondary`}>
-						Loading…
-					</div>
+					<div {...stylex.attrs(styles.loadingNotice)}>Loading…</div>
 				</Match>
 
 				<Match when={detailQuery.isError}>
-					<div class={`${SURFACE_CARD_CLASS} p-6 text-sm text-reimu-700`}>
+					<div {...stylex.attrs(styles.errorNotice)}>
 						Failed to load image queue entry.
 					</div>
 				</Match>
@@ -257,15 +576,15 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 	const tone = () => statusTone(props.detail.status)
 
 	return (
-		<div class="@container grid gap-5">
-			<header class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-3 border-b border-slate-200 pb-5 @4xl:grid-cols-[auto_minmax(0,1fr)_auto] @4xl:items-center">
+		<div {...stylex.attrs(styles.detail)}>
+			<header {...stylex.attrs(styles.header)}>
 				<Badge
 					color={tone().color}
-					class="col-start-1 row-start-1 self-center text-sm"
+					styles={styles.status}
 				>
 					<ImageQueueStatusLabel status={props.detail.status} />
 				</Badge>
-				<h1 class="col-span-2 row-start-2 text-xl font-light tracking-tight text-primary @4xl:col-span-1 @4xl:col-start-2 @4xl:row-start-1 @4xl:text-2xl">
+				<h1 {...stylex.attrs(styles.title)}>
 					<Show
 						when={getTargetMeta(props.detail)}
 						fallback={t`Image queue`}
@@ -274,6 +593,7 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 							<>
 								Update request for{" "}
 								<Link
+									class={stylex.attrs(link.base, link.text).class}
 									to={target().to}
 									params={{ id: target().id.toString() }}
 								>
@@ -294,8 +614,8 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 					nextId={props.detail.next_id}
 				/>
 			</header>
-			<div class="grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_16rem] @4xl:items-start">
-				<section class="grid grid-cols-2 divide-x divide-slate-300 overflow-hidden rounded-sm border border-slate-300 bg-primary">
+			<div {...stylex.attrs(styles.comparisonLayout)}>
+				<section {...stylex.attrs(styles.comparison)}>
 					<ComparisonImage
 						title={t`Current`}
 						src={props.targetImageSrc}
@@ -309,19 +629,21 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 						alt={t`Queued upload preview`}
 					/>
 				</section>
-				<aside class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] items-start gap-4 border-t border-slate-200 pt-5 @4xl:border-t-0 @4xl:pt-0">
-					<div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-x-8 gap-y-4">
+				<aside {...stylex.attrs(styles.sidebar)}>
+					<div {...stylex.attrs(styles.metadata)}>
 						<InfoField label={t`Submitted by`}>
 							<Link
 								to="/profile/$username/image-queue"
 								params={{ username: props.detail.created_by.name }}
-								class="text-sm"
+								class={
+									stylex.attrs(link.base, link.text, styles.metadataLink).class
+								}
 							>
 								{props.detail.created_by.name}
 							</Link>
 						</InfoField>
 						<InfoField label={t`Created`}>
-							<div class="text-primary text-sm">
+							<div {...stylex.attrs(styles.metadataValue)}>
 								{formatDateTime(props.detail.created_at)}
 							</div>
 						</InfoField>
@@ -332,14 +654,17 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 										<Link
 											to="/profile/$username/image-queue"
 											params={{ username: user().name }}
-											class="text-sm"
+											class={
+												stylex.attrs(link.base, link.text, styles.metadataLink)
+													.class
+											}
 										>
 											{user().name}
 										</Link>
 									)}
 								</Show>
 								<Show when={props.detail.handled_at}>
-									<div class="text-primary text-sm">
+									<div {...stylex.attrs(styles.metadataValue)}>
 										{formatDateTime(props.detail.handled_at)}
 									</div>
 								</Show>
@@ -352,14 +677,17 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 										<Link
 											to="/profile/$username/image-queue"
 											params={{ username: user().name }}
-											class="text-sm"
+											class={
+												stylex.attrs(link.base, link.text, styles.metadataLink)
+													.class
+											}
 										>
 											{user().name}
 										</Link>
 									)}
 								</Show>
 								<Show when={props.detail.reverted_at}>
-									<div class="text-primary text-sm">
+									<div {...stylex.attrs(styles.metadataValue)}>
 										{formatDateTime(props.detail.reverted_at)}
 									</div>
 								</Show>
@@ -377,7 +705,7 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 					/>
 				</aside>
 			</div>
-			<section class={`${SURFACE_CARD_CLASS} p-4`}>
+			<section {...stylex.attrs(styles.comments)}>
 				<EntityComments model={props.comments} />
 			</section>
 		</div>
@@ -393,7 +721,7 @@ function ImageQueueNavigation(props: {
 	return (
 		<nav
 			aria-label={t`Image queue navigation`}
-			class="col-start-2 row-start-1 grid grid-cols-2 gap-1 text-xs @4xl:col-start-3"
+			{...stylex.attrs(styles.navigation)}
 		>
 			<Show
 				when={props.previousId}
@@ -401,7 +729,7 @@ function ImageQueueNavigation(props: {
 					<button
 						type="button"
 						disabled
-						class="inline-flex min-h-8 items-center gap-1 justify-self-start rounded-sm px-2 text-tertiary"
+						{...stylex.attrs(styles.previousUnavailable)}
 					>
 						<span aria-hidden="true">←</span>
 						{t`Previous`}
@@ -414,13 +742,16 @@ function ImageQueueNavigation(props: {
 						params={{ id: id().toString() }}
 						rel="prev"
 						aria-label={t`Previous image queue entry`}
-						underline={false}
-						class="group inline-flex min-h-8 items-center gap-1 justify-self-start rounded-sm px-2 text-secondary hover:bg-secondary hover:text-primary"
+						class={
+							stylex.attrs(
+								link.base,
+								stylex.defaultMarker(),
+								styles.previousLink,
+							).class
+						}
 					>
 						<span aria-hidden="true">←</span>
-						<span class="underline-offset-4 group-hover:underline">
-							{t`Previous`}
-						</span>
+						<span {...stylex.attrs(styles.navigationLabel)}>{t`Previous`}</span>
 					</Link>
 				)}
 			</Show>
@@ -430,7 +761,7 @@ function ImageQueueNavigation(props: {
 					<button
 						type="button"
 						disabled
-						class="inline-flex min-h-8 items-center gap-1 justify-self-end rounded-sm px-2 text-tertiary"
+						{...stylex.attrs(styles.nextUnavailable)}
 					>
 						{t`Next`}
 						<span aria-hidden="true">→</span>
@@ -443,12 +774,12 @@ function ImageQueueNavigation(props: {
 						params={{ id: id().toString() }}
 						rel="next"
 						aria-label={t`Next image queue entry`}
-						underline={false}
-						class="group inline-flex min-h-8 items-center gap-1 justify-self-end rounded-sm px-2 text-secondary hover:bg-secondary hover:text-primary"
+						class={
+							stylex.attrs(link.base, stylex.defaultMarker(), styles.nextLink)
+								.class
+						}
 					>
-						<span class="underline-offset-4 group-hover:underline">
-							{t`Next`}
-						</span>
+						<span {...stylex.attrs(styles.navigationLabel)}>{t`Next`}</span>
 						<span aria-hidden="true">→</span>
 					</Link>
 				)}
@@ -534,20 +865,20 @@ function ComparisonImage(props: {
 }) {
 	const { t } = useLingui()
 	return (
-		<section class="grid min-w-0 grid-rows-[auto_1fr]">
-			<header class="flex items-center justify-between gap-3 border-b border-slate-200 bg-secondary px-3 py-2">
-				<h2 class={LABEL_CLASS}>{props.title}</h2>
+		<section {...stylex.attrs(styles.imageSection, styles.comparisonChild)}>
+			<header {...stylex.attrs(styles.imageHeader)}>
+				<h2 {...stylex.attrs(styles.label)}>{props.title}</h2>
 				{props.headerRight}
 				<Show when={props.loading}>
-					<div class="text-xs text-tertiary">{t`Loading…`}</div>
+					<div {...stylex.attrs(styles.loadingImage)}>{t`Loading…`}</div>
 				</Show>
 			</header>
 
 			<Image.Root>
-				<div class="relative aspect-4/3 max-h-80 overflow-hidden bg-secondary">
+				<div {...stylex.attrs(styles.imageViewport)}>
 					<Image.Fallback>
 						{(state) => (
-							<div class="absolute inset-0 grid place-items-center text-sm text-tertiary">
+							<div {...stylex.attrs(styles.imagePlaceholder)}>
 								<Switch>
 									<Match when={props.error ?? state === Image.State.Error}>
 										Failed to load
@@ -562,7 +893,7 @@ function ComparisonImage(props: {
 					<Image.Img
 						src={props.src}
 						alt={props.alt}
-						class="size-full object-contain p-3"
+						styles={styles.image}
 					/>
 				</div>
 			</Image.Root>
@@ -577,8 +908,8 @@ type InfoFieldProps = {
 
 function InfoField(props: InfoFieldProps) {
 	return (
-		<section class="grid gap-1">
-			<h2 class={LABEL_CLASS}>{props.label}</h2>
+		<section {...stylex.attrs(styles.metadataField)}>
+			<h2 {...stylex.attrs(styles.label)}>{props.label}</h2>
 			{props.children}
 		</section>
 	)
@@ -651,7 +982,7 @@ type ConfirmActionButtonProps = {
 	title: string
 	description: string
 	confirmText: string
-	color: "Green" | "Reimu"
+	tone: "green" | "reimu"
 	disabled: boolean
 	onConfirm: () => void
 	children: string
@@ -673,15 +1004,14 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 			triggerAs={(triggerProps) => (
 				<Button
 					{...triggerProps}
-					variant="Primary"
-					color={props.color}
-					size="Sm"
 					disabled={props.disabled}
-					class={
-						props.color === "Reimu"
-							? "h-7 w-full bg-reimu-700 hover:bg-reimu-800 active:bg-reimu-900"
-							: "h-7 w-full"
-					}
+					appearance="solid"
+					tone={props.tone}
+					size="sm"
+					styles={[
+						styles.actionButton,
+						props.tone === "reimu" && styles.destructiveAction,
+					]}
 				>
 					{props.children}
 				</Button>
@@ -717,17 +1047,17 @@ function ImageQueueActions(props: {
 		=== "Approved"
 
 	return (
-		<section class="grid gap-2">
-			<div class="flex items-center justify-between gap-3">
-				<div class={LABEL_CLASS}>{t`Actions`}</div>
+		<section {...stylex.attrs(styles.actions)}>
+			<div {...stylex.attrs(styles.actionsHeader)}>
+				<div {...stylex.attrs(styles.label)}>{t`Actions`}</div>
 				<Show when={props.isModerating}>
-					<div class="text-xs text-secondary">{t`Working…`}</div>
+					<div {...stylex.attrs(styles.workingHint)}>{t`Working…`}</div>
 				</Show>
 			</div>
 
 			<Switch>
 				<Match when={!props.canModerate}>
-					<div class="text-sm text-secondary">
+					<div {...stylex.attrs(styles.actionDescription)}>
 						{t`No actions available for this account.`}
 					</div>
 				</Match>
@@ -739,7 +1069,7 @@ function ImageQueueActions(props: {
 								message: "This will mark the queued image as approved.",
 							})}
 							confirmText={t`Approve`}
-							color="Green"
+							tone="green"
 							disabled={props.isModerating || !isPending()}
 							onConfirm={() => props.onModerate("Approve")}
 						>
@@ -751,7 +1081,7 @@ function ImageQueueActions(props: {
 								message: "This will mark the queued image as rejected.",
 							})}
 							confirmText={t`Reject`}
-							color="Reimu"
+							tone="reimu"
 							disabled={props.isModerating || !isPending()}
 							onConfirm={() => props.onModerate("Reject")}
 						>
@@ -761,25 +1091,25 @@ function ImageQueueActions(props: {
 				</Match>
 				<Match when={isApproved()}>
 					<Button
-						variant="Primary"
-						color="Blue"
-						size="Sm"
 						disabled={props.isModerating || !isApproved()}
-						class="h-7 w-full"
 						onClick={() => props.onModerate("Revert")}
+						appearance="solid"
+						tone="blue"
+						size="sm"
+						styles={styles.actionButton}
 					>
 						{t`Revert`}
 					</Button>
 				</Match>
 				<Match when={true}>
-					<div class="text-sm text-secondary">{t`No actions available.`}</div>
+					<div
+						{...stylex.attrs(styles.actionDescription)}
+					>{t`No actions available.`}</div>
 				</Match>
 			</Switch>
 
 			<Show when={props.errorMessage}>
-				<div class="rounded-sm border border-reimu-200 bg-reimu-50 px-3 py-2 text-sm text-reimu-800">
-					{props.errorMessage}
-				</div>
+				<div {...stylex.attrs(styles.actionError)}>{props.errorMessage}</div>
 			</Show>
 
 			<ImageQueueSubscribeButton
@@ -830,14 +1160,14 @@ function ImageQueueSubscribeButton(props: {
 
 	return (
 		<Button
-			variant="SecondaryV2"
-			color="Gray"
-			size="Sm"
-			class="h-7 w-full"
 			onClick={toggle}
 			disabled={
 				mutation.isPending || userCtx.session.status !== "authenticated"
 			}
+			appearance="outline"
+			tone="gray"
+			size="sm"
+			styles={styles.actionButton}
 		>
 			{props.isSubscribed ? t`Unsubscribe` : t`Subscribe`}
 		</Button>

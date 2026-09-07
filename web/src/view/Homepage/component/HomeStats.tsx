@@ -1,8 +1,54 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { For } from "solid-js"
 
 import type { HomeStatistics } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { formatCount } from "~/view/Homepage/utils"
+
+const styles = stylex.create({
+	grid: {
+		display: "grid",
+		width: { default: "100%", "@media (min-width: 48rem)": "fit-content" },
+		gridTemplateColumns: {
+			default: "repeat(2,minmax(0,1fr))",
+			"@media (min-width: 48rem)": "repeat(4,minmax(0,1fr))",
+		},
+		columnGap: { default: px[32], "@media (min-width: 48rem)": px[64] },
+		rowGap: px[24],
+	},
+	stat: { minWidth: { default: null, "@media (min-width: 48rem)": px[112] } },
+	count: {
+		fontSize: fontSizes["3xl"],
+		lineHeight: 1.2,
+		fontWeight: 200,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+		fontVariantNumeric: "tabular-nums",
+	},
+	label: {
+		marginTop: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 300,
+		letterSpacing: "0.1em",
+		color: colors.textTertiary,
+		textTransform: "uppercase",
+	},
+	root: {
+		borderBottomWidth: 1,
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+		paddingInline: {
+			default: px[16],
+			"@media (min-width: 40rem)": px[24],
+			"@media (min-width: 64rem)": px[32],
+		},
+		paddingBlock: px[12],
+	},
+})
 
 function HomeStatsGrid(props: { statistics?: HomeStatistics }) {
 	const { t } = useLingui()
@@ -15,19 +61,14 @@ function HomeStatsGrid(props: { statistics?: HomeStatistics }) {
 		] satisfies { key: keyof HomeStatistics; label: string }[]
 
 	return (
-		<div
-			class="grid w-full grid-cols-2 gap-x-8 gap-y-6
-				md:w-fit md:grid-cols-4 md:gap-x-16"
-		>
+		<div {...stylex.attrs(styles.grid)}>
 			<For each={stats()}>
 				{(stat) => (
-					<div class="md:min-w-28">
-						<div class="text-3xl font-extralight tracking-tight text-primary tabular-nums">
+					<div {...stylex.attrs(styles.stat)}>
+						<div {...stylex.attrs(styles.count)}>
 							{formatCount(props.statistics?.[stat.key])}
 						</div>
-						<div class="mt-1 text-xs font-light tracking-widest text-tertiary uppercase">
-							{stat.label}
-						</div>
+						<div {...stylex.attrs(styles.label)}>{stat.label}</div>
 					</div>
 				)}
 			</For>
@@ -40,7 +81,7 @@ export function HomeStats(props: { statistics?: HomeStatistics }) {
 	return (
 		<section
 			aria-label={t`Database statistics`}
-			class="border-b border-slate-300 bg-primary px-4 py-3 sm:px-6 lg:px-8"
+			{...stylex.attrs(styles.root)}
 		>
 			<HomeStatsGrid statistics={props.statistics} />
 		</section>

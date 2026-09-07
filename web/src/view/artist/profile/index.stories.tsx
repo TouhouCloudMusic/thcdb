@@ -1,3 +1,4 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
@@ -8,10 +9,20 @@ import {
 	TOHOHUM_COVER_URL,
 	YABBA_RAGGA_TOHO_3_COVER_URL,
 } from "~/storybook/fixtures"
+import { palette } from "~/style/color/palette.stylex"
+import { px } from "~/style/tokens.stylex"
 import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { ArtistProfilePage } from "."
+
+const styles = stylex.create({
+	story: {
+		minHeight: "900px",
+		backgroundColor: palette.slate[100],
+		padding: px[24],
+	},
+})
 
 const ARTIST: Artist = {
 	id: 18,
@@ -155,7 +166,7 @@ function createInfiniteQuery<T>(data: T[]): InfiniteQuery<T> {
 
 function StoryRoot() {
 	return (
-		<div class="min-h-[900px] bg-slate-100 p-6">
+		<div {...stylex.attrs(styles.story)}>
 			<ArtistProfilePage
 				artist={ARTIST}
 				correctionHistory={MOCK_CORRECTION_HISTORY}

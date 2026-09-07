@@ -1,6 +1,9 @@
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { ComponentProps, JSX, ParentProps } from "solid-js"
 import {
 	mergeProps,
+	splitProps,
 	createContext,
 	useContext,
 	Show,
@@ -8,8 +11,8 @@ import {
 } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
-import { twMerge } from "tailwind-merge"
 
+import { palette } from "~/style/color/palette.stylex"
 import { callHandlerUnion } from "~/utils/dom/event"
 
 export const enum State {
@@ -64,9 +67,28 @@ export function Root(props: RootProps) {
 	)
 }
 
-export type ImgProps = ComponentProps<"img">
+export type ImgProps = Omit<ComponentProps<"img">, "class"> & {
+	styles?: StyleXStyles
+}
 
-const IMAGE_CLASS = "object-cover"
+const styles = stylex.create({
+	image: { objectFit: "cover" },
+	preview: {
+		position: "fixed",
+		inset: 0,
+		zIndex: 50,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: palette.black,
+		margin: 0,
+		cursor: "zoom-out",
+		appearance: "none",
+		borderStyle: "none",
+		padding: 0,
+	},
+	previewImage: { maxHeight: "90%", maxWidth: "90%", objectFit: "contain" },
+})
 export function Img(props: ImgProps) {
 	const context = useContext(ImageContext)!
 
@@ -78,10 +100,8 @@ export function Img(props: ImgProps) {
 		context.setAlt(props.alt)
 	})
 
-	const img_props = mergeProps(props, {
-		get class() {
-			return twMerge(IMAGE_CLASS, props.class)
-		},
+	const [local, rest] = splitProps(props, ["styles"])
+	const img_props = mergeProps(rest, {
 		onLoad(e) {
 			context.setState(State.Ok)
 			callHandlerUnion(e, props.onLoad)
@@ -96,6 +116,7 @@ export function Img(props: ImgProps) {
 		<Show when={!context.isError && props.src}>
 			<img
 				{...img_props}
+				{...stylex.attrs(styles.image, local.styles)}
 				alt={props.alt ?? ""}
 			/>
 		</Show>
@@ -116,7 +137,7 @@ export function Fallback(props: FallbackProps) {
 }
 
 export type PreiewProps = {
-	class?: string
+	styles?: StyleXStyles
 	open?: boolean
 	close?: () => void
 }
@@ -136,17 +157,12 @@ export function Preview(props: PreiewProps) {
 					type="button"
 					onClick={() => props.close?.()}
 					onKeyDown={(e) => handleKeyToggle(e)}
-					class={twMerge(
-						"bg-opacity-75 fixed inset-0 z-50 flex items-center justify-center bg-black",
-						props.class,
-						// 移除原生 button 样式
-						"m-0 cursor-zoom-out appearance-none border-none p-0",
-					)}
+					{...stylex.attrs(styles.preview, props.styles)}
 				>
 					<img
 						src={context.src}
 						alt={context.alt}
-						class="max-h-[90%] max-w-[90%] object-contain"
+						{...stylex.attrs(styles.previewImage)}
 					/>
 				</button>
 			</Portal>

@@ -1,5 +1,7 @@
 /* @refresh skip */
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import type {
 	Artist,
 	ArtistCredit,
@@ -9,24 +11,65 @@ import type {
 } from "@thc/api"
 import { createContext, Suspense } from "solid-js"
 
-import { Link } from "~/component/atomic/Link"
-import { ButtonClass_new } from "~/component/atomic/button"
+import { buttonStyles } from "~/component/atomic/button"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { radius, px } from "~/style/tokens.stylex"
 import type { InfiniteQuery } from "~/type/query"
 import { imgUrl } from "~/utils/adapter/static_file"
-import {
-	ADD_TO_COLLECTION_ACTIONS_CLASS,
-	AddToUserCollectionButton,
-} from "~/view/collection/AddToUserCollectionButton"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { entityDetailStyles } from "~/view/entity/detailStyles"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
 
-const UPLOAD_LINK_CLASS = ButtonClass_new({
-	variant: "SecondaryV2",
-	size: "Sm",
+const styles = stylex.create({
+	page: {
+		padding: "clamp(1rem,4vw,2rem)",
+	},
+	content: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[32],
+	},
+	overview: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "flex-start",
+		justifyContent: "center",
+		gap: px[24],
+	},
+	portrait: {
+		aspectRatio: "1 / 1",
+		width: "100%",
+		overflow: "hidden",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+		maxWidth: {
+			default: null,
+			"@media (min-width: 40rem)": px[256],
+		},
+	},
+	imagePlaceholder: {
+		width: "100%",
+		height: "100%",
+		backgroundColor: palette.slate[100],
+	},
+	image: {
+		width: "100%",
+		height: "100%",
+	},
+	details: {
+		display: "flex",
+		minWidth: 0,
+		flex: "1",
+		flexBasis: px[288],
+		flexDirection: "column",
+		gap: px[16],
+	},
 })
 
 export type ArtistContext = {
@@ -74,18 +117,18 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 		},
 	}
 	return (
-		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
+		<PageLayout styles={[styles.page]}>
 			{/* TODO: fallback */}
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<ArtistContext.Provider value={contextValue}>
-					<div class="flex flex-col gap-8">
-						<div class="flex flex-wrap items-start justify-center gap-6">
-							<div class="aspect-square w-full overflow-hidden rounded bg-slate-100 sm:max-w-64">
+					<div {...stylex.attrs(styles.content)}>
+						<div {...stylex.attrs(styles.overview)}>
+							<div {...stylex.attrs(styles.portrait)}>
 								<Image.Root>
 									<Image.Fallback>
 										{(state) =>
 											state == Image.State.Error ? (
-												<div class="size-full bg-slate-100"></div>
+												<div {...stylex.attrs(styles.imagePlaceholder)}></div>
 											) : (
 												<></>
 											)
@@ -93,13 +136,13 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 									</Image.Fallback>
 									<Image.Img
 										src={profileImageUrl()}
-										class="size-full"
+										styles={[styles.image]}
 									/>
 								</Image.Root>
 							</div>
-							<div class="flex min-w-0 flex-1 basis-72 flex-col gap-4">
+							<div {...stylex.attrs(styles.details)}>
 								<ArtistInfo />
-								<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+								<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
 									<AddToUserCollectionButton
 										entityType="Artist"
 										entityId={props.artist.id}
@@ -107,8 +150,15 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 									<Link
 										to="/artist/$id/image-upload"
 										params={{ id: props.artist.id.toString() }}
-										class={UPLOAD_LINK_CLASS}
-										underline={false}
+										class={
+											stylex.attrs(
+												link.base,
+												buttonStyles.base,
+												buttonStyles.outline,
+												buttonStyles.gray,
+												buttonStyles.sm,
+											).class
+										}
 									>
 										Upload image
 									</Link>
@@ -122,9 +172,6 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 							correctionHistory={props.correctionHistory}
 						/>
 					</div>
-					{/* <div class="max-w-full wrap-anywhere">
-                {JSON.stringify(props.query.data)}
-            </div> */}
 				</ArtistContext.Provider>
 			</Suspense>
 		</PageLayout>

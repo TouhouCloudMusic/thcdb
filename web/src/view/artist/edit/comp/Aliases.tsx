@@ -1,22 +1,67 @@
 import { Field, getInput, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { createMemo, untrack } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 
-import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
-import { FormComp } from "~/component/atomic/form"
 import { Intersperse } from "~/component/data/Intersperse"
 import { FieldArrayFallback } from "~/component/form"
 import { ArtistSearchDialog } from "~/component/form/SearchDialog"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles, formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../context"
 
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		width: px[384],
+		flexDirection: "column",
+	},
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: {
+		margin: 0,
+	},
+	actions: {
+		display: "flex",
+		gap: px[8],
+	},
+	actionIcon: {
+		width: px[16],
+		height: px[16],
+		color: palette.slate[600],
+	},
+	entries: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	entry: {
+		display: "grid",
+		height: "fit-content",
+		gridTemplateColumns: "1fr auto",
+	},
+})
+
 type ArtistRef = Pick<Artist, "id" | "name">
 
-export function ArtistFormAliasesField(props: { initAliasIds?: number[] }) {
+export function ArtistFormAliasesField(props: {
+	styles?: StyleXStyles
+	initAliasIds?: number[]
+}) {
 	const { t } = useLingui()
 	const context = useArtistForm()
 	const { formStore } = context
@@ -61,21 +106,23 @@ export function ArtistFormAliasesField(props: { initAliasIds?: number[] }) {
 	})
 
 	return (
-		<div class="flex min-h-32 w-96 flex-col">
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Aliases`}</FormComp.Label>
-				<div class="flex gap-2">
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Aliases`}</label>
+				<div {...stylex.attrs(styles.actions)}>
 					<ArtistSearchDialog
 						onSelect={handleSelect}
 						queryFilter={filter()}
-						icon={<PlusIcon class="size-4 text-slate-600" />}
+						icon={<PlusIcon {...stylex.attrs(styles.actionIcon)} />}
 					/>
 				</div>
 			</div>
-			<ul class="flex h-full flex-col gap-2">
+			<ul {...stylex.attrs(styles.entries)}>
 				<Intersperse
 					of={aliases}
-					with={<Divider horizontal />}
+					with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					fallback={<FieldArrayFallback />}
 				>
 					{(alias, idx) => (
@@ -101,7 +148,7 @@ function AliasListItem(props: AliasListItemProps) {
 	const { formStore } = useArtistForm()
 
 	return (
-		<li class="grid h-fit grid-cols-[1fr_auto]">
+		<li {...stylex.attrs(styles.entry)}>
 			<Field
 				of={formStore}
 				path={["data", "aliases", props.index]}
@@ -120,9 +167,10 @@ function AliasListItem(props: AliasListItemProps) {
 			</Field>
 
 			<Button
-				variant="Tertiary"
-				size="Sm"
 				onClick={props.onRemove}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
 			>
 				<Cross1Icon />
 			</Button>

@@ -1,8 +1,27 @@
-export const AUTH_HEADER_CLASS = "mb-6 space-y-2"
-export const AUTH_TITLE_CLASS =
-	"text-2xl font-light tracking-tight text-primary"
-export const AUTH_DESCRIPTION_CLASS = "text-sm text-secondary"
+import * as stylex from "@stylexjs/stylex"
 
-export const AUTH_FORM_CLASS = "w-full flex flex-col"
-export const AUTH_FIELD_LABEL_CLASS = "text-sm text-tertiary"
-export const AUTH_INPUT_CLASS = "h-9 w-full"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+export const authStyles = stylex.create({
+	header: { marginBottom: px[24] },
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-.025em",
+		color: colors.textPrimary,
+		marginBlockEnd: { default: 0, ":not(:last-child)": px[8] },
+	},
+	description: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+		marginBlockEnd: { default: 0, ":not(:last-child)": px[8] },
+	},
+	form: { width: "100%", display: "flex", flexDirection: "column" },
+	fieldLabel: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	input: { height: px[36], width: "100%" },
+})

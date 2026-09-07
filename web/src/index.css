@@ -1,29 +1,9 @@
-@import "tailwindcss";
+@layer base;
 @import "./style/style.css";
 
-@source not "../locales/";
-
-@custom-variant dark (&:where([data-mode=dark] *));
-
-@theme {
-	--blur-2xs: 2px;
-
-	--font-sans:
-		"Geist", "ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"',
-		'"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"';
-	--font-mono:
-		"Geist Mono", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace";
-	--font-code:
-		"Cascadia Next SC", "ui-monospace", "Menlo", "Monaco", "Consolas",
-		"monospace";
-}
-
-/* Marked footnote plugin required */
-@source inline("sr-only");
-
 html {
-	color: hsl(var(--text-color-primary));
-	background-color: hsl(var(--background-color-primary));
+	color: #1b1e25;
+	background-color: white;
 	font-family:
 		Geist,
 		-apple-system,
@@ -49,100 +29,104 @@ body,
 
 @layer base {
 	svg {
-		color: var(--text-color-tertiary);
+		color: #7c8088;
 	}
-
 	select {
 		&:disabled {
-			background-color: hsl(var(--background-color-secondary));
+			background-color: #f6f7f8;
 		}
 	}
-
 	.markdown {
-		@apply m-auto flex flex-col gap-4 text-slate-900;
-
+		margin: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		color: #1b1e25;
 		h1 {
-			@apply text-6xl font-bold text-slate-800;
+			font-size: 3.75rem;
+			line-height: 1;
+			font-weight: 700;
+			color: #3a3d44;
 		}
-
 		h2 {
-			@apply text-5xl font-bold text-slate-800;
+			font-size: 3rem;
+			line-height: 1;
+			font-weight: 700;
+			color: #3a3d44;
 		}
-
 		h3 {
-			@apply text-4xl font-bold text-slate-800;
+			font-size: 2.25rem;
+			line-height: calc(2.5 / 2.25);
+			font-weight: 700;
+			color: #3a3d44;
 		}
-
 		h4 {
-			@apply text-3xl font-semibold text-slate-800;
+			font-size: 1.875rem;
+			line-height: calc(2.25 / 1.875);
+			font-weight: 600;
+			color: #3a3d44;
 		}
-
 		h5 {
-			@apply text-2xl font-semibold text-slate-800;
+			font-size: 1.5rem;
+			line-height: calc(2 / 1.5);
+			font-weight: 600;
+			color: #3a3d44;
 		}
-
 		h6 {
-			@apply text-xl font-semibold text-slate-800;
+			font-size: 1.25rem;
+			line-height: calc(1.75 / 1.25);
+			font-weight: 600;
+			color: #3a3d44;
 		}
-
 		p:has(code) {
-			@apply inline-block w-fit;
-
+			display: inline-block;
+			width: fit-content;
 			code {
-				@apply rounded-sm bg-slate-800 px-2 text-white;
+				border-radius: 0.25rem;
+				background-color: #3a3d44;
+				padding-inline: 0.5rem;
+				color: white;
 			}
 		}
-
 		pre:has(code) {
-			@apply p-4;
-
+			padding: 1rem;
 			code {
-				@apply text-sm break-all whitespace-pre-wrap;
+				font-size: 0.875rem;
+				line-height: calc(1.25 / 0.875);
+				word-break: break-all;
+				white-space: pre-wrap;
 				font-family: "Cascadia Next SC";
 			}
 		}
-
 		table {
-			@apply text-center;
-
+			text-align: center;
 			border-collapse: collapse;
-
 			th,
 			td {
-				@apply border border-slate-400 px-2;
+				border-style: solid;
+				border-width: 1px;
+				border-color: #c0c3c8;
+				padding-inline: 0.5rem;
 			}
-
-			/* Marked table */
 			*[align="left"] {
-				@apply text-left;
+				text-align: left;
 			}
-
 			*[align="right"] {
-				@apply text-right;
+				text-align: right;
 			}
 		}
 	}
 }
 
-@utility hide-scrollbar {
-	-ms-overflow-style: none;
-	/* IE and Edge */
-	scrollbar-width: none;
-	/* Firefox */
-
-	&::-webkit-scrollbar {
-		display: none;
-		/* Chrome, Safari and Opera */
-	}
-}
-
-@utility no-spinner {
-	appearance: textfield;
-	-moz-appearance: textfield;
-
-	&::-webkit-outer-spin-button,
-	&::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
+/* Marked footnote plugin required */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border-width: 0;
 }

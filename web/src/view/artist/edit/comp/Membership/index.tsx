@@ -1,22 +1,76 @@
 /* @refresh reload */
 import { Field, getInput, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import type { Artist, ArtistCommonFilter, CreditRoleRef } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { createMemo, untrack } from "solid-js"
 import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 
-import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
-import { FormComp } from "~/component/atomic/form"
 import { Intersperse } from "~/component/data/Intersperse"
 import { FieldArrayFallback } from "~/component/form"
 import { ArtistSearchDialog } from "~/component/form/SearchDialog"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles, formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../../context"
 import { MembershipRoleField } from "./role"
 import { TenureFieldArray } from "./tenure"
+
+const styles = stylex.create({
+	field: {
+		display: "grid",
+		minHeight: px[128],
+		width: px[384],
+		minWidth: "fit-content",
+		gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+	},
+	fieldHeader: {
+		marginBottom: px[8],
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	label: {
+		margin: 0,
+	},
+	actionIcon: {
+		width: px[16],
+		height: px[16],
+		color: palette.slate[600],
+	},
+	entries: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+	},
+	firstDivider: {
+		marginBottom: px[8],
+	},
+	entryDivider: {
+		marginBlock: px[8],
+	},
+	lastDivider: {
+		marginTop: px[8],
+	},
+	entry: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	entryHeader: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		alignItems: "center",
+	},
+	removeButton: {
+		padding: px[6],
+	},
+})
 
 type MembershipItem = Pick<Artist, "id" | "name"> & {
 	roles: CreditRoleRef[]
@@ -54,6 +108,7 @@ function createMembershipStore(initial: MembershipItem[]) {
 }
 
 export function ArtistFormMembership(props: {
+	styles?: StyleXStyles
 	initMemberships?: ArtistMembership[]
 }): JSX.Element {
 	const { t } = useLingui()
@@ -109,29 +164,29 @@ export function ArtistFormMembership(props: {
 	}
 
 	return (
-		<div class="grid min-h-32 w-96 min-w-fit grid-cols-1">
-			<div class="mb-2 flex items-center justify-between">
-				<FormComp.Label class="m-0">{t`Membership`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Membership`}</label>
 				<ArtistSearchDialog
 					onSelect={addMembership}
 					disabled={isDisabled()}
 					queryFilter={filter()}
 					dataFilter={(artist) => !membership.has(artist.id)}
-					icon={<PlusIcon class="size-4 text-slate-600" />}
+					icon={<PlusIcon {...stylex.attrs(styles.actionIcon)} />}
 				/>
 			</div>
-			<ul class="flex h-full flex-col">
-				<Divider
-					horizontal
-					class="mb-2"
-				/>
+			<ul {...stylex.attrs(styles.entries)}>
+				<span
+					{...stylex.attrs(dividerStyles.horizontal, styles.firstDivider)}
+				></span>
 				<Intersperse
 					of={membership.inner}
 					with={
-						<Divider
-							horizontal
-							class="my-2"
-						/>
+						<span
+							{...stylex.attrs(dividerStyles.horizontal, styles.entryDivider)}
+						></span>
 					}
 					fallback={<FieldArrayFallback />}
 				>
@@ -143,10 +198,9 @@ export function ArtistFormMembership(props: {
 						/>
 					)}
 				</Intersperse>
-				<Divider
-					horizontal
-					class="mt-2"
-				/>
+				<span
+					{...stylex.attrs(dividerStyles.horizontal, styles.lastDivider)}
+				></span>
 			</ul>
 		</div>
 	)
@@ -161,7 +215,7 @@ type MembershipListItemProps = {
 function MembershipListItem(props: MembershipListItemProps) {
 	const { formStore } = useArtistForm()
 	return (
-		<li class="flex flex-col gap-2">
+		<li {...stylex.attrs(styles.entry)}>
 			<Field
 				of={formStore}
 				path={["data", "memberships", props.index, "artist_id"]}
@@ -174,13 +228,14 @@ function MembershipListItem(props: MembershipListItemProps) {
 							hidden
 							value={field.input ?? props.artist.id}
 						/>
-						<div class="grid grid-cols-[1fr_auto] items-center">
+						<div {...stylex.attrs(styles.entryHeader)}>
 							<div>{props.artist.name}</div>
 							<Button
-								variant="Tertiary"
-								size="Sm"
-								class="p-1.5"
 								onClick={props.onRemove}
+								appearance="ghost"
+								tone="gray"
+								size="sm"
+								styles={styles.removeButton}
 							>
 								<Cross1Icon />
 							</Button>

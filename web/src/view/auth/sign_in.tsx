@@ -1,26 +1,45 @@
 import { Field, Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { useNavigate } from "@tanstack/solid-router"
+import * as stylex from "@stylexjs/stylex"
+import { Link, useNavigate } from "@tanstack/solid-router"
 import { AuthApi } from "@thc/api"
 import { Either } from "effect"
 import { createSignal } from "solid-js"
 
-import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { SignIn as FormSchema } from "~/domain/auth/schema"
 import { useCurrentUser } from "~/state/user"
+import { link } from "~/style/link"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { SignInIdentifierField } from "./component/SignInIdentifierField"
-import {
-	AUTH_HEADER_CLASS,
-	AUTH_TITLE_CLASS,
-	AUTH_FORM_CLASS,
-	AUTH_FIELD_LABEL_CLASS,
-	AUTH_INPUT_CLASS,
-} from "./styles"
+import { authStyles } from "./styles"
 import { setVerificationSession } from "./verify_email/session"
+const styles = stylex.create({
+	passwordField: { marginTop: px[16] },
+	passwordHeading: {
+		display: "flex",
+		alignItems: "baseline",
+		justifyContent: "space-between",
+		gap: px[16],
+	},
+	forgotPassword: {
+		color: colors.textSecondary,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	submit: { marginTop: px[24], height: px[36], width: "100%" },
+	signupPrompt: {
+		marginTop: px[16],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	signupLink: { textDecorationLine: "underline" },
+})
+
 export function SignInPage() {
 	const { t } = useLingui()
 	const nav = useNavigate()
@@ -43,13 +62,13 @@ export function SignInPage() {
 
 	return (
 		<>
-			<header class={AUTH_HEADER_CLASS}>
-				<h1 class={AUTH_TITLE_CLASS}>{t`Sign in`}</h1>
+			<header {...stylex.attrs(authStyles.header)}>
+				<h1 {...stylex.attrs(authStyles.title)}>{t`Sign in`}</h1>
 			</header>
 			<Form
 				of={form}
 				onSubmit={handleSubmit}
-				class={AUTH_FORM_CLASS}
+				{...stylex.attrs(authStyles.form)}
 			>
 				<Field
 					of={form}
@@ -63,14 +82,17 @@ export function SignInPage() {
 					path={["password"]}
 				>
 					{(field) => (
-						<InputField.Root class="mt-4">
-							<div class="flex items-baseline justify-between gap-4">
+						<InputField.Root styles={styles.passwordField}>
+							<div {...stylex.attrs(styles.passwordHeading)}>
 								<InputField.Label
-									class={AUTH_FIELD_LABEL_CLASS}
+									styles={authStyles.fieldLabel}
 								>{t`Password`}</InputField.Label>
 								<Link
 									to="/auth/forgot-password"
-									class="text-secondary text-sm"
+									class={
+										stylex.attrs(link.base, link.text, styles.forgotPassword)
+											.class
+									}
 								>{t`Forgot password?`}</Link>
 							</div>
 							<InputField.Input
@@ -78,7 +100,7 @@ export function SignInPage() {
 								id={field.path.join(".")}
 								type="password"
 								value={field.input ?? ""}
-								class={AUTH_INPUT_CLASS}
+								styles={authStyles.input}
 							/>
 							<InputField.Error>{field.errors?.[0]}</InputField.Error>
 						</InputField.Root>
@@ -88,20 +110,20 @@ export function SignInPage() {
 				<FormComp.ErrorMessage>{submitError()}</FormComp.ErrorMessage>
 				<Button
 					type="submit"
-					variant="Primary"
-					color="Reimu"
-					size="Sm"
-					class="mt-6 h-9 w-full"
 					disabled={form.isSubmitting}
+					appearance="solid"
+					tone="reimu"
+					size="sm"
+					styles={styles.submit}
 				>
 					{t`Sign In`}
 				</Button>
 			</Form>
-			<p class="mt-4 text-sm text-secondary">
+			<p {...stylex.attrs(styles.signupPrompt)}>
 				{t`Don't have an account?`}{" "}
 				<Link
 					to="/auth/sign-up"
-					class="underline"
+					class={stylex.attrs(link.base, link.text, styles.signupLink).class}
 				>{t`Sign Up`}</Link>
 			</p>
 		</>

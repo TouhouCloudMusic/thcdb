@@ -1,11 +1,17 @@
 import { createForm } from "@formisch/solid"
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 import * as v from "valibot"
 
 import { HttpUrl } from "~/domain/shared/schema"
+import { px } from "~/style/tokens.stylex"
 import { StoryLayout } from "~/utils/adapter/storybook"
 
 import { ExternalLinksField } from "./ExternalLinksField"
+
+const styles = stylex.create({
+	root: { width: px[384] },
+})
 
 function StoryRoot() {
 	const form = createForm({
@@ -20,7 +26,7 @@ function StoryRoot() {
 	return (
 		<ExternalLinksField
 			of={form}
-			class="w-96"
+			styles={styles.root}
 		/>
 	)
 }

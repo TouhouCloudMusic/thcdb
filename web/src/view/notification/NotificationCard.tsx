@@ -1,4 +1,6 @@
 import { Plural, Trans, useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import type { LinkComponentProps } from "@tanstack/solid-router"
 import { Link } from "@tanstack/solid-router"
 import {
@@ -9,7 +11,6 @@ import {
 } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
 import { Match, Show, Switch } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { Intersperse } from "~/component/data/Intersperse"
@@ -20,7 +21,80 @@ import type {
 	UserSummary,
 } from "~/hey-api"
 import { useI18N } from "~/state/i18n"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { formatRelativeTime } from "~/utils/dateTime"
+
+const styles = stylex.create({
+	link: {
+		fontWeight: 500,
+		textDecorationLine: {
+			default: null,
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	unavailableCollection: { color: palette.slate[500] },
+	comment: { marginTop: px[4], color: colors.textTertiary },
+	notification: {
+		display: "flex",
+		gap: px[16],
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": colors.backgroundSecondary,
+			},
+		},
+		paddingTop: px[16],
+		paddingRight: px[16],
+		paddingBottom: px[16],
+		paddingLeft: px[16],
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "150ms",
+	},
+	body: {
+		minWidth: 0,
+		flex: "1",
+		overflowWrap: "break-word",
+		textAlign: "left",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	unread: { color: colors.textPrimary },
+	read: { color: colors.textSecondary },
+	timestamp: {
+		marginTop: px[6],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	actions: {
+		display: "flex",
+		width: px[64],
+		flexShrink: 0,
+		alignSelf: "center",
+		gap: px[2],
+	},
+	action: {
+		width: px[32],
+		height: px[32],
+		backgroundColor: {
+			default: "transparent",
+			":active": palette.slate[200],
+			":disabled": {
+				default: colors.backgroundSecondary,
+				":hover": {
+					default: null,
+					"@media (hover: hover)": colors.backgroundSecondary,
+				},
+				":active": colors.backgroundSecondary,
+			},
+			":hover": { default: null, "@media (hover: hover)": palette.slate[200] },
+		},
+	},
+})
 
 const ENTITY_ROUTE_BY_KIND = {
 	Artist: "/artist/$id",
@@ -45,7 +119,7 @@ function UserLink(props: { user: UserSummary; onOpen?: () => void }) {
 			to="/profile/$username"
 			params={{ username: props.user.name }}
 			onClick={props.onOpen}
-			class="font-medium hover:underline"
+			{...stylex.attrs(styles.link)}
 		>
 			{props.user.name}
 		</Link>
@@ -58,7 +132,7 @@ function EntityLink(props: { entity: EntityMeta; onOpen?: () => void }) {
 			to={ENTITY_ROUTE_BY_KIND[props.entity.kind]}
 			params={{ id: props.entity.id.toString() }}
 			onClick={props.onOpen}
-			class="font-medium hover:underline"
+			{...stylex.attrs(styles.link)}
 		>
 			{props.entity.name}
 		</Link>
@@ -74,10 +148,14 @@ function CollectionLink(props: {
 	return (
 		<Switch>
 			<Match when={props.collection.state === "Deleted"}>
-				<span class="text-slate-500">{`[${t`deleted collection`}]`}</span>
+				<span
+					{...stylex.attrs(styles.unavailableCollection)}
+				>{`[${t`deleted collection`}]`}</span>
 			</Match>
 			<Match when={props.collection.state === "Restricted"}>
-				<span class="text-slate-500">{`[${t`restricted collection`}]`}</span>
+				<span
+					{...stylex.attrs(styles.unavailableCollection)}
+				>{`[${t`restricted collection`}]`}</span>
 			</Match>
 			<Match when={props.collection.state === "Available" && props.collection}>
 				{(collection) => (
@@ -85,7 +163,7 @@ function CollectionLink(props: {
 						to="/collection/$id"
 						params={{ id: collection().id.toString() }}
 						onClick={props.onOpen}
-						class="font-medium hover:underline"
+						{...stylex.attrs(styles.link)}
 					>
 						{collection().title}
 					</Link>
@@ -219,7 +297,7 @@ function commentThreadUpdatedContent(
 	return (
 		<>
 			{message}
-			<p class="mt-1 text-tertiary">[{t`deleted comment`}]</p>
+			<p {...stylex.attrs(styles.comment)}>[{t`deleted comment`}]</p>
 		</>
 	)
 }
@@ -262,7 +340,7 @@ function commentRepliedContent(
 	return (
 		<>
 			{message}
-			<p class="mt-1 text-tertiary">{content}</p>
+			<p {...stylex.attrs(styles.comment)}>{content}</p>
 		</>
 	)
 }
@@ -380,6 +458,7 @@ function accountRoleChangedContent(
 }
 
 export function NotificationCard(props: {
+	styles?: StyleXStyles
 	item: NotificationItem
 	now?: number
 	setRead: (item: NotificationItem, read: boolean) => void
@@ -431,15 +510,15 @@ export function NotificationCard(props: {
 	}
 
 	return (
-		<article class="flex gap-4 bg-primary p-4 transition-colors hover:bg-secondary">
+		<article {...stylex.attrs(styles.notification, props.styles)}>
 			<div
-				class={twJoin(
-					"min-w-0 flex-1 wrap-break-word text-left text-sm",
-					props.item.is_unread ? "text-primary" : "text-secondary",
+				{...stylex.attrs(
+					styles.body,
+					props.item.is_unread ? styles.unread : styles.read,
 				)}
 			>
 				{notificationBody()}
-				<div class="mt-1.5 text-xs text-tertiary">
+				<div {...stylex.attrs(styles.timestamp)}>
 					{formatRelativeTime(
 						props.item.last_activity_at,
 						props.now ?? Date.now(),
@@ -448,14 +527,15 @@ export function NotificationCard(props: {
 					)}
 				</div>
 			</div>
-			<div class="flex w-16 shrink-0 self-center gap-0.5">
+			<div {...stylex.attrs(styles.actions)}>
 				<Button
-					variant="Tertiary"
-					class="size-8 bg-transparent hover:bg-slate-200"
 					aria-label={saved() ? t`Unsave` : t`Save`}
 					title={saved() ? t`Unsave` : t`Save`}
 					disabled={props.isUpdatingSaved}
 					onClick={() => props.setSaved(props.item, !saved())}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.action}
 				>
 					<Show
 						when={saved()}
@@ -465,12 +545,13 @@ export function NotificationCard(props: {
 					</Show>
 				</Button>
 				<Button
-					variant="Tertiary"
-					class="size-8 bg-transparent hover:bg-slate-200"
 					aria-label={props.item.is_unread ? t`Mark read` : t`Mark unread`}
 					title={props.item.is_unread ? t`Mark read` : t`Mark unread`}
 					disabled={props.isUpdatingRead}
 					onClick={() => props.setRead(props.item, props.item.is_unread)}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.action}
 				>
 					<Show
 						when={props.item.is_unread}

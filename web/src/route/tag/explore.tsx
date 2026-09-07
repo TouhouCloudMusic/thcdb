@@ -7,8 +7,11 @@ import { TagExplore } from "~/view/tag/explore"
 const DEFAULT_LIMIT = 20
 
 const exploreSearch = v.object({
-	page: v.fallback(v.pipe(v.number(), v.minValue(1)), 1),
-	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+	page: v.optional(v.fallback(v.pipe(v.number(), v.minValue(1)), 1), 1),
+	limit: v.optional(
+		v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+		DEFAULT_LIMIT,
+	),
 	tag_type: v.optional(v.array(v.picklist(TAG_TYPES))),
 	order_by: v.optional(v.picklist(["asc", "desc"])),
 })

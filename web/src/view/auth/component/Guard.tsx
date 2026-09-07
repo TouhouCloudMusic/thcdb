@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { Navigate } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
 import {
@@ -13,8 +14,18 @@ import {
 } from "solid-js"
 
 import { useCurrentUser } from "~/state/user"
+import { colors, lineHeights, fontSizes } from "~/style/tokens.stylex"
 
 // TODO: Move to comps
+const styles = stylex.create({
+	loading: {
+		display: "block",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+})
+
 export function NotSignedIn(props: ParentProps) {
 	const { t } = useLingui()
 	const currentUser = useCurrentUser()
@@ -58,7 +69,7 @@ export function NotSignedIn(props: ParentProps) {
 			<Match when={!ready.latest}>
 				<div aria-busy="true">
 					<Show when={showHint()}>
-						<output class="block text-sm text-secondary">{t`Loading…`}</output>
+						<output {...stylex.attrs(styles.loading)}>{t`Loading…`}</output>
 					</Show>
 				</div>
 			</Match>

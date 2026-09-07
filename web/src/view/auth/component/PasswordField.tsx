@@ -1,5 +1,7 @@
 import type { FieldElementProps } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import { CheckIcon, Cross1Icon } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
@@ -11,11 +13,107 @@ import {
 	USER_PASSWORD_REGEX_STR,
 } from "~/constant/server"
 import { isPasswordStrongEnough } from "~/domain/auth/password_strength"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+	radius,
+} from "~/style/tokens.stylex"
 import { callHandlerUnion } from "~/utils/dom/event"
 
-import { AUTH_INPUT_CLASS } from "../styles"
+import { authStyles } from "../styles"
 import { FieldLayout } from "./FieldLayout"
 
+const styles = stylex.create({
+	requirement: {
+		display: "flex",
+		gap: px[8],
+		marginBlockEnd: { default: 0, ":not(:last-child)": px[4] },
+	},
+	checkIcon: { width: px[12], height: px[12] },
+	crossIcon: { width: px[12], height: px[12] },
+	idleDot: {
+		display: "block",
+		width: px[6],
+		height: px[6],
+		borderRadius: radius.full,
+		backgroundColor: "currentColor",
+	},
+	requirementText: { color: colors.textPrimary },
+	hint: {
+		fontSize: fontSizes.xs,
+		lineHeight: 1.625,
+		color: colors.textTertiary,
+	},
+	inputContainer: { position: "relative" },
+	requirementsPopover: {
+		pointerEvents: "none",
+		position: "absolute",
+		left: "0rem",
+		top: "100%",
+		zIndex: 20,
+		marginTop: px[8],
+		width: "100%",
+		borderRadius: radius.lg,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: `color-mix(in oklab, ${colors.backgroundPrimary} 90%, transparent)`,
+		paddingInline: px[12],
+		paddingBlock: px[8],
+		boxShadow:
+			"0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+		backdropFilter: "blur(8px)",
+	},
+	requirementsHeading: {
+		marginBottom: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		color: colors.textSecondary,
+	},
+	requirementsList: { fontSize: fontSizes.xs, lineHeight: "1rem" },
+	allowedSymbols: {
+		borderRadius: radius.sm,
+		backgroundColor: colors.backgroundPrimary,
+		paddingInline: px[4],
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textSecondary,
+		boxShadow: `0 0 0 1px ${palette.slate[200]}`,
+	},
+})
+
+const requirementStyles = stylex.create({
+	icon: {
+		marginTop: px[2],
+		display: "grid",
+		width: px[16],
+		height: px[16],
+		flexShrink: 0,
+		placeItems: "center",
+		borderRadius: radius.full,
+	},
+	valid: {
+		backgroundColor: palette.green[100],
+		color: palette.green[700],
+		boxShadow: `0 0 0 1px ${palette.green[200]}`,
+	},
+	invalid: {
+		backgroundColor: palette.reimu[100],
+		color: palette.reimu[700],
+		boxShadow: `0 0 0 1px ${palette.reimu[200]}`,
+	},
+	idle: {
+		backgroundColor: colors.backgroundSecondary,
+		color: colors.textTertiary,
+		boxShadow: `0 0 0 1px ${palette.slate[300]}`,
+	},
+})
 const WHITESPACE_REGEX = /\s/u
 const PASSWORD_ALLOWED_CHARS_REGEX = new RegExp(
 	USER_PASSWORD_REGEX_STR.replace(/\{\d+,\d+\}/u, "*"),
@@ -46,7 +144,7 @@ type PasswordFieldProps = {
 	field: PasswordFieldStore
 	showRequirementHint?: boolean
 	hintText?: string
-	class?: string
+	styles?: StyleXStyles
 }
 
 function hasWhitespaceOrControl(input: string) {
@@ -93,39 +191,35 @@ export function PasswordField(props: PasswordFieldProps) {
 			return rowProps.ok ? "ok" : "bad"
 		}
 
-		const iconWrapClass = () => {
-			if (state() === "ok")
-				return "bg-green-100 text-green-700 ring-1 ring-green-200"
-			if (state() === "bad")
-				return "bg-reimu-100 text-reimu-700 ring-1 ring-reimu-200"
-			return "bg-secondary text-tertiary ring-1 ring-slate-300"
+		const iconStyles = () => {
+			if (state() === "ok") return requirementStyles.valid
+			if (state() === "bad") return requirementStyles.invalid
+			return requirementStyles.idle
 		}
 
 		return (
-			<li class="flex gap-2">
-				<span
-					class={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full ${iconWrapClass()}`}
-				>
+			<li {...stylex.attrs(styles.requirement)}>
+				<span {...stylex.attrs(requirementStyles.icon, iconStyles())}>
 					<Switch>
 						<Match when={state() === "ok"}>
-							<CheckIcon class="size-3" />
+							<CheckIcon {...stylex.attrs(styles.checkIcon)} />
 						</Match>
 						<Match when={state() === "bad"}>
-							<Cross1Icon class="size-3" />
+							<Cross1Icon {...stylex.attrs(styles.crossIcon)} />
 						</Match>
 						<Match when={state() === "idle"}>
-							<span class="block size-1.5 rounded-full bg-current"></span>
+							<span {...stylex.attrs(styles.idleDot)}></span>
 						</Match>
 					</Switch>
 				</span>
-				<div class="text-primary">{rowProps.children}</div>
+				<div {...stylex.attrs(styles.requirementText)}>{rowProps.children}</div>
 			</li>
 		)
 	}
 
 	const hintTextElement = createMemo(() => {
 		return props.hintText ? (
-			<div class="text-xs leading-relaxed text-tertiary">{props.hintText}</div>
+			<div {...stylex.attrs(styles.hint)}>{props.hintText}</div>
 		) : undefined
 	})
 
@@ -134,12 +228,12 @@ export function PasswordField(props: PasswordFieldProps) {
 			label={props.label}
 			error={props.field.errors?.[0]}
 			hint={hintTextElement()}
-			class={props.class}
+			styles={props.styles}
 		>
-			<div class="relative">
+			<div {...stylex.attrs(styles.inputContainer)}>
 				<InputField.Input
 					{...props.field.props}
-					class={AUTH_INPUT_CLASS}
+					styles={authStyles.input}
 					type="password"
 					id={id()}
 					value={props.field.input ?? ""}
@@ -153,11 +247,11 @@ export function PasswordField(props: PasswordFieldProps) {
 				/>
 
 				<Show when={showRequirementCard()}>
-					<div class="pointer-events-none absolute left-0 top-full z-20 mt-2 w-full rounded-lg border border-slate-200 bg-primary/90 px-3 py-2 shadow-md backdrop-blur-sm">
-						<div class="mb-1 text-xs font-medium text-secondary">
+					<div {...stylex.attrs(styles.requirementsPopover)}>
+						<div {...stylex.attrs(styles.requirementsHeading)}>
 							PASSWORD REQUIREMENTS
 						</div>
-						<ul class="space-y-1 text-xs">
+						<ul {...stylex.attrs(styles.requirementsList)}>
 							<RequirementRow ok={lengthOk()}>
 								<span>
 									{USER_PASSWORD_MIN_LENGTH}-{USER_PASSWORD_MAX_LENGTH}
@@ -170,7 +264,7 @@ export function PasswordField(props: PasswordFieldProps) {
 							<RequirementRow ok={allowedCharsOk()}>
 								<span>
 									Allowed: A-Z, a-z, 0-9,{" "}
-									<code class="rounded bg-primary px-1 font-mono text-xs text-secondary ring-1 ring-slate-200">
+									<code {...stylex.attrs(styles.allowedSymbols)}>
 										{PASSWORD_ALLOWED_SYMBOLS}
 									</code>
 								</span>

@@ -7,6 +7,7 @@ import {
 	setInput,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { Link, useNavigate } from "@tanstack/solid-router"
 import {
 	createSignal,
@@ -31,10 +32,12 @@ import {
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { VerifyResetCode as VerifyResetCodeSchema } from "~/domain/auth/schema"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { EmailField } from "../component/EmailField"
 import { VerificationCodeField } from "../component/VerificationCodeField"
-import { AUTH_HEADER_CLASS, AUTH_TITLE_CLASS } from "../styles"
+import { authStyles } from "../styles"
 import { requestForgotPassword, requestVerifyResetCode } from "./request"
 import { sendResetCode } from "./send_reset_code"
 import {
@@ -48,6 +51,67 @@ import {
 } from "./session"
 import { createResetPasswordUiStore } from "./store"
 import { verifyResetCode } from "./verify_reset_code"
+
+const styles = stylex.create({
+	recipient: {
+		marginBottom: px[16],
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingBottom: px[12],
+	},
+	recipientContent: { minWidth: "0rem", flex: "1 1 0%" },
+	recipientAddress: {
+		overflowWrap: "break-word",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: colors.textPrimary,
+	},
+	changeRecipient: {
+		height: px[28],
+		flexShrink: 0,
+		alignSelf: "center",
+		paddingInline: px[8],
+	},
+	form: { width: "100%" },
+	instructions: {
+		marginBottom: px[16],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	codeRow: {
+		marginTop: px[16],
+		display: "flex",
+		alignItems: "flex-start",
+		gap: px[8],
+	},
+	codeField: { flexGrow: 1 },
+	resend: { height: px[36], alignSelf: "flex-end" },
+	resendStatus: {
+		marginBlock: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	submit: { marginTop: px[16], height: px[36], width: "100%" },
+	signinPrompt: {
+		marginTop: px[16],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	signinLink: {
+		color: colors.textSecondary,
+		textDecorationLine: "underline",
+		textUnderlineOffset: "2px",
+	},
+})
 
 type VerifyResetCodeValues = v.InferOutput<typeof VerifyResetCodeSchema>
 type ResetPasswordEmailSchemaMessages = {
@@ -107,19 +171,18 @@ function VerifyStepHeader(props: {
 	onChangeEmail: () => void
 }) {
 	return (
-		<div class="mb-4 flex items-center justify-between gap-3 border-b border-slate-300 pb-3">
-			<div class="min-w-0 flex-1">
-				<div class="wrap-break-word text-sm font-medium text-primary">
-					{props.email}
-				</div>
+		<div {...stylex.attrs(styles.recipient)}>
+			<div {...stylex.attrs(styles.recipientContent)}>
+				<div {...stylex.attrs(styles.recipientAddress)}>{props.email}</div>
 			</div>
 			<Show when={!props.isSendingCode}>
 				<Button
 					type="button"
-					variant="Tertiary"
-					size="Xs"
-					class="h-7 shrink-0 self-center px-2"
 					onClick={props.onChangeEmail}
+					appearance="ghost"
+					tone="gray"
+					size="xs"
+					styles={styles.changeRecipient}
 				>
 					Change
 				</Button>
@@ -281,16 +344,16 @@ export function ForgotPasswordPage() {
 
 	return (
 		<>
-			<header class={AUTH_HEADER_CLASS}>
-				<h1 class={AUTH_TITLE_CLASS}>{t`Forgot password`}</h1>
+			<header {...stylex.attrs(authStyles.header)}>
+				<h1 {...stylex.attrs(authStyles.title)}>{t`Forgot password`}</h1>
 			</header>
 			<Form
 				of={form}
 				onSubmit={handleSubmit}
-				class="w-full"
+				{...stylex.attrs(styles.form)}
 			>
 				<Show when={shouldShowSessionWarning}>
-					<div class="mb-4 text-sm text-tertiary">
+					<div {...stylex.attrs(styles.instructions)}>
 						{t`Your reset session is no longer valid. Verify a new code to continue.`}
 					</div>
 				</Show>
@@ -309,8 +372,8 @@ export function ForgotPasswordPage() {
 							>
 								{(field) => (
 									<>
-										<div class="mt-4 flex items-start gap-2">
-											<div class="grow">
+										<div {...stylex.attrs(styles.codeRow)}>
+											<div {...stylex.attrs(styles.codeField)}>
 												<VerificationCodeField
 													field={field}
 													onInput={handleCodeInput}
@@ -325,15 +388,16 @@ export function ForgotPasswordPage() {
 											</div>
 											<Button
 												type="button"
-												variant="SecondaryV2"
-												size="Sm"
-												class="h-9 self-end"
 												disabled={
 													form.isSubmitting
 													|| uiStore.state.isSendingCode
 													|| uiStore.isCoolingDown()
 												}
 												onClick={() => void handleSendCode()}
+												appearance="outline"
+												tone="gray"
+												size="sm"
+												styles={styles.resend}
 											>
 												{uiStore.state.isSendingCode
 													? t`Sending...`
@@ -368,7 +432,7 @@ export function ForgotPasswordPage() {
 				</Switch>
 
 				<Show when={uiStore.state.verificationCodeExpiresMinutes !== undefined}>
-					<div class="my-2 text-sm text-tertiary">
+					<div {...stylex.attrs(styles.resendStatus)}>
 						Codes expire in {uiStore.state.verificationCodeExpiresMinutes}{" "}
 						minutes.
 					</div>
@@ -383,23 +447,23 @@ export function ForgotPasswordPage() {
 
 				<Button
 					type={continueButtonType()}
-					variant="Primary"
-					color="Reimu"
-					size="Sm"
-					class="mt-4 h-9 w-full"
 					disabled={isSubmitDisabled()}
 					onClick={() => {
 						if (!isVerifyStep()) void handleSendCode()
 					}}
+					appearance="solid"
+					tone="reimu"
+					size="sm"
+					styles={styles.submit}
 				>
 					{t`Continue`}
 				</Button>
 
-				<div class="mt-4 text-sm text-tertiary">
+				<div {...stylex.attrs(styles.signinPrompt)}>
 					{t`Back to`}{" "}
 					<Link
 						to="/auth/sign-in"
-						class="text-secondary underline underline-offset-2"
+						{...stylex.attrs(styles.signinLink)}
 					>
 						{t`sign in`}
 					</Link>

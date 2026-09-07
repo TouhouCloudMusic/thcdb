@@ -1,20 +1,36 @@
 import { Field, Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { useNavigate } from "@tanstack/solid-router"
+import * as stylex from "@stylexjs/stylex"
+import { Link, useNavigate } from "@tanstack/solid-router"
 import { AuthApi } from "@thc/api"
 import { Either } from "effect"
 import { createSignal } from "solid-js"
 
-import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { SignUp as FormSchema } from "~/domain/auth/schema"
+import { link } from "~/style/link"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { EmailField } from "./component/EmailField"
 import { PasswordField } from "./component/PasswordField"
 import { UsernameField } from "./component/UsernameField"
-import { AUTH_HEADER_CLASS, AUTH_TITLE_CLASS, AUTH_FORM_CLASS } from "./styles"
+import { authStyles } from "./styles"
 import { setVerificationSession } from "./verify_email/session"
+const styles = stylex.create({
+	email: { marginTop: px[16] },
+	password: { marginTop: px[16] },
+	confirmation: { marginTop: px[16] },
+	submit: { marginTop: px[24], height: px[36], width: "100%" },
+	signinPrompt: {
+		marginTop: px[16],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	signinLink: { textDecorationLine: "underline" },
+})
+
 export function SignUpPage() {
 	const { t } = useLingui()
 	const nav = useNavigate()
@@ -43,13 +59,13 @@ export function SignUpPage() {
 
 	return (
 		<>
-			<header class={AUTH_HEADER_CLASS}>
-				<h1 class={AUTH_TITLE_CLASS}>{t`Create account`}</h1>
+			<header {...stylex.attrs(authStyles.header)}>
+				<h1 {...stylex.attrs(authStyles.title)}>{t`Create account`}</h1>
 			</header>
 			<Form
 				of={form}
 				onSubmit={handleSubmit}
-				class={AUTH_FORM_CLASS}
+				{...stylex.attrs(authStyles.form)}
 			>
 				<Field
 					of={form}
@@ -65,7 +81,7 @@ export function SignUpPage() {
 					{(field) => (
 						<EmailField
 							field={field}
-							class="mt-4"
+							styles={styles.email}
 						/>
 					)}
 				</Field>
@@ -79,7 +95,7 @@ export function SignUpPage() {
 							label={t`Password`}
 							field={field}
 							showRequirementHint
-							class="mt-4"
+							styles={styles.password}
 						/>
 					)}
 				</Field>
@@ -92,7 +108,7 @@ export function SignUpPage() {
 						<PasswordField
 							label={t`Repeat password`}
 							field={field}
-							class="mt-4"
+							styles={styles.confirmation}
 						/>
 					)}
 				</Field>
@@ -100,20 +116,20 @@ export function SignUpPage() {
 				<FormComp.ErrorMessage>{submitError()}</FormComp.ErrorMessage>
 				<Button
 					type="submit"
-					variant="Primary"
-					color="Reimu"
-					size="Sm"
-					class="mt-6 h-9 w-full"
 					disabled={form.isSubmitting}
+					appearance="solid"
+					tone="reimu"
+					size="sm"
+					styles={styles.submit}
 				>
 					{t`Sign Up`}
 				</Button>
 			</Form>
-			<p class="mt-4 text-sm text-secondary">
+			<p {...stylex.attrs(styles.signinPrompt)}>
 				{t`Already have an account?`}{" "}
 				<Link
 					to="/auth/sign-in"
-					class="underline"
+					class={stylex.attrs(link.base, link.text, styles.signinLink).class}
 				>{t`Sign in`}</Link>
 			</p>
 		</>

@@ -1,8 +1,39 @@
+import * as stylex from "@stylexjs/stylex"
 import { createFileRoute, Outlet, useLocation } from "@tanstack/solid-router"
 import { createMemo } from "solid-js"
 
 import { PageLayout } from "~/layout/PageLayout"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { NotSignedIn } from "~/view/auth/component/Guard"
+
+const styles = stylex.create({
+	signUpContent: { minHeight: px[464] },
+	successContent: { minHeight: px[176] },
+	forgotPasswordContent: { minHeight: px[272] },
+	defaultContent: { minHeight: px[304] },
+	page: {
+		paddingInline: { default: px[16], "@media (min-width: 40rem)": px[24] },
+		paddingBottom: { default: px[32], "@media (min-width: 40rem)": px[64] },
+		paddingTop: {
+			default: px[32],
+			"@media (min-width: 40rem)": px[80],
+			"@media (max-height:40rem)": px[32],
+		},
+	},
+	content: { marginInline: "auto", width: "100%", maxWidth: px[400] },
+	brand: {
+		marginBottom: px[24],
+		display: "flex",
+		alignItems: "center",
+		gap: px[12],
+	},
+	logo: { width: px[32], height: px[32] },
+	brandName: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+})
 
 export const Route = createFileRoute("/auth")({
 	component: RouteComponent,
@@ -13,31 +44,31 @@ function RouteComponent() {
 	const contentHeight = createMemo(() => {
 		switch (location().pathname) {
 			case "/auth/sign-up": {
-				return "min-h-116"
+				return styles.signUpContent
 			}
 			case "/auth/reset-password/success": {
-				return "min-h-44"
+				return styles.successContent
 			}
 			case "/auth/forgot-password": {
-				return "min-h-68"
+				return styles.forgotPasswordContent
 			}
 			default: {
-				return "min-h-76"
+				return styles.defaultContent
 			}
 		}
 	})
 	return (
-		<PageLayout class="px-4 py-8 sm:px-6 sm:pb-16 sm:pt-20 [@media(max-height:40rem)]:pt-8">
-			<div class="mx-auto w-full max-w-100">
-				<div class="mb-6 flex items-center gap-3">
+		<PageLayout styles={styles.page}>
+			<div {...stylex.attrs(styles.content)}>
+				<div {...stylex.attrs(styles.brand)}>
 					<img
 						src="/logo.svg"
 						alt=""
-						class="size-8"
+						{...stylex.attrs(styles.logo)}
 					/>
-					<span class="text-sm text-secondary">Touhou Cloud DB</span>
+					<span {...stylex.attrs(styles.brandName)}>Touhou Cloud DB</span>
 				</div>
-				<div class={contentHeight()}>
+				<div {...stylex.attrs(contentHeight())}>
 					<NotSignedIn>
 						<Outlet />
 					</NotSignedIn>

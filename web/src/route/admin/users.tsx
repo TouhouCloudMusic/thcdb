@@ -7,8 +7,11 @@ import { AdminUsersPage } from "~/view/admin/users"
 const DEFAULT_LIMIT = 20
 
 const adminUsersSearch = v.object({
-	page: v.fallback(v.pipe(v.number(), v.minValue(1)), 1),
-	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+	page: v.optional(v.fallback(v.pipe(v.number(), v.minValue(1)), 1), 1),
+	limit: v.optional(
+		v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+		DEFAULT_LIMIT,
+	),
 	keyword: v.optional(v.string()),
 })
 

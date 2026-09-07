@@ -1,8 +1,8 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { Show } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Divider } from "~/component/atomic/Divider"
 import { Select } from "~/component/atomic/form/select"
 import { Intersperse } from "~/component/data/Intersperse"
 import {
@@ -14,17 +14,70 @@ import {
 } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import type { ArtistListItem } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles } from "~/style/primitives"
+import { radius, colors, px } from "~/style/tokens.stylex"
 
+import { animationStyles } from "../../style/animations.stylex"
 import { ArtistItem } from "./ArtistItem"
 import { ArtistTypeLabel } from "./ArtistTypeLabel"
 
+const styles = stylex.create({
+	resultRow: {
+		display: "grid",
+		gridTemplateColumns: "3lh minmax(0,1fr)",
+		alignItems: "flex-start",
+		gap: px[12],
+		lineHeight: "1.5rem",
+	},
+	avatarPlaceholder: {
+		aspectRatio: "1 / 1",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[200],
+	},
+	summary: {
+		display: "flex",
+		flexDirection: "column",
+		justifyContent: "space-between",
+		gap: px[8],
+		alignSelf: "stretch",
+	},
+	namePlaceholder: {
+		height: px[20],
+		width: "50%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	detailPlaceholder: {
+		height: px[16],
+		width: "66.66666666666666%",
+		borderRadius: radius.sm,
+		backgroundColor: colors.backgroundSecondary,
+	},
+	filterTrigger: {
+		height: px[40],
+		width: "100%",
+	},
+	results: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	pagination: {
+		display: "flex",
+		justifyContent: "center",
+		paddingBlock: px[24],
+	},
+})
+
 export function ArtistItemSkeleton() {
 	return (
-		<div class="animate-pulse grid grid-cols-[3lh_minmax(0,1fr)] items-start gap-3 leading-6">
-			<div class="aspect-square rounded-full bg-slate-200"></div>
-			<div class="flex flex-col justify-between gap-2 self-stretch">
-				<div class="h-5 w-1/2 rounded bg-slate-200"></div>
-				<div class="h-4 w-2/3 rounded bg-secondary"></div>
+		<div {...stylex.attrs(styles.resultRow, animationStyles.pulse)}>
+			<div {...stylex.attrs(styles.avatarPlaceholder)}></div>
+			<div {...stylex.attrs(styles.summary)}>
+				<div {...stylex.attrs(styles.namePlaceholder)}></div>
+				<div {...stylex.attrs(styles.detailPlaceholder)}></div>
 			</div>
 		</div>
 	)
@@ -56,7 +109,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 						</Select.Item>
 					)}
 				>
-					<Select.Trigger class="h-10 w-full">
+					<Select.Trigger styles={[styles.filterTrigger]}>
 						<Select.Value<"" | ArtistListItem["artist_type"]>>
 							{(state) => <ArtistTypeLabel value={state.selectedOption()} />}
 						</Select.Value>
@@ -107,20 +160,20 @@ export function ArtistExploreList(props: ArtistExploreListProps) {
 			<Show
 				when={props.artists.length > 0 || props.isFetching || props.isLoading}
 			>
-				<div class="flex flex-col gap-2 p-4">
+				<div {...stylex.attrs(styles.results)}>
 					<Intersperse
 						of={props.artists}
-						with={<Divider horizontal />}
+						with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					>
 						{(artist) => <ArtistItem artist={artist} />}
 					</Intersperse>
 					<Show when={props.isFetching || props.isLoading}>
 						<Show when={props.artists.length > 0}>
-							<Divider horizontal />
+							<span {...stylex.attrs(dividerStyles.horizontal)}></span>
 						</Show>
 						<Intersperse
 							of={Array.from({ length: props.limit })}
-							with={<Divider horizontal />}
+							with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 						>
 							{() => <ArtistItemSkeleton />}
 						</Intersperse>
@@ -129,7 +182,7 @@ export function ArtistExploreList(props: ArtistExploreListProps) {
 			</Show>
 
 			<Show when={props.totalPages > 1}>
-				<div class="flex justify-center py-6">
+				<div {...stylex.attrs(styles.pagination)}>
 					<Pagination
 						current={props.page}
 						total={props.totalPages}

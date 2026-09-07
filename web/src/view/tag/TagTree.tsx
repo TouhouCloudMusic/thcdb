@@ -1,8 +1,70 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import type { Tag } from "@thc/api"
 import { createMemo, createSignal, For, onCleanup, Show } from "solid-js"
 
-import { Link } from "~/component/atomic"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { radius, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	treeList: { display: "flex", flexDirection: "column", gap: px[4] },
+	treeItem: { outlineStyle: { default: null, ":focus": "none" } },
+	nodeRow: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[8],
+		borderRadius: radius.sm,
+		paddingInline: px[8],
+		paddingBlock: px[4],
+		boxShadow: {
+			default: null,
+			[stylex.when.ancestor(":focus-within")]:
+				`0 0 0 1px #fff, 0 0 0 3px ${palette.slate[300]}`,
+		},
+	},
+	togglePlaceholder: {
+		display: "inline-flex",
+		height: px[20],
+		width: px[20],
+	},
+	toggle: {
+		display: "inline-flex",
+		height: px[20],
+		width: px[20],
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: radius.sm,
+		color: {
+			default: palette.slate[500],
+			":hover": { default: null, "@media (hover: hover)": palette.slate[900] },
+		},
+		backgroundColor: {
+			default: null,
+			":hover": { default: null, "@media (hover: hover)": palette.slate[100] },
+		},
+	},
+	nodeText: { display: "flex", flexDirection: "column" },
+	nodeLink: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[900],
+		textDecorationLine: {
+			default: "none",
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	nodeDetails: {
+		display: "flex",
+		flexDirection: "column",
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	nodeDescription: { color: palette.slate[400] },
+	children: { marginTop: px[4] },
+})
 
 const DEFAULT_EXPANDED_DEPTH = 2
 const INDENT_SIZE = 16
@@ -196,7 +258,7 @@ function TagTreeList(props: TagTreeListProps) {
 		<ul
 			role={listRole()}
 			aria-labelledby={labelledBy()}
-			class="flex flex-col gap-1"
+			{...stylex.attrs(styles.treeList)}
 		>
 			<For each={props.nodes}>
 				{(node, idx) => (
@@ -289,19 +351,19 @@ function TagTreeItem(props: TagTreeItemProps) {
 			aria-expanded={ariaExpanded()}
 			onFocusIn={handleFocusIn}
 			onKeyDown={handleKeyDown}
-			class="group focus:outline-none"
+			{...stylex.attrs(stylex.defaultMarker(), styles.treeItem)}
 		>
 			<div
-				class="hover:bg-slate-50 flex items-center gap-2 rounded px-2 py-1 group-focus-within:ring-2 group-focus-within:ring-slate-300 group-focus-within:ring-offset-1"
+				{...stylex.attrs(styles.nodeRow)}
 				style={indentStyle()}
 			>
 				<Show
 					when={hasChildren()}
-					fallback={<span class="inline-flex h-5 w-5"></span>}
+					fallback={<span {...stylex.attrs(styles.togglePlaceholder)}></span>}
 				>
 					<button
 						type="button"
-						class="inline-flex h-5 w-5 items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+						{...stylex.attrs(styles.toggle)}
 						aria-label={toggleLabel()}
 						aria-expanded={isExpanded()}
 						tabIndex={-1}
@@ -315,26 +377,28 @@ function TagTreeItem(props: TagTreeItemProps) {
 						</Show>
 					</button>
 				</Show>
-				<div class="flex flex-col">
+				<div {...stylex.attrs(styles.nodeText)}>
 					<Link
 						ref={setLinkRef}
 						to="/tag/$id"
 						params={{ id: props.node.id.toString() }}
-						class="text-sm text-slate-900 no-underline hover:underline"
+						class={stylex.attrs(link.base, link.text, styles.nodeLink).class}
 						tabIndex={-1}
 					>
 						{props.node.name}
 					</Link>
-					<div class="flex flex-col text-xs text-slate-500">
+					<div {...stylex.attrs(styles.nodeDetails)}>
 						<span>{props.node.type}</span>
 						<Show when={props.node.short_description}>
-							<span class="text-slate-400">{props.node.short_description}</span>
+							<span {...stylex.attrs(styles.nodeDescription)}>
+								{props.node.short_description}
+							</span>
 						</Show>
 					</div>
 				</div>
 			</div>
 			<Show when={isExpanded()}>
-				<div class="mt-1">
+				<div {...stylex.attrs(styles.children)}>
 					<TagTreeList
 						nodes={props.node.children}
 						depth={props.depth + 1}

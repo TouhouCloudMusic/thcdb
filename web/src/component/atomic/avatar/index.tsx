@@ -1,24 +1,66 @@
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { JSX } from "solid-js"
 import { createSignal, Match, splitProps, Suspense, Switch } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
+import { palette } from "~/style/color/palette.stylex"
+import { radius, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
+
+import { animationStyles } from "../../../style/animations.stylex"
+
+const styles = stylex.create({
+	root: {
+		width: px[32],
+		height: px[32],
+		overflow: "hidden",
+		borderRadius: radius.full,
+	},
+	loading: {
+		width: px[32],
+		height: px[32],
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[200],
+	},
+	fallback: {
+		borderWidth: 1,
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.slate[100],
+		color: palette.slate[700],
+	},
+	image: { width: "100%", height: "100%", objectFit: "cover" },
+	text: {
+		display: "flex",
+		height: "100%",
+		width: "100%",
+		alignItems: "center",
+		justifyContent: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+	},
+})
 
 type AvatarUser = {
 	name: string
 	avatar_url?: string | null
 }
 
-const getAvatarText = (user: AvatarUser | undefined) => {
+function getAvatarText(user: AvatarUser | undefined) {
 	const value = user?.name.trim() ?? ""
 	if (value.length === 0) return "?"
 	return value.slice(0, 1).toUpperCase()
 }
 
-export interface Props extends Omit<
+export type Props = Omit<
 	JSX.ImgHTMLAttributes<HTMLImageElement>,
-	"src" | "onError"
-> {
+	"src" | "onError" | "class"
+> & {
+	styles?: StyleXStyles
+	fallbackStyles?: StyleXStyles
 	user?: AvatarUser | undefined
 }
 
@@ -26,7 +68,11 @@ export function Avatar(props: Props) {
 	const [failedSrc, setFailedSrc] = createSignal<string | undefined>(undefined)
 	const [loadedSrc, setLoadedSrc] = createSignal<string | undefined>(undefined)
 
-	const [_, otherProps] = splitProps(props, ["class", "user"])
+	const [_, otherProps] = splitProps(props, [
+		"styles",
+		"fallbackStyles",
+		"user",
+	])
 
 	const imageSrc = () => imgUrl(props.user?.avatar_url)
 	const validSrc = () => {
@@ -41,18 +87,15 @@ export function Avatar(props: Props) {
 		<Suspense
 			fallback={
 				<div
-					class={twMerge(
-						"size-8 animate-pulse items-center justify-center rounded-full bg-slate-200",
-						props.class,
-					)}
+					{...stylex.attrs(styles.loading, animationStyles.pulse, props.styles)}
 				></div>
 			}
 		>
 			<div
-				class={twMerge(
-					"size-8 overflow-hidden rounded-full",
-					!validSrc() && "border border-slate-200 bg-slate-100 text-slate-700",
-					props.class,
+				{...stylex.attrs(
+					styles.root,
+					!validSrc() && styles.fallback,
+					props.styles,
 				)}
 			>
 				<Switch>
@@ -78,16 +121,16 @@ export function Avatar(props: Props) {
 									}
 									onLoad={handleLoad}
 									onError={handleError}
-									class={twMerge(
-										"size-full object-cover",
-										isPending() && "animate-pulse",
+									{...stylex.attrs(
+										styles.image,
+										isPending() && animationStyles.pulse,
 									)}
 								/>
 							)
 						}}
 					</Match>
 					<Match when={!validSrc()}>
-						<div class="flex h-full w-full items-center justify-center text-sm font-medium">
+						<div {...stylex.attrs(styles.text, props.fallbackStyles)}>
 							{avatarText()}
 						</div>
 					</Match>

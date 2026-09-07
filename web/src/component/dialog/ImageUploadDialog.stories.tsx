@@ -1,10 +1,10 @@
 import { createSignal } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import { Button } from "~/component/atomic/button"
 import { logImage } from "~/utils/log"
 
 import { Dialog } from "."
-import { Button } from "../atomic/button"
 import { ImageUploadDialog } from "./ImageUploadDialog"
 
 const meta = {
@@ -34,7 +34,15 @@ export const Default: Story = {
 		return (
 			<ImageUploadDialog
 				{...args}
-				trigger={<Dialog.Trigger as={Button}>Upload Image</Dialog.Trigger>}
+				trigger={
+					<Dialog.Trigger
+						as={Button}
+						appearance="soft"
+						tone="gray"
+					>
+						Upload Image
+					</Dialog.Trigger>
+				}
 				open={open()}
 				syncOpen={setOpen}
 				onImageSave={(base64) => {
@@ -57,7 +65,13 @@ export const CustomTitle: Story = {
 				open={open()}
 				syncOpen={setOpen}
 				trigger={
-					<Dialog.Trigger as={Button}>Upload Banner Image</Dialog.Trigger>
+					<Dialog.Trigger
+						as={Button}
+						appearance="soft"
+						tone="gray"
+					>
+						Upload Banner Image
+					</Dialog.Trigger>
 				}
 			/>
 		)

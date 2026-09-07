@@ -1,14 +1,14 @@
+import * as stylex from "@stylexjs/stylex"
 import { StarIcon } from "@thc/icons/radix"
 import { Index, Match, Switch } from "solid-js"
 
+const styles = stylex.create({
+	rating: { display: "flex" },
+})
+
 export function RatingStatic(props: { rating: number }) {
-	// const starLeftClass = "mask mask-star-2 mask-half-1 bg-slate-500";
-	// const starLeftClassHighLight = "mask mask-star-2 mask-half-1 bg-marisa-400";
-	// const starRightClass = "mask mask-star-2 mask-half-2 bg-slate-500";
-	// const starRightClassHighLight =
-	// 	"mask mask-star-2 mask-half-2 bg-marisa-400";
 	return (
-		<div class="flex">
+		<div {...stylex.attrs(styles.rating)}>
 			<Index each={Array.from({ length: 5 })}>
 				{(_item, index) => (
 					<Switch
@@ -29,66 +29,5 @@ export function RatingStatic(props: { rating: number }) {
 				)}
 			</Index>
 		</div>
-		// <div class="rating rating-lg rating-half">
-		// 	<input
-		// 		type="radio"
-		// 		name="rating-10"
-		// 		class="rating-hidden"
-		// 	/>
-		// 	<Index each={arr}>
-		// 		{(item, index) => (
-		// 			<Switch>
-		// 				<Match when={index < props.rating && index % 2 === 0}>
-		// 					<input
-		// 						type="radio"
-		// 						name="rating-10"
-		// 						class={starLeftClassHighLight}
-		// 						disabled
-		// 					/>
-		// 				</Match>
-		// 				<Match when={index < props.rating && index % 2 !== 0}>
-		// 					<input
-		// 						type="radio"
-		// 						name="rating-10"
-		// 						class={starRightClassHighLight}
-		// 						disabled
-		// 					/>
-		// 				</Match>
-		// 				<Match when={index === props.rating && index % 2 === 0}>
-		// 					<input
-		// 						type="radio"
-		// 						name="rating-10"
-		// 						class={starLeftClassHighLight}
-		// 						disabled
-		// 					/>
-		// 				</Match>
-		// 				<Match when={index === props.rating && index % 2 !== 0}>
-		// 					<input
-		// 						type="radio"
-		// 						name="rating-10"
-		// 						class={starRightClassHighLight}
-		// 						disabled
-		// 					/>
-		// 				</Match>
-		// 				<Match when={index > props.rating && index % 2 === 0}>
-		// 					<input
-		// 						type="radio"
-		// 						name="rating-10"
-		// 						class={starLeftClass}
-		// 						disabled
-		// 					/>
-		// 				</Match>
-		// 				<Match when={index > props.rating && index % 2 !== 0}>
-		// 					<input
-		// 						type="radio"
-		// 						name="rating-10"
-		// 						class={starRightClass}
-		// 						disabled
-		// 					/>
-		// 				</Match>
-		// 			</Switch>
-		// 		)}
-		// 	</Index>
-		// </div>
 	)
 }

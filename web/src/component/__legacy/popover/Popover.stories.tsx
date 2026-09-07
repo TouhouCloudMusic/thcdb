@@ -1,8 +1,16 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { Button } from "~/component/atomic/button"
+import { size } from "~/style/tokens.stylex"
 
 import { Popover } from "."
+
+const styles = stylex.create({
+	body: { marginTop: size[8] },
+	actions: { display: "flex", gap: size[8], marginTop: size[8] },
+	close: { marginTop: size[16] },
+})
 
 const meta = {
 	component: Popover.Root,
@@ -98,7 +106,13 @@ export const Default: Story = {
 				{...args}
 				defaultOpen
 			>
-				<Popover.Trigger as={Button}>打开弹窗</Popover.Trigger>
+				<Popover.Trigger
+					as={Button}
+					appearance="soft"
+					tone="gray"
+				>
+					打开弹窗
+				</Popover.Trigger>
 				<Popover.PortalContent>
 					<Popover.Arrow />
 					<Popover.Title>弹窗标题</Popover.Title>
@@ -114,18 +128,34 @@ export const CustomContent: Story = {
 	render: (args) => {
 		return (
 			<Popover.Root {...args}>
-				<Popover.Trigger as={Button}>打开自定义内容</Popover.Trigger>
+				<Popover.Trigger
+					as={Button}
+					appearance="soft"
+					tone="gray"
+				>
+					打开自定义内容
+				</Popover.Trigger>
 				<Popover.PortalContent>
 					<Popover.Arrow />
 					<Popover.Title>弹窗标题</Popover.Title>
-					<div class="mt-2 space-y-2">
+					<div {...stylex.attrs(styles.body)}>
 						<Popover.Description>这是一个自定义内容布局。</Popover.Description>
-						<div class="flex gap-2">
-							<Button variant="Secondary">操作 1</Button>
-							<Button variant="Secondary">操作 2</Button>
+						<div {...stylex.attrs(styles.actions)}>
+							<Button
+								appearance="soft"
+								tone="gray"
+							>
+								操作 1
+							</Button>
+							<Button
+								appearance="soft"
+								tone="gray"
+							>
+								操作 2
+							</Button>
 						</div>
 					</div>
-					<Popover.CloseButton class="mt-4">关闭</Popover.CloseButton>
+					<Popover.CloseButton styles={styles.close}>关闭</Popover.CloseButton>
 				</Popover.PortalContent>
 			</Popover.Root>
 		)

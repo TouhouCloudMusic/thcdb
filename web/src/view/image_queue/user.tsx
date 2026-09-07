@@ -1,16 +1,209 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useNavigate } from "@tanstack/solid-router"
+import * as stylex from "@stylexjs/stylex"
+import { Link, useNavigate } from "@tanstack/solid-router"
 import { For, Match, Show, Switch } from "solid-js"
 
 import { Badge } from "~/component/atomic/Badge"
-import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import type {
 	CursorResponseUserImageQueueItem,
 	ImageQueueStatus,
 } from "~/hey-api"
 import { PageLayout } from "~/layout"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	queueRow: {
+		display: "grid",
+		gridTemplateColumns: "4rem 10rem 9rem 12rem 1fr",
+		alignItems: "center",
+		paddingInline: px[16],
+		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	skeletonRow: {
+		display: "grid",
+		gridTemplateColumns: "4rem 10rem 9rem 12rem 1fr",
+		alignItems: "center",
+		paddingInline: px[16],
+		paddingBlock: px[12],
+	},
+	queueListChild: {
+		borderTopWidth: { default: null, ":not(:last-child)": 0 },
+		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
+		borderTopStyle: { default: null, ":not(:last-child)": "solid" },
+		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: { default: null, ":not(:last-child)": palette.slate[100] },
+	},
+	page: { padding: px[32] },
+	content: { display: "flex", flexDirection: "column", gap: px[24] },
+	header: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[16],
+	},
+	heading: { minWidth: "0rem" },
+	eyebrow: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.22em",
+		color: palette.slate[500],
+	},
+	title: {
+		marginTop: px[8],
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: palette.slate[900],
+	},
+	actions: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		gap: px[12],
+	},
+	panel: {
+		overflow: "hidden",
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.white,
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	tableHeader: {
+		display: "grid",
+		gridTemplateColumns: "4rem 10rem 9rem 12rem 1fr",
+		alignItems: "center",
+		borderBottomStyle: "solid",
+		borderBottomWidth: "1px",
+		borderColor: palette.slate[200],
+		paddingInline: px[16],
+		paddingBlock: px[12],
+		fontSize: "11px",
+		fontWeight: 500,
+		letterSpacing: "0.18em",
+		color: palette.slate[500],
+	},
+	error: {
+		padding: px[24],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[700],
+	},
+	emptyState: { padding: px[40] },
+	emptyTitle: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: palette.slate[900],
+	},
+	emptyDescription: {
+		marginTop: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+	progress: { height: px[4] },
+	appendedList: {
+		borderTopStyle: "solid",
+		borderTopWidth: "1px",
+		borderColor: palette.slate[100],
+	},
+	listEnd: {
+		borderTopStyle: "solid",
+		borderTopWidth: "1px",
+		borderColor: palette.slate[100],
+		paddingInline: px[16],
+		paddingBlock: px[16],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[400],
+	},
+	queueId: {
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[600],
+	},
+	queueLink: {
+		color: palette.slate[900],
+		textDecorationLine: {
+			default: "none",
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	muted: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+	missing: { color: palette.slate[400] },
+	statusCell: { justifySelf: "flex-start" },
+	status: { paddingInline: px[8], paddingBlock: px[2] },
+	targetDetails: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	targetLabel: { color: palette.slate[500] },
+	targetName: { color: palette.slate[700] },
+	targetId: {
+		marginLeft: px[8],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[400],
+	},
+	skeletonId: {
+		height: px[16],
+		width: px[80],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonType: {
+		height: px[16],
+		width: px[96],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonStatus: {
+		height: px[20],
+		width: px[96],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonDate: {
+		height: px[16],
+		width: px[128],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonTarget: {
+		height: px[16],
+		width: px[256],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+})
 
 const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	dateStyle: "medium",
@@ -68,37 +261,33 @@ export function UserImageQueuePage(props: Props) {
 	})
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<header class="flex flex-wrap items-center justify-between gap-4">
-					<div class="min-w-0">
-						<div class="text-xs font-medium tracking-[0.22em] text-slate-500">
-							USER
-						</div>
-						<h1 class="mt-2 text-2xl font-light tracking-tight text-slate-900">
-							Image Queue History
-						</h1>
+		<PageLayout styles={styles.page}>
+			<div {...stylex.attrs(styles.content)}>
+				<header {...stylex.attrs(styles.header)}>
+					<div {...stylex.attrs(styles.heading)}>
+						<div {...stylex.attrs(styles.eyebrow)}>USER</div>
+						<h1 {...stylex.attrs(styles.title)}>Image Queue History</h1>
 					</div>
 
-					<div class="flex flex-wrap items-center gap-3">
+					<div {...stylex.attrs(styles.actions)}>
 						<Button
-							variant="SecondaryV2"
-							size="Sm"
-							color="Slate"
 							onClick={() => {
 								void navigate({
 									to: "/image-queue",
 									search: { status: "pending" },
 								})
 							}}
+							appearance="outline"
+							tone="slate"
+							size="sm"
 						>
 							Go to moderation
 						</Button>
 					</div>
 				</header>
 
-				<section class="overflow-hidden rounded-sm border border-slate-300 bg-white shadow-xs">
-					<div class="grid grid-cols-[4rem_10rem_9rem_12rem_1fr] items-center border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-medium tracking-[0.18em] text-slate-500">
+				<section {...stylex.attrs(styles.panel)}>
+					<div {...stylex.attrs(styles.tableHeader)}>
 						<div>{t`ID`}</div>
 						<div>{t`IMAGE`}</div>
 						<div>{t`STATUS`}</div>
@@ -108,7 +297,7 @@ export function UserImageQueuePage(props: Props) {
 
 					<Switch>
 						<Match when={props.isLoading}>
-							<div class="divide-y divide-slate-100">
+							<div>
 								<For each={Array.from({ length: USER_IMAGE_QUEUE_PAGE_SIZE })}>
 									{() => <RowSkeleton />}
 								</For>
@@ -116,24 +305,24 @@ export function UserImageQueuePage(props: Props) {
 						</Match>
 
 						<Match when={props.isError}>
-							<div class="p-6 text-sm text-reimu-700">
+							<div {...stylex.attrs(styles.error)}>
 								{t`Failed to load user image queue.`}
 							</div>
 						</Match>
 
 						<Match when={props.items.length === 0}>
-							<div class="p-10">
-								<div class="text-sm font-medium text-slate-900">
+							<div {...stylex.attrs(styles.emptyState)}>
+								<div {...stylex.attrs(styles.emptyTitle)}>
 									{t`No entries yet`}
 								</div>
-								<div class="mt-1 text-sm text-slate-500">
+								<div {...stylex.attrs(styles.emptyDescription)}>
 									{t`This user has no image queue history.`}
 								</div>
 							</div>
 						</Match>
 
 						<Match when={true}>
-							<div class="divide-y divide-slate-100">
+							<div>
 								<For each={props.items}>
 									{(item) => <UserQueueRow item={item} />}
 								</For>
@@ -143,11 +332,11 @@ export function UserImageQueuePage(props: Props) {
 
 					<div
 						ref={setSentinelRef}
-						class="h-1"
+						{...stylex.attrs(styles.progress)}
 					></div>
 
 					<Show when={props.isFetchingNextPage}>
-						<div class="divide-y divide-slate-100 border-t border-slate-100">
+						<div {...stylex.attrs(styles.appendedList)}>
 							<For
 								each={Array.from({
 									length: Math.min(10, USER_IMAGE_QUEUE_PAGE_SIZE),
@@ -159,9 +348,7 @@ export function UserImageQueuePage(props: Props) {
 					</Show>
 
 					<Show when={!props.hasNextPage && props.items.length > 0}>
-						<div class="border-t border-slate-100 px-4 py-4 text-center text-sm text-slate-400">
-							{t`No more entries`}
-						</div>
+						<div {...stylex.attrs(styles.listEnd)}>{t`No more entries`}</div>
 					</Show>
 				</section>
 			</div>
@@ -175,59 +362,59 @@ function UserQueueRow(props: { item: UserImageQueueItem }) {
 	const tone = () => statusTone(props.item.status)
 
 	return (
-		<div class="grid grid-cols-[4rem_10rem_9rem_12rem_1fr] items-center px-4 py-3 text-sm hover:bg-slate-50">
-			<div class="font-mono text-xs text-slate-600">
+		<div {...stylex.attrs(styles.queueRow, styles.queueListChild)}>
+			<div {...stylex.attrs(styles.queueId)}>
 				<Link
 					to="/image-queue/$id"
 					params={{ id: props.item.id.toString() }}
-					class="text-slate-900 no-underline hover:underline"
+					class={stylex.attrs(link.base, link.text, styles.queueLink).class}
 				>
 					{props.item.id}
 				</Link>
 			</div>
 
-			<div class="text-sm text-slate-500">
+			<div {...stylex.attrs(styles.muted)}>
 				<Show
 					when={props.item.image_id}
-					fallback={<span class="text-slate-400">—</span>}
+					fallback={<span {...stylex.attrs(styles.missing)}>—</span>}
 				>
 					{props.item.image_id}
 				</Show>
 			</div>
 
-			<div class="justify-self-start">
+			<div {...stylex.attrs(styles.statusCell)}>
 				<Badge
 					color={tone().color}
-					class="px-2 py-0.5"
+					styles={styles.status}
 				>
 					<UserImageQueueStatusLabel status={props.item.status} />
 				</Badge>
 			</div>
 
-			<div class="text-sm text-slate-500">
+			<div {...stylex.attrs(styles.muted)}>
 				{formatDateTime(props.item.created_at)}
 			</div>
 
-			<div class="flex flex-col gap-1 text-sm">
-				<div class="text-slate-500">
+			<div {...stylex.attrs(styles.targetDetails)}>
+				<div {...stylex.attrs(styles.targetLabel)}>
 					Handled:{" "}
-					<span class="text-slate-700">
+					<span {...stylex.attrs(styles.targetName)}>
 						{formatDateTime(props.item.handled_at)}
 					</span>
 					<Show when={props.item.handled_by}>
-						<span class="ml-2 text-xs text-slate-400">
+						<span {...stylex.attrs(styles.targetId)}>
 							{props.item.handled_by?.name}
 						</span>
 					</Show>
 				</div>
 
-				<div class="text-slate-500">
+				<div {...stylex.attrs(styles.targetLabel)}>
 					Reverted:{" "}
-					<span class="text-slate-700">
+					<span {...stylex.attrs(styles.targetName)}>
 						{formatDateTime(props.item.reverted_at)}
 					</span>
 					<Show when={props.item.reverted_by}>
-						<span class="ml-2 text-xs text-slate-400">
+						<span {...stylex.attrs(styles.targetId)}>
 							{props.item.reverted_by?.name}
 						</span>
 					</Show>
@@ -268,12 +455,18 @@ function UserImageQueueStatusLabel(props: { status: ImageQueueStatus }) {
 
 function RowSkeleton() {
 	return (
-		<div class="grid animate-pulse grid-cols-[4rem_10rem_9rem_12rem_1fr] items-center px-4 py-3">
-			<div class="h-4 w-20 rounded bg-slate-200"></div>
-			<div class="h-4 w-24 rounded bg-slate-100"></div>
-			<div class="h-5 w-24 rounded-full bg-slate-200"></div>
-			<div class="h-4 w-32 rounded bg-slate-100"></div>
-			<div class="h-4 w-64 rounded bg-slate-200"></div>
+		<div
+			{...stylex.attrs(
+				animationStyles.pulse,
+				styles.skeletonRow,
+				styles.queueListChild,
+			)}
+		>
+			<div {...stylex.attrs(styles.skeletonId)}></div>
+			<div {...stylex.attrs(styles.skeletonType)}></div>
+			<div {...stylex.attrs(styles.skeletonStatus)}></div>
+			<div {...stylex.attrs(styles.skeletonDate)}></div>
+			<div {...stylex.attrs(styles.skeletonTarget)}></div>
 		</div>
 	)
 }

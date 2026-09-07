@@ -1,12 +1,22 @@
+import * as stylex from "@stylexjs/stylex"
 import { createSignal, For, Show } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import { colors, px } from "~/style/tokens.stylex"
 import { StoryLayout } from "~/utils/adapter/storybook"
 
 import { ExploreFilter } from "./ExploreFilter"
 import { ExploreFilterBar } from "./ExploreFilterBar"
 import { GridListViewPicker } from "./GridListViewPicker"
 import type { ViewMode } from "./GridListViewPicker"
+
+const styles = stylex.create({
+	root: {
+		minHeight: "100vh",
+		backgroundColor: colors.backgroundPrimary,
+		padding: px[32],
+	},
+})
 
 const FILTER_OPTIONS = [
 	{ value: "all", label: "All" },
@@ -37,7 +47,7 @@ function FilterBarStory(props: FilterBarStoryProps) {
 	const [view, setView] = createSignal<ViewMode>("grid")
 
 	return (
-		<div class="min-h-screen bg-primary p-8">
+		<div {...stylex.attrs(styles.root)}>
 			<ExploreFilterBar
 				actions={
 					<Show when={props.showViewPicker}>

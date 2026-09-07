@@ -1,13 +1,25 @@
+import * as stylex from "@stylexjs/stylex"
 import { useRouterState } from "@tanstack/solid-router"
 import type { Artist, ImageQueueDetail, Release, UserSummary } from "@thc/api"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { StoryLayout, StoryRouterProvider } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
 import { ImageQueueDetailView } from "~/view/image_queue/detail"
+
+const styles = stylex.create({
+	missing: {
+		padding: px[32],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+})
 
 const STORY_REVIEWER: UserSummary = {
 	id: 9001,
@@ -379,7 +391,7 @@ function StoryScene(props: { initialEntryId: number }) {
 				)}
 			</Match>
 			<Match when={true}>
-				<div class="p-8 text-sm text-slate-500">Story entry not found.</div>
+				<div {...stylex.attrs(styles.missing)}>Story entry not found.</div>
 			</Match>
 		</Switch>
 	)

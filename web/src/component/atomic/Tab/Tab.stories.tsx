@@ -1,9 +1,39 @@
+import * as stylex from "@stylexjs/stylex"
 import { createSignal, For, Show } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import { palette } from "~/style/color/palette.stylex"
+import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
 import { StoryLayout } from "~/utils/adapter/storybook"
 
 import { Tab } from "."
+
+const styles = stylex.create({
+	root: {
+		width: "100%",
+		maxWidth: "960px",
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.white,
+	},
+	trigger: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[8],
+		paddingBlock: px[12],
+	},
+	badge: {
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+		paddingInline: px[8],
+		paddingBlock: px[2],
+		fontSize: fontSizes.xs,
+		lineHeight: "1rem",
+		fontWeight: 500,
+		color: colors.textSecondary,
+	},
+})
 
 const ENTITY_DETAIL_TABS = [
 	"Release",
@@ -19,23 +49,21 @@ function EntityDetailTabs() {
 
 	return (
 		<Tab.Root
-			class="w-full max-w-[960px] border border-slate-200 bg-white"
+			styles={styles.root}
 			value={activeTab()}
 			onChange={setActiveTab}
 		>
 			<Tab.ScrollArea>
-				<Tab.List class={Tab.CONTAINER_CLASS}>
+				<Tab.List styles={Tab.containerStyles}>
 					<For each={ENTITY_DETAIL_TABS}>
 						{(tab) => (
 							<Tab.Trigger
 								value={tab}
-								class="flex items-center gap-2 py-3"
+								styles={styles.trigger}
 							>
 								<span>{tab}</span>
 								<Show when={tab === "Comments"}>
-									<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-secondary">
-										0
-									</span>
+									<span {...stylex.attrs(styles.badge)}>0</span>
 								</Show>
 							</Tab.Trigger>
 						)}

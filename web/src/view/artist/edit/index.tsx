@@ -1,5 +1,6 @@
 import { Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import { ArrowLeftIcon } from "@thc/icons/radix"
@@ -11,6 +12,8 @@ import { FormActionBar } from "~/component/form"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewArtistCorrection } from "~/domain/artist/schema"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { ArtistFormAliasesField } from "./comp/Aliases"
@@ -26,6 +29,53 @@ import { ArtistFormProvider } from "./context"
 import { useArtistFormInitialValues } from "./hook/useFormInitialValues"
 import { useArtistFormSubmission } from "./hook/useFormSubmission"
 
+const styles = stylex.create({
+	page: {
+		display: "grid",
+		gridTemplateRows: "auto 1fr auto",
+	},
+	pageHeader: {
+		borderBottomWidth: 1,
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: px[32],
+	},
+	headerContent: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[16],
+	},
+	backButton: {
+		width: px[24],
+		height: px[24],
+		padding: 0,
+	},
+	backIcon: {
+		width: px[24],
+		height: px[24],
+	},
+	pageTitle: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+	},
+	form: {
+		display: "flex",
+		flexGrow: 1,
+		flexDirection: "column",
+	},
+	fields: {
+		display: "flex",
+		flexDirection: "column",
+		padding: px[32],
+		paddingBottom: 0,
+		rowGap: px[32],
+	},
+	field: {
+		width: px[384],
+	},
+})
+
 type Props =
 	| {
 			type: "new"
@@ -39,7 +89,7 @@ type Props =
 export function EditArtistPage(props: Props): JSX.Element {
 	const { t } = useLingui()
 	return (
-		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
+		<PageLayout styles={[styles.page]}>
 			<PageHeader type={props.type} />
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<FormContent {...props} />
@@ -51,19 +101,20 @@ export function EditArtistPage(props: Props): JSX.Element {
 function PageHeader(props: { type: Props["type"] }) {
 	const { t } = useLingui()
 	return (
-		<div class="border-b border-slate-300 p-8">
-			<div class="flex items-center gap-4">
+		<div {...stylex.attrs(styles.pageHeader)}>
+			<div {...stylex.attrs(styles.headerContent)}>
 				<Button
-					class="size-6 p-0"
-					variant="Tertiary"
-					size="Sm"
 					onClick={() => {
 						history.back()
 					}}
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+					styles={styles.backButton}
 				>
-					<ArrowLeftIcon class="size-6" />
+					<ArrowLeftIcon {...stylex.attrs(styles.backIcon)} />
 				</Button>
-				<h1 class="text-2xl font-light">
+				<h1 {...stylex.attrs(styles.pageTitle)}>
 					<Show
 						when={props.type === "new"}
 						fallback={t`Edit Artist`}
@@ -116,11 +167,11 @@ function FormContent(props: Props) {
 			>
 				<Form
 					of={form}
-					class="flex grow flex-col"
+					{...stylex.attrs(styles.form)}
 					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
 					onSubmit={(output, _) => handleSubmit(output)}
 				>
-					<div class="flex flex-col space-y-8 p-8 pb-0">
+					<div {...stylex.attrs(styles.fields)}>
 						<ArtistFormNameField />
 
 						<ArtistFormArtistTypeField />
@@ -145,7 +196,7 @@ function FormContent(props: Props) {
 
 						<ExternalLinksField
 							of={form}
-							class="w-96"
+							styles={styles.field}
 						/>
 
 						<ArtistFormActions mutation={mutation} />

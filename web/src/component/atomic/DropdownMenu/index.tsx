@@ -1,79 +1,153 @@
 import * as K_DropdownMenu from "@kobalte/core/dropdown-menu"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { ComponentProps } from "solid-js"
-import { mergeProps } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import { splitProps } from "solid-js"
 
-import { ButtonClass_new } from "~/component/atomic/button"
+import { Button } from "~/component/atomic/button"
+import { palette } from "~/style/color/palette.stylex"
+import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
+
+import { animationNames } from "../../../style/animations.stylex"
+
+const styles = stylex.create({
+	trigger: {
+		width: px[32],
+		height: px[32],
+		padding: 0,
+		boxShadow: "none",
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": {
+					default: palette.slate[200],
+					[stylex.when.ancestor('[data-mode="dark"]')]:
+						`color-mix(in oklab, ${palette.slate[100]} 90%, transparent)`,
+				},
+			},
+			":active": {
+				default: palette.slate[300],
+				[stylex.when.ancestor('[data-mode="dark"]')]:
+					`color-mix(in oklab, ${palette.slate[100]} 80%, transparent)`,
+			},
+			":disabled": palette.slate[400],
+			":is([data-expanded])": palette.slate[200],
+		},
+	},
+	content: {
+		zIndex: 50,
+		transformOrigin: "var(--kb-popper-content-transform-origin)",
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.white,
+		padding: px[4],
+		boxShadow:
+			"0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+		outlineStyle: "none",
+		animationDuration: "200ms",
+		animationTimingFunction: {
+			default: "ease-in",
+			":is([data-expanded])": "ease-out",
+		},
+		animationName: {
+			default: animationNames.scaleDown,
+			":is([data-expanded])": animationNames.scaleUp,
+		},
+	},
+	item: {
+		display: "flex",
+		cursor: "default",
+		alignItems: "center",
+		borderRadius: radius.xs,
+		paddingInline: px[8],
+		paddingBlock: px[6],
+		fontSize: fontSizes.sm,
+		lineHeight: "1.25rem",
+		color: palette.slate[900],
+		userSelect: "none",
+		outlineStyle: "none",
+		pointerEvents: { default: null, ":is([data-disabled])": "none" },
+		opacity: { default: null, ":is([data-disabled])": 0.5 },
+		backgroundColor: {
+			default: null,
+			":is([data-highlighted])": palette.slate[100],
+		},
+	},
+	separator: {
+		marginBlock: px[4],
+		height: "1px",
+		borderWidth: 0,
+		backgroundColor: palette.slate[200],
+	},
+})
 
 const Root = K_DropdownMenu.Root
 
-const TRIGGER_CLASSNAME = ButtonClass_new({
-	variant: "Secondary",
-	size: "Sm",
-	class: "size-8 p-0 ring-0 shadow-none data-expanded:bg-slate-200",
-})
-type TriggerProps = ComponentProps<typeof K_DropdownMenu.Trigger>
+type TriggerProps = ComponentProps<typeof K_DropdownMenu.Trigger> & {
+	styles?: StyleXStyles
+}
 function Trigger(props: TriggerProps) {
-	const finalProps = mergeProps({ type: "button" as const }, props, {
-		get class() {
-			return twMerge(
-				TRIGGER_CLASSNAME,
-				typeof props["class"] === "string" ? props["class"] : undefined,
-			)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_DropdownMenu.Trigger {...finalProps} />
+	return (
+		<K_DropdownMenu.Trigger
+			{...others}
+			as={Button}
+			type={props.type ?? "button"}
+			appearance="soft"
+			tone="gray"
+			size="sm"
+			styles={[styles.trigger, local.styles]}
+		/>
+	)
 }
 
 const Icon = K_DropdownMenu.Icon
 const Portal = K_DropdownMenu.Portal
 
-const CONTENT_CLASSNAME =
-	"z-50 origin-(--kb-popper-content-transform-origin) rounded-sm border border-slate-300 bg-white p-1 shadow-lg shadow-slate-950/10 outline-none animate-scale-down data-expanded:animate-scale-up"
-type ContentProps = ComponentProps<typeof K_DropdownMenu.Content>
+type ContentProps = ComponentProps<typeof K_DropdownMenu.Content> & {
+	styles?: StyleXStyles
+}
 function Content(props: ContentProps) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			return twMerge(
-				CONTENT_CLASSNAME,
-				typeof props["class"] === "string" ? props["class"] : undefined,
-			)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_DropdownMenu.Content {...finalProps} />
+	return (
+		<K_DropdownMenu.Content
+			{...others}
+			{...stylex.attrs(styles.content, local.styles)}
+		/>
+	)
 }
 
-const ITEM_CLASSNAME =
-	"flex cursor-default items-center rounded-xs px-2 py-1.5 text-sm text-slate-900 select-none outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-[highlighted]:bg-slate-100"
-type ItemProps = ComponentProps<typeof K_DropdownMenu.Item>
+type ItemProps = ComponentProps<typeof K_DropdownMenu.Item> & {
+	styles?: StyleXStyles
+}
 function Item(props: ItemProps) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			return twMerge(
-				ITEM_CLASSNAME,
-				typeof props["class"] === "string" ? props["class"] : undefined,
-			)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_DropdownMenu.Item {...finalProps} />
+	return (
+		<K_DropdownMenu.Item
+			{...others}
+			{...stylex.attrs(styles.item, local.styles)}
+		/>
+	)
 }
 
-const SEPARATOR_CLASSNAME = "my-1 h-px border-0 bg-slate-200"
-type SeparatorProps = ComponentProps<typeof K_DropdownMenu.Separator>
+type SeparatorProps = ComponentProps<typeof K_DropdownMenu.Separator> & {
+	styles?: StyleXStyles
+}
 function Separator(props: SeparatorProps) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			return twMerge(
-				SEPARATOR_CLASSNAME,
-				typeof props["class"] === "string" ? props["class"] : undefined,
-			)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_DropdownMenu.Separator {...finalProps} />
+	return (
+		<K_DropdownMenu.Separator
+			{...others}
+			{...stylex.attrs(styles.separator, local.styles)}
+		/>
+	)
 }
 
 export const DropdownMenu = /*#__PURE__*/ Object.assign(Root, {

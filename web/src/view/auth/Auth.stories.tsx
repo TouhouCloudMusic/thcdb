@@ -1,3 +1,4 @@
+import * as stylex from "@stylexjs/stylex"
 import {
 	createMemoryHistory,
 	createRootRoute,
@@ -43,6 +44,14 @@ import {
 	setVerificationSession,
 } from "./verify_email/session"
 
+const styles = stylex.create({
+	shell: {
+		display: "grid",
+		minHeight: "100dvh",
+		gridTemplateRows: "auto 1fr auto",
+	},
+})
+
 function authResponse(request: Request) {
 	const isProfile = new URL(request.url).pathname === "/api/profile"
 	return Response.json(
@@ -53,7 +62,7 @@ function authResponse(request: Request) {
 
 function StoryShell() {
 	return (
-		<div class="grid min-h-dvh grid-rows-[auto_1fr_auto]">
+		<div {...stylex.attrs(styles.shell)}>
 			<Header />
 			<main>
 				<Outlet />

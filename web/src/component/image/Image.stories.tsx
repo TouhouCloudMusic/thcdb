@@ -1,10 +1,30 @@
+import * as stylex from "@stylexjs/stylex"
 // Image.stories.ts
 import { createEffect, createSignal } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes } from "~/style/tokens.stylex"
+
 import { Image } from "."
 
 // 定义 Storybook 的 Meta 配置
+const styles = stylex.create({
+	fallback: {
+		display: "flex",
+		height: "300px",
+		width: "300px",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: palette.slate[100],
+	},
+	label: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+})
+
 const meta: Meta<typeof Image.Root> = {
 	title: "Image",
 	component: Image.Root,
@@ -26,8 +46,8 @@ export const Default: Story = {
 			/>
 			<Image.Fallback>
 				{(state) => (
-					<div class="flex h-[300px] w-[300px] items-center justify-center bg-slate-100">
-						<span class="text-sm text-slate-500">
+					<div {...stylex.attrs(styles.fallback)}>
+						<span {...stylex.attrs(styles.label)}>
 							{state === Image.State.Loading ? "Loading..." : "No Image"}
 						</span>
 					</div>
@@ -51,8 +71,8 @@ export const ErrorState: Story = {
 			/>
 			<Image.Fallback>
 				{(state) => (
-					<div class="flex h-[300px] w-[300px] items-center justify-center bg-slate-100">
-						<span class="text-sm text-slate-500">
+					<div {...stylex.attrs(styles.fallback)}>
+						<span {...stylex.attrs(styles.label)}>
 							{state === Image.State.Loading ? "Loading..." : "No Image"}
 						</span>
 					</div>
@@ -81,8 +101,8 @@ export const WithPreview: Story = {
 				/>
 				<Image.Fallback>
 					{(state) => (
-						<div class="flex h-[300px] w-[300px] items-center justify-center bg-slate-100">
-							<span class="text-sm text-slate-500">
+						<div {...stylex.attrs(styles.fallback)}>
+							<span {...stylex.attrs(styles.label)}>
 								{state === Image.State.Loading ? "Loading..." : "No Image"}
 							</span>
 						</div>

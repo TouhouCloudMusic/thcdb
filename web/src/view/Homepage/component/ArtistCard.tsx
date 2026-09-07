@@ -1,16 +1,104 @@
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
-import { Card } from "~/component/atomic/Card"
-import { Link } from "~/component/atomic/Link"
 import type { ArtistListItem } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { surfaceStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
+
+import { artistCard as cardMarker } from "./cardMarkers.stylex"
+
+const styles = stylex.create({
+	root: {
+		position: "relative",
+		display: "flex",
+		flexDirection: "column",
+		borderRadius: 0,
+		padding: px[12],
+		boxShadow: "none",
+	},
+	avatarLink: {
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+	},
+	initials: {
+		display: "grid",
+		aspectRatio: "1",
+		width: "100%",
+		placeItems: "center",
+		fontSize: fontSizes.base,
+		lineHeight: 1.5,
+		fontWeight: 300,
+		letterSpacing: 0,
+		color: colors.textSecondary,
+	},
+	avatar: {
+		aspectRatio: "1",
+		width: "100%",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+		objectFit: "cover",
+	},
+	content: {
+		display: "flex",
+		flex: "1",
+		flexDirection: "column",
+		justifyContent: "space-between",
+		gap: px[4],
+		paddingTop: px[8],
+	},
+	name: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 300,
+		letterSpacing: 0,
+		color: colors.textPrimary,
+	},
+	country: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 300,
+		color: colors.textTertiary,
+	},
+	overlay: {
+		pointerEvents: "none",
+		position: "absolute",
+		inset: 0,
+		backgroundColor: `color-mix(in oklab, ${palette.slate[700]} 5%, transparent)`,
+		opacity: {
+			default: 0,
+			"@media (hover: hover)": {
+				[stylex.when.ancestor(":hover", cardMarker)]: 1,
+			},
+			[stylex.when.ancestor(":focus-within", cardMarker)]: 1,
+		},
+		transitionProperty: {
+			default: "opacity",
+			"@media (prefers-reduced-motion: reduce)": "none",
+		},
+		transitionDuration: "150ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+})
 
 type ArtistCardProps = {
 	artist: ArtistListItem
 }
-
-const ARTIST_CARD_OVERLAY_CLASS =
-	"pointer-events-none absolute inset-0 bg-slate-700/5 opacity-0 transition-opacity duration-150 group-hover/artist:opacity-100 group-focus-within/artist:opacity-100 motion-reduce:transition-none"
 
 export function ArtistCard(props: ArtistCardProps) {
 	const avatarUrl = () => imgUrl(props.artist.profile_image_url)
@@ -19,54 +107,45 @@ export function ArtistCard(props: ArtistCardProps) {
 	const country = () => props.artist.current_location.country
 
 	return (
-		<Card class="group/artist relative flex flex-col rounded-none p-3 shadow-none">
+		<div {...stylex.attrs(cardMarker, surfaceStyles.card, styles.root)}>
 			<Link
 				to="/artist/$id"
 				params={artistHrefParams()}
-				underline={false}
-				class="rounded-full bg-slate-100"
+				class={stylex.attrs(link.base, styles.avatarLink).class}
 			>
 				<Show
 					when={avatarUrl()}
-					fallback={
-						<div class="grid aspect-square w-full place-items-center text-base font-light tracking-normal text-secondary">
-							{initials()}
-						</div>
-					}
+					fallback={<div {...stylex.attrs(styles.initials)}>{initials()}</div>}
 				>
 					{(src) => (
 						<img
 							src={src()}
 							alt=""
 							loading="lazy"
-							class="aspect-square w-full rounded-full bg-slate-100 object-cover"
+							{...stylex.attrs(styles.avatar)}
 						/>
 					)}
 				</Show>
 			</Link>
 
-			<div class="flex flex-1 flex-col justify-between gap-1 pt-2">
+			<div {...stylex.attrs(styles.content)}>
 				<Link
 					to="/artist/$id"
 					params={artistHrefParams()}
 					title={props.artist.name}
-					class="truncate text-sm font-light tracking-normal text-primary"
+					class={stylex.attrs(link.base, link.text, styles.name).class}
 				>
 					{props.artist.name}
 				</Link>
 				<Show when={country()}>
-					{(value) => (
-						<div class="truncate text-xs font-light text-tertiary">
-							{value()}
-						</div>
-					)}
+					{(value) => <div {...stylex.attrs(styles.country)}>{value()}</div>}
 				</Show>
 			</div>
 
 			<div
 				aria-hidden="true"
-				class={ARTIST_CARD_OVERLAY_CLASS}
+				{...stylex.attrs(styles.overlay)}
 			></div>
-		</Card>
+		</div>
 	)
 }

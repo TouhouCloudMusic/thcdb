@@ -1,13 +1,20 @@
 import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { twMerge } from "tailwind-merge"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 
 import { InputField } from "~/component/atomic/form/Input"
+import { px } from "~/style/tokens.stylex"
 
 import { useEventForm } from "../context"
 
+const styles = stylex.create({
+	field: { display: "flex", flexDirection: "column" },
+	descriptionInput: { minHeight: px[128] },
+})
+
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function EventDescriptionField(props: Props) {
@@ -20,12 +27,12 @@ export function EventDescriptionField(props: Props) {
 			path={["data", "description"]}
 		>
 			{(field) => (
-				<InputField.Root class={twMerge("flex flex-col", props.class)}>
+				<InputField.Root styles={[styles.field, props.styles]}>
 					<InputField.Label>{t`Description`}</InputField.Label>
 					<InputField.Textarea
 						{...field.props}
 						value={field.input ?? ""}
-						class="min-h-32"
+						styles={styles.descriptionInput}
 					/>
 					<InputField.Error>
 						{field.errors ? field.errors[0] : undefined}

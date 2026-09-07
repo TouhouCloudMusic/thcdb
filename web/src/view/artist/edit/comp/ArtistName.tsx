@@ -1,11 +1,20 @@
 import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 
 import { InputField } from "~/component/atomic/form/Input"
+import { px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../context"
 
-export function ArtistFormNameField() {
+const styles = stylex.create({
+	field: {
+		width: px[384],
+	},
+})
+
+export function ArtistFormNameField(props: { styles?: StyleXStyles }) {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
@@ -15,7 +24,7 @@ export function ArtistFormNameField() {
 			path={["data", "name"]}
 		>
 			{(field) => (
-				<InputField.Root class="w-96">
+				<InputField.Root styles={[styles.field, props.styles]}>
 					<InputField.Label>{t`Name`}</InputField.Label>
 					<InputField.Input
 						{...field.props}

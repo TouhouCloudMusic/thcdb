@@ -1,12 +1,32 @@
+import * as stylex from "@stylexjs/stylex"
 import { Show } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Divider } from "~/component/atomic/Divider"
 import { Intersperse } from "~/component/data/Intersperse"
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
 import type { ReleaseListItem } from "~/hey-api"
+import { dividerStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { ReleaseItem, ReleaseGridItem } from "~/view/release/ReleaseItems"
+
+const styles = stylex.create({
+	preview: { marginInline: "auto", width: "100%" },
+	narrowPreview: { maxWidth: px[384] },
+	fullPreview: { maxWidth: px[768] },
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	gridPreview: {
+		width: px[256],
+		backgroundColor: colors.backgroundPrimary,
+		paddingInline: px[32],
+		paddingBlock: px[32],
+	},
+})
 
 const RELEASES: ReleaseListItem[] = [
 	{
@@ -55,16 +75,19 @@ type StoryRootProps = {
 function ReleaseListStoryRoot(props: StoryRootProps) {
 	return (
 		<div
-			class={`mx-auto w-full ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+			{...stylex.attrs(
+				styles.preview,
+				props.width === "narrow" ? styles.narrowPreview : styles.fullPreview,
+			)}
 		>
 			<ExplorePageLayout
 				title="Explore Releases"
 				action={{ to: "/release/new", label: "Create release" }}
 			>
-				<div class="flex flex-col gap-2 p-4">
+				<div {...stylex.attrs(styles.list)}>
 					<Intersperse
 						of={props.releases}
-						with={<Divider horizontal />}
+						with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					>
 						{(release) => <ReleaseItem release={release} />}
 					</Intersperse>
@@ -76,7 +99,7 @@ function ReleaseListStoryRoot(props: StoryRootProps) {
 
 function ReleaseGridStoryRoot(props: StoryRootProps) {
 	return (
-		<div class="w-64 bg-primary px-8 py-8">
+		<div {...stylex.attrs(styles.gridPreview)}>
 			<Show when={props.releases[0]}>
 				{(release) => <ReleaseGridItem release={release()} />}
 			</Show>

@@ -1,28 +1,30 @@
 /* @refresh skip */
 import { Trans, useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import type {
 	ArtistCredit,
 	CreditRoleRef,
 	Discography,
 	ReleaseType,
 } from "@thc/api"
-import type { ComponentProps, JSX, ParentProps } from "solid-js"
-import {
-	createMemo,
-	createSignal,
-	For,
-	mergeProps,
-	Show,
-	Suspense,
-} from "solid-js"
-import { Dynamic } from "solid-js/web"
-import { twJoin, twMerge } from "tailwind-merge"
+import type { JSX, ParentProps } from "solid-js"
+import { createMemo, createSignal, For, Show, Suspense } from "solid-js"
 
-import { Link } from "~/component/atomic/Link"
 import { Tab } from "~/component/atomic/Tab"
 import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release"
 import { DateWithPrecision } from "~/domain/shared"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
@@ -33,6 +35,119 @@ import { useEntityComments } from "~/view/comment/useEntityComments"
 import { ArtistContext } from ".."
 
 // TODO: Add links after other pages are completed
+
+const styles = stylex.create({
+	tabTrigger: {
+		paddingInline: px[12],
+		paddingBlock: px[12],
+		color: palette.slate[800],
+	},
+	releases: {
+		padding: "clamp(1rem,3vw,1.5rem)",
+	},
+	tabContent: {
+		padding: px[16],
+	},
+	emptyState: {
+		margin: "auto",
+		minHeight: px[64],
+		placeSelf: "center",
+		paddingInline: px[16],
+		paddingBlock: px[20],
+		textAlign: "center",
+		color: colors.textSecondary,
+	},
+	uploadLink: {
+		color: palette.blue[600],
+	},
+	releaseTypes: {
+		flexWrap: "wrap",
+		gap: px[8],
+		paddingInline: px[8],
+		paddingTop: px[16],
+	},
+	releaseType: {
+		display: "flex",
+		height: px[40],
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: radius.md,
+		paddingInline: px[12],
+		textAlign: "center",
+		fontWeight: 400,
+		color: colors.textSecondary,
+		outlineWidth: 2,
+		outlineStyle: "solid",
+		outlineOffset: 2,
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": palette.slate[300],
+		},
+		backgroundColor: {
+			default: null,
+			":is([data-selected])": palette.slate[100],
+		},
+	},
+	releaseItem: {
+		marginBlockStart: 0,
+		marginBlockEnd: { default: null, ":not(:last-child)": px[16] },
+	},
+	subtitle: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	loadMore: {
+		display: "flex",
+		width: "100%",
+		justifyContent: "center",
+	},
+	loadMoreButton: {
+		paddingInline: px[64],
+		fontWeight: 400,
+	},
+	creditHeading: {
+		display: "flex",
+		flexWrap: "wrap",
+	},
+	creditArtists: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "last baseline",
+	},
+	creditArtist: {
+		lineHeight: "1.5rem",
+		color: colors.textSecondary,
+	},
+	coverPlaceholder: {
+		marginInlineStart: 0,
+		marginInlineEnd: px[16],
+		width: px[64],
+		height: px[64],
+		borderRadius: radius.sm,
+		backgroundColor: colors.backgroundSecondary,
+	},
+	releaseDetails: {
+		display: "grid",
+		minWidth: 0,
+		gridTemplateRows: "repeat(2, minmax(0, 1fr))",
+		alignItems: "center",
+	},
+	releaseLink: {
+		display: "flex",
+		height: px[64],
+		width: "100%",
+		borderRadius: radius.md,
+		marginInline: "-0.5rem",
+		paddingInline: px[8],
+		color: "inherit",
+	},
+	releaseTitle: {
+		overflowWrap: "break-word",
+		fontWeight: 600,
+		color: palette.slate[900],
+	},
+})
 
 const TABS = [
 	"Discography",
@@ -119,7 +234,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 			onChange={props.onActiveTabChange}
 		>
 			<Tab.ScrollArea>
-				<Tab.List class={Tab.CONTAINER_CLASS}>
+				<Tab.List styles={[Tab.containerStyles]}>
 					<For each={visibleTabs()}>
 						{(tabType) => (
 							<li>
@@ -127,7 +242,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 									when={tabType === "Comments"}
 									fallback={
 										<Tab.Trigger
-											class="px-3 py-3 text-slate-800"
+											styles={[styles.tabTrigger]}
 											value={tabType}
 										>
 											{tabType}
@@ -136,7 +251,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 								>
 									<EntityCommentsTabTrigger
 										count={props.comments.activeCommentCount()}
-										class="px-3 py-3 text-slate-800"
+										styles={[styles.tabTrigger]}
 									/>
 								</Show>
 							</li>
@@ -151,7 +266,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 			</Tab.Content>
 			<Tab.Content value="Appearance">
 				<ArtistReleaseList
-					class="p-[clamp(1rem,3vw,1.5rem)]"
+					styles={[styles.releases]}
 					data={context.appearances.data}
 					hasNext={context.appearances.hasNext}
 					next={() => {
@@ -163,7 +278,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 			</Tab.Content>
 			<Tab.Content value="Credit">
 				<ArtistReleaseList
-					class="p-[clamp(1rem,3vw,1.5rem)]"
+					styles={[styles.releases]}
 					data={context.credits.data}
 					hasNext={context.credits.hasNext}
 					next={() => {
@@ -175,13 +290,13 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 			</Tab.Content>
 			<Tab.Content
 				value="Comments"
-				class="p-4"
+				styles={[styles.tabContent]}
 			>
 				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				class="p-4"
+				styles={[styles.tabContent]}
 			>
 				<EntityCollectionsTab
 					entityType="artist"
@@ -217,12 +332,12 @@ function DiscographyTab() {
 		<Show
 			when={selectedType()}
 			fallback={
-				<p class="m-auto min-h-16 place-self-center px-4 py-5 text-center text-secondary">
+				<p {...stylex.attrs(styles.emptyState)}>
 					<Trans>
 						This Artist has no releases yet, you can upload them on{" "}
 						<a
 							href="TODO"
-							class="text-blue-600"
+							{...stylex.attrs(styles.uploadLink)}
 						>
 							Upload New Release
 						</a>
@@ -235,12 +350,12 @@ function DiscographyTab() {
 					value={type()}
 					onChange={setSelectedTypeInput}
 				>
-					<Tab.List class="flex-wrap gap-2 px-2 pt-4">
+					<Tab.List styles={[styles.releaseTypes]}>
 						<For each={existingTypes()}>
 							{(releaseType) => (
 								<Tab.Trigger
 									value={releaseType}
-									class="flex h-10 items-center justify-center rounded-md px-3 text-center font-normal text-secondary outline-2 outline-offset-2 outline-transparent focus-visible:outline-slate-300 data-selected:bg-slate-100"
+									styles={[styles.releaseType]}
 								>
 									{releaseType}
 								</Tab.Trigger>
@@ -249,7 +364,7 @@ function DiscographyTab() {
 					</Tab.List>
 
 					<ArtistReleaseList
-						class="p-[clamp(1rem,3vw,1.5rem)]"
+						styles={[styles.releases]}
 						data={context.discographies.data[type()]}
 						hasNext={context.discographies.hasNext(type())}
 						next={() => {
@@ -268,23 +383,24 @@ function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 	data?: T[] | undefined
 	hasNext: boolean
 	next: () => void
-	class?: string
+	styles?: StyleXStyles
 	children: (props: { item: T }) => JSX.Element
 }) {
 	const { t } = useLingui()
 
 	return (
-		<ul class={twJoin("space-y-4", props.class)}>
+		<ul {...stylex.attrs(props.styles)}>
 			<For each={props.data}>
 				{(release) => props.children({ item: release })}
 			</For>
 
 			<Show when={props.hasNext}>
-				<div class="flex w-full justify-center">
+				<div {...stylex.attrs(styles.loadMore, styles.releaseItem)}>
 					<Button
-						variant="Tertiary"
 						onClick={() => props.next()}
-						class="px-16 font-normal"
+						appearance="ghost"
+						tone="gray"
+						styles={styles.loadMoreButton}
 					>
 						{t`Load More`}
 					</Button>
@@ -322,8 +438,8 @@ function DiscographyItem(props: { item: Discography }) {
 	}
 	return (
 		<ItemLayout releaseId={props.item.release_id}>
-			<ItemTitle>{props.item.title}</ItemTitle>
-			<ItemSubTitle>{subtitle()}</ItemSubTitle>
+			<div {...stylex.attrs(styles.releaseTitle)}>{props.item.title}</div>
+			<div {...stylex.attrs(styles.subtitle)}>{subtitle()}</div>
 		</ItemLayout>
 	)
 }
@@ -331,13 +447,13 @@ function DiscographyItem(props: { item: Discography }) {
 function CreditItem(props: { item: ArtistCredit }) {
 	return (
 		<ItemLayout releaseId={props.item.release_id}>
-			<div class="flex flex-wrap">
-				<ItemTitle>{props.item.title}</ItemTitle>
+			<div {...stylex.attrs(styles.creditHeading)}>
+				<div {...stylex.attrs(styles.releaseTitle)}>{props.item.title}</div>
 				{" · "}
-				<ul class="flex flex-wrap items-baseline-last">
+				<ul {...stylex.attrs(styles.creditArtists)}>
 					<For each={props.item.artist}>
 						{(artist, index) => (
-							<li class={"text-normal leading-6 text-secondary"}>
+							<li {...stylex.attrs(styles.creditArtist)}>
 								{artist.name}
 								{index() === props.item.roles.length - 1 ? <></> : " & "}
 							</li>
@@ -346,14 +462,11 @@ function CreditItem(props: { item: ArtistCredit }) {
 				</ul>
 			</div>
 			<Show when={props.item.release_date}>
-				<ItemSubTitle>
+				<div {...stylex.attrs(styles.subtitle)}>
 					{DateWithPrecision.display(props.item.release_date!)}
-				</ItemSubTitle>
+				</div>
 			</Show>
-			<ItemSubTitle
-				as="ul"
-				class="flex flex-wrap"
-			>
+			<ul {...stylex.attrs(styles.subtitle, styles.creditHeading)}>
 				<For each={props.item.roles}>
 					{(role, index) => (
 						<li>
@@ -362,7 +475,7 @@ function CreditItem(props: { item: ArtistCredit }) {
 						</li>
 					)}
 				</For>
-			</ItemSubTitle>
+			</ul>
 		</ItemLayout>
 	)
 }
@@ -370,53 +483,20 @@ function CreditItem(props: { item: ArtistCredit }) {
 function ItemLayout(props: ParentProps<{ releaseId: number }>) {
 	const content = () => (
 		<>
-			<div class="size-16 rounded bg-secondary"></div>
-			<div class="grid min-w-0 grid-rows-2 items-center">{props.children}</div>
+			<div {...stylex.attrs(styles.coverPlaceholder)}></div>
+			<div {...stylex.attrs(styles.releaseDetails)}>{props.children}</div>
 		</>
 	)
 
 	return (
-		<li>
+		<li {...stylex.attrs(styles.releaseItem)}>
 			<Link
 				to="/release/$id"
 				params={{ id: props.releaseId.toString() }}
-				underline={false}
-				class="flex h-16 w-full space-x-4 rounded-md -mx-2 px-2 text-inherit hover:bg-slate-50"
+				class={stylex.attrs(link.base, styles.releaseLink).class}
 			>
 				{content()}
 			</Link>
 		</li>
 	)
-}
-
-function ItemTitle(props: ParentProps) {
-	return (
-		<div class="wrap-break-word font-semibold text-slate-900">
-			{props.children}
-		</div>
-	)
-}
-
-const SUBTITLE_CLASS = "text-sm text-secondary"
-function ItemSubTitle<T extends "div" | "ul" = "div">(
-	props: ParentProps<
-		{
-			as?: T
-		} & ComponentProps<T>
-	>,
-) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			if (props.class) {
-				return twMerge(SUBTITLE_CLASS, props.class)
-			}
-			return SUBTITLE_CLASS
-		},
-		get component() {
-			return props.as ?? "div"
-		},
-	})
-
-	// @ts-expect-error
-	return <Dynamic {...finalProps} />
 }

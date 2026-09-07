@@ -1,10 +1,33 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { UserCollection } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, px } from "~/style/tokens.stylex"
 import { withStoryRouter } from "~/utils/adapter/storybook"
 import { FollowedCollectionRow } from "~/view/collection/FollowedCollectionRow"
 
 import { CollectionRow } from "./Profile"
+
+const styles = stylex.create({
+	shell: {
+		minHeight: "100vh",
+		backgroundColor: colors.backgroundSecondary,
+		padding: px[32],
+	},
+	list: {
+		maxWidth: px[672],
+		borderBlockWidth: "1px",
+		borderBlockStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: colors.backgroundPrimary,
+	},
+	row: {
+		borderBottomWidth: { default: "1px", ":last-child": 0 },
+		borderBottomStyle: "solid",
+		borderBottomColor: palette.slate[100],
+	},
+})
 
 const COLLECTION_ITEM: UserCollection = {
 	id: 301,
@@ -30,8 +53,8 @@ const meta = {
 		item: COLLECTION_ITEM,
 	},
 	render: (props) => (
-		<div class="min-h-screen bg-secondary p-8">
-			<ul class="max-w-2xl divide-y divide-slate-100 border-y border-slate-200 bg-primary">
+		<div {...stylex.attrs(styles.shell)}>
+			<ul {...stylex.attrs(styles.list)}>
 				<CollectionRow item={props.item} />
 			</ul>
 		</div>
@@ -46,9 +69,12 @@ export const Default: Story = {}
 
 export const Followed: Story = {
 	render: (props: { item: UserCollection }) => (
-		<div class="min-h-screen bg-secondary p-8">
-			<ul class="max-w-2xl divide-y divide-slate-100 border-y border-slate-200 bg-primary">
-				<FollowedCollectionRow item={props.item} />
+		<div {...stylex.attrs(styles.shell)}>
+			<ul {...stylex.attrs(styles.list)}>
+				<FollowedCollectionRow
+					item={props.item}
+					styles={styles.row}
+				/>
 			</ul>
 		</div>
 	),

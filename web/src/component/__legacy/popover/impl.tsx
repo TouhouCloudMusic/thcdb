@@ -8,11 +8,60 @@ import type {
 	PopoverTitleProps,
 } from "@kobalte/core/popover"
 import { Popover } from "@kobalte/core/popover"
-import { mergeProps } from "solid-js"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import { splitProps } from "solid-js"
 import type { ValidComponent } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	effects,
+	lineHeights,
+	fontSizes,
+	size,
+} from "~/style/tokens.stylex"
+
+const scaleUp = stylex.keyframes({
+	from: { transform: `scale(${effects.scaleUpStart})`, opacity: 0 },
+	to: { transform: "scale(1)", opacity: 1 },
+})
+const scaleDown = stylex.keyframes({
+	from: { transform: "scale(1)", opacity: 1 },
+	to: { transform: `scale(${effects.scaleUpStart})`, opacity: 0 },
+})
+
+const styles = stylex.create({
+	content: {
+		position: "fixed",
+		zIndex: 50,
+		padding: size[16],
+		backgroundColor: colors.backgroundPrimary,
+		borderWidth: "1px",
+		borderBottomWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		boxShadow: "0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1)",
+		borderRadius: radius.sm,
+		animationName: { default: scaleDown, ":is([data-expanded])": scaleUp },
+		animationDuration: "200ms",
+		animationTimingFunction: {
+			default: "ease-in",
+			":is([data-expanded])": "ease-out",
+		},
+		transformOrigin: "var(--kb-popper-content-transform-origin)",
+	},
+	title: { fontWeight: 500 },
+	description: {
+		marginBlock: size[8],
+		paddingRight: size[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[800],
+	},
+})
 
 export type RootProps = PopoverRootProps
 
@@ -26,28 +75,18 @@ export const Portal = Popover.Portal
 export type ContentProps<T extends ValidComponent = "div"> = PolymorphicProps<
 	T,
 	PopoverContentProps<T>
->
+> & { styles?: StyleXStyles }
 
 export function Content<T extends ValidComponent = "div">(
 	props: ContentProps<T>,
 ) {
-	const CLASS = `
-    fixed z-50 p-4
-    bg-primary
-    border-1 border-slate-200 border-b-[1.5px]
-    shadow-sm
-    rounded
-    animate-scale-down data-expanded:animate-scale-up
-    origin-(--kb-popper-content-transform-origin)
-  `
-
-	const local_props = mergeProps(props, {
-		get class() {
-			return twMerge(CLASS, props["class"])
-		},
-	})
-
-	return <Popover.Content {...local_props} />
+	const [local, rest] = splitProps(props, ["styles"])
+	return (
+		<Popover.Content
+			{...rest}
+			{...stylex.attrs(styles.content, local.styles)}
+		/>
+	)
 }
 
 export function PortalContent<T extends ValidComponent = "div">(
@@ -60,34 +99,35 @@ export function PortalContent<T extends ValidComponent = "div">(
 	)
 }
 
-type CloseButtonProps<T extends ValidComponent = typeof Button> =
-	PolymorphicProps<T, PopoverCloseButtonProps<"button">> & {
-		as?: T
-	}
+type CloseButtonProps = PolymorphicProps<
+	typeof Button,
+	PopoverCloseButtonProps<typeof Button>
+> & {
+	styles?: StyleXStyles
+}
 
-export function CloseButton<T extends ValidComponent = typeof Button>(
-	props: CloseButtonProps<T>,
-) {
+export function CloseButton(props: CloseButtonProps) {
+	const [local, others] = splitProps(props, ["styles"])
+
 	return (
 		<Popover.CloseButton
+			{...others}
 			as={Button}
-			{...props}
+			styles={local.styles}
 		/>
 	)
 }
 
 export function Title<T extends ValidComponent = "h2">(
-	props: PolymorphicProps<T, PopoverTitleProps<T>>,
+	props: PolymorphicProps<T, PopoverTitleProps<T>> & { styles?: StyleXStyles },
 ) {
-	const CLASS = "font-medium"
-
-	const local_props = mergeProps(props, {
-		get class() {
-			return twMerge(CLASS, props["class"])
-		},
-	})
-
-	return <Popover.Title {...local_props} />
+	const [local, rest] = splitProps(props, ["styles"])
+	return (
+		<Popover.Title
+			{...rest}
+			{...stylex.attrs(styles.title, local.styles)}
+		/>
+	)
 }
 
 export function Arrow(props: PolymorphicProps<"div", PopoverArrowProps>) {
@@ -95,14 +135,15 @@ export function Arrow(props: PolymorphicProps<"div", PopoverArrowProps>) {
 }
 
 export function Description<T extends ValidComponent = "p">(
-	props: PolymorphicProps<T, PopoverDescriptionProps<T>>,
+	props: PolymorphicProps<T, PopoverDescriptionProps<T>> & {
+		styles?: StyleXStyles
+	},
 ) {
-	const CLASS = "my-2 pr-2 text-sm text-slate-800"
-
-	const local_props = mergeProps(props, {
-		get class() {
-			return twMerge(CLASS, props["class"])
-		},
-	})
-	return <Popover.Description {...local_props} />
+	const [local, rest] = splitProps(props, ["styles"])
+	return (
+		<Popover.Description
+			{...rest}
+			{...stylex.attrs(styles.description, local.styles)}
+		/>
+	)
 }

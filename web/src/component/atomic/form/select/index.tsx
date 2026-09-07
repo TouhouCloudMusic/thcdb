@@ -1,46 +1,113 @@
 import * as K_Select from "@kobalte/core/select"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { CaretSortIcon } from "@thc/icons/radix"
 import type { ComponentProps, JSX } from "solid-js"
-import { mergeProps } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import { mergeProps, splitProps } from "solid-js"
 
-import { INPUT_CLASSNAME } from "../../Input"
+import { palette } from "~/style/color/palette.stylex"
+import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
 
-const Root = K_Select.Root
+import { inputStyles } from "../../Input"
 
-const TRIGGER_CLASSNAME = twMerge(
-	INPUT_CLASSNAME,
-	"grid grid-cols-[1fr_auto] items-center gap-2 px-2 text-left font-light",
-)
-type TriggerProps = ComponentProps<typeof K_Select.Trigger>
-function Trigger(props: TriggerProps) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-			return twMerge(TRIGGER_CLASSNAME, props["class"] as string)
+const styles = stylex.create({
+	trigger: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		alignItems: "center",
+		gap: px[8],
+		paddingInline: px[8],
+		textAlign: "left",
+		fontWeight: 300,
+	},
+	value: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+	caret: { width: px[16], height: px[16], color: colors.textSecondary },
+	content: {
+		zIndex: 50,
+		maxHeight: px[256],
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.white,
+		boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+	},
+	listbox: { padding: px[4] },
+	item: {
+		cursor: "default",
+		borderRadius: radius.xs,
+		paddingInline: px[8],
+		paddingBlock: px[6],
+		fontSize: fontSizes.sm,
+		lineHeight: "1.25rem",
+		color: palette.slate[900],
+		userSelect: "none",
+		backgroundColor: {
+			default: null,
+			":is([data-highlighted])": palette.slate[100],
 		},
-	})
+		outlineStyle: { default: null, ":is([data-highlighted])": "none" },
+	},
+})
 
-	return <K_Select.Trigger {...finalProps} />
-}
-
-const VALUE_CLASSNAME = "truncate"
-type ValueProps<Option> = ComponentProps<typeof K_Select.Value<Option>>
-function Value<Option>(props: ValueProps<Option>) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			return twMerge(VALUE_CLASSNAME, props.class)
-		},
-	})
-
-	return <K_Select.Value {...finalProps} />
-}
-
-type IconProps = ComponentProps<typeof K_Select.Icon>
-function Icon(props: IconProps): JSX.Element {
+function Root<Option, OptGroup = never>(
+	props: ComponentProps<typeof K_Select.Root<Option, OptGroup, "div">> & {
+		styles?: StyleXStyles
+	},
+) {
+	const [local, others] = splitProps(props, ["styles"])
 	return (
-		<K_Select.Icon {...props}>
-			<CaretSortIcon class="size-4 text-secondary" />
+		<K_Select.Root<Option, OptGroup>
+			{...others}
+			{...stylex.attrs(local.styles)}
+		/>
+	)
+}
+
+type TriggerProps = ComponentProps<typeof K_Select.Trigger> & {
+	styles?: StyleXStyles
+}
+function Trigger(props: TriggerProps) {
+	const [local, others] = splitProps(props, ["styles"])
+
+	return (
+		<K_Select.Trigger
+			{...others}
+			{...stylex.attrs(
+				inputStyles.like,
+				inputStyles.input,
+				styles.trigger,
+				local.styles,
+			)}
+		/>
+	)
+}
+
+type ValueProps<Option> = ComponentProps<typeof K_Select.Value<Option>> & {
+	styles?: StyleXStyles
+}
+function Value<Option>(props: ValueProps<Option>) {
+	const [local, others] = splitProps(props, ["styles"])
+
+	return (
+		<K_Select.Value
+			{...others}
+			{...stylex.attrs(styles.value, local.styles)}
+		/>
+	)
+}
+
+type IconProps = ComponentProps<typeof K_Select.Icon> & {
+	styles?: StyleXStyles
+}
+function Icon(props: IconProps): JSX.Element {
+	const [local, others] = splitProps(props, ["styles"])
+	return (
+		<K_Select.Icon
+			{...others}
+			{...stylex.attrs(local.styles)}
+		>
+			<CaretSortIcon {...stylex.attrs(styles.caret)} />
 		</K_Select.Icon>
 	)
 }
@@ -50,46 +117,47 @@ function Portal(props: PortalProps): JSX.Element {
 	return <K_Select.Portal {...props} />
 }
 
-const CONTENT_CLASSNAME =
-	"z-50 max-h-64 rounded-sm border border-slate-300 bg-white shadow-sm"
-type ContentProps = ComponentProps<typeof K_Select.Content>
+type ContentProps = ComponentProps<typeof K_Select.Content> & {
+	styles?: StyleXStyles
+}
 function Content(props: ContentProps): JSX.Element {
-	const finalProps = mergeProps(props, {
-		sameWidth: true,
-		get class() {
-			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-			return twMerge(CONTENT_CLASSNAME, props["class"] as string)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
+	const finalProps = mergeProps(others, { sameWidth: true })
 
-	return <K_Select.Content {...finalProps} />
+	return (
+		<K_Select.Content
+			{...finalProps}
+			{...stylex.attrs(styles.content, local.styles)}
+		/>
+	)
 }
 
-const LISTBOX_CLASSNAME = "p-1"
-type ListboxProps = ComponentProps<typeof K_Select.Listbox>
+type ListboxProps = ComponentProps<typeof K_Select.Listbox> & {
+	styles?: StyleXStyles
+}
 function Listbox(props: ListboxProps): JSX.Element {
-	const finalProps = mergeProps(props, {
-		get class() {
-			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-			return twMerge(LISTBOX_CLASSNAME, props["class"] as string)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_Select.Listbox {...finalProps} />
+	return (
+		<K_Select.Listbox
+			{...others}
+			{...stylex.attrs(styles.listbox, local.styles)}
+		/>
+	)
 }
 
-const ITEM_CLASSNAME =
-	"cursor-default rounded-xs px-2 py-1.5 text-sm text-slate-900 select-none data-[highlighted]:bg-slate-100 data-[highlighted]:outline-none"
-type ItemProps = ComponentProps<typeof K_Select.Item>
+type ItemProps = ComponentProps<typeof K_Select.Item> & {
+	styles?: StyleXStyles
+}
 function Item(props: ItemProps): JSX.Element {
-	const finalProps = mergeProps(props, {
-		get class() {
-			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-			return twMerge(ITEM_CLASSNAME, props["class"] as string)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_Select.Item {...finalProps} />
+	return (
+		<K_Select.Item
+			{...others}
+			{...stylex.attrs(styles.item, local.styles)}
+		/>
+	)
 }
 
 export const Select = /*#__PURE__*/ Object.assign(Root, {

@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import type { Song } from "@thc/api"
 import { PlusIcon } from "@thc/icons/radix"
@@ -9,8 +10,35 @@ import type { JSX } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { EntitySearchDialog } from "./EntitySearchDialog"
+
+const styles = stylex.create({
+	trigger: { height: "max-content", padding: px[8] },
+	row: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	name: {
+		textAlign: "left",
+		fontSize: fontSizes.lg,
+		lineHeight: lineHeights.lg,
+		fontWeight: 300,
+		color: colors.textPrimary,
+	},
+	add: {
+		opacity: {
+			default: 0,
+			"@media (hover: hover)": { [stylex.when.ancestor(":hover")]: 1 },
+		},
+		transitionProperty: "opacity",
+		transitionDuration: "150ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+	icon: { width: px[16], height: px[16], color: colors.textTertiary },
+})
 
 type SongSearchDialogProps = {
 	onSelect: (song: Song) => void
@@ -50,9 +78,10 @@ export function SongSearchDialog(props: SongSearchDialogProps): JSX.Element {
 			trigger={
 				<Dialog.Trigger
 					as={Button}
-					variant="Tertiary"
-					class="h-max p-2"
 					disabled={props.disabled}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.trigger}
 				>
 					{props.icon}
 				</Dialog.Trigger>
@@ -62,12 +91,10 @@ export function SongSearchDialog(props: SongSearchDialogProps): JSX.Element {
 			items={items()}
 			onSelect={props.onSelect}
 			item={(song) => (
-				<div class="flex items-center justify-between">
-					<div class="text-left text-lg font-light text-primary">
-						{song.title}
-					</div>
-					<div class="opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-						<PlusIcon class="size-4 text-tertiary" />
+				<div {...stylex.attrs(styles.row)}>
+					<div {...stylex.attrs(styles.name)}>{song.title}</div>
+					<div {...stylex.attrs(styles.add)}>
+						<PlusIcon {...stylex.attrs(styles.icon)} />
 					</div>
 				</div>
 			)}

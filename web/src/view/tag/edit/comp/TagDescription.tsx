@@ -1,13 +1,18 @@
 import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { twMerge } from "tailwind-merge"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 
 import { InputField } from "~/component/atomic/form/Input"
 
 import { useTagForm } from "../context"
 
+const styles = stylex.create({
+	field: { display: "flex", flexDirection: "column" },
+})
+
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function TagFormDescriptionField(props: Props) {
@@ -20,7 +25,7 @@ export function TagFormDescriptionField(props: Props) {
 			path={["data", "description"]}
 		>
 			{(field) => (
-				<InputField.Root class={twMerge("flex flex-col", props.class)}>
+				<InputField.Root styles={[styles.field, props.styles]}>
 					<InputField.Label>{t`Description`}</InputField.Label>
 					<InputField.Textarea
 						{...field.props}

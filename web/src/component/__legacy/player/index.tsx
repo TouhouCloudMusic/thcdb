@@ -1,5 +1,156 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { createSignal, Show } from "solid-js"
+
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, size, radius } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	root: {
+		position: "fixed",
+		right: 0,
+		bottom: 0,
+		left: 0,
+		zIndex: 50,
+		height: size[80],
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderTopColor: palette.slate[200],
+		backgroundColor: palette.white,
+		boxShadow:
+			"0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1)",
+	},
+	container: {
+		width: "100%",
+		maxWidth: {
+			default: null,
+			"@media (min-width: 40rem)": size[640],
+			"@media (min-width: 48rem)": size[768],
+			"@media (min-width: 64rem)": size[1024],
+			"@media (min-width: 80rem)": size[1280],
+			"@media (min-width: 96rem)": size[1536],
+		},
+		marginInline: "auto",
+		display: "flex",
+		height: "100%",
+		alignItems: "center",
+		paddingInline: size[16],
+	},
+	details: { display: "flex", width: "25%", alignItems: "center" },
+	cover: {
+		marginRight: size[12],
+		height: size[48],
+		width: size[48],
+		overflow: "hidden",
+		borderRadius: radius.sm,
+	},
+	image: { height: "100%", width: "100%", objectFit: "cover" },
+	text: { overflow: "hidden" },
+	title: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: palette.slate[800],
+	},
+	artist: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	favorite: { marginLeft: size[16], color: palette.slate[400] },
+	icon: { height: size[20], width: size[20] },
+	controls: {
+		display: "flex",
+		width: "50%",
+		flexDirection: "column",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	buttons: { display: "flex", alignItems: "center" },
+	skip: {
+		color: {
+			default: palette.slate[500],
+			":hover": {
+				"@media (hover: hover)": palette.slate[700],
+			},
+		},
+		marginInlineEnd: { default: size[16], ":last-child": 0 },
+	},
+	play: {
+		borderRadius: radius.full,
+		padding: size[8],
+		color: palette.white,
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, translate, scale, rotate, filter, backdrop-filter, display, visibility, content-visibility, overlay, pointer-events",
+		transitionDuration: "150ms",
+		transitionTimingFunction: "cubic-bezier(.4,0,.2,1)",
+		marginInlineEnd: size[16],
+	},
+	playIcon: { height: size[24], width: size[24] },
+	progress: {
+		marginTop: size[8],
+		display: "flex",
+		width: "100%",
+		alignItems: "center",
+	},
+	elapsed: {
+		marginRight: size[8],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	track: {
+		height: size[4],
+		flex: "1",
+		overflow: "hidden",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[200],
+	},
+	fill: { height: "100%" },
+	duration: {
+		marginLeft: size[8],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	volume: {
+		display: "flex",
+		width: "25%",
+		alignItems: "center",
+		justifyContent: "flex-end",
+	},
+	volumeButton: {
+		marginRight: size[8],
+		color: {
+			default: palette.slate[500],
+			":hover": {
+				"@media (hover: hover)": palette.slate[700],
+			},
+		},
+	},
+	volumeTrack: {
+		height: size[4],
+		width: size[96],
+		overflow: "hidden",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[200],
+	},
+	queue: {
+		marginLeft: size[16],
+		color: {
+			default: palette.slate[500],
+			":hover": {
+				"@media (hover: hover)": palette.slate[700],
+			},
+		},
+	},
+})
 
 type Song = {
 	id: number
@@ -34,30 +185,28 @@ export function Player() {
 	}
 
 	return (
-		<div class="fixed right-0 bottom-0 left-0 z-50 h-20 border-t border-slate-200 bg-white shadow-lg">
-			<div class="container mx-auto flex h-full items-center px-4">
+		<div {...stylex.attrs(styles.root)}>
+			<div {...stylex.attrs(styles.container)}>
 				{/* 歌曲信息 */}
-				<div class="flex w-1/4 items-center">
+				<div {...stylex.attrs(styles.details)}>
 					<Show when={currentSong()}>
 						{(song) => (
 							<>
-								<div class="mr-3 h-12 w-12 overflow-hidden rounded">
+								<div {...stylex.attrs(styles.cover)}>
 									<img
 										src={song().coverUrl}
 										alt={song().title}
-										class="h-full w-full object-cover"
+										{...stylex.attrs(styles.image)}
 									/>
 								</div>
-								<div class="overflow-hidden">
-									<h4 class="truncate text-sm font-medium text-slate-800">
-										{song().title}
-									</h4>
-									<p class="truncate text-xs text-slate-500">{song().artist}</p>
+								<div {...stylex.attrs(styles.text)}>
+									<h4 {...stylex.attrs(styles.title)}>{song().title}</h4>
+									<p {...stylex.attrs(styles.artist)}>{song().artist}</p>
 								</div>
-								<button class="hover:text-rose-600 ml-4 text-slate-400">
+								<button {...stylex.attrs(styles.favorite)}>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
-										class="h-5 w-5"
+										{...stylex.attrs(styles.icon)}
 										fill="none"
 										viewBox="0 0 24 24"
 										stroke="currentColor"
@@ -76,12 +225,12 @@ export function Player() {
 				</div>
 
 				{/* 播放控制 */}
-				<div class="flex w-2/4 flex-col items-center justify-center">
-					<div class="flex items-center space-x-4">
-						<button class="text-slate-500 hover:text-slate-700">
+				<div {...stylex.attrs(styles.controls)}>
+					<div {...stylex.attrs(styles.buttons)}>
+						<button {...stylex.attrs(styles.skip)}>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5"
+								{...stylex.attrs(styles.icon)}
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
@@ -96,7 +245,7 @@ export function Player() {
 						</button>
 
 						<button
-							class="bg-rose-600 hover:bg-rose-700 rounded-full p-2 text-white transition"
+							{...stylex.attrs(styles.play)}
 							onClick={togglePlay}
 						>
 							<Show
@@ -104,7 +253,7 @@ export function Player() {
 								fallback={
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
-										class="h-6 w-6"
+										{...stylex.attrs(styles.playIcon)}
 										fill="none"
 										viewBox="0 0 24 24"
 										stroke="currentColor"
@@ -120,7 +269,7 @@ export function Player() {
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6"
+									{...stylex.attrs(styles.playIcon)}
 									fill="none"
 									viewBox="0 0 24 24"
 									stroke="currentColor"
@@ -135,10 +284,10 @@ export function Player() {
 							</Show>
 						</button>
 
-						<button class="text-slate-500 hover:text-slate-700">
+						<button {...stylex.attrs(styles.skip)}>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5"
+								{...stylex.attrs(styles.icon)}
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
@@ -153,30 +302,30 @@ export function Player() {
 						</button>
 					</div>
 
-					<div class="mt-2 flex w-full items-center">
-						<span class="mr-2 text-xs text-slate-500">
+					<div {...stylex.attrs(styles.progress)}>
+						<span {...stylex.attrs(styles.elapsed)}>
 							{formatTime(currentTime())}
 						</span>
-						<div class="h-1 flex-1 overflow-hidden rounded-full bg-slate-200">
+						<div {...stylex.attrs(styles.track)}>
 							<div
-								class="bg-rose-600 h-full"
+								{...stylex.attrs(styles.fill)}
 								style={{
 									width: `${(currentTime() / (currentSong()?.duration || 1)) * 100}%`,
 								}}
 							></div>
 						</div>
-						<span class="ml-2 text-xs text-slate-500">
+						<span {...stylex.attrs(styles.duration)}>
 							{formatTime(currentSong()?.duration || 0)}
 						</span>
 					</div>
 				</div>
 
 				{/* 音量控制 */}
-				<div class="flex w-1/4 items-center justify-end">
-					<button class="mr-2 text-slate-500 hover:text-slate-700">
+				<div {...stylex.attrs(styles.volume)}>
+					<button {...stylex.attrs(styles.volumeButton)}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
+							{...stylex.attrs(styles.icon)}
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
@@ -190,17 +339,17 @@ export function Player() {
 						</svg>
 					</button>
 
-					<div class="h-1 w-24 overflow-hidden rounded-full bg-slate-200">
+					<div {...stylex.attrs(styles.volumeTrack)}>
 						<div
-							class="bg-rose-600 h-full"
+							{...stylex.attrs(styles.fill)}
 							style={{ width: `${volume()}%` }}
 						></div>
 					</div>
 
-					<button class="ml-4 text-slate-500 hover:text-slate-700">
+					<button {...stylex.attrs(styles.queue)}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
+							{...stylex.attrs(styles.icon)}
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"

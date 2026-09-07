@@ -7,12 +7,13 @@ import {
 	setInput,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import type { Song, SongRef, SongRelation } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { FormComp, Select } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
@@ -20,12 +21,101 @@ import { FieldArrayFallback } from "~/component/form"
 import { SongSearchDialog } from "~/component/form/SearchDialog"
 import { songRelationTypes } from "~/hey-api"
 import type { SongRelationType as SongRelationTypeLookup } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 
 import type { SongFormStore } from "./types"
 
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+	},
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: {
+		margin: 0,
+	},
+	addButton: {
+		height: "max-content",
+		padding: px[8],
+	},
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+	entries: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+		gap: px[8],
+	},
+	entry: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) 12rem minmax(0,1fr) auto",
+		columnGap: px[8],
+		rowGap: px[4],
+	},
+	selection: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) auto",
+		alignItems: "center",
+		columnGap: px[8],
+	},
+	placeholder: {
+		color: colors.textTertiary,
+	},
+	value: {
+		color: colors.textPrimary,
+	},
+	column: {
+		display: "flex",
+		flexDirection: "column",
+	},
+	control: {
+		width: "100%",
+	},
+	descriptionInput: {
+		height: px[36],
+		width: "100%",
+		borderRadius: radius.md,
+		borderWidth: 1,
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingInline: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textPrimary,
+	},
+	removeButton: {
+		aspectRatio: "1 / 1",
+	},
+	removeIcon: {
+		marginInline: "auto",
+	},
+	errors: {
+		gridColumn: "span 4 / span 4",
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+	},
+})
+
 type Props = {
 	of: SongFormStore
-	class?: string
+	styles?: StyleXStyles
 	currentSongId?: number
 	initRelations?: SongRelation[]
 }
@@ -93,21 +183,24 @@ export function SongRelationsField(props: Props) {
 	}
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Relations`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Relations`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addRelation}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.addButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
 			<FormComp.ErrorList
 				errors={getErrors(props.of, { path: ["data", "relations"] })}
 			/>
-			<ul class="flex min-h-32 flex-col gap-2">
+			<ul {...stylex.attrs(styles.entries)}>
 				<FieldArray
 					of={props.of}
 					path={["data", "relations"]}
@@ -182,18 +275,20 @@ function RelationRow(props: RelationRowProps) {
 	}
 
 	return (
-		<li class="grid grid-cols-[minmax(0,1fr)_12rem_minmax(0,1fr)_auto] gap-x-2 gap-y-1">
-			<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
+		<li {...stylex.attrs(styles.entry)}>
+			<div {...stylex.attrs(styles.selection)}>
 				<Show
 					when={props.songRef?.title}
-					fallback={<span class="text-tertiary">{t`Select song`}</span>}
+					fallback={
+						<span {...stylex.attrs(styles.placeholder)}>{t`Select song`}</span>
+					}
 				>
-					{(value) => <span class="text-primary">{value()}</span>}
+					{(value) => <span {...stylex.attrs(styles.value)}>{value()}</span>}
 				</Show>
 				<SongSearchDialog
 					onSelect={props.onSelectSong}
 					dataFilter={dataFilter()}
-					icon={<Pencil1Icon class="size-4" />}
+					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
 				/>
 			</div>
 			<Field
@@ -201,10 +296,10 @@ function RelationRow(props: RelationRowProps) {
 				path={["data", "relations", props.index, "relation_type_id"]}
 			>
 				{(field) => (
-					<div class="flex flex-col">
+					<div {...stylex.attrs(styles.column)}>
 						<Select.Root<string>
 							name={field.props.name}
-							class="w-full"
+							{...stylex.attrs(styles.control)}
 							value={field.input?.toString() ?? EMPTY_RELATION_TYPE_ID}
 							onChange={(value) => field.onInput(parseRelationTypeId(value))}
 							options={relationTypeOptions()}
@@ -220,7 +315,7 @@ function RelationRow(props: RelationRowProps) {
 								onBlur={field.props.onBlur}
 								onFocus={field.props.onFocus}
 							/>
-							<Select.Trigger class="w-full">
+							<Select.Trigger styles={[styles.control]}>
 								<Select.Value<string>>
 									{(state) => relationTypeLabel(state.selectedOption())}
 								</Select.Value>
@@ -245,10 +340,10 @@ function RelationRow(props: RelationRowProps) {
 				path={["data", "relations", props.index, "description"]}
 			>
 				{(field) => (
-					<div class="flex flex-col">
+					<div {...stylex.attrs(styles.column)}>
 						<input
 							{...field.props}
-							class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm text-primary"
+							{...stylex.attrs(styles.descriptionInput)}
 							placeholder={t`Description`}
 							value={field.input ?? ""}
 						/>
@@ -261,11 +356,12 @@ function RelationRow(props: RelationRowProps) {
 				)}
 			</Field>
 			<Button
-				variant="Tertiary"
 				onClick={props.onRemove}
-				class="aspect-square"
+				appearance="ghost"
+				tone="gray"
+				styles={styles.removeButton}
 			>
-				<Cross1Icon class="mx-auto" />
+				<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
 			</Button>
 			<Field
 				of={props.of}
@@ -279,7 +375,7 @@ function RelationRow(props: RelationRowProps) {
 							hidden
 							value={field.input ?? undefined}
 						/>
-						<ul class="col-span-4 grid grid-cols-subgrid">
+						<ul {...stylex.attrs(styles.errors)}>
 							<FormComp.ErrorList errors={field.errors} />
 						</ul>
 					</>

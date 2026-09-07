@@ -1,22 +1,29 @@
 import { Field } from "@formisch/solid"
 import { Trans, useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import type { TagType } from "@thc/api"
-import { For } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import { createUniqueId, For } from "solid-js"
 
 import { FormComp, Select } from "~/component/atomic"
+import { formStyles } from "~/style/primitives"
 
 import { useTagForm } from "../context"
+
+const styles = stylex.create({
+	field: { display: "flex", flexDirection: "column" },
+})
 
 const TAG_TYPES: TagType[] = ["Descriptor", "Genre", "Movement", "Scene"]
 
 const TAG_TYPE_VALUE_OPTIONS: ("" | TagType)[] = ["", ...TAG_TYPES]
 
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function TagFormTypeField(props: Props) {
+	const triggerId = createUniqueId()
 	const { t } = useLingui()
 	const { formStore } = useTagForm()
 
@@ -26,10 +33,13 @@ export function TagFormTypeField(props: Props) {
 			path={["data", "type"]}
 		>
 			{(field) => (
-				<div class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>
+				<div {...stylex.attrs(styles.field, props.styles)}>
+					<label
+						for={triggerId}
+						{...stylex.attrs(formStyles.label)}
+					>
 						<Trans>Tag Type</Trans>
-					</FormComp.Label>
+					</label>
 					<Select.Root<"" | TagType>
 						name={field.props.name}
 						value={field.input ?? ""}
@@ -52,7 +62,7 @@ export function TagFormTypeField(props: Props) {
 							onBlur={field.props.onBlur}
 							onFocus={field.props.onFocus}
 						/>
-						<Select.Trigger>
+						<Select.Trigger id={triggerId}>
 							<Select.Value<string>>
 								{(state) => {
 									const selectedOption = state.selectedOption()

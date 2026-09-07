@@ -1,22 +1,46 @@
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { For, Show } from "solid-js"
 
-import { Link } from "~/component/atomic"
 import type { LabelListItem } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	item: { minWidth: "0rem" },
+	name: {
+		overflowWrap: "break-word",
+		fontSize: fontSizes.base,
+		lineHeight: 1.5,
+		textDecorationLine: "none",
+		textDecorationColor: palette.slate[300],
+		textUnderlineOffset: "2px",
+	},
+	details: {
+		marginTop: px[4],
+		overflowWrap: "break-word",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	releaseLink: { color: colors.textTertiary, textDecorationLine: "none" },
+})
 
 export function LabelItem(props: { label: LabelListItem }) {
 	const foundedYear = () => props.label.founded_date?.value.slice(0, 4)
 
 	return (
-		<div class="min-w-0">
+		<div {...stylex.attrs(styles.item)}>
 			<Link
 				to="/label/$id"
 				params={{ id: props.label.id.toString() }}
-				class="wrap-break-word text-base no-underline decoration-slate-300 underline-offset-2"
+				class={stylex.attrs(link.base, link.text, styles.name).class}
 			>
 				{props.label.name}
 			</Link>
 
-			<div class="mt-1 wrap-break-word text-sm text-tertiary">
+			<div {...stylex.attrs(styles.details)}>
 				<Show when={foundedYear()}>
 					{(year) => (
 						<>
@@ -31,7 +55,9 @@ export function LabelItem(props: { label: LabelListItem }) {
 							<Link
 								to="/artist/$id"
 								params={{ id: founder.id.toString() }}
-								class="text-tertiary no-underline"
+								class={
+									stylex.attrs(link.base, link.text, styles.releaseLink).class
+								}
 							>
 								{founder.name}
 							</Link>

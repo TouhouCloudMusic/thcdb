@@ -1,15 +1,14 @@
 import { Trans, useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import { Link } from "@tanstack/solid-router"
 import { CorrectionQueryOption } from "@thc/query"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
 import type { JSX } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
-import { Card } from "~/component/atomic/Card"
-import { INPUT_LIKE_BASE_CLASS } from "~/component/atomic/Input"
-import { Link } from "~/component/atomic/Link"
+import { inputStyles } from "~/component/atomic/Input"
 import { Avatar } from "~/component/atomic/avatar"
-import { Button, ButtonClass_new } from "~/component/atomic/button"
+import { Button, buttonStyles } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { showErrorToast, showSuccessToast } from "~/component/toast"
@@ -27,6 +26,17 @@ import {
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { surfaceStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { formatTimestamp } from "~/utils/dateTime"
 import { getErrorMessage } from "~/utils/getErrorMessage"
 import { useEntityComments } from "~/view/comment/useEntityComments"
@@ -39,7 +49,229 @@ import {
 } from "./entityMap"
 import { invalidatePendingCorrection } from "./pendingCorrection"
 
-const DETAIL_LABEL_CLASS = "text-sm text-tertiary"
+const styles = stylex.create({
+	headerChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[16] },
+	},
+	fieldChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[4] },
+	},
+	listChild: {
+		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
+		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: palette.slate[200],
+	},
+	diffHeadingChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[4] },
+	},
+	before: {
+		backgroundColor: palette.reimu[100],
+		borderColor: palette.reimu[200],
+	},
+	after: {
+		backgroundColor: palette.green[100],
+		borderColor: palette.green[200],
+	},
+	heading: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		justifyContent: "space-between",
+		columnGap: px[16],
+		rowGap: px[8],
+	},
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	metadata: {
+		display: "flex",
+		flexWrap: "wrap",
+		columnGap: px[48],
+		rowGap: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	fieldLabel: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	author: {
+		display: "inline-flex",
+		alignItems: "center",
+		gap: px[8],
+		color: colors.textSecondary,
+	},
+	avatar: { width: px[20], height: px[20] },
+	mobileValueLabel: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: ".025em",
+		color: colors.textTertiary,
+		display: { default: null, "@media (min-width: 48rem)": "none" },
+	},
+	value: {
+		marginTop: 0,
+		marginRight: 0,
+		marginBottom: 0,
+		marginLeft: 0,
+		maxHeight: px[256],
+		overflow: "auto",
+		borderRadius: radius.md,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: "1.25rem",
+		whiteSpace: "pre-wrap",
+		color: palette.slate[800],
+	},
+	diffColumns: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		display: { default: "none", "@media (min-width: 48rem)": "grid" },
+		borderColor: palette.slate[200],
+		gridTemplateColumns: {
+			default: null,
+			"@media (min-width: 48rem)": "12rem 1fr 1fr",
+		},
+		gap: { default: null, "@media (min-width: 48rem)": px[12] },
+		paddingLeft: { default: null, "@media (min-width: 48rem)": px[16] },
+		paddingRight: { default: null, "@media (min-width: 48rem)": px[16] },
+		paddingTop: { default: null, "@media (min-width: 48rem)": px[8] },
+		paddingBottom: { default: null, "@media (min-width: 48rem)": px[8] },
+	},
+	columnLabel: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: ".025em",
+		color: colors.textTertiary,
+	},
+	item: {
+		display: "grid",
+		gap: px[12],
+		paddingLeft: px[16],
+		paddingRight: px[16],
+		paddingTop: px[12],
+		paddingBottom: px[12],
+		gridTemplateColumns: {
+			default: null,
+			"@media (min-width: 48rem)": "12rem 1fr 1fr",
+		},
+		alignItems: { default: null, "@media (min-width: 48rem)": "flex-start" },
+	},
+	fieldNameCell: { minWidth: 0 },
+	fieldName: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textSecondary,
+	},
+	diffStatus: {
+		paddingLeft: px[16],
+		paddingRight: px[16],
+		paddingTop: px[12],
+		paddingBottom: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	actionSection: {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "flex-end",
+		gap: px[8],
+	},
+	actions: {
+		display: "flex",
+		flexWrap: "wrap",
+		justifyContent: "flex-end",
+		gap: px[8],
+	},
+	actionError: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.reimu[700],
+	},
+	pageLayout: {
+		paddingTop: px[32],
+		paddingRight: px[32],
+		paddingBottom: px[32],
+		paddingLeft: px[32],
+	},
+	detail: { display: "flex", flexDirection: "column", gap: px[24] },
+	card: {
+		overflow: "hidden",
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingTop: 0,
+		paddingRight: 0,
+		paddingBottom: 0,
+		paddingLeft: 0,
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	diffHeader: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[16],
+		borderColor: palette.slate[300],
+		paddingLeft: px[16],
+		paddingRight: px[16],
+		paddingTop: px[12],
+		paddingBottom: px[12],
+	},
+	diffHeading: { minWidth: 0 },
+	compareStatus: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	compare: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		gap: px[8],
+	},
+	compareSelect: {
+		height: px[36],
+		minWidth: px[208],
+		paddingLeft: px[8],
+		paddingRight: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+})
 
 type CorrectionHeaderProps = {
 	correction: CorrectionDetail
@@ -65,12 +297,13 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 	const entityTypeText = () => entityLabel().toLowerCase()
 
 	return (
-		<header class="space-y-4">
-			<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-				<h1 class="text-2xl font-light tracking-tight text-primary">
+		<header>
+			<div {...stylex.attrs(styles.headerChild, styles.heading)}>
+				<h1 {...stylex.attrs(styles.title)}>
 					<Trans>
 						Correction of {entityTypeText()}{" "}
 						<Link
+							class={stylex.attrs(link.base, link.text).class}
 							to={entityRoute()}
 							params={{ id: props.correction.entity_id.toString() }}
 						>
@@ -81,32 +314,53 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 				{props.actions}
 			</div>
 
-			<div class="flex flex-wrap gap-x-12 gap-y-3 text-sm text-secondary">
-				<div class="space-y-1">
-					<div class={DETAIL_LABEL_CLASS}>{t`Type`}</div>
-					<span>{props.correction.type}</span>
+			<div {...stylex.attrs(styles.headerChild, styles.metadata)}>
+				<div>
+					<div
+						{...stylex.attrs(styles.fieldChild, styles.fieldLabel)}
+					>{t`Type`}</div>
+					<span {...stylex.attrs(styles.fieldChild)}>
+						{props.correction.type}
+					</span>
 				</div>
-				<div class="space-y-1">
-					<div class={DETAIL_LABEL_CLASS}>{t`Author`}</div>
+				<div>
+					<div
+						{...stylex.attrs(styles.fieldChild, styles.fieldLabel)}
+					>{t`Author`}</div>
 					<Link
 						to="/profile/$username"
 						params={{ username: props.correction.author.name }}
-						class="inline-flex items-center gap-2 text-secondary"
+						class={
+							stylex.attrs(
+								link.base,
+								link.text,
+								styles.fieldChild,
+								styles.author,
+							).class
+						}
 					>
 						<Avatar
 							user={props.correction.author}
-							class="size-5"
+							styles={styles.avatar}
 						/>
 						<span>{props.correction.author.name}</span>
 					</Link>
 				</div>
-				<div class="space-y-1">
-					<div class={DETAIL_LABEL_CLASS}>{t`Created`}</div>
-					<span>{formatTimestamp(props.correction.created_at, t`None`)}</span>
+				<div>
+					<div
+						{...stylex.attrs(styles.fieldChild, styles.fieldLabel)}
+					>{t`Created`}</div>
+					<span {...stylex.attrs(styles.fieldChild)}>
+						{formatTimestamp(props.correction.created_at, t`None`)}
+					</span>
 				</div>
-				<div class="space-y-1">
-					<div class={DETAIL_LABEL_CLASS}>{t`Status`}</div>
-					<span>{props.correction.status}</span>
+				<div>
+					<div
+						{...stylex.attrs(styles.fieldChild, styles.fieldLabel)}
+					>{t`Status`}</div>
+					<span {...stylex.attrs(styles.fieldChild)}>
+						{props.correction.status}
+					</span>
 				</div>
 			</div>
 		</header>
@@ -114,8 +368,8 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 }
 
 const DIFF_TONE = {
-	before: "bg-reimu-100 border-reimu-200",
-	after: "bg-green-100 border-green-200",
+	before: styles.before,
+	after: styles.after,
 }
 
 type DiffValueProps = {
@@ -128,14 +382,15 @@ function DiffValue(props: DiffValueProps) {
 	const { t } = useLingui()
 
 	return (
-		<div class="space-y-1">
-			<div class="text-xs font-medium tracking-wide text-tertiary md:hidden">
+		<div>
+			<div {...stylex.attrs(styles.fieldChild, styles.mobileValueLabel)}>
 				{props.label}
 			</div>
 			<pre
-				class={twMerge(
-					"m-0 max-h-64 overflow-auto rounded-md border px-3 py-2 font-mono text-xs leading-5 break-words whitespace-pre-wrap text-slate-800",
+				{...stylex.attrs(
+					styles.value,
 					DIFF_TONE[props.variant],
+					styles.fieldChild,
 				)}
 			>
 				{props.value ?? t`None`}
@@ -157,24 +412,18 @@ function DiffEntries(props: DiffEntriesProps) {
 		<Switch
 			fallback={
 				<div>
-					<div class="hidden border-b border-slate-200 md:grid md:grid-cols-[12rem_1fr_1fr] md:gap-3 md:px-4 md:py-2">
-						<div class="text-xs font-medium tracking-wide text-tertiary">
-							{t`Field`}
-						</div>
-						<div class="text-xs font-medium tracking-wide text-tertiary">
-							{t`Before`}
-						</div>
-						<div class="text-xs font-medium tracking-wide text-tertiary">
-							{t`After`}
-						</div>
+					<div {...stylex.attrs(styles.diffColumns)}>
+						<div {...stylex.attrs(styles.columnLabel)}>{t`Field`}</div>
+						<div {...stylex.attrs(styles.columnLabel)}>{t`Before`}</div>
+						<div {...stylex.attrs(styles.columnLabel)}>{t`After`}</div>
 					</div>
-					<ul class="divide-y divide-slate-200">
+					<ul>
 						<For each={entries()}>
 							{(entry) => (
-								<li class="grid gap-3 px-4 py-3 md:grid-cols-[12rem_1fr_1fr] md:items-start">
-									<div class="min-w-0">
+								<li {...stylex.attrs(styles.listChild, styles.item)}>
+									<div {...stylex.attrs(styles.fieldNameCell)}>
 										<div
-											class="truncate font-mono text-xs text-secondary"
+											{...stylex.attrs(styles.fieldName)}
 											title={entry.path}
 										>
 											{entry.path}
@@ -198,30 +447,27 @@ function DiffEntries(props: DiffEntriesProps) {
 			}
 		>
 			<Match when={props.isLoading}>
-				<div class="px-4 py-3 text-sm text-tertiary">{t`Loading diff...`}</div>
+				<div
+					{...stylex.attrs(styles.listChild, styles.diffStatus)}
+				>{t`Loading diff...`}</div>
 			</Match>
 			<Match when={entries().length === 0}>
-				<div class="px-4 py-3 text-sm text-tertiary">
-					{t`No changes detected.`}
-				</div>
+				<div
+					{...stylex.attrs(styles.listChild, styles.diffStatus)}
+				>{t`No changes detected.`}</div>
 			</Match>
 		</Switch>
 	)
 }
 
-const SECTION_CARD_CLASS =
-	"overflow-hidden border border-slate-300 p-0 shadow-xs"
-const SECTION_HEADER_CLASS =
-	"bg-slate-50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-300 px-4 py-3"
-const DIFF_HEADER_TITLE_CLASS = "text-sm text-tertiary"
 const COMPARE_BASELINE_VALUE = "__baseline__"
 
 type ConfirmActionButtonProps = {
 	title: string
 	description: string
 	confirmText: string
-	color: "Green" | "Reimu"
-	variant: "Primary" | "Secondary"
+	tone: "green" | "reimu"
+	appearance: "solid" | "soft"
 	disabled: boolean
 	onConfirm: () => void
 	children: string
@@ -243,10 +489,10 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 			triggerAs={(triggerProps) => (
 				<Button
 					{...triggerProps}
-					variant={props.variant}
-					color={props.color}
-					size="Sm"
 					disabled={props.disabled}
+					appearance={props.appearance}
+					tone={props.tone}
+					size="sm"
 				>
 					{props.children}
 				</Button>
@@ -281,16 +527,24 @@ function CorrectionActions(props: CorrectionActionsProps) {
 
 	return (
 		<Show when={isPending()}>
-			<div class="flex flex-col items-end gap-2">
-				<div class="flex flex-wrap justify-end gap-2">
+			<div {...stylex.attrs(styles.actionSection)}>
+				<div {...stylex.attrs(styles.actions)}>
 					<Show when={editRoute()}>
 						{(route) => (
 							<Link
 								to={route()}
 								params={{ id: props.correction.entity_id.toString() }}
 								search={{ correctionId: props.correction.id }}
-								underline={false}
-								class={ButtonClass_new({ variant: "Secondary", size: "Sm" })}
+								class={
+									stylex.attrs(
+										link.base,
+										buttonStyles.base,
+										buttonStyles.soft,
+										buttonStyles.gray,
+										buttonStyles.softGray,
+										buttonStyles.sm,
+									).class
+								}
 							>
 								{t`Edit`}
 							</Link>
@@ -303,8 +557,8 @@ function CorrectionActions(props: CorrectionActionsProps) {
 								message: "This will apply the correction to the target entity.",
 							})}
 							confirmText={t`Approve`}
-							color="Green"
-							variant="Primary"
+							tone="green"
+							appearance="solid"
 							disabled={props.isBusy || !isPending()}
 							onConfirm={props.onApprove}
 						>
@@ -316,8 +570,8 @@ function CorrectionActions(props: CorrectionActionsProps) {
 								message: "This will mark the correction as rejected.",
 							})}
 							confirmText={t`Reject`}
-							color="Reimu"
-							variant="Secondary"
+							tone="reimu"
+							appearance="soft"
 							disabled={props.isBusy || !isPending()}
 							onConfirm={props.onReject}
 						>
@@ -326,7 +580,9 @@ function CorrectionActions(props: CorrectionActionsProps) {
 					</Show>
 				</div>
 				<Show when={props.errorMessage}>
-					{(message) => <div class="text-xs text-reimu-700">{message()}</div>}
+					{(message) => (
+						<div {...stylex.attrs(styles.actionError)}>{message()}</div>
+					)}
 				</Show>
 			</div>
 		</Show>
@@ -372,13 +628,13 @@ function CorrectionSubscribeButton(props: CorrectionSubscribeButtonProps) {
 
 	return (
 		<Button
-			variant="Secondary"
-			color="Reimu"
-			size="Sm"
 			onClick={toggle}
 			disabled={
 				mutation.isPending || userCtx.session.status !== "authenticated"
 			}
+			appearance="soft"
+			tone="reimu"
+			size="sm"
 		>
 			{props.isSubscribed ? t`Unsubscribe` : t`Subscribe`}
 		</Button>
@@ -501,13 +757,15 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 	})
 
 	return (
-		<PageLayout class="p-8">
+		<PageLayout styles={styles.pageLayout}>
 			<Show
 				when={correctionQuery.data}
-				fallback={<div class="text-sm text-tertiary">{t`Loading...`}</div>}
+				fallback={
+					<div {...stylex.attrs(styles.fieldLabel)}>{t`Loading...`}</div>
+				}
 			>
 				{(correction) => (
-					<div class="flex flex-col gap-6">
+					<div {...stylex.attrs(styles.detail)}>
 						<CorrectionHeader
 							correction={correction()}
 							actions={
@@ -530,24 +788,39 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 								</>
 							}
 						/>
-						<Card class={SECTION_CARD_CLASS}>
-							<div class={SECTION_HEADER_CLASS}>
-								<div class="min-w-0 space-y-1">
-									<div class={DIFF_HEADER_TITLE_CLASS}>{t`DIFF`}</div>
+						<div {...stylex.attrs(surfaceStyles.card, styles.card)}>
+							<div {...stylex.attrs(styles.diffHeader)}>
+								<div {...stylex.attrs(styles.diffHeading)}>
+									<div
+										{...stylex.attrs(
+											styles.fieldLabel,
+											styles.diffHeadingChild,
+										)}
+									>{t`DIFF`}</div>
 									<Switch>
 										<Match when={diffQuery.isLoading}>
-											<div class="text-xs text-tertiary">{t`Loading...`}</div>
+											<div
+												{...stylex.attrs(
+													styles.compareStatus,
+													styles.diffHeadingChild,
+												)}
+											>{t`Loading...`}</div>
 										</Match>
 										<Match when={!diffQuery.data}>
-											<div class="text-xs text-tertiary">
+											<div
+												{...stylex.attrs(
+													styles.compareStatus,
+													styles.diffHeadingChild,
+												)}
+											>
 												{t`No diff data.`}
 											</div>
 										</Match>
 									</Switch>
 								</div>
 
-								<label class="flex flex-wrap items-center gap-2">
-									<span class={DETAIL_LABEL_CLASS}>{t`Compare`}</span>
+								<label {...stylex.attrs(styles.compare)}>
+									<span {...stylex.attrs(styles.fieldLabel)}>{t`Compare`}</span>
 									<Select.Root<string>
 										options={compareSelectOptions()}
 										value={
@@ -567,10 +840,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 										)}
 									>
 										<Select.Trigger
-											class={twMerge(
-												INPUT_LIKE_BASE_CLASS,
-												"h-9 min-w-52 px-2 text-sm",
-											)}
+											styles={[inputStyles.like, styles.compareSelect]}
 										>
 											<Select.Value<string>>
 												{(state) => getCompareLabel(state.selectedOption())}
@@ -590,7 +860,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 								changes={diffQuery.data?.changes}
 								isLoading={diffQuery.isLoading}
 							/>
-						</Card>
+						</div>
 
 						<Show
 							when={correction().id}

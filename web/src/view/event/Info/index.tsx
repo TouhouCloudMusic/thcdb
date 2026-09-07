@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { CorrectionHistoryItem, Event } from "@thc/api"
 import { createSignal, Show, Suspense } from "solid-js"
 
@@ -7,19 +8,64 @@ import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
+import { colors, fontSizes, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
-import {
-	ADD_TO_COLLECTION_ACTIONS_CLASS,
-	AddToUserCollectionButton,
-} from "~/view/collection/AddToUserCollectionButton"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { entityDetailStyles } from "~/view/entity/detailStyles"
 
 import { EventInfoPageContext } from "./context"
 import type { EventInfoPageContextValue } from "./context"
+
+const styles = stylex.create({
+	page: { padding: "clamp(1rem,4vw,2rem)" },
+	pageContent: { display: "flex", flexDirection: "column", rowGap: px[24] },
+	headerSection: { display: "flex", flexDirection: "column", rowGap: px[16] },
+	title: {
+		fontSize: fontSizes["3xl"],
+		lineHeight: 1.25,
+		fontWeight: 300,
+		letterSpacing: "-.025em",
+		color: colors.textPrimary,
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	shortDescription: {
+		letterSpacing: ".025em",
+		color: colors.textTertiary,
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	metadata: {
+		display: "grid",
+		gridTemplateColumns: "auto 1fr",
+		columnGap: px[16],
+		rowGap: px[8],
+	},
+	muted: { color: colors.textTertiary },
+	dateSeparator: { whiteSpace: "pre", color: colors.textTertiary },
+	alternativeNames: {
+		display: "flex",
+		flexWrap: "wrap",
+		gap: px[2],
+		whiteSpace: "pre",
+	},
+	separator: { whiteSpace: "pre" },
+	primary: { color: colors.textPrimary },
+	links: { display: "contents" },
+	tabTrigger: { paddingBlock: px[12] },
+	tabContent: { padding: px[16] },
+	descriptionContainer: { padding: px[8] },
+	description: {
+		fontSize: fontSizes.base,
+		lineHeight: 1.625,
+		fontWeight: 300,
+		whiteSpace: "pre-wrap",
+		color: colors.textSecondary,
+	},
+})
 
 type EventInfoPageProps = {
 	event: Event
@@ -35,13 +81,13 @@ export function EventInfoPage(props: EventInfoPageProps) {
 	}
 
 	return (
-		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
+		<PageLayout styles={styles.page}>
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<EventInfoPageContext.Provider value={contextValue}>
-					<div class="flex flex-col gap-y-6">
-						<div class="flex flex-col gap-y-4">
+					<div {...stylex.attrs(styles.pageContent)}>
+						<div {...stylex.attrs(styles.headerSection)}>
 							<EventInfoHeader />
-							<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+							<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
 								<AddToUserCollectionButton
 									entityType="Event"
 									entityId={props.event.id}
@@ -69,16 +115,14 @@ function EventInfoHeader() {
 	const hasAlternativeNames = () => alternativeNames().length > 0
 	return (
 		<>
-			<header class="space-y-2">
-				<h1 class="text-3xl leading-tight font-light tracking-tight text-primary">
-					{ctx.event.name}
-				</h1>
-				<p class="tracking-wide text-tertiary">
+			<header>
+				<h1 {...stylex.attrs(styles.title)}>{ctx.event.name}</h1>
+				<p {...stylex.attrs(styles.shortDescription)}>
 					{ctx.event.short_description ?? t`Short description is not provided`}
 				</p>
 			</header>
-			<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-				<span class="text-tertiary">{t`Date`}</span>
+			<div {...stylex.attrs(styles.metadata)}>
+				<span {...stylex.attrs(styles.muted)}>{t`Date`}</span>
 
 				<Show
 					when={ctx.event.start_date}
@@ -87,33 +131,31 @@ function EventInfoHeader() {
 					<div>
 						<span>{DateWithPrecision.display(ctx.event.start_date)}</span>
 						<Show when={ctx.event.end_date}>
-							<span class="whitespace-pre text-tertiary"> - </span>
+							<span {...stylex.attrs(styles.dateSeparator)}> - </span>
 							<span>{DateWithPrecision.display(ctx.event.end_date)}</span>
 						</Show>
 					</div>
 				</Show>
 				<Show when={hasAlternativeNames()}>
-					<span class="text-tertiary">{t`AKAs`}</span>
-					<ul class="flex flex-wrap gap-0.5 whitespace-pre">
+					<span {...stylex.attrs(styles.muted)}>{t`AKAs`}</span>
+					<ul {...stylex.attrs(styles.alternativeNames)}>
 						<Intersperse
 							of={alternativeNames()}
-							with={<span class="whitespace-pre">, </span>}
+							with={<span {...stylex.attrs(styles.separator)}>, </span>}
 						>
-							{(alt) => <li class="text-primary">{alt.name}</li>}
+							{(alt) => <li {...stylex.attrs(styles.primary)}>{alt.name}</li>}
 						</Intersperse>
 					</ul>
 				</Show>
 				<ExternalLinks
 					links={ctx.event.links}
-					class="contents"
-					labelClass="text-tertiary"
+					styles={styles.links}
+					labelStyles={styles.muted}
 				/>
 			</div>
 		</>
 	)
 }
-
-const TRIGGER_CLASS = "py-3"
 
 function EventInfoTabs() {
 	const { t } = useLingui()
@@ -133,22 +175,22 @@ function EventInfoTabs() {
 			onChange={setActiveTab}
 		>
 			<Tab.ScrollArea>
-				<Tab.List class={Tab.CONTAINER_CLASS}>
+				<Tab.List styles={Tab.containerStyles}>
 					<Show when={hasDescription()}>
 						<Tab.Trigger
 							value="Description"
-							class={TRIGGER_CLASS}
+							styles={styles.tabTrigger}
 						>
 							{t`Description`}
 						</Tab.Trigger>
 					</Show>
 					<EntityCommentsTabTrigger
 						count={comments.activeCommentCount()}
-						class={TRIGGER_CLASS}
+						styles={styles.tabTrigger}
 					/>
 					<Tab.Trigger
 						value="Collections"
-						class={TRIGGER_CLASS}
+						styles={styles.tabTrigger}
 					>
 						{t`Collections`}
 					</Tab.Trigger>
@@ -158,20 +200,20 @@ function EventInfoTabs() {
 			<Show when={hasDescription()}>
 				<Tab.Content
 					value="Description"
-					class="p-4"
+					styles={styles.tabContent}
 				>
 					<EventInfoDescription />
 				</Tab.Content>
 			</Show>
 			<Tab.Content
 				value="Comments"
-				class="p-4"
+				styles={styles.tabContent}
 			>
 				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				class="p-4"
+				styles={styles.tabContent}
 			>
 				<EntityCollectionsTab
 					entityType="event"
@@ -186,10 +228,8 @@ function EventInfoTabs() {
 function EventInfoDescription() {
 	const ctx = assertContext(EventInfoPageContext)
 	return (
-		<div class="p-2">
-			<p class="text-base leading-relaxed font-light whitespace-pre-wrap text-secondary">
-				{ctx.event.description}
-			</p>
+		<div {...stylex.attrs(styles.descriptionContainer)}>
+			<p {...stylex.attrs(styles.description)}>{ctx.event.description}</p>
 		</div>
 	)
 }

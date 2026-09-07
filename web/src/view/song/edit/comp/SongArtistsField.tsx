@@ -1,22 +1,77 @@
 import { Field, getErrors, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { SimpleArtist } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { FieldArrayFallback } from "~/component/form"
 import { ArtistSearchDialog } from "~/component/form/SearchDialog"
+import { formStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 
 import type { SongFormStore } from "./types"
+
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+	},
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: {
+		margin: 0,
+	},
+	actions: {
+		display: "flex",
+		gap: px[8],
+	},
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+	entries: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+		gap: px[8],
+	},
+	entry: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) auto",
+		alignItems: "center",
+		gap: px[8],
+	},
+	value: {
+		color: colors.textPrimary,
+	},
+	entryActions: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[8],
+	},
+	removeButton: {
+		aspectRatio: "1 / 1",
+	},
+	removeIcon: {
+		marginInline: "auto",
+	},
+})
 
 export function SongArtistsField(props: {
 	of: SongFormStore
 	initArtists?: SimpleArtist[]
-	class?: string
+	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
 	const [artists, setArtists] = createStore<SimpleArtist[]>(
@@ -43,29 +98,31 @@ export function SongArtistsField(props: {
 	}
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Artists`}</FormComp.Label>
-				<div class="flex gap-2">
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Artists`}</label>
+				<div {...stylex.attrs(styles.actions)}>
 					<ArtistSearchDialog
 						onSelect={addArtist}
 						dataFilter={dataFilter()}
-						icon={<PlusIcon class="size-4" />}
+						icon={<PlusIcon {...stylex.attrs(styles.icon)} />}
 					/>
 				</div>
 			</div>
 			<FormComp.ErrorList
 				errors={getErrors(props.of, { path: ["data", "artists"] })}
 			/>
-			<ul class="flex min-h-32 flex-col gap-2">
+			<ul {...stylex.attrs(styles.entries)}>
 				<For
 					each={artists}
 					fallback={<FieldArrayFallback />}
 				>
 					{(artist, idx) => (
-						<li class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-							<span class="text-primary">{artist.name}</span>
-							<div class="flex items-center gap-2">
+						<li {...stylex.attrs(styles.entry)}>
+							<span {...stylex.attrs(styles.value)}>{artist.name}</span>
+							<div {...stylex.attrs(styles.entryActions)}>
 								<Field
 									of={props.of}
 									path={["data", "artists", idx()]}
@@ -87,11 +144,12 @@ export function SongArtistsField(props: {
 									)}
 								</Field>
 								<Button
-									variant="Tertiary"
 									onClick={() => removeArtistAt(idx())}
-									class="aspect-square"
+									appearance="ghost"
+									tone="gray"
+									styles={styles.removeButton}
 								>
-									<Cross1Icon class="mx-auto" />
+									<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
 								</Button>
 							</div>
 						</li>

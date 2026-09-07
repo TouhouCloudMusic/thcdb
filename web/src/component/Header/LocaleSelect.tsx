@@ -1,6 +1,13 @@
+import * as stylex from "@stylexjs/stylex"
+
 import { Select } from "~/component/atomic/form/select"
 import type { AppLocale } from "~/state/i18n"
 import { useI18N } from "~/state/i18n"
+import { px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	trigger: { width: "100%", marginRight: px[8], height: px[32] },
+})
 
 type LocaleOption = {
 	label: string
@@ -40,7 +47,7 @@ export function LocaleSelect() {
 			)}
 		>
 			<Select.Trigger
-				class="w-full mr-2 h-8"
+				styles={styles.trigger}
 				disabled={i18n.isSwitchingLocale()}
 			>
 				<Select.Value<LocaleOption>>

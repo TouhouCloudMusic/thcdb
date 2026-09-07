@@ -1,11 +1,22 @@
 import { Field, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import { For, createMemo } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
 import { DateWithPrecision } from "~/component/form/DateWithPrecision"
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../context"
+
+const styles = stylex.create({
+	dateFields: {
+		display: "flex",
+		gap: px[16],
+	},
+})
 
 type DateFieldKey = "start_date" | "end_date"
 
@@ -14,7 +25,7 @@ type DateFieldDescriptor = {
 	label: string
 }
 
-export function ArtistFormDateFields() {
+export function ArtistFormDateFields(props: { styles?: StyleXStyles }) {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
@@ -40,9 +51,11 @@ export function ArtistFormDateFields() {
 						})
 
 						return (
-							<div>
-								<FormComp.Label>{descriptor.label}</FormComp.Label>
-								<div class="flex gap-4">
+							<div {...stylex.attrs(props.styles)}>
+								<label {...stylex.attrs(formStyles.label)}>
+									{descriptor.label}
+								</label>
+								<div {...stylex.attrs(styles.dateFields)}>
 									<DateWithPrecision
 										value={currentValue()}
 										setValue={(value) =>

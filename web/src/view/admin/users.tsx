@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
@@ -19,18 +20,320 @@ import {
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { getErrorMessage } from "~/utils/getErrorMessage"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	dialogTitle: {
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+		fontWeight: 500,
+		color: colors.textPrimary,
+	},
+	roleOption: {
+		display: "flex",
+		width: "100%",
+		alignItems: "flex-start",
+		gap: px[12],
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		paddingInline: px[12],
+		paddingBlock: px[12],
+		textAlign: "left",
+		outlineWidth: "1px",
+		outlineStyle: "solid",
+		outlineOffset: "-1px",
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "100ms",
+		cursor: { default: null, ":disabled": "default" },
+		opacity: { default: null, ":disabled": 0.7 },
+	},
+	selectedRole: {
+		borderColor: palette.marisa[300],
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": palette.marisa[500],
+		},
+	},
+	unselectedRole: {
+		borderColor: palette.slate[200],
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": colors.backgroundSecondary,
+			},
+		},
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": palette.slate[400],
+		},
+	},
+	page: { padding: px[32] },
+	content: { display: "flex", flexDirection: "column", gap: px[24] },
+	header: {
+		display: "flex",
+		flexDirection: "column",
+		flexWrap: "wrap",
+		alignItems: "flex-start",
+		justifyContent: "space-between",
+		gap: px[8],
+	},
+	muted: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	section: { display: "flex", flexDirection: "column", gap: px[16] },
+	filters: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		gap: px[12],
+	},
+	searchInput: {
+		minWidth: px[288],
+		flex: "1",
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: { default: palette.slate[300], ":focus": palette.slate[400] },
+		backgroundColor: colors.backgroundPrimary,
+		paddingInline: px[12],
+		paddingBlock: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textPrimary,
+		outlineStyle: "none",
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "150ms",
+	},
+	table: { display: "flex", flexDirection: "column" },
+	tableHeader: {
+		display: "grid",
+		gridTemplateColumns: "5rem minmax(0,1fr) 18rem 8rem",
+		gap: px[16],
+		paddingInline: px[16],
+		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: colors.textTertiary,
+	},
+	actionHeading: { textAlign: "right" },
+	userList: { display: "flex", flexDirection: "column", gap: px[4] },
+	error: {
+		paddingInline: px[16],
+		paddingBlock: px[40],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[700],
+	},
+	emptyState: { paddingInline: px[16], paddingBlock: px[40] },
+	emptyTitle: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: colors.textPrimary,
+	},
+	emptyDescription: {
+		marginTop: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	pagination: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+		paddingInline: px[16],
+		paddingBlock: px[16],
+	},
+	separator: { marginInline: px[8], color: palette.slate[300] },
+	userRow: {
+		display: "grid",
+		gridTemplateColumns: "5rem minmax(0,1fr) 18rem 8rem",
+		gap: px[16],
+		alignItems: "center",
+		paddingInline: px[16],
+		paddingBlock: px[12],
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: {
+			default: palette.slate[200],
+			":hover": { default: null, "@media (hover: hover)": palette.slate[300] },
+		},
+		backgroundColor: {
+			default: palette.white,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": colors.backgroundSecondary,
+			},
+		},
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "150ms",
+	},
+	userId: {
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	userIdentity: { minWidth: "0rem" },
+	userName: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: colors.textPrimary,
+	},
+	roles: { display: "flex", flexWrap: "wrap", gap: px[8] },
+	editAction: { display: "flex", justifyContent: "flex-end" },
+	dialog: {
+		width: "calc(100vw - 2rem)",
+		maxWidth: px[672],
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		padding: px[20],
+		boxShadow:
+			"0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+	},
+	dialogBody: { display: "flex", flexDirection: "column", gap: px[20] },
+	loadingNotice: {
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[200],
+		backgroundColor: colors.backgroundSecondary,
+		paddingInline: px[16],
+		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	errorNotice: {
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.reimu[200],
+		paddingInline: px[16],
+		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[700],
+	},
+	roleOptions: { display: "flex", flexDirection: "column", gap: px[8] },
+	checkbox: {
+		marginTop: px[2],
+		width: px[16],
+		height: px[16],
+		flexShrink: 0,
+		borderRadius: radius.sm,
+		borderColor: palette.slate[300],
+		accentColor: palette.marisa[700],
+	},
+	roleHeading: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		columnGap: px[8],
+		rowGap: px[4],
+	},
+	roleDescription: {
+		minWidth: "0rem",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	dialogActions: {
+		display: "flex",
+		justifyContent: "flex-end",
+		gap: px[12],
+	},
+	dialogButton: { paddingInline: px[8], paddingBlock: px[4] },
+	skeletonRow: {
+		display: "grid",
+		gridTemplateColumns: "5rem minmax(0,1fr) 18rem 8rem",
+		gap: px[16],
+		alignItems: "center",
+		paddingInline: px[16],
+		paddingBlock: px[12],
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.white,
+	},
+	skeletonId: {
+		height: px[16],
+		width: px[48],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonName: {
+		height: px[16],
+		width: px[160],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonRoles: { display: "flex", gap: px[8] },
+	skeletonRole: {
+		height: px[24],
+		width: px[80],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonRoleWide: {
+		height: px[24],
+		width: px[96],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonAction: {
+		height: px[32],
+		width: px[96],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	dialogHeaderChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+})
 
 const route = getRouteApi("/admin/users")
 
 const DEFAULT_LIMIT = 20
-const USERS_TABLE_GRID_CLASS =
-	"grid grid-cols-[5rem_minmax(0,1fr)_18rem_8rem] gap-4"
-const USERS_TABLE_ROW_CLASS = `${USERS_TABLE_GRID_CLASS} items-center px-4 py-3`
-const USERS_TABLE_LIST_CLASS = "flex flex-col gap-1"
-const ROLE_EDITOR_LIST_CLASS = "flex flex-col gap-2"
-const ROLE_EDITOR_OPTION_BASE_CLASS =
-	"flex w-full items-start gap-3 rounded-sm border px-3 py-3 text-left outline-1 outline-transparent -outline-offset-1 transition-colors duration-100 disabled:cursor-default disabled:opacity-70"
 type AdminUserItem = PageResponseUserSummary["items"][number]
 
 type AdminUsersSearch = {
@@ -94,12 +397,6 @@ type RoleEditorState = {
 const roleOptionsQueryOptions = editableUserRolesOptions({
 	responseStyle: "fields",
 })
-
-function roleEditorOptionClass(selected: boolean) {
-	return selected
-		? `${ROLE_EDITOR_OPTION_BASE_CLASS} border-marisa-300 bg-marisa-50 focus-visible:outline-marisa-500`
-		: `${ROLE_EDITOR_OPTION_BASE_CLASS} border-slate-200 bg-primary hover:bg-secondary focus-visible:outline-slate-400`
-}
 
 function toggleRoleSelection(
 	selectedRoles: EditableUserRole[],
@@ -336,21 +633,19 @@ export function AdminUsersPage() {
 	const roleEditor = useAdminUsersRoleEditor(() => usersData()?.items ?? [])
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<header class="flex flex-col flex-wrap items-start justify-between gap-2">
-					<p class="text-sm text-tertiary">{t`Admin Settings`}</p>
-					<h1 class="text-2xl font-light tracking-tight text-primary">
-						{t`Users`}
-					</h1>
-					<p class="text-sm text-tertiary">
+		<PageLayout styles={styles.page}>
+			<div {...stylex.attrs(styles.content)}>
+				<header {...stylex.attrs(styles.header)}>
+					<p {...stylex.attrs(styles.muted)}>{t`Admin Settings`}</p>
+					<h1 {...stylex.attrs(styles.title)}>{t`Users`}</h1>
+					<p {...stylex.attrs(styles.muted)}>
 						View users and update system roles.
 					</p>
 				</header>
 
-				<section class="flex flex-col gap-4">
+				<section {...stylex.attrs(styles.section)}>
 					<form
-						class="flex flex-wrap items-center gap-3"
+						{...stylex.attrs(styles.filters)}
 						onSubmit={(event) => {
 							event.preventDefault()
 							searchState.submit()
@@ -365,21 +660,21 @@ export function AdminUsersPage() {
 							aria-label={t`Search by username`}
 							name="keyword"
 							placeholder={t`Search by username`}
-							class="min-w-72 flex-1 rounded-sm border border-slate-300 bg-primary px-3 py-2 text-sm text-primary outline-none transition-colors focus:border-slate-400"
+							{...stylex.attrs(styles.searchInput)}
 						/>
 						<Button
-							variant="SecondaryV2"
-							size="Sm"
-							color="Slate"
+							appearance="outline"
+							tone="slate"
+							size="sm"
 							type="button"
 							onClick={searchState.submit}
 						>
 							Search
 						</Button>
 						<Button
-							variant="Tertiary"
-							size="Sm"
-							color="Slate"
+							appearance="ghost"
+							tone="slate"
+							size="sm"
 							type="button"
 							disabled={!searchState.keyword}
 							onClick={searchState.clear}
@@ -404,20 +699,18 @@ export function AdminUsersPage() {
 function AdminUsersTable(props: AdminUsersTableProps) {
 	const { t } = useLingui()
 	return (
-		<div class="flex flex-col gap-4">
-			<div class="flex flex-col">
-				<div
-					class={`${USERS_TABLE_GRID_CLASS} px-4 py-3 text-sm font-medium text-tertiary`}
-				>
+		<div {...stylex.attrs(styles.section)}>
+			<div {...stylex.attrs(styles.table)}>
+				<div {...stylex.attrs(styles.tableHeader)}>
 					<div>{t`ID`}</div>
 					<div>{t`User`}</div>
 					<div>{t`Roles`}</div>
-					<div class="text-right">{t`Action`}</div>
+					<div {...stylex.attrs(styles.actionHeading)}>{t`Action`}</div>
 				</div>
 
 				<Switch
 					fallback={
-						<div class={USERS_TABLE_LIST_CLASS}>
+						<div {...stylex.attrs(styles.userList)}>
 							<For each={props.list.users}>
 								{(user) => (
 									<AdminUsersRow
@@ -430,7 +723,7 @@ function AdminUsersTable(props: AdminUsersTableProps) {
 					}
 				>
 					<Match when={props.list.isLoading}>
-						<div class={USERS_TABLE_LIST_CLASS}>
+						<div {...stylex.attrs(styles.userList)}>
 							<For each={Array.from({ length: DEFAULT_LIMIT })}>
 								{() => <AdminUsersRowSkeleton />}
 							</For>
@@ -438,17 +731,17 @@ function AdminUsersTable(props: AdminUsersTableProps) {
 					</Match>
 
 					<Match when={props.list.isError}>
-						<div class="px-4 py-10 text-sm text-reimu-700">
+						<div {...stylex.attrs(styles.error)}>
 							{props.list.errorMessage ?? t`Failed to load users.`}
 						</div>
 					</Match>
 
 					<Match when={!props.list.isLoading && props.list.users.length === 0}>
-						<div class="px-4 py-10">
-							<div class="text-sm font-medium text-primary">
+						<div {...stylex.attrs(styles.emptyState)}>
+							<div {...stylex.attrs(styles.emptyTitle)}>
 								{t`No users found`}
 							</div>
-							<div class="mt-1 text-sm text-tertiary">
+							<div {...stylex.attrs(styles.emptyDescription)}>
 								{t`No users match the current filters.`}
 							</div>
 						</div>
@@ -457,10 +750,10 @@ function AdminUsersTable(props: AdminUsersTableProps) {
 			</div>
 
 			<Show when={props.list.totalPages > 1}>
-				<div class="flex flex-wrap items-center justify-between gap-3 px-4 py-4">
-					<div class="text-sm text-tertiary">
+				<div {...stylex.attrs(styles.pagination)}>
+					<div {...stylex.attrs(styles.muted)}>
 						{t`Page ${props.search.page} of ${props.list.totalPages}`}
-						<span class="mx-2 text-slate-300">•</span>
+						<span {...stylex.attrs(styles.separator)}>•</span>
 						{t`${props.list.totalItems} users`}
 					</div>
 
@@ -480,25 +773,21 @@ function AdminUsersRow(props: {
 	onEditRoles: (user: AdminUserItem) => void
 }) {
 	return (
-		<div
-			class={`${USERS_TABLE_ROW_CLASS} rounded-sm border border-slate-200 bg-white transition-colors hover:border-slate-300 hover:bg-secondary`}
-		>
-			<div class="font-mono text-sm text-tertiary">#{props.user.id}</div>
-			<div class="min-w-0">
-				<div class="truncate text-sm font-medium text-primary">
-					{props.user.name}
-				</div>
+		<div {...stylex.attrs(styles.userRow)}>
+			<div {...stylex.attrs(styles.userId)}>#{props.user.id}</div>
+			<div {...stylex.attrs(styles.userIdentity)}>
+				<div {...stylex.attrs(styles.userName)}>{props.user.name}</div>
 			</div>
-			<div class="flex flex-wrap gap-2">
+			<div {...stylex.attrs(styles.roles)}>
 				<For each={props.user.roles}>
 					{(role) => <RoleBadge role={role.name} />}
 				</For>
 			</div>
-			<div class="flex justify-end">
+			<div {...stylex.attrs(styles.editAction)}>
 				<Button
-					variant="SecondaryV2"
-					size="Sm"
-					color="Slate"
+					appearance="outline"
+					tone="slate"
+					size="sm"
 					onClick={() => props.onEditRoles(props.user)}
 				>
 					Edit roles
@@ -537,16 +826,18 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 			<Dialog.Portal>
 				<Dialog.Overlay />
 				<Dialog.Content
-					class="w-[calc(100vw-2rem)] max-w-2xl rounded-sm border border-slate-300 p-5 shadow-lg"
+					styles={styles.dialog}
 					onPointerDownOutside={preventDismiss}
 					onEscapeKeyDown={preventDismiss}
 				>
-					<div class="flex flex-col gap-5">
-						<div class="space-y-2">
-							<Dialog.Title class="text-xl font-medium text-primary">
+					<div {...stylex.attrs(styles.dialogBody)}>
+						<div>
+							<Dialog.Title
+								styles={[styles.dialogTitle, styles.dialogHeaderChild]}
+							>
 								Edit roles
 							</Dialog.Title>
-							<Dialog.Description>
+							<Dialog.Description styles={styles.dialogHeaderChild}>
 								<Show when={props.dialog.user}>
 									{(user) => `Update roles for ${user().name}.`}
 								</Show>
@@ -555,30 +846,37 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 
 						<Switch
 							fallback={
-								<div class="rounded-sm border border-slate-200 bg-secondary px-4 py-3 text-sm text-tertiary">
+								<div {...stylex.attrs(styles.loadingNotice)}>
 									Loading role options…
 								</div>
 							}
 						>
 							<Match when={props.dialog.roleOptionsError}>
-								<div class="rounded-sm border border-reimu-200 bg-reimu-50 px-4 py-3 text-sm text-reimu-700">
+								<div {...stylex.attrs(styles.errorNotice)}>
 									{props.dialog.roleOptionsError}
 								</div>
 							</Match>
 
 							<Match when>
-								<div class={ROLE_EDITOR_LIST_CLASS}>
+								<div {...stylex.attrs(styles.roleOptions)}>
 									<For each={props.dialog.roleOptions}>
 										{(role) => {
 											const selected = () =>
 												props.dialog.selectedRoles.includes(role)
 
 											return (
-												<label class={roleEditorOptionClass(selected())}>
+												<label
+													{...stylex.attrs(
+														styles.roleOption,
+														selected()
+															? styles.selectedRole
+															: styles.unselectedRole,
+													)}
+												>
 													<input
 														type="checkbox"
 														aria-label={role}
-														class="mt-0.5 size-4 shrink-0 rounded-sm border-slate-300 accent-marisa-700"
+														{...stylex.attrs(styles.checkbox)}
 														checked={selected()}
 														disabled={props.dialog.isSaving}
 														onChange={(event) => {
@@ -591,10 +889,10 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 															)
 														}}
 													/>
-													<div class="min-w-0">
-														<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+													<div {...stylex.attrs(styles.userIdentity)}>
+														<div {...stylex.attrs(styles.roleHeading)}>
 															<RoleBadge role={role} />
-															<div class="min-w-0 text-sm text-tertiary">
+															<div {...stylex.attrs(styles.roleDescription)}>
 																<RoleDescription role={role} />
 															</div>
 														</div>
@@ -608,24 +906,25 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 						</Switch>
 
 						<Show when={props.dialog.saveError}>
-							<div class="rounded-sm border border-reimu-200 bg-reimu-50 px-4 py-3 text-sm text-reimu-700">
+							<div {...stylex.attrs(styles.errorNotice)}>
 								{props.dialog.saveError}
 							</div>
 						</Show>
 
-						<div class="flex justify-end gap-3">
+						<div {...stylex.attrs(styles.dialogActions)}>
 							<Dialog.CloseButton
-								variant="Tertiary"
-								color="Slate"
-								class="px-2 py-1"
+								as={Button}
+								appearance="ghost"
+								tone="slate"
+								styles={styles.dialogButton}
 								disabled={props.dialog.isSaving}
 							>
 								Cancel
 							</Dialog.CloseButton>
 							<Button
-								variant="Primary"
-								color="Reimu"
-								class="px-2 py-1"
+								appearance="solid"
+								tone="reimu"
+								styles={styles.dialogButton}
 								disabled={!canSave()}
 								onClick={() => {
 									void props.dialog.onSave()
@@ -648,17 +947,15 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 
 function AdminUsersRowSkeleton() {
 	return (
-		<div
-			class={`${USERS_TABLE_ROW_CLASS} animate-pulse rounded-sm border border-slate-200 bg-white`}
-		>
-			<div class="h-4 w-12 rounded bg-slate-200"></div>
-			<div class="h-4 w-40 rounded bg-slate-200"></div>
-			<div class="flex gap-2">
-				<div class="h-6 w-20 rounded-full bg-slate-100"></div>
-				<div class="h-6 w-24 rounded-full bg-slate-100"></div>
+		<div {...stylex.attrs(animationStyles.pulse, styles.skeletonRow)}>
+			<div {...stylex.attrs(styles.skeletonId)}></div>
+			<div {...stylex.attrs(styles.skeletonName)}></div>
+			<div {...stylex.attrs(styles.skeletonRoles)}>
+				<div {...stylex.attrs(styles.skeletonRole)}></div>
+				<div {...stylex.attrs(styles.skeletonRoleWide)}></div>
 			</div>
-			<div class="flex justify-end">
-				<div class="h-8 w-24 rounded bg-slate-200"></div>
+			<div {...stylex.attrs(styles.editAction)}>
+				<div {...stylex.attrs(styles.skeletonAction)}></div>
 			</div>
 		</div>
 	)

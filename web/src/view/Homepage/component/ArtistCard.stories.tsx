@@ -1,9 +1,13 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { ArtistListItem } from "~/hey-api"
+import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { ArtistCard } from "./ArtistCard"
+
+const styles = stylex.create({ root: { width: px[160] } })
 
 const DEFAULT_ARTIST: ArtistListItem = {
 	id: 4,
@@ -36,7 +40,7 @@ type StoryRootProps = {
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<div class="w-40">
+		<div {...stylex.attrs(styles.root)}>
 			<ArtistCard artist={props.artist} />
 		</div>
 	)

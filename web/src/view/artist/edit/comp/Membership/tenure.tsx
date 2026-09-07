@@ -1,6 +1,7 @@
 /* @refresh reload */
 import { Field, FieldArray, getInput, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { Cross1Icon } from "@thc/icons/radix"
 import { ObjExt } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
@@ -9,9 +10,65 @@ import { For } from "solid-js"
 import { FormComp } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
+import { colors, px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../../context"
 import type { ArtistEditFormContextValue } from "../../context"
+
+const styles = stylex.create({
+	sectionSpacing: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	tenures: {
+		gridRowStart: "3",
+	},
+	header: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	label: {
+		fontWeight: 300,
+	},
+	addButton: {
+		fontWeight: 300,
+		color: colors.textPrimary,
+	},
+	tenure: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		alignItems: "center",
+		padding: px[6],
+	},
+	dates: {
+		display: "flex",
+		width: "100%",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[8],
+	},
+	dateField: {
+		width: px[128],
+		flex: "1",
+	},
+	dateInput: {
+		appearance: "textfield",
+		"::-webkit-outer-spin-button": {
+			WebkitAppearance: "none",
+			margin: 0,
+		},
+		"::-webkit-inner-spin-button": {
+			WebkitAppearance: "none",
+			margin: 0,
+		},
+	},
+	separator: {
+		color: colors.textSecondary,
+	},
+	removeButton: {
+		padding: px[8],
+	},
+})
 
 type TenureErrorMessages = {
 	leaveBeforeJoin: string
@@ -40,15 +97,16 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 	}
 
 	return (
-		<div class="row-start-3 space-y-2">
-			<div class="flex items-center justify-between">
-				<span class="font-light">{t`Tenures`}</span>
+		<div {...stylex.attrs(styles.tenures)}>
+			<div {...stylex.attrs(styles.header, styles.sectionSpacing)}>
+				<span {...stylex.attrs(styles.label)}>{t`Tenures`}</span>
 				<Button
-					variant="Tertiary"
-					size="Sm"
 					type="button"
-					class="font-light text-primary"
 					onClick={tenures.add}
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+					styles={styles.addButton}
 				>
 					{t`Add Tenure`}
 				</Button>
@@ -60,7 +118,7 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 			>
 				{(fieldArray) => (
 					<>
-						<ul>
+						<ul {...stylex.attrs(styles.sectionSpacing)}>
 							<For each={fieldArray.items}>
 								{(_, idx) => (
 									<TenureEntry
@@ -73,7 +131,9 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 						</ul>
 						<For each={fieldArray.errors ?? []}>
 							{(error) => (
-								<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
+								<FormComp.ErrorMessage styles={styles.sectionSpacing}>
+									{error}
+								</FormComp.ErrorMessage>
 							)}
 						</For>
 					</>
@@ -104,8 +164,8 @@ function TenureEntry(props: {
 		computeTenureError(formStore, props.membershipIndex, errorMessages())
 
 	return (
-		<li class="grid grid-cols-[1fr_auto] items-center p-1.5">
-			<div class="flex w-full items-center justify-between gap-2">
+		<li {...stylex.attrs(styles.tenure)}>
+			<div {...stylex.attrs(styles.dates)}>
 				{TYPE.map((kind, idx) => (
 					<Field
 						of={formStore}
@@ -119,11 +179,11 @@ function TenureEntry(props: {
 						]}
 					>
 						{(field) => (
-							<InputField.Root class="w-32 flex-1">
+							<InputField.Root styles={[styles.dateField]}>
 								<InputField.Input
 									{...field.props}
 									type="number"
-									class="no-spinner"
+									styles={[styles.dateInput]}
 									placeholder={idx == 0 ? t`Join year` : t`Leave year`}
 									value={field.input ?? undefined}
 								/>
@@ -131,17 +191,18 @@ function TenureEntry(props: {
 							</InputField.Root>
 						)}
 					</Field>
-				)).toSpliced(1, 0, <span class="text-secondary">-</span>)}
+				)).toSpliced(1, 0, <span {...stylex.attrs(styles.separator)}>-</span>)}
 			</div>
 
 			<Button
-				variant="Tertiary"
-				size="Sm"
 				type="button"
 				onClick={props.onRemove}
-				class="p-2"
 				aria-label={t`Remove tenure entry`}
 				title={t`Remove tenure entry`}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+				styles={styles.removeButton}
 			>
 				<Cross1Icon />
 			</Button>

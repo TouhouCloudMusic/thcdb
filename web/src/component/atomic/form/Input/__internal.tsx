@@ -5,19 +5,24 @@ import type {
 	TextFieldInputProps,
 	TextFieldRootProps,
 } from "@kobalte/core/text-field"
-import type { ValidComponent } from "solid-js"
-import { createContext, createEffect, mergeProps } from "solid-js"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import { createContext, createEffect, mergeProps, splitProps } from "solid-js"
 import { createStore, produce } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 import type { SafeOmit } from "~/type"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { FormComp } from ".."
-import { INPUT_BASE_CLASSNAME, INPUT_CLASSNAME } from "../../Input"
-import { LABEL_CLASSNAME } from "../label"
+import { inputStyles } from "../../Input"
 
-const TEXT_INPUT_CLASS = `flex flex-col`
+const styles = stylex.create({
+	root: { display: "flex", flexDirection: "column" },
+	textarea: { minHeight: px[128], padding: px[8] },
+})
+export const textareaStyles = [inputStyles.like, styles.textarea]
 
 interface ContextStore {
 	inputId?: string
@@ -32,17 +37,13 @@ type Context = {
 
 const Context = createContext<Context>()
 
-type RootProps<T extends ValidComponent = "div"> = PolymorphicProps<
-	T,
-	TextFieldRootProps<T>
->
+type RootProps = PolymorphicProps<
+	"div" | "li",
+	TextFieldRootProps<"div" | "li">
+> & { styles?: StyleXStyles }
 
-export function Root<T extends ValidComponent = "div">(props: RootProps<T>) {
-	const localProps = mergeProps(props, {
-		get class() {
-			return twMerge(TEXT_INPUT_CLASS, props["class"])
-		},
-	})
+export function Root(props: RootProps) {
+	const [local, others] = splitProps(props, ["styles"])
 
 	const [contextStore, setContextStore] = createStore<ContextStore>({
 		valid: true,
@@ -76,16 +77,19 @@ export function Root<T extends ValidComponent = "div">(props: RootProps<T>) {
 
 	return (
 		<Context.Provider value={contextValue}>
-			<K_TextField.Root
+			<K_TextField.Root<"div" | "li">
 				validationState={contextStore.valid ? "valid" : "invalid"}
-				{...localProps}
+				{...others}
+				{...stylex.attrs(styles.root, local.styles)}
 			/>
 		</Context.Provider>
 	)
 }
 
 export function Input(
-	props: PolymorphicProps<"input", TextFieldInputProps<"input">>,
+	props: PolymorphicProps<"input", TextFieldInputProps<"input">> & {
+		styles?: StyleXStyles
+	},
 ) {
 	const context = assertContext(Context)
 
@@ -95,24 +99,20 @@ export function Input(
 		}
 	})
 
-	const finalProps = mergeProps(props, {
-		get class() {
-			return twMerge(INPUT_CLASSNAME, props.class)
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_TextField.Input {...finalProps} />
+	return (
+		<K_TextField.Input
+			{...others}
+			{...stylex.attrs(inputStyles.like, inputStyles.input, local.styles)}
+		/>
+	)
 }
 
-export const TEXT_AREA_CLASSNAME = twMerge(
-	INPUT_BASE_CLASSNAME,
-	`
-	min-h-32 p-2
-	`,
-)
-
 export function Textarea(
-	props: PolymorphicProps<"textarea", TextFieldTextAreaProps<"textarea">>,
+	props: PolymorphicProps<"textarea", TextFieldTextAreaProps<"textarea">> & {
+		styles?: StyleXStyles
+	},
 ) {
 	const context = assertContext(Context)
 
@@ -122,36 +122,36 @@ export function Textarea(
 		}
 	})
 
-	const finalProps = mergeProps(props, {
-		get class() {
-			return props.class
-				? twMerge(TEXT_AREA_CLASSNAME, props.class)
-				: TEXT_AREA_CLASSNAME
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <K_TextField.TextArea {...finalProps} />
+	return (
+		<K_TextField.TextArea
+			{...others}
+			{...stylex.attrs(textareaStyles, local.styles)}
+		/>
+	)
 }
 
 type LabelProps = SafeOmit<
 	PolymorphicProps<"label", K_TextField.TextFieldLabelProps<"label">>,
 	"for"
->
+> & { styles?: StyleXStyles }
 export function Label(props: LabelProps) {
 	const context = assertContext(Context)
 
-	const localProps = mergeProps(props, {
-		get class() {
-			return props.class
-				? twMerge(LABEL_CLASSNAME, props.class)
-				: LABEL_CLASSNAME
-		},
+	const [local, others] = splitProps(props, ["styles"])
+	const localProps = mergeProps(others, {
 		get for() {
 			return context.inputId
 		},
 	})
 
-	return <K_TextField.Label {...localProps} />
+	return (
+		<K_TextField.Label
+			{...localProps}
+			{...stylex.attrs(formStyles.label, local.styles)}
+		/>
+	)
 }
 
 export function Error(props: FormComp.ErrorMessageProps<"span">) {

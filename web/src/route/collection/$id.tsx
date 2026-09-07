@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/solid-query"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { Match, Switch } from "solid-js"
@@ -23,6 +24,14 @@ import {
 import { PageLayout } from "~/layout/PageLayout"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { getErrorMessage } from "~/utils/getErrorMessage"
 import { getNextPageParam } from "~/utils/query"
 import type {
@@ -30,6 +39,56 @@ import type {
 	CollectionDetailModel,
 } from "~/view/collection/CollectionDetail"
 import { CollectionDetailPage } from "~/view/collection/CollectionDetail"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	page: {
+		padding: { default: px[16], "@container (min-width: 36rem)": px[32] },
+		paddingTop: {
+			default: px[16],
+			"@container (min-width: 36rem)": px[24],
+		},
+	},
+	statusArea: { display: "grid", minHeight: "50vh", placeItems: "center" },
+	loadingStatus: {
+		display: "inline-flex",
+		alignItems: "center",
+		gap: px[8],
+		borderRadius: radius.full,
+		backgroundColor: palette.white,
+		paddingInline: px[12],
+		paddingBlock: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+		boxShadow: `inset 0 0 0 1px ${palette.slate[200]}, 0 1px 2px 0 rgb(0 0 0 / 0.05)`,
+	},
+	loadingDot: {
+		display: "inline-block",
+		width: px[6],
+		height: px[6],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[300],
+	},
+	errorStatus: {
+		display: "inline-flex",
+		alignItems: "center",
+		gap: px[8],
+		borderRadius: radius.full,
+		paddingInline: px[12],
+		paddingBlock: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		boxShadow: "inset 0 0 0 1px currentcolor, 0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	errorDot: {
+		display: "inline-block",
+		width: px[6],
+		height: px[6],
+		borderRadius: radius.full,
+	},
+})
 
 type CollectionFollowCommand = "follow" | "unfollow"
 
@@ -247,20 +306,22 @@ function RouteComponent() {
 	}
 
 	return (
-		<PageLayout class="p-4 @xl:p-8 @xl:pt-6">
+		<PageLayout styles={styles.page}>
 			<Switch>
 				<Match when={collectionQuery.isLoading}>
-					<div class="grid min-h-[50vh] place-items-center">
-						<div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-tertiary shadow-xs ring-1 ring-slate-200 ring-inset">
-							<span class="inline-block size-1.5 animate-pulse rounded-full bg-slate-300"></span>
+					<div {...stylex.attrs(styles.statusArea)}>
+						<div {...stylex.attrs(styles.loadingStatus)}>
+							<span
+								{...stylex.attrs(animationStyles.pulse, styles.loadingDot)}
+							></span>
 							{t`Loading...`}
 						</div>
 					</div>
 				</Match>
 				<Match when={collectionQuery.isError}>
-					<div class="grid min-h-[50vh] place-items-center">
-						<div class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-sm text-red-600 shadow-xs ring-1 ring-red-200 ring-inset">
-							<span class="inline-block size-1.5 rounded-full bg-red-400"></span>
+					<div {...stylex.attrs(styles.statusArea)}>
+						<div {...stylex.attrs(styles.errorStatus)}>
+							<span {...stylex.attrs(styles.errorDot)}></span>
 							{t`Failed to load collection details.`}
 						</div>
 					</div>

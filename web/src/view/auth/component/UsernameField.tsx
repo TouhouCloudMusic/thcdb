@@ -1,8 +1,10 @@
 import type { FieldElementProps } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
 
 import { InputField } from "~/component/atomic/form/Input"
 
+import { authStyles } from "../styles"
 import { FieldLayout } from "./FieldLayout"
 
 type UsernameFieldStore = {
@@ -13,7 +15,7 @@ type UsernameFieldStore = {
 
 type UsernameFieldProps = {
 	field: UsernameFieldStore
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function UsernameField(props: UsernameFieldProps) {
@@ -22,11 +24,11 @@ export function UsernameField(props: UsernameFieldProps) {
 		<FieldLayout
 			label={t`Username`}
 			error={props.field.errors?.[0]}
-			class={props.class}
+			styles={props.styles}
 		>
 			<InputField.Input
 				{...props.field.props}
-				class="h-9 w-full"
+				styles={authStyles.input}
 				type="text"
 				id="username"
 				value={props.field.input ?? ""}

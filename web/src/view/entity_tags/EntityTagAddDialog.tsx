@@ -1,15 +1,56 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { Tag } from "@thc/api"
 import type { JSX } from "solid-js"
 import { For, Show, Suspense, createSignal } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import * as SearchDialog from "~/component/form/SearchDialog/__internal"
 import { useTagSearch } from "~/component/form/SearchDialog/useTagSearch"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import type { EntityTagVoteValue } from "./model"
 import { ENTITY_TAG_VOTE_OPTIONS } from "./model"
+
+const styles = stylex.create({
+	searchChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[16] },
+	},
+	search: { marginBottom: px[24] },
+	input: { height: px[36], width: "100%" },
+	tag: {
+		display: "flex",
+		width: "100%",
+		flexDirection: "column",
+		gap: px[12],
+	},
+	summary: {
+		display: "flex",
+		flexDirection: "column",
+		textAlign: "left",
+		fontWeight: 300,
+		color: colors.textPrimary,
+	},
+	heading: { display: "flex", alignItems: "baseline", gap: px[8] },
+	name: { fontSize: fontSizes.lg, lineHeight: lineHeights.lg },
+	type: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	description: {
+		overflow: "hidden",
+		display: "-webkit-box",
+		WebkitBoxOrient: "vertical",
+		WebkitLineClamp: 2,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	votes: { display: "flex", alignItems: "center", gap: px[8] },
+	vote: { minWidth: px[64] },
+	pendingVote: { opacity: 0.7 },
+})
 
 type EntityTagAddDialogProps = {
 	trigger: JSX.Element
@@ -64,42 +105,51 @@ export function EntityTagAddDialog(
 		>
 			{props.trigger}
 			<SearchDialog.Content>
-				<div class="mb-6 space-y-4">
-					<SearchDialog.Label>{t`Add Tag`}</SearchDialog.Label>
+				<div {...stylex.attrs(styles.search)}>
+					<SearchDialog.Label
+						styles={styles.searchChild}
+					>{t`Add Tag`}</SearchDialog.Label>
 					<SearchDialog.Input
 						placeholder={t`Search tag...`}
 						value={searchKeyword()}
 						onInput={(event) => onInput(event.currentTarget.value)}
-						class="h-9 w-full"
+						styles={[styles.searchChild, styles.input]}
 					/>
 				</div>
 
-				<SearchDialog.List>
+				<ul {...stylex.attrs(SearchDialog.searchDialogStyles.list)}>
 					<Suspense>
 						<For each={items()}>
 							{(tag) => {
 								const isPending = () => props.pendingKey === `vote:${tag.id}`
 								return (
-									<SearchDialog.Item>
-										<SearchDialog.ItemIndicator />
-										<div class="flex w-full flex-col gap-3">
-											<div class="flex flex-col text-left font-light text-primary">
-												<div class="flex items-baseline gap-2">
-													<span class="text-lg">{tag.name}</span>
-													<span class="text-sm text-tertiary">{tag.type}</span>
+									<li
+										{...stylex.attrs(
+											stylex.defaultMarker(),
+											SearchDialog.searchDialogStyles.item,
+										)}
+									>
+										<div
+											{...stylex.attrs(
+												SearchDialog.searchDialogStyles.indicator,
+											)}
+										></div>
+										<div {...stylex.attrs(styles.tag)}>
+											<div {...stylex.attrs(styles.summary)}>
+												<div {...stylex.attrs(styles.heading)}>
+													<span {...stylex.attrs(styles.name)}>{tag.name}</span>
+													<span {...stylex.attrs(styles.type)}>{tag.type}</span>
 												</div>
 												<Show when={tag.short_description}>
-													<div class="line-clamp-2 text-sm text-tertiary">
+													<div {...stylex.attrs(styles.description)}>
 														{tag.short_description}
 													</div>
 												</Show>
 											</div>
-											<div class="flex items-center gap-2">
+											<div {...stylex.attrs(styles.votes)}>
 												<For each={ENTITY_TAG_VOTE_OPTIONS}>
 													{(option) => (
 														<Button
-															size="Sm"
-															variant="SecondaryV2"
 															disabled={isPending()}
 															onClick={() => {
 																void props
@@ -109,10 +159,13 @@ export function EntityTagAddDialog(
 																		return undefined
 																	})
 															}}
-															class={twJoin(
-																"min-w-16",
-																isPending() && "opacity-70",
-															)}
+															appearance="outline"
+															tone="gray"
+															size="sm"
+															styles={[
+																styles.vote,
+																isPending() && styles.pendingVote,
+															]}
 														>
 															<VoteOptionLabel value={option.value} />
 														</Button>
@@ -120,12 +173,12 @@ export function EntityTagAddDialog(
 												</For>
 											</div>
 										</div>
-									</SearchDialog.Item>
+									</li>
 								)
 							}}
 						</For>
 					</Suspense>
-				</SearchDialog.List>
+				</ul>
 			</SearchDialog.Content>
 		</SearchDialog.Root>
 	)

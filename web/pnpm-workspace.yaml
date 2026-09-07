@@ -1,6 +1,5 @@
 allowBuilds:
   "@parcel/watcher": false
-  "@tailwindcss/oxide": true
   esbuild: true
   msgpackr-extract: false
   msw: false
