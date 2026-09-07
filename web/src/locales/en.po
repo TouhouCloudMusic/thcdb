@@ -220,10 +220,6 @@ msgstr "Alternative Names"
 msgid "An error occurred. Please try again."
 msgstr "An error occurred. Please try again."
 
-#: src/view/song/SongItem.tsx
-msgid "Appears on"
-msgstr "Appears on"
-
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approve"
@@ -326,16 +322,9 @@ msgstr "Born"
 msgid "Browse circles and solo creators with filters and sorting."
 msgstr "Browse circles and solo creators with filters and sorting."
 
-#: src/view/Homepage/component/PlaylistCard.tsx
 #: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
 msgid "by"
 msgstr "by"
-
-#: src/view/collection/CollectionListItem.tsx
-#: src/view/release/ReleaseItems.tsx
-#: src/view/song/SongItem.tsx
-msgid "By"
-msgstr "By"
 
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx

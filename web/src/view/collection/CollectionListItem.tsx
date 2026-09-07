@@ -18,16 +18,13 @@ export function CollectionListItem(props: { collection: UserCollection }) {
 			</Link>
 
 			<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-tertiary">
-				<span class="flex gap-x-1">
-					<span>{t`By`}</span>
-					<Link
-						to="/profile/$username"
-						params={{ username: props.collection.owner.name }}
-						class="text-secondary no-underline"
-					>
-						{props.collection.owner.name}
-					</Link>
-				</span>
+				<Link
+					to="/profile/$username"
+					params={{ username: props.collection.owner.name }}
+					class="text-secondary no-underline"
+				>
+					{props.collection.owner.name}
+				</Link>
 				<span>
 					{props.collection.item_count}{" "}
 					{props.collection.item_count === 1 ? t`item` : t`items`}

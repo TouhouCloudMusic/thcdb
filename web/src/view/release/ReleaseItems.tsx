@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/solid/macro"
 import { Link as RouterLink } from "@tanstack/solid-router"
 import { For, Show } from "solid-js"
 
@@ -9,30 +8,25 @@ import type { ReleaseListItem } from "~/hey-api"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 function ReleaseArtists(props: { release: ReleaseListItem }) {
-	const { t } = useLingui()
-
 	return (
 		<Show when={props.release.artists.length > 0}>
-			<div class="flex gap-x-1 text-sm text-tertiary">
-				<span class="shrink-0">{t`By`}</span>
-				<span class="min-w-0 wrap-break-word">
-					<For each={props.release.artists}>
-						{(artist, index) => (
-							<>
-								<Link
-									to="/artist/$id"
-									params={{ id: artist.id.toString() }}
-									class="text-secondary no-underline"
-								>
-									{artist.name}
-								</Link>
-								<Show when={index() < props.release.artists.length - 1}>
-									{", "}
-								</Show>
-							</>
-						)}
-					</For>
-				</span>
+			<div class="wrap-break-word text-sm text-tertiary">
+				<For each={props.release.artists}>
+					{(artist, index) => (
+						<>
+							<Link
+								to="/artist/$id"
+								params={{ id: artist.id.toString() }}
+								class="text-secondary no-underline"
+							>
+								{artist.name}
+							</Link>
+							<Show when={index() < props.release.artists.length - 1}>
+								{", "}
+							</Show>
+						</>
+					)}
+				</For>
 			</div>
 		</Show>
 	)

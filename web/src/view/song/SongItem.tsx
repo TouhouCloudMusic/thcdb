@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/solid/macro"
 import { For, Show } from "solid-js"
 
 import { Thumbnail } from "~/component/Thumbnail"
@@ -7,8 +6,6 @@ import type { SongListItem } from "~/hey-api"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 export function SongItem(props: { song: SongListItem }) {
-	const { t } = useLingui()
-
 	return (
 		<div class="grid grid-cols-[3lh_minmax(0,1fr)] items-start gap-3 leading-6">
 			<Thumbnail
@@ -30,50 +27,44 @@ export function SongItem(props: { song: SongListItem }) {
 				</Link>
 
 				<Show when={props.song.releases.length > 0}>
-					<div class="mt-1 flex gap-x-1 text-sm text-tertiary">
-						<span class="shrink-0">{t`Appears on`}</span>
-						<span class="min-w-0 wrap-break-word">
-							<For each={props.song.releases}>
-								{(release, index) => (
-									<>
-										<Link
-											to="/release/$id"
-											params={{ id: release.id.toString() }}
-											class="text-secondary no-underline"
-										>
-											{release.title}
-										</Link>
-										<Show when={index() < props.song.releases.length - 1}>
-											{", "}
-										</Show>
-									</>
-								)}
-							</For>
-						</span>
+					<div class="mt-1 wrap-break-word text-sm text-tertiary">
+						<For each={props.song.releases}>
+							{(release, index) => (
+								<>
+									<Link
+										to="/release/$id"
+										params={{ id: release.id.toString() }}
+										class="text-secondary no-underline"
+									>
+										{release.title}
+									</Link>
+									<Show when={index() < props.song.releases.length - 1}>
+										{", "}
+									</Show>
+								</>
+							)}
+						</For>
 					</div>
 				</Show>
 
 				<Show when={props.song.artists.length > 0}>
-					<div class="mt-1 flex gap-x-1 text-sm text-tertiary">
-						<span class="shrink-0">{t`By`}</span>
-						<span class="min-w-0 wrap-break-word">
-							<For each={props.song.artists}>
-								{(artist, index) => (
-									<>
-										<Link
-											to="/artist/$id"
-											params={{ id: artist.id.toString() }}
-											class="text-secondary no-underline"
-										>
-											{artist.name}
-										</Link>
-										<Show when={index() < props.song.artists.length - 1}>
-											{", "}
-										</Show>
-									</>
-								)}
-							</For>
-						</span>
+					<div class="mt-1 wrap-break-word text-sm text-tertiary">
+						<For each={props.song.artists}>
+							{(artist, index) => (
+								<>
+									<Link
+										to="/artist/$id"
+										params={{ id: artist.id.toString() }}
+										class="text-secondary no-underline"
+									>
+										{artist.name}
+									</Link>
+									<Show when={index() < props.song.artists.length - 1}>
+										{", "}
+									</Show>
+								</>
+							)}
+						</For>
 					</div>
 				</Show>
 			</div>
