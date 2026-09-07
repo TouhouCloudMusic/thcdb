@@ -220,10 +220,6 @@ msgstr "替代名称"
 msgid "An error occurred. Please try again."
 msgstr "发生错误，请重试。"
 
-#: src/view/song/SongItem.tsx
-msgid "Appears on"
-msgstr "收录于"
-
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approve"
@@ -326,16 +322,9 @@ msgstr "出生"
 msgid "Browse circles and solo creators with filters and sorting."
 msgstr "浏览社团与个人创作者，并支持筛选和排序。"
 
-#: src/view/Homepage/component/PlaylistCard.tsx
 #: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
 msgid "by"
 msgstr "由"
-
-#: src/view/collection/CollectionListItem.tsx
-#: src/view/release/ReleaseItems.tsx
-#: src/view/song/SongItem.tsx
-msgid "By"
-msgstr "作者："
 
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
