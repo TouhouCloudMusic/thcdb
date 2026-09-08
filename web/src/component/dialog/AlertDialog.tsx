@@ -36,7 +36,7 @@ export type AlertDialogProps = Exclude<Dialog.RootProps, "children"> & {
 	dismissible?: boolean | undefined
 }
 
-type TriggerAsProps = Omit<ComponentProps<typeof Button>, "children">
+type TriggerAsProps = Omit<ComponentProps<"button">, "children">
 
 export function AlertDialog(props: AlertDialogProps) {
 	const { t } = useLingui()

@@ -1,10 +1,9 @@
-import type { PolymorphicProps } from "@kobalte/core"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { Button } from "~/component/atomic/button"
 import type { ButtonProps } from "~/component/atomic/button"
 
-const meta: Meta<PolymorphicProps<"button", ButtonProps>> = {
+const meta: Meta<ButtonProps> = {
 	component: Button,
 	parameters: { layout: "centered" },
 	tags: ["autodocs"],

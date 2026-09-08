@@ -4,7 +4,6 @@ import type { ButtonRootProps } from "@kobalte/core/button"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
 import { createMemo, mergeProps, splitProps } from "solid-js"
-import type { JSX, ValidComponent } from "solid-js"
 
 import { buttonVars } from "~/component/atomic/button/button.stylex"
 import { palette } from "~/style/color/palette.stylex"
@@ -385,18 +384,17 @@ export const buttonStyles = stylex.create({
 	},
 })
 
-export type ButtonProps<T extends ValidComponent = "button"> =
-	ButtonRootProps<T> & {
+export type ButtonProps = PolymorphicProps<
+	"button",
+	ButtonRootProps<"button"> & {
 		appearance?: "solid" | "soft" | "ghost" | "surface" | "outline"
 		tone?: "gray" | "slate" | "blue" | "reimu" | "marisa" | "green"
 		size?: "xs" | "sm" | "md" | "lg"
 		styles?: StyleXStyles
 	}
+>
 
-export function Button<T extends ValidComponent = "button">(
-	props: PolymorphicProps<T, ButtonProps<T>>,
-): JSX.Element
-export function Button(props: PolymorphicProps<"button", ButtonProps>) {
+export function Button(props: ButtonProps) {
 	const merged = mergeProps(
 		{ appearance: "soft", tone: "gray" } satisfies ButtonProps,
 		props,
