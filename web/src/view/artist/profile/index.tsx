@@ -160,7 +160,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 											).class
 										}
 									>
-										Upload image
+										{t`Upload image`}
 									</Link>
 								</div>
 							</div>
