@@ -79,6 +79,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/{entity_type}/{id}/visit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["record_visit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/{target_type}/{id}/comments": {
         parameters: {
             query?: never;
@@ -671,14 +687,14 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/home/metadata": {
+    "/home": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["home_metadata"];
+        get: operations["get_home"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2131,8 +2147,8 @@ export type components = {
             data: components["schemas"]["ForgotPasswordResponse"];
             status: string;
         };
-        DataHomeMetadata: {
-            data: components["schemas"]["HomeMetadata"];
+        DataHome: {
+            data: components["schemas"]["Home"];
             status: string;
         };
         DataImageQueueDetail: {
@@ -2449,15 +2465,19 @@ export type components = {
             /** Format: int64 */
             verification_code_expires_minutes: number;
         };
-        HomeMetadata: {
+        Home: {
+            popular: components["schemas"]["PopularItems"];
+            statistics: components["schemas"]["HomeStatistics"];
+        };
+        HomeStatistics: {
             /** Format: int64 */
-            artists_count: number;
+            artists: number;
             /** Format: int64 */
-            releases_count: number;
+            releases: number;
             /** Format: int64 */
-            songs_count: number;
+            songs: number;
             /** Format: int64 */
-            tags_count: number;
+            tags: number;
         };
         /**
          * Format: uri
@@ -3107,6 +3127,10 @@ export type components = {
         };
         /** @enum {string} */
         Permission: "correction.manage" | "comment.manage" | "image.queue.manage" | "admin.user.read" | "admin.user.role.write";
+        PopularItems: {
+            artists: components["schemas"]["ArtistListItem"][];
+            releases: components["schemas"]["ReleaseListItem"][];
+        };
         ReadAllRequest: {
             snapshot_inbox_seq: string;
         };
@@ -3539,7 +3563,7 @@ export type DataComment = components['schemas']['DataComment'];
 export type DataCommentPage = components['schemas']['DataCommentPage'];
 export type DataCorrectionDetail = components['schemas']['DataCorrectionDetail'];
 export type DataForgotPasswordResponse = components['schemas']['DataForgotPasswordResponse'];
-export type DataHomeMetadata = components['schemas']['DataHomeMetadata'];
+export type DataHome = components['schemas']['DataHome'];
 export type DataImageQueueDetail = components['schemas']['DataImageQueueDetail'];
 export type DataInitDiscography = components['schemas']['DataInitDiscography'];
 export type DataNotificationPage = components['schemas']['DataNotificationPage'];
@@ -3613,7 +3637,8 @@ export type EventListItem = components['schemas']['EventListItem'];
 export type EventSummary = components['schemas']['EventSummary'];
 export type ForgotPasswordRequest = components['schemas']['ForgotPasswordRequest'];
 export type ForgotPasswordResponse = components['schemas']['ForgotPasswordResponse'];
-export type HomeMetadata = components['schemas']['HomeMetadata'];
+export type Home = components['schemas']['Home'];
+export type HomeStatistics = components['schemas']['HomeStatistics'];
 export type HttpUrl = components['schemas']['HttpUrl'];
 export type ImageQueueAction = components['schemas']['ImageQueueAction'];
 export type ImageQueueDetail = components['schemas']['ImageQueueDetail'];
@@ -3679,6 +3704,7 @@ export type PageResponseUserCollection = components['schemas']['PageResponse_Use
 export type PageResponseUserCollectionItemDetail = components['schemas']['PageResponse_UserCollectionItemDetail'];
 export type PageResponseUserSummary = components['schemas']['PageResponse_UserSummary'];
 export type Permission = components['schemas']['Permission'];
+export type PopularItems = components['schemas']['PopularItems'];
 export type ReadAllRequest = components['schemas']['ReadAllRequest'];
 export type Release = components['schemas']['Release'];
 export type ReleaseArtist = components['schemas']['ReleaseArtist'];
@@ -4005,6 +4031,56 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DataPaginatedTagAggregate"];
                 };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    record_visit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_type: "release" | "artist";
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Visit recorded */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Entity not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Too Many Requests */
             429: {
@@ -6240,7 +6316,7 @@ export interface operations {
             };
         };
     };
-    home_metadata: {
+    get_home: {
         parameters: {
             query?: never;
             header?: never;
@@ -6254,7 +6330,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataHomeMetadata"];
+                    "application/json": components["schemas"]["DataHome"];
                 };
             };
             /** @description Too Many Requests */
@@ -9703,7 +9779,7 @@ export enum ApiPaths {
     update_event_pending_correction = "/event/{id}/correction/{correction_id}",
     forgot_password = "/forgot-password",
     health_check = "/health_check",
-    home_metadata = "/home/metadata",
+    get_home = "/home",
     pending_image_queue = "/image-queue",
     pending_image_queue_count = "/image-queue/pending-count",
     image_queue_detail = "/image-queue/{id}",
@@ -9784,6 +9860,7 @@ export enum ApiPaths {
     vote_tag = "/{entity_type}/{id}/tag-vote",
     delete_vote = "/{entity_type}/{id}/tag-vote",
     get_tags = "/{entity_type}/{id}/tags",
+    record_visit = "/{entity_type}/{id}/visit",
     find_entity_comments = "/{target_type}/{id}/comments",
     create_entity_comment = "/{target_type}/{id}/comments"
 }

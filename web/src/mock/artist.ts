@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker"
 import type { Artist } from "@thc/api"
 
 import { ARTIST_TYPES } from "~/domain/artist/constants"
+import type { ArtistListItem } from "~/hey-api"
 
 const LANG_JA = { id: 1, code: "ja", name: "Japanese" }
 const LANG_EN = { id: 2, code: "en", name: "English" }
@@ -18,6 +19,25 @@ const ARTIST_NAMES = [
 	"Liz Triangle",
 	"Yuuhei Satellite",
 ]
+
+export function createMockArtistListItem(
+	id: number,
+	override?: Partial<ArtistListItem>,
+): ArtistListItem {
+	faker.seed(id)
+	return {
+		id,
+		name: faker.helpers.arrayElement(ARTIST_NAMES),
+		artist_type: ARTIST_TYPES[(id - 1) % ARTIST_TYPES.length] ?? "Unknown",
+		profile_image_url: id % 4 === 0 ? "/avatar.png" : null,
+		current_location: {
+			country: faker.location.country(),
+			province: faker.location.state(),
+			city: faker.location.city(),
+		},
+		...override,
+	}
+}
 
 export const createMockArtist = (
 	id: number,

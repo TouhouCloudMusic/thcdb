@@ -1003,6 +1003,7 @@ pub(super) async fn insert_user_collection_item(
             entity_type: Set(req.entity_type.into()),
             description: Set(req.description.clone()),
             sort_key: Set(sort_key),
+            added_at: NotSet,
         },
     )
     .exec_with_returning(conn)

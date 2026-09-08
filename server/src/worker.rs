@@ -9,8 +9,12 @@ use crate::infra::state::AppState;
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(35);
 
 pub async fn run(state: &AppState) -> io::Result<()> {
-    let monitor = infra_storage_worker::register_workers(
+    let monitor = crate::features::popularity::register_workers(
         Monitor::new(),
+        state.clone(),
+    );
+    let monitor = infra_storage_worker::register_workers(
+        monitor,
         state.remove_file_queue.clone(),
     );
     let monitor = auth_worker::register_workers(

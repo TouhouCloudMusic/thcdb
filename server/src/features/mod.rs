@@ -13,6 +13,7 @@ pub(crate) mod image_queue;
 pub(crate) mod image_upload;
 pub mod label;
 pub mod notification;
+pub mod popularity;
 pub mod release;
 pub mod release_image;
 pub mod search;
@@ -26,6 +27,7 @@ pub mod user_collection;
 pub(crate) mod user_event;
 pub mod user_image;
 pub mod user_profile;
+pub mod visit;
 
 use utoipa_axum::router::OpenApiRouter;
 
@@ -45,6 +47,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(image_queue::router())
         .merge(label::router())
         .merge(notification::router())
+        .merge(visit::router())
         .merge(release::router())
         .merge(search::router())
         .merge(song::router())

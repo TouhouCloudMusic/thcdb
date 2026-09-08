@@ -1,9 +1,8 @@
 use domain::shared::MessageError;
 use infra_db::error::DatabaseError;
+use infra_error::BoxedError;
 
 use crate::CommentTargetKind;
-
-type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ErrorKind {

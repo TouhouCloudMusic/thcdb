@@ -65,10 +65,10 @@ import {
 	getCorrection,
 	getCorrectionDiff,
 	getCorrectionRevisions,
+	getHome,
 	getReleaseCoverArtMetadata,
 	getTags,
 	healthCheck,
-	homeMetadata,
 	imageQueueDetail,
 	languageList,
 	listNotifications,
@@ -86,6 +86,7 @@ import {
 	profileWithName,
 	publicUserCollections,
 	readAll,
+	recordVisit,
 	reorderUserCollectionItems,
 	resendVerificationEmail,
 	resetPassword,
@@ -307,6 +308,9 @@ import type {
 	GetCorrectionRevisionsData,
 	GetCorrectionRevisionsError,
 	GetCorrectionRevisionsResponse,
+	GetHomeData,
+	GetHomeError,
+	GetHomeResponse,
 	GetReleaseCoverArtMetadataData,
 	GetReleaseCoverArtMetadataError,
 	GetReleaseCoverArtMetadataResponse,
@@ -315,9 +319,6 @@ import type {
 	GetTagsResponse,
 	HealthCheckData,
 	HealthCheckError,
-	HomeMetadataData,
-	HomeMetadataError,
-	HomeMetadataResponse,
 	ImageQueueDetailData,
 	ImageQueueDetailError,
 	ImageQueueDetailResponse,
@@ -366,6 +367,9 @@ import type {
 	ReadAllData,
 	ReadAllError,
 	ReadAllResponse,
+	RecordVisitData,
+	RecordVisitError,
+	RecordVisitResponse,
 	ReorderUserCollectionItemsData,
 	ReorderUserCollectionItemsError,
 	ReorderUserCollectionItemsResponse,
@@ -2145,18 +2149,18 @@ export const healthCheckOptions = (options?: Options<HealthCheckData>) =>
 		queryKey: healthCheckQueryKey(options),
 	})
 
-export const homeMetadataQueryKey = (options?: Options<HomeMetadataData>) =>
-	createQueryKey("homeMetadata", options)
+export const getHomeQueryKey = (options?: Options<GetHomeData>) =>
+	createQueryKey("getHome", options, false, ["Home"])
 
-export const homeMetadataOptions = (options?: Options<HomeMetadataData>) =>
+export const getHomeOptions = (options?: Options<GetHomeData>) =>
 	queryOptions<
-		HomeMetadataResponse,
-		HomeMetadataError,
-		HomeMetadataResponse,
-		ReturnType<typeof homeMetadataQueryKey>
+		GetHomeResponse,
+		GetHomeError,
+		GetHomeResponse,
+		ReturnType<typeof getHomeQueryKey>
 	>({
 		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await homeMetadata({
+			const { data } = await getHome({
 				...options,
 				...queryKey[0],
 				signal,
@@ -2164,7 +2168,7 @@ export const homeMetadataOptions = (options?: Options<HomeMetadataData>) =>
 			})
 			return data
 		},
-		queryKey: homeMetadataQueryKey(options),
+		queryKey: getHomeQueryKey(options),
 	})
 
 export const pendingImageQueueQueryKey = (
@@ -4898,6 +4902,30 @@ export const getTagsInfiniteOptions = (options: Options<GetTagsData>) => {
 		},
 	)
 	return opts as Omit<typeof opts, "initialData">
+}
+
+export const recordVisitMutation = (
+	options?: Partial<Options<RecordVisitData>>,
+): MutationOptions<
+	RecordVisitResponse,
+	RecordVisitError,
+	Options<RecordVisitData>
+> => {
+	const mutationOptions: MutationOptions<
+		RecordVisitResponse,
+		RecordVisitError,
+		Options<RecordVisitData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await recordVisit({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
 }
 
 export const findEntityCommentsQueryKey = (

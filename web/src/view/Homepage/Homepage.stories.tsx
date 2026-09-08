@@ -9,10 +9,10 @@ import { LeftSidebarView } from "~/component/Header/LeftSidebar"
 import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
-import { createMockArtists } from "~/mock/artist"
+import { createMockArtistListItem } from "~/mock/artist"
 import { createMockEvent } from "~/mock/event"
-import { createMockReleases } from "~/mock/release"
-import { createMockTags } from "~/mock/tag"
+import { createMockReleaseListItem } from "~/mock/release"
+import { createMockTagListItem } from "~/mock/tag"
 import { StoryRouterProvider } from "~/utils/adapter/storybook"
 import { HomePage } from "~/view/Homepage"
 import {
@@ -23,10 +23,12 @@ import {
 } from "~/view/Homepage/constants"
 
 function createHomeStoryData() {
-	const releases = createMockReleases(RELEASES_LIMIT, 101)
-	for (const release of releases.slice(RELEASES_LIMIT / 2)) {
-		release.cover_art_url = null
-	}
+	const releases = Array.from({ length: RELEASES_LIMIT }, (_, index) =>
+		createMockReleaseListItem(
+			101 + index,
+			index >= RELEASES_LIMIT / 2 ? { cover_art_url: null } : {},
+		),
+	)
 	const events = Array.from({ length: EVENTS_LIMIT }, (_, index) =>
 		createMockEvent(201 + index, {
 			start_date: {
@@ -40,25 +42,27 @@ function createHomeStoryData() {
 	)
 
 	return {
-		metadata: {
-			artists_count: 12_480,
-			releases_count: 38_912,
-			songs_count: 186_730,
-			tags_count: 2_406,
+		statistics: {
+			artists: 12_480,
+			releases: 38_912,
+			songs: 186_730,
+			tags: 2_406,
 		},
 		releases,
-		artists: createMockArtists(ARTISTS_LIMIT, 101),
-		tags: createMockTags(TAGS_LIMIT, 101).map(
-			({ id, name, type, short_description, relations }) => ({
-				id,
-				name,
-				type,
-				short_description,
-				parents:
-					relations
-						?.filter((relation) => relation.type === "Inherit")
-						.map((relation) => relation.tag) ?? [],
-			}),
+		artists: Array.from({ length: ARTISTS_LIMIT }, (_, index) =>
+			createMockArtistListItem(101 + index),
+		),
+		tags: Array.from({ length: TAGS_LIMIT }, (_, index) =>
+			createMockTagListItem(
+				101 + index,
+				index === 0
+					? {
+							name: "Trance",
+							type: "Genre",
+							parents: [{ id: 1, name: "Electronic", type: "Genre" }],
+						}
+					: {},
+			),
 		),
 		events,
 	}

@@ -648,8 +648,8 @@ export const vDataForgotPasswordResponse = v.object({
 	data: vForgotPasswordResponse,
 })
 
-export const vHomeMetadata = v.object({
-	artists_count: v.pipe(
+export const vHomeStatistics = v.object({
+	artists: v.pipe(
 		v.union([v.number(), v.string(), v.bigint()]),
 		v.transform((x) => BigInt(x)),
 		v.minValue(BigInt(0)),
@@ -658,7 +658,7 @@ export const vHomeMetadata = v.object({
 			"Invalid value: Expected int64 to be <= 9223372036854775807",
 		),
 	),
-	releases_count: v.pipe(
+	releases: v.pipe(
 		v.union([v.number(), v.string(), v.bigint()]),
 		v.transform((x) => BigInt(x)),
 		v.minValue(BigInt(0)),
@@ -667,7 +667,7 @@ export const vHomeMetadata = v.object({
 			"Invalid value: Expected int64 to be <= 9223372036854775807",
 		),
 	),
-	songs_count: v.pipe(
+	songs: v.pipe(
 		v.union([v.number(), v.string(), v.bigint()]),
 		v.transform((x) => BigInt(x)),
 		v.minValue(BigInt(0)),
@@ -676,7 +676,7 @@ export const vHomeMetadata = v.object({
 			"Invalid value: Expected int64 to be <= 9223372036854775807",
 		),
 	),
-	tags_count: v.pipe(
+	tags: v.pipe(
 		v.union([v.number(), v.string(), v.bigint()]),
 		v.transform((x) => BigInt(x)),
 		v.minValue(BigInt(0)),
@@ -685,11 +685,6 @@ export const vHomeMetadata = v.object({
 			"Invalid value: Expected int64 to be <= 9223372036854775807",
 		),
 	),
-})
-
-export const vDataHomeMetadata = v.object({
-	status: v.string(),
-	data: vHomeMetadata,
 })
 
 /**
@@ -2369,6 +2364,21 @@ export const vReleaseListItem = v.object({
 	release_type: vReleaseType,
 	release_date: v.nullish(vDateWithPrecision),
 	catalog_numbers: v.array(v.string()),
+})
+
+export const vPopularItems = v.object({
+	releases: v.array(vReleaseListItem),
+	artists: v.array(vArtistListItem),
+})
+
+export const vHome = v.object({
+	statistics: vHomeStatistics,
+	popular: vPopularItems,
+})
+
+export const vDataHome = v.object({
+	status: v.string(),
+	data: vHome,
 })
 
 export const vReleaseSummary = v.object({
@@ -4918,7 +4928,7 @@ export const vForgotPasswordBody = vForgotPasswordRequest
 
 export const vForgotPasswordResponse2 = vDataForgotPasswordResponse
 
-export const vHomeMetadataResponse = vDataHomeMetadata
+export const vGetHomeResponse = vDataHome
 
 export const vPendingImageQueueQuery = v.object({
 	limit: v.optional(
@@ -5990,6 +6000,24 @@ export const vGetTagsQuery = v.object({
 })
 
 export const vGetTagsResponse = vDataPaginatedTagAggregate
+
+export const vRecordVisitPath = v.object({
+	entity_type: v.picklist(["release", "artist"]),
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+/**
+ * Visit recorded
+ */
+export const vRecordVisitResponse = v.void()
 
 export const vFindEntityCommentsPath = v.object({
 	target_type: vEntityCommentTarget,

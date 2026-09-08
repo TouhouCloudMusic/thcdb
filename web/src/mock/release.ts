@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker"
 import type { Release } from "@thc/api"
 
 import { RELEASE_TYPES } from "~/domain/release/constants"
+import type { ReleaseListItem } from "~/hey-api"
 
 const RELEASE_COVER_URL = "/img/cover/release/1.png"
 
@@ -21,6 +22,31 @@ const LABEL_NAMES = [
 ]
 
 const EVENT_NAMES = ["Comiket", "Reitaisai", "M3", "Touhou Live"]
+
+export function createMockReleaseListItem(
+	id: number,
+	override?: Partial<ReleaseListItem>,
+): ReleaseListItem {
+	faker.seed(id)
+	return {
+		id,
+		title: faker.music.album(),
+		release_type: faker.helpers.arrayElement(RELEASE_TYPES),
+		artists: faker.helpers
+			.arrayElements(ARTIST_NAMES, 2)
+			.map((name, index) => ({ id: id * 10 + index, name })),
+		cover_art_url: RELEASE_COVER_URL,
+		release_date: {
+			precision: "Day",
+			value: faker.date
+				.between({ from: "2000-01-01", to: "2025-12-31" })
+				.toISOString()
+				.slice(0, 10),
+		},
+		catalog_numbers: [`THC-${id}`],
+		...override,
+	}
+}
 
 export const createMockRelease = (
 	id: number,

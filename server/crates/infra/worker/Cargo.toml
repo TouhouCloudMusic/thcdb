@@ -12,6 +12,7 @@ name = "infra_worker"
 path = "src/lib.rs"
 
 [dependencies]
+infra_error.workspace  = true
 apalis.workspace       = true
 apalis-cron.workspace  = true
 apalis-redis.workspace = true

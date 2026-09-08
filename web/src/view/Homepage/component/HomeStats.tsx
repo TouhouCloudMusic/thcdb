@@ -1,18 +1,18 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { HomeMetadata } from "@thc/api"
 import { For } from "solid-js"
 
+import type { HomeStatistics } from "~/hey-api"
 import { formatCount } from "~/view/Homepage/utils"
 
-function HomeStatsGrid(props: { metadata?: HomeMetadata }) {
+function HomeStatsGrid(props: { statistics?: HomeStatistics }) {
 	const { t } = useLingui()
 	const stats = () =>
 		[
-			{ key: "releases_count", label: t`Releases` },
-			{ key: "songs_count", label: t`Songs` },
-			{ key: "artists_count", label: t`Artists` },
-			{ key: "tags_count", label: t`Tags` },
-		] satisfies { key: keyof HomeMetadata; label: string }[]
+			{ key: "releases", label: t`Releases` },
+			{ key: "songs", label: t`Songs` },
+			{ key: "artists", label: t`Artists` },
+			{ key: "tags", label: t`Tags` },
+		] satisfies { key: keyof HomeStatistics; label: string }[]
 
 	return (
 		<div
@@ -23,7 +23,7 @@ function HomeStatsGrid(props: { metadata?: HomeMetadata }) {
 				{(stat) => (
 					<div class="md:min-w-28">
 						<div class="text-3xl font-extralight tracking-tight text-primary tabular-nums">
-							{formatCount(props.metadata?.[stat.key])}
+							{formatCount(props.statistics?.[stat.key])}
 						</div>
 						<div class="mt-1 text-xs font-light tracking-widest text-tertiary uppercase">
 							{stat.label}
@@ -35,14 +35,14 @@ function HomeStatsGrid(props: { metadata?: HomeMetadata }) {
 	)
 }
 
-export function HomeStats(props: { metadata?: HomeMetadata }) {
+export function HomeStats(props: { statistics?: HomeStatistics }) {
 	const { t } = useLingui()
 	return (
 		<section
 			aria-label={t`Database statistics`}
 			class="border-b border-slate-300 bg-primary px-4 py-3 sm:px-6 lg:px-8"
 		>
-			<HomeStatsGrid metadata={props.metadata} />
+			<HomeStatsGrid statistics={props.statistics} />
 		</section>
 	)
 }

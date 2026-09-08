@@ -407,9 +407,9 @@ export type DataForgotPasswordResponse = {
 	data: ForgotPasswordResponse
 }
 
-export type DataHomeMetadata = {
+export type DataHome = {
 	status: string
-	data: HomeMetadata
+	data: Home
 }
 
 export type DataImageQueueDetail = {
@@ -868,11 +868,16 @@ export type ForgotPasswordResponse = {
 	resend_cooldown_seconds: number
 }
 
-export type HomeMetadata = {
-	artists_count: number
-	releases_count: number
-	songs_count: number
-	tags_count: number
+export type Home = {
+	statistics: HomeStatistics
+	popular: PopularItems
+}
+
+export type HomeStatistics = {
+	artists: number
+	releases: number
+	songs: number
+	tags: number
 }
 
 /**
@@ -1516,6 +1521,11 @@ export type Permission =
 	| "image.queue.manage"
 	| "admin.user.read"
 	| "admin.user.role.write"
+
+export type PopularItems = {
+	releases: Array<ReleaseListItem>
+	artists: Array<ArtistListItem>
+}
 
 export type ReadAllRequest = {
 	snapshot_inbox_seq: string
@@ -3351,14 +3361,14 @@ export type HealthCheckResponses = {
 	200: unknown
 }
 
-export type HomeMetadataData = {
+export type GetHomeData = {
 	body?: never
 	path?: never
 	query?: never
-	url: "/home/metadata"
+	url: "/home"
 }
 
-export type HomeMetadataErrors = {
+export type GetHomeErrors = {
 	/**
 	 * Too Many Requests
 	 */
@@ -3369,14 +3379,13 @@ export type HomeMetadataErrors = {
 	}
 }
 
-export type HomeMetadataError = HomeMetadataErrors[keyof HomeMetadataErrors]
+export type GetHomeError = GetHomeErrors[keyof GetHomeErrors]
 
-export type HomeMetadataResponses = {
-	200: DataHomeMetadata
+export type GetHomeResponses = {
+	200: DataHome
 }
 
-export type HomeMetadataResponse =
-	HomeMetadataResponses[keyof HomeMetadataResponses]
+export type GetHomeResponse = GetHomeResponses[keyof GetHomeResponses]
 
 export type PendingImageQueueData = {
 	body?: never
@@ -5861,6 +5870,43 @@ export type GetTagsResponses = {
 }
 
 export type GetTagsResponse = GetTagsResponses[keyof GetTagsResponses]
+
+export type RecordVisitData = {
+	body?: never
+	path: {
+		entity_type: "release" | "artist"
+		id: number
+	}
+	query?: never
+	url: "/{entity_type}/{id}/visit"
+}
+
+export type RecordVisitErrors = {
+	/**
+	 * Entity not found
+	 */
+	404: unknown
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type RecordVisitError = RecordVisitErrors[keyof RecordVisitErrors]
+
+export type RecordVisitResponses = {
+	/**
+	 * Visit recorded
+	 */
+	204: void
+}
+
+export type RecordVisitResponse =
+	RecordVisitResponses[keyof RecordVisitResponses]
 
 export type FindEntityCommentsData = {
 	body?: never

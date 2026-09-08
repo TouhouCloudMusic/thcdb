@@ -1,12 +1,12 @@
-import type { Release } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { createMockRelease } from "~/mock/release"
+import type { ReleaseListItem } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { ReleaseCard } from "./ReleaseCard"
 
-const DEFAULT_RELEASE = createMockRelease(11, {
+const DEFAULT_RELEASE: ReleaseListItem = {
+	id: 11,
 	title: "幻想郷 Tour 2026",
 	release_type: "Album",
 	cover_art_url: "/img/cover/release/1.png",
@@ -18,9 +18,10 @@ const DEFAULT_RELEASE = createMockRelease(11, {
 		{ id: 1, name: "SOUND HOLIC" },
 		{ id: 2, name: "709sec." },
 	],
-})
+	catalog_numbers: [],
+}
 
-const NO_COVER_RELEASE: Release = {
+const NO_COVER_RELEASE: ReleaseListItem = {
 	...DEFAULT_RELEASE,
 	id: 18,
 	title: "Untitled Live Tape",
@@ -34,7 +35,7 @@ const NO_COVER_RELEASE: Release = {
 }
 
 type StoryRootProps = {
-	release: Release
+	release: ReleaseListItem
 }
 
 function StoryRoot(props: StoryRootProps) {

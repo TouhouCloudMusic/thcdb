@@ -73,6 +73,7 @@ migrations![
     m20260820_000000_rename_comment_reply_relation,
     m20260822_000000_rename_notification_user_columns,
     m20260828_000000_add_missing_entity_links,
+    m20260907_000000_add_collection_item_added_at,
 ];
 
 macro_rules! migration {

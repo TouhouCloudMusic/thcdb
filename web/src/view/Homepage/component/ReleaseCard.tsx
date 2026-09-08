@@ -1,10 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Release } from "@thc/api"
 import { For, Show } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
+import type { ReleaseListItem } from "~/hey-api"
 import { tw } from "~/utils"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { displayReleaseDate } from "~/view/Homepage/utils"
@@ -44,12 +44,12 @@ const RELEASE_CARD_OVERLAY_CLASS =
 	"pointer-events-none absolute inset-0 bg-slate-700/5 opacity-0 transition-opacity duration-150 group-hover/release:opacity-100 group-focus-within/release:opacity-100 motion-reduce:transition-none"
 
 type ReleaseCardProps = {
-	release: Release
+	release: ReleaseListItem
 }
 
 export function ReleaseCard(props: ReleaseCardProps) {
 	const { t } = useLingui()
-	const artists = () => props.release.artists?.slice(0, 3) ?? []
+	const artists = () => props.release.artists.slice(0, 3)
 	const releaseDate = () => displayReleaseDate(props.release.release_date)
 	const coverUrl = () => imgUrl(props.release.cover_art_url)
 

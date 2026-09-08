@@ -1,56 +1,17 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
-import { ArtistApi, EventApi, ReleaseApi, TagApi } from "@thc/api"
-import { HomeQueryOption } from "@thc/query"
+import { EventApi, TagApi } from "@thc/api"
 import dayjs from "dayjs"
 import { Either } from "effect"
 
+import { getHomeOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { HomePage } from "~/view/Homepage"
-import {
-	ARTISTS_LIMIT,
-	EVENTS_LIMIT,
-	RELEASES_LIMIT,
-	TAGS_LIMIT,
-} from "~/view/Homepage/constants"
+import { EVENTS_LIMIT, TAGS_LIMIT } from "~/view/Homepage/constants"
 
 const EVENTS_QUERY_LIMIT = 20
 
 function RouteComponent() {
-	const metadataQuery = useQuery(() => HomeQueryOption.metadata())
-	const releasesQuery = useQuery(() => ({
-		queryKey: ["home::releases", RELEASES_LIMIT],
-		queryFn: async () => {
-			const res = await ReleaseApi.explore({
-				query: {
-					page: 1,
-					limit: RELEASES_LIMIT,
-					sort_field: "created_at",
-					sort_direction: "desc",
-				},
-			})
-			const paginated = Either.getOrThrowWith(res, (error) => {
-				throw error
-			})
-			return paginated.items
-		},
-	}))
-	const artistsQuery = useQuery(() => ({
-		queryKey: ["home::artists", ARTISTS_LIMIT],
-		queryFn: async () => {
-			const res = await ArtistApi.explore({
-				query: {
-					page: 1,
-					limit: ARTISTS_LIMIT,
-					sort_field: "created_at",
-					sort_direction: "desc",
-				},
-			})
-			const paginated = Either.getOrThrowWith(res, (error) => {
-				throw error
-			})
-			return paginated.items
-		},
-	}))
+	const homeQuery = useQuery(() => getHomeOptions())
 	const today = dayjs().format("YYYY-MM-DD")
 	const eventsQuery = useQuery(() => ({
 		queryKey: ["home::events", today, EVENTS_LIMIT],
@@ -93,9 +54,9 @@ function RouteComponent() {
 
 	return (
 		<HomePage
-			metadata={metadataQuery.data}
-			releases={(releasesQuery.data ?? []).slice(0, RELEASES_LIMIT)}
-			artists={(artistsQuery.data ?? []).slice(0, ARTISTS_LIMIT)}
+			statistics={homeQuery.data?.data.statistics}
+			releases={homeQuery.data?.data.popular.releases ?? []}
+			artists={homeQuery.data?.data.popular.artists ?? []}
 			events={eventsQuery.data ?? []}
 			tags={(tagsQuery.data ?? []).slice(0, TAGS_LIMIT)}
 		/>

@@ -1,0 +1,32 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-popularity-core"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "popularity_core"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace       = true
+entity.workspace       = true
+fred.workspace         = true
+futures-util.workspace = true
+infra_error.workspace  = true
+sea-orm.workspace      = true
+sea-query.workspace    = true
+serde.workspace        = true
+serde_json.workspace   = true
+tokio.workspace        = true
+visit_core.workspace   = true
+
+[dev-dependencies]
+anyhow.workspace        = true
+infra_testing.workspace = true
+
+[features]
+integration-test = [  ]

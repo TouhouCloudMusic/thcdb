@@ -1,0 +1,27 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-visit-core"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "visit_core"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace = true
+fred.workspace   = true
+serde.workspace  = true
+utoipa.workspace = true
+
+[dev-dependencies]
+anyhow.workspace        = true
+infra_testing.workspace = true
+rand.workspace          = true
+tokio.workspace         = true
+
+[features]
+integration-test = [  ]

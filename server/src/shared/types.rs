@@ -1,1 +1,1 @@
-pub type BoxedError = Box<dyn std::error::Error + Send + Sync>;
+pub use infra_error::BoxedError;
