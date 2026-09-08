@@ -11,8 +11,11 @@ use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::JoinType::*;
 use sea_orm::prelude::*;
-use sea_orm::{ConnectionTrait, QuerySelect, QueryTrait};
-use sea_query::{ExprTrait, IntoCondition, SimpleExpr, all};
+use sea_orm::{ConnectionTrait, QueryOrder, QuerySelect, QueryTrait};
+use sea_query::{
+    Alias, ExprTrait, IntoCondition, NullOrdering, Query, SelectStatement,
+    SimpleExpr, all, any,
+};
 
 use super::super::model::{
     Appearance, AppearanceQuery, ArtistReleaseArtist, Credit, CreditQuery,
@@ -120,18 +123,61 @@ pub(super) async fn discography(
         .map(|x| x.map(Into::into))
 }
 
+fn release_after_cursor_subquery(cursor: i32) -> SelectStatement {
+    let cursor_release = || Alias::new("cursor_release");
+    let cursor_date =
+        || Expr::col((cursor_release(), release::Column::ReleaseDate));
+    let release_date = || release::Column::ReleaseDate.into_expr();
+
+    let same_release_date = any![
+        release_date().eq(cursor_date()),
+        all![release_date().is_null(), cursor_date().is_null()],
+    ];
+    let title_or_id_after_cursor = Expr::tuple([
+        release::Column::Title.into_expr().into(),
+        release::Column::Id.into_expr().into(),
+    ])
+    .gt(Expr::tuple([
+        Expr::col((cursor_release(), release::Column::Title)).into(),
+        Expr::col((cursor_release(), release::Column::Id)).into(),
+    ]));
+
+    Query::select()
+        .expr(1)
+        .from_as(release::Entity, cursor_release())
+        .and_where(
+            Expr::col((cursor_release(), release::Column::Id)).eq(cursor),
+        )
+        .cond_where(any![
+            release_date().lt(cursor_date()),
+            all![release_date().is_null(), cursor_date().is_not_null()],
+            all![same_release_date, title_or_id_after_cursor],
+        ])
+        .to_owned()
+}
+
 async fn find_artist_releases(
-    select: Select<release::Entity>,
+    mut select: Select<release::Entity>,
     pagination: Cursor,
     db: &impl ConnectionTrait,
 ) -> Result<CursorResponse<ArtistReleaseIR>, DatabaseError> {
-    let mut cursor = select.cursor_by(release::Column::Id);
+    if pagination.at > 0 {
+        select = select
+            .filter(Expr::exists(release_after_cursor_subquery(pagination.at)));
+    }
 
-    cursor.after(pagination.at);
+    select = select
+        .order_by_with_nulls(
+            release::Column::ReleaseDate,
+            sea_orm::Order::Desc,
+            NullOrdering::Last,
+        )
+        .order_by_asc(release::Column::Title)
+        .order_by_asc(release::Column::Id);
 
     // Get one more to check if there are more
-    let mut releases = cursor
-        .first((pagination.limit + 1).into())
+    let mut releases = select
+        .limit(u64::from(pagination.limit) + 1)
         .all(db)
         .await
         .db_operation("load artist releases")?;
