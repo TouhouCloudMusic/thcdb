@@ -5751,6 +5751,7 @@ dependencies = [
  "thcdb-feature-image-queue-core",
  "thcdb-feature-notification-core",
  "thcdb-infra-db",
+ "thcdb-infra-error",
  "utoipa",
 ]
 
@@ -5868,6 +5869,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-feature-popularity-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "entity",
+ "fred",
+ "futures-util",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "thcdb-feature-visit-core",
+ "thcdb-infra-error",
+ "thcdb-infra-testing",
+ "tokio",
+]
+
+[[package]]
 name = "thcdb-feature-user-collection-notification"
 version = "0.1.0"
 dependencies = [
@@ -5898,6 +5918,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-feature-visit-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "fred",
+ "rand 0.9.4",
+ "serde",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
 name = "thcdb-infra-db"
 version = "0.1.0"
 dependencies = [
@@ -5909,6 +5943,7 @@ dependencies = [
  "sea-orm-migration",
  "sea-query",
  "strum 0.27.2",
+ "thcdb-infra-error",
 ]
 
 [[package]]
@@ -5918,6 +5953,14 @@ dependencies = [
  "derive_more",
  "lettre",
  "thcdb-domain",
+ "thcdb-infra-error",
+]
+
+[[package]]
+name = "thcdb-infra-error"
+version = "0.1.0"
+dependencies = [
+ "derive_more",
 ]
 
 [[package]]
@@ -5968,6 +6011,7 @@ dependencies = [
  "apalis-redis",
  "log",
  "serde",
+ "thcdb-infra-error",
  "tokio",
 ]
 
@@ -6049,11 +6093,14 @@ dependencies = [
  "thcdb-feature-notification-core",
  "thcdb-feature-notification-service",
  "thcdb-feature-notification-worker",
+ "thcdb-feature-popularity-core",
  "thcdb-feature-user-collection-notification",
  "thcdb-feature-user-core",
  "thcdb-feature-user-profile-notification",
+ "thcdb-feature-visit-core",
  "thcdb-infra-db",
  "thcdb-infra-email",
+ "thcdb-infra-error",
  "thcdb-infra-storage",
  "thcdb-infra-storage-worker",
  "thcdb-infra-testing",

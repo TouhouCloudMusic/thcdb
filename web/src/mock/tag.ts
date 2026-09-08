@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker"
 import type { Tag } from "@thc/api"
 
 import { TAG_TYPES } from "~/domain/tag/constants"
+import type { TagListItem } from "~/hey-api"
 
 const TAG_NAMES = [
 	"Trance",
@@ -15,6 +16,21 @@ const TAG_NAMES = [
 	"Arrange",
 	"Live",
 ]
+
+export function createMockTagListItem(
+	id: number,
+	override?: Partial<TagListItem>,
+): TagListItem {
+	faker.seed(id)
+	return {
+		id,
+		name: TAG_NAMES[(id - 1) % TAG_NAMES.length] ?? "Tag",
+		type: TAG_TYPES[(id - 1) % TAG_TYPES.length] ?? "Genre",
+		short_description: faker.lorem.sentence(),
+		parents: [],
+		...override,
+	}
+}
 
 export const createMockTag = (id: number, override?: Partial<Tag>): Tag => {
 	faker.seed(id)

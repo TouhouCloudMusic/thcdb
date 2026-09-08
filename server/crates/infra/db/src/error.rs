@@ -1,10 +1,9 @@
 use std::panic::Location;
 
 use frunk::{Coprod, Coproduct};
+use infra_error::BoxedError;
 use itertools::Itertools;
 use sea_orm::{DbErr, RuntimeErr, sqlx};
-
-type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
 #[display("Broken entity reference: {entity} #{id} not found")]

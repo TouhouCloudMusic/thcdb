@@ -1,12 +1,12 @@
-import type { Artist } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { createMockArtist } from "~/mock/artist"
+import type { ArtistListItem } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { ArtistCard } from "./ArtistCard"
 
-const DEFAULT_ARTIST = createMockArtist(4, {
+const DEFAULT_ARTIST: ArtistListItem = {
+	id: 4,
 	name: "SOUND HOLIC",
 	artist_type: "Multiple",
 	profile_image_url: "/avatar.png",
@@ -15,20 +15,23 @@ const DEFAULT_ARTIST = createMockArtist(4, {
 		province: null,
 		city: null,
 	},
-})
+}
 
-const NO_IMAGE_ARTIST: Artist = {
+const NO_IMAGE_ARTIST: ArtistListItem = {
 	...DEFAULT_ARTIST,
 	id: 5,
 	name: "ZUN",
 	artist_type: "Solo",
 	profile_image_url: null,
-	current_location: undefined,
-	start_location: undefined,
+	current_location: {
+		country: null,
+		province: null,
+		city: null,
+	},
 }
 
 type StoryRootProps = {
-	artist: Artist
+	artist: ArtistListItem
 }
 
 function StoryRoot(props: StoryRootProps) {

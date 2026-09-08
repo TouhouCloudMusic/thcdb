@@ -1,0 +1,15 @@
+[package]
+edition = "2024"
+name    = "thcdb-infra-error"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "infra_error"
+path = "src/lib.rs"
+
+[dependencies]
+derive_more.workspace = true

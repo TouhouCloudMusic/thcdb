@@ -10,10 +10,11 @@ pub use apalis::prelude::{
 pub use apalis_cron::{CronStream, Schedule};
 use apalis_redis::{Config as RedisConfig, connect};
 pub use apalis_redis::{RedisContext, RedisStorage};
+use infra_error::BoxedError;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
-pub type WorkerError = Box<dyn StdError + Send + Sync>;
+pub type WorkerError = BoxedError;
 pub type RedisQueue<T> = RedisStorage<T>;
 
 pub fn retryable_error<E>(source: E) -> Error

@@ -179,6 +179,9 @@ import type {
 	GetCorrectionRevisionsData,
 	GetCorrectionRevisionsErrors,
 	GetCorrectionRevisionsResponses,
+	GetHomeData,
+	GetHomeErrors,
+	GetHomeResponses,
 	GetReleaseCoverArtMetadataData,
 	GetReleaseCoverArtMetadataErrors,
 	GetReleaseCoverArtMetadataResponses,
@@ -188,9 +191,6 @@ import type {
 	HealthCheckData,
 	HealthCheckErrors,
 	HealthCheckResponses,
-	HomeMetadataData,
-	HomeMetadataErrors,
-	HomeMetadataResponses,
 	ImageQueueDetailData,
 	ImageQueueDetailErrors,
 	ImageQueueDetailResponses,
@@ -239,6 +239,9 @@ import type {
 	ReadAllData,
 	ReadAllErrors,
 	ReadAllResponses,
+	RecordVisitData,
+	RecordVisitErrors,
+	RecordVisitResponses,
 	ReorderUserCollectionItemsData,
 	ReorderUserCollectionItemsErrors,
 	ReorderUserCollectionItemsResponses,
@@ -1144,14 +1147,14 @@ export const healthCheck = <ThrowOnError extends boolean = false>(
 		ThrowOnError
 	>({ url: "/health_check", ...options })
 
-export const homeMetadata = <ThrowOnError extends boolean = false>(
-	options?: Options<HomeMetadataData, ThrowOnError>,
-): RequestResult<HomeMetadataResponses, HomeMetadataErrors, ThrowOnError> =>
+export const getHome = <ThrowOnError extends boolean = false>(
+	options?: Options<GetHomeData, ThrowOnError>,
+): RequestResult<GetHomeResponses, GetHomeErrors, ThrowOnError> =>
 	(options?.client ?? client).get<
-		HomeMetadataResponses,
-		HomeMetadataErrors,
+		GetHomeResponses,
+		GetHomeErrors,
 		ThrowOnError
-	>({ url: "/home/metadata", ...options })
+	>({ url: "/home", ...options })
 
 export const pendingImageQueue = <ThrowOnError extends boolean = false>(
 	options?: Options<PendingImageQueueData, ThrowOnError>,
@@ -2333,6 +2336,15 @@ export const getTags = <ThrowOnError extends boolean = false>(
 	(options.client ?? client).get<GetTagsResponses, GetTagsErrors, ThrowOnError>(
 		{ url: "/{entity_type}/{id}/tags", ...options },
 	)
+
+export const recordVisit = <ThrowOnError extends boolean = false>(
+	options: Options<RecordVisitData, ThrowOnError>,
+): RequestResult<RecordVisitResponses, RecordVisitErrors, ThrowOnError> =>
+	(options.client ?? client).post<
+		RecordVisitResponses,
+		RecordVisitErrors,
+		ThrowOnError
+	>({ url: "/{entity_type}/{id}/visit", ...options })
 
 export const findEntityComments = <ThrowOnError extends boolean = false>(
 	options: Options<FindEntityCommentsData, ThrowOnError>,

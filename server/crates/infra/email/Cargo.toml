@@ -12,6 +12,7 @@ name = "infra_email"
 path = "src/lib.rs"
 
 [dependencies]
+infra_error.workspace = true
 derive_more.workspace = true
 domain.workspace      = true
 lettre.workspace      = true

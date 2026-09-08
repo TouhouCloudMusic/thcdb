@@ -6,6 +6,7 @@ import { Show } from "solid-js"
 
 import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { createEntityVisit } from "~/state/visit"
 import { ReleaseInfoPage } from "~/view/release/Info"
 
 export const Route = createFileRoute("/release/$id")({
@@ -27,10 +28,13 @@ export const Route = createFileRoute("/release/$id")({
 
 function RouteComponent() {
 	const params = Route.useParams()
-	const releaseId = EntityId_fromStr(params().id)
-	const query = useQuery(() => ReleaseQueryOption.findById(releaseId))
+	const releaseId = () => EntityId_fromStr(params().id)
+	const query = useQuery(() => ReleaseQueryOption.findById(releaseId()))
 	const correctionHistoryQuery = useQuery(() =>
-		CorrectionQueryOption.history("release", releaseId),
+		CorrectionQueryOption.history("release", releaseId()),
+	)
+	createEntityVisit("release", () =>
+		query.data ? O.getOrUndefined(query.data)?.id : undefined,
 	)
 
 	return (

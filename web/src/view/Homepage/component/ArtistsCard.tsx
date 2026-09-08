@@ -1,8 +1,8 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Artist } from "@thc/api"
 import { For, Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
+import type { ArtistListItem } from "~/hey-api"
 import { tw } from "~/utils"
 import { ArtistCard } from "~/view/Homepage/component/ArtistCard"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
@@ -36,7 +36,7 @@ function ArtistsGridSkeleton() {
 	)
 }
 
-function ArtistsGrid(props: { artists: Artist[] }) {
+function ArtistsGrid(props: { artists: ArtistListItem[] }) {
 	return (
 		<Show
 			when={props.artists.length > 0}
@@ -55,7 +55,7 @@ export function ArtistsCardSkeleton() {
 	const { t } = useLingui()
 	return (
 		<ExploreSection
-			title={t`Latest Artists`}
+			title={t`Popular Artists`}
 			to="/artist/explore"
 		>
 			<ArtistsGridSkeleton />
@@ -63,11 +63,11 @@ export function ArtistsCardSkeleton() {
 	)
 }
 
-export function ArtistsCard(props: { artists: Artist[] }) {
+export function ArtistsCard(props: { artists: ArtistListItem[] }) {
 	const { t } = useLingui()
 	return (
 		<ExploreSection
-			title={t`Latest Artists`}
+			title={t`Popular Artists`}
 			to="/artist/explore"
 		>
 			<ArtistsGrid artists={props.artists} />

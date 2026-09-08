@@ -1,8 +1,13 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Artist, Event, HomeMetadata, Release } from "@thc/api"
+import type { Event } from "@thc/api"
 import { ErrorBoundary, For, Show, Suspense } from "solid-js"
 
-import type { TagListItem } from "~/hey-api"
+import type {
+	ArtistListItem,
+	HomeStatistics,
+	ReleaseListItem,
+	TagListItem,
+} from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
 import { tw } from "~/utils"
 import {
@@ -37,7 +42,7 @@ function ReleasesGridSkeleton() {
 	)
 }
 
-function ReleasesGrid(props: { releases: Release[] }) {
+function ReleasesGrid(props: { releases: ReleaseListItem[] }) {
 	return (
 		<Show
 			when={props.releases.length > 0}
@@ -53,9 +58,9 @@ function ReleasesGrid(props: { releases: Release[] }) {
 }
 
 type HomePageProps = {
-	metadata?: HomeMetadata
-	releases: Release[]
-	artists: Artist[]
+	statistics?: HomeStatistics
+	releases: ReleaseListItem[]
+	artists: ArtistListItem[]
 	events: Event[]
 	tags: TagListItem[]
 }
@@ -66,7 +71,7 @@ export function HomePage(props: HomePageProps) {
 		<PageLayout style={{ "--page-width": "90rem" }}>
 			<Suspense fallback={<HomeStats />}>
 				<ErrorBoundary fallback={() => <HomeStats />}>
-					<HomeStats metadata={props.metadata} />
+					<HomeStats statistics={props.statistics} />
 				</ErrorBoundary>
 			</Suspense>
 
@@ -76,7 +81,7 @@ export function HomePage(props: HomePageProps) {
 					lg:grid-cols-[1.35fr_0.65fr] lg:px-8"
 			>
 				<ExploreSection
-					title={t`Latest Releases`}
+					title={t`Popular Releases`}
 					to="/release/explore"
 				>
 					<Suspense fallback={<ReleasesGridSkeleton />}>

@@ -79,7 +79,7 @@ pub(crate) async fn exists(
 }
 
 #[expect(clippy::too_many_lines, reason = "TODO")]
-async fn find_many_impl(
+pub(super) async fn find_many_impl(
     select: Select<artist::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Artist>, DatabaseError> {

@@ -25,10 +25,10 @@ export const Route = createFileRoute("/song/$id")({
 
 function RouteComponent() {
 	const params = Route.useParams()
-	const songId = EntityId_fromStr(params().id)
-	const query = useQuery(() => SongQueryOption.findById(songId))
+	const songId = () => EntityId_fromStr(params().id)
+	const query = useQuery(() => SongQueryOption.findById(songId()))
 	const correctionHistoryQuery = useQuery(() =>
-		CorrectionQueryOption.history("song", songId),
+		CorrectionQueryOption.history("song", songId()),
 	)
 
 	return (

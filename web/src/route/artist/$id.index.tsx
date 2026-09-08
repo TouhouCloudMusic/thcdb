@@ -11,6 +11,7 @@ import { createStore } from "solid-js/store"
 import { RELEASE_TYPES } from "~/domain/release"
 import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { createEntityVisit } from "~/state/visit"
 import { ArtistProfilePage } from "~/view/artist/profile"
 
 const DISCOGRAPHY_PAGE_LIMIT = 10
@@ -47,22 +48,26 @@ export const Route = createFileRoute("/artist/$id/")({
 
 function RouteComponent() {
 	const params = Route.useParams()
-	const artistId = Number.parseInt(params().id, 10)
-	const query = useQuery(() => ArtistQueryOption.findById(artistId))
+	const artistId = () => Number.parseInt(params().id, 10)
+	const query = useQuery(() => ArtistQueryOption.findById(artistId()))
+	createEntityVisit(
+		"artist",
+		() => query.data && O.getOrUndefined(query.data)?.id,
+	)
 	const correctionHistoryQuery = useQuery(() =>
-		CorrectionQueryOption.history("artist", artistId),
+		CorrectionQueryOption.history("artist", artistId()),
 	)
 
 	const appearances = useInfiniteQuery(() =>
-		ArtistQueryOption.appearances(artistId),
+		ArtistQueryOption.appearances(artistId()),
 	)
 
-	const credits = useInfiniteQuery(() => ArtistQueryOption.credits(artistId))
+	const credits = useInfiniteQuery(() => ArtistQueryOption.credits(artistId()))
 
 	// Discographies
 
 	const initDiscographies = useQuery(() =>
-		ArtistQueryOption.discographyInit(artistId),
+		ArtistQueryOption.discographyInit(artistId()),
 	)
 
 	const [extraDiscographies, setExtraDiscographies] = createStore(
@@ -109,7 +114,7 @@ function RouteComponent() {
 
 		try {
 			const result = await ArtistApi.findDiscographiesByType({
-				path: { id: artistId },
+				path: { id: artistId() },
 				query: {
 					cursor,
 					release_type: type,

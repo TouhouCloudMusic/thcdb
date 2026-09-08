@@ -1,12 +1,12 @@
-import type { Artist } from "@thc/api"
 import { Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
+import type { ArtistListItem } from "~/hey-api"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 type ArtistCardProps = {
-	artist: Artist
+	artist: ArtistListItem
 }
 
 const ARTIST_CARD_OVERLAY_CLASS =
@@ -16,9 +16,7 @@ export function ArtistCard(props: ArtistCardProps) {
 	const avatarUrl = () => imgUrl(props.artist.profile_image_url)
 	const initials = () => props.artist.name.trim().slice(0, 1).toUpperCase()
 	const artistHrefParams = () => ({ id: props.artist.id.toString() })
-	const country = () =>
-		props.artist.current_location?.country
-		?? props.artist.start_location?.country
+	const country = () => props.artist.current_location.country
 
 	return (
 		<Card class="group/artist relative flex flex-col rounded-none p-3 shadow-none">

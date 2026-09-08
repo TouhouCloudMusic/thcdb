@@ -1,6 +1,7 @@
 use std::error::Error as StdError;
 
 use domain::email::Email;
+use infra_error::BoxedError;
 use lettre::message::{Mailbox, Message};
 use lettre::{AsyncSmtpTransport, AsyncTransport, Tokio1Executor};
 
@@ -9,7 +10,7 @@ use lettre::{AsyncSmtpTransport, AsyncTransport, Tokio1Executor};
 pub struct DeliveryFailure {
     retryable: bool,
     #[error(source)]
-    source: Box<dyn StdError + Send + Sync>,
+    source: BoxedError,
 }
 
 impl DeliveryFailure {

@@ -6,6 +6,8 @@ members = [
     "crates/domain",
     "crates/entity",
     "crates/features/user/core",
+    "crates/features/visit/core",
+    "crates/features/popularity/core",
     "crates/features/auth/core",
     "crates/features/auth/worker",
     "crates/features/account/notification",
@@ -25,6 +27,7 @@ members = [
     "crates/flow",
     "crates/infra/db",
     "crates/infra/email",
+    "crates/infra/error",
     "crates/infra/testing",
     "crates/infra/storage",
     "crates/infra/storage/worker",
@@ -37,12 +40,16 @@ members = [
 ]
 
 [workspace.dependencies]
+visit_core                   = { package = "thcdb-feature-visit-core", path = "crates/features/visit/core" }
+popularity_core              = { package = "thcdb-feature-popularity-core", path = "crates/features/popularity/core" }
+futures-util                 = "0.3"
 constants                    = { package = "thcdb-constants", path = "crates/constants" }
 domain                       = { package = "thcdb-domain", path = "crates/domain" }
 entity                       = { path = "crates/entity" }
 flow                         = { path = "crates/flow" }
 infra_db                     = { package = "thcdb-infra-db", path = "crates/infra/db" }
 infra_email                  = { package = "thcdb-infra-email", path = "crates/infra/email" }
+infra_error                  = { package = "thcdb-infra-error", path = "crates/infra/error" }
 infra_testing                = { package = "thcdb-infra-testing", path = "crates/infra/testing" }
 infra_storage                = { package = "thcdb-infra-storage", path = "crates/infra/storage" }
 infra_storage_worker         = { package = "thcdb-infra-storage-worker", path = "crates/infra/storage/worker" }
@@ -100,7 +107,7 @@ enumset = { version = "1.1.7", features = [
     "alloc",
     "serde",
 ] }
-fred = { version = "10.0", features = [ "i-scripts" ] }
+fred = { version = "10.0", features = [ "i-scripts", "i-hyperloglog" ] }
 garde = { version = "0.22.0", features = [ "full" ] }
 itertools = "0.14"
 lettre = { version = "0.11.14", default-features = false, features = [
@@ -221,6 +228,8 @@ version = "0.1.0"
 workspace = true
 
 [dependencies]
+visit_core.workspace                   = true
+popularity_core.workspace              = true
 user_core.workspace                    = true
 auth_core.workspace                    = true
 account_notification.workspace         = true
@@ -231,6 +240,7 @@ flow.workspace                         = true
 libfp.workspace                        = true
 infra_db.workspace                     = true
 infra_email.workspace                  = true
+infra_error.workspace                  = true
 infra_storage.workspace                = true
 infra_storage_worker.workspace         = true
 infra_worker.workspace                 = true
@@ -285,7 +295,7 @@ fastrace-axum.workspace = true
 fastrace-opentelemetry.workspace = true
 fastrace-tracing.workspace = true
 fred.workspace = true
-futures-util = "0.3"
+futures-util.workspace = true
 garde.workspace = true
 governor = "0.10.0"
 headers = "0.4"

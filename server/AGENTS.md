@@ -2,13 +2,15 @@
 
 完成任务后应当运行cargo clippy
 
-# 代码架构（迁移中）
+# 代码架构
 
-当前处于从整洁架构（adapter/application/domain/infra）迁移到垂直切片（feature-first）的中间态：存量代码沿用原分层，新功能优先按垂直切片落地
+新功能按业务领域组织在 `crates/features/<feature>/` 下，以 workspace crate 承载核心能力。存量代码按任务范围逐步迁移。
 
-- 新功能优先放在 `src/features/<feature>/`（或简单场景用 `src/features/<feature>.rs`），对外暴露 `router()`；在 `src/features/mod.rs` 添加 `pub mod <feature>;` 并在 `router()` 里 `.merge(<feature>::router())`。
-- feature 内建议按职责拆分 `http.rs`（axum handler + utoipa 注解）、`service.rs`（用例/事务编排）、`repo.rs`（DB 读写封装）、`model.rs`/`error.rs`；尽量保持 slice 自包含，跨 feature 复用优先下沉到 `domain/` 或 `shared/`。
-- HTTP 入口在 `src/adapter/inbound/rest.rs`：OpenAPI + middleware + 路由组装（通过 `features::router()`）；需要区分公私有接口时使用 `AppRouter`。
+- 根据职责选择 `core`、`repo`、`service` 或 `worker` 等子 crate；简单功能从一个 crate 开始，不预先创建空层。
+- 核心 crate 显式接收数据库、Redis 等所需依赖，返回自身或基础设施错误；不依赖后端的 `AppState`、`AppError` 或 HTTP 响应模型。跨功能调用复用所属 feature 的公共 API。
+- `src/features/<feature>/` 或 `src/features/<feature>.rs` 保留 HTTP、会话处理和响应组装，并在边界转换错误。路由通过 `src/features/mod.rs` 注册，使用 `AppRouter` 区分公私有接口。
+- 后端负责应用状态和任务装配；需要独立承载的任务逻辑放在对应 feature 的 `worker` crate。只提供任务注册的代码可以留在后端。
+- 新增 crate 时同步配置 workspace members、依赖和检查入口；测试随行为归属迁移，复用 `infra_testing`，不反向依赖后端。
 
 # 常用命令
 

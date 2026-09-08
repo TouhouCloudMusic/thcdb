@@ -12,6 +12,7 @@ name = "infra_db"
 path = "src/lib.rs"
 
 [dependencies]
+infra_error.workspace       = true
 derive_more.workspace       = true
 frunk                       = { version = "0.4.3", features = [ "std" ] }
 itertools.workspace         = true
