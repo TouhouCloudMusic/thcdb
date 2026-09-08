@@ -1,4 +1,5 @@
 /* @refresh skip */
+import { msg } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
@@ -157,6 +158,23 @@ const TABS = [
 	"Collections",
 ] as const
 
+const TAB_LABELS = {
+	Discography: msg`Discography`,
+	Appearance: msg`Appearances`,
+	Credit: msg`Credits`,
+	Comments: msg`Comments`,
+	Collections: msg`Collections`,
+}
+
+const RELEASE_TYPE_LABELS = {
+	Album: msg`Album`,
+	Ep: msg`EP`,
+	Single: msg`Single`,
+	Compilation: msg`Compilation`,
+	Demo: msg`Demo`,
+	Other: msg`Other`,
+} satisfies Record<ReleaseType, ReturnType<typeof msg>>
+
 type ArtistReleaseInfoViewProps = {
 	activeTab: string
 	comments: EntityCommentsModel
@@ -204,6 +222,7 @@ function Inner() {
 }
 
 export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const visibleTabs = createMemo(() =>
 		TABS.filter((tab) => {
@@ -245,7 +264,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 											styles={[styles.tabTrigger]}
 											value={tabType}
 										>
-											{tabType}
+											{t(TAB_LABELS[tabType])}
 										</Tab.Trigger>
 									}
 								>
@@ -309,6 +328,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 }
 
 function DiscographyTab() {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const [selectedTypeInput, setSelectedTypeInput] =
 		createSignal<ReleaseType>("Album")
@@ -357,7 +377,7 @@ function DiscographyTab() {
 									value={releaseType}
 									styles={[styles.releaseType]}
 								>
-									{releaseType}
+									{t(RELEASE_TYPE_LABELS[releaseType])}
 								</Tab.Trigger>
 							)}
 						</For>
@@ -411,6 +431,7 @@ function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 }
 
 function DiscographyItem(props: { item: Discography }) {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const subtitle = () => {
 		const displayArtistName = props.item.artist.some(
@@ -434,7 +455,7 @@ function DiscographyItem(props: { item: Discography }) {
 			return releaseDate
 		}
 
-		return "N/A"
+		return t`N/A`
 	}
 	return (
 		<ItemLayout releaseId={props.item.release_id}>

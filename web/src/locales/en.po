@@ -182,6 +182,10 @@ msgstr "After"
 msgid "AKAs"
 msgstr "AKAs"
 
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Album"
+msgstr "Album"
+
 #: src/view/artist/edit/comp/Aliases.tsx
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Aliases"
@@ -219,6 +223,10 @@ msgstr "Alternative Names"
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "An error occurred. Please try again."
 msgstr "An error occurred. Please try again."
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Appearances"
+msgstr "Appearances"
 
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
@@ -391,6 +399,7 @@ msgid "Collection type"
 msgstr "Collection type"
 
 #: src/component/Header/RightSidebar.tsx
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/event/Info/index.tsx
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/ReleaseInfoTabs.tsx
@@ -410,6 +419,7 @@ msgstr "Comment"
 msgid "Comment cannot be empty"
 msgstr "Comment cannot be empty"
 
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/comment/EntityCommentsTabTrigger.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "Comments"
@@ -418,6 +428,10 @@ msgstr "Comments"
 #: src/view/correction/Detail.tsx
 msgid "Compare"
 msgstr "Compare"
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Compilation"
+msgstr "Compilation"
 
 #: src/component/dialog/AlertDialog.tsx
 msgid "Confirm"
@@ -545,6 +559,7 @@ msgstr "Created time"
 msgid "Credit role"
 msgstr "Credit role"
 
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/release/Info/ReleaseInfoTabs.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
@@ -606,6 +621,10 @@ msgstr "deleted collection"
 msgid "deleted comment"
 msgstr "deleted comment"
 
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Demo"
+msgstr "Demo"
+
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
 msgstr "Descending"
@@ -640,6 +659,10 @@ msgstr "Disbanded"
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Disc name"
 msgstr "Disc name"
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Discography"
+msgstr "Discography"
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Display title"
@@ -736,6 +759,10 @@ msgstr "Enter the code for {0}. If you did not receive one, use Resend."
 #: src/view/auth/component/SignInIdentifierField.tsx
 msgid "Enter your username or email"
 msgstr "Enter your username or email"
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "EP"
+msgstr "EP"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
@@ -1250,6 +1277,7 @@ msgstr "Move item down"
 msgid "Move item up"
 msgstr "Move item up"
 
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/event/Info/index.tsx
 msgid "N/A"
 msgstr "N/A"
@@ -1530,6 +1558,10 @@ msgstr "OR"
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Order"
 msgstr "Order"
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Other"
+msgstr "Other"
 
 #: src/view/user/Profile.tsx
 msgid "Own"
@@ -1992,6 +2024,10 @@ msgstr "Sign Out"
 msgid "Sign Up"
 msgstr "Sign Up"
 
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Single"
+msgstr "Single"
+
 #: src/view/notification/InboxPage.tsx
 msgid "Social"
 msgstr "Social"
@@ -2355,6 +2391,10 @@ msgstr "Upload cover art"
 #: src/route/(user)/profile_.edit.tsx
 msgid "Upload failed."
 msgstr "Upload failed."
+
+#: src/view/artist/profile/index.tsx
+msgid "Upload image"
+msgstr "Upload image"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/view/user/edit_profile/index.tsx
