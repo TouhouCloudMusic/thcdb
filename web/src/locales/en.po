@@ -1636,10 +1636,6 @@ msgstr "Queued upload preview"
 msgid "Recommendation"
 msgstr "Recommendation"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Recommendations"
-msgstr "Recommendations"
-
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 msgid "Recorded"
 msgstr "Recorded"
@@ -1951,7 +1947,6 @@ msgid "Set a new password"
 msgstr "Set a new password"
 
 #: src/component/Header/LeftSidebar.tsx
-#: src/component/Header/RightSidebar.tsx
 msgid "Settings"
 msgstr "Settings"
 
@@ -2120,10 +2115,6 @@ msgstr "Submitting..."
 #: src/view/image_queue/detail.tsx
 msgid "Subscribe"
 msgstr "Subscribe"
-
-#: src/component/Header/RightSidebar.tsx
-msgid "Support"
-msgstr "Support"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx

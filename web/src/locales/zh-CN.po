@@ -1636,10 +1636,6 @@ msgstr "排队上传预览"
 msgid "Recommendation"
 msgstr "推荐"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Recommendations"
-msgstr "建议"
-
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 msgid "Recorded"
 msgstr "录制"
@@ -1951,7 +1947,6 @@ msgid "Set a new password"
 msgstr "设置新密码"
 
 #: src/component/Header/LeftSidebar.tsx
-#: src/component/Header/RightSidebar.tsx
 msgid "Settings"
 msgstr "设置"
 
@@ -2120,10 +2115,6 @@ msgstr "正在提交..."
 #: src/view/image_queue/detail.tsx
 msgid "Subscribe"
 msgstr "订阅"
-
-#: src/component/Header/RightSidebar.tsx
-msgid "Support"
-msgstr "技术支持"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx

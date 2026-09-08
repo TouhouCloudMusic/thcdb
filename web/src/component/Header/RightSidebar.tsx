@@ -4,10 +4,7 @@ import { Link } from "@tanstack/solid-router"
 import {
 	BookmarkIcon,
 	Cross1Icon,
-	CubeIcon,
 	ExitIcon,
-	GearIcon,
-	Pencil2Icon,
 	PersonIcon,
 } from "@thc/icons/radix"
 import type { Ref } from "solid-js"
@@ -119,32 +116,11 @@ export function RightSidebarView(props: {
 						<BookmarkIcon {...stylex.attrs(sidebar.icon)} />
 						<span {...stylex.attrs(sidebar.content)}>{t`Collections`}</span>
 					</Link>
-					<Link
-						class={sidebarLink}
-						to="."
-					>
-						<CubeIcon {...stylex.attrs(sidebar.icon)} />
-						<span {...stylex.attrs(sidebar.content)}>{t`Recommendations`}</span>
-					</Link>
 				</div>
 				<span
 					{...stylex.attrs(dividerStyles.horizontal, styles.divider)}
 				></span>
 				<div {...stylex.attrs(styles.list)}>
-					<Link
-						class={sidebarLink}
-						to="."
-					>
-						<Pencil2Icon {...stylex.attrs(sidebar.icon)} />
-						<span {...stylex.attrs(sidebar.content)}>{t`Support`}</span>
-					</Link>
-					<Link
-						class={sidebarLink}
-						to="."
-					>
-						<GearIcon {...stylex.attrs(sidebar.icon)} />
-						<span {...stylex.attrs(sidebar.content)}>{t`Settings`}</span>
-					</Link>
 					<Button
 						type="button"
 						appearance="ghost"
