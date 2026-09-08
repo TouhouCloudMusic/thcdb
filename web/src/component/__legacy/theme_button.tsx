@@ -1,40 +1,45 @@
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { MoonIcon, SunIcon } from "@thc/icons/radix"
-import { createMemo, Match, Switch } from "solid-js"
+import { Match, Switch, splitProps } from "solid-js"
 import type { ComponentProps } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
+import { Button } from "~/component/atomic/button"
 import { AppTheme, useTheme } from "~/state/theme"
 
-import { Button } from "../atomic/button"
-
-// @tw
-const defaultStyle = `flex place-content-center items-center`
+const styles = stylex.create({
+	root: { display: "flex", placeContent: "center", alignItems: "center" },
+})
 
 export function ThemeButton(
-	props: Omit<ComponentProps<"button">, "onClick" | "children" | "color">,
+	props: Omit<
+		ComponentProps<"button">,
+		"onClick" | "children" | "color" | "class"
+	> & { styles?: StyleXStyles },
 ) {
 	const theme_ctx = useTheme()
-
-	const class_list = createMemo(() => twMerge(defaultStyle, props.class))
+	const [local, others] = splitProps(props, ["styles"])
 
 	return (
 		<Switch>
 			<Match when={theme_ctx.theme === AppTheme.Light}>
 				<Button
-					{...props}
-					variant="Tertiary"
-					class={class_list()}
+					{...others}
 					onClick={() => theme_ctx.set(AppTheme.Dark)}
+					appearance="ghost"
+					tone="gray"
+					styles={[styles.root, local.styles]}
 				>
 					<SunIcon />
 				</Button>
 			</Match>
 			<Match when={theme_ctx.theme === AppTheme.Dark}>
 				<Button
-					{...props}
-					variant="Tertiary"
-					class={class_list()}
+					{...others}
 					onClick={() => theme_ctx.set(AppTheme.Light)}
+					appearance="ghost"
+					tone="gray"
+					styles={[styles.root, local.styles]}
 				>
 					<MoonIcon />
 				</Button>

@@ -1,8 +1,16 @@
+import * as stylex from "@stylexjs/stylex"
 import type { JSX } from "solid-js"
+
+import { fontSizes, px } from "~/style/tokens.stylex"
 
 import { Dialog } from "."
 import { ImageCropper } from "../form/ImageCropper"
 import type { ImageDropProps } from "../form/ImageCropper"
+
+const styles = stylex.create({
+	content: { width: "100%", maxWidth: px[448], padding: px[24] },
+	title: { fontSize: fontSizes.lg, lineHeight: "1.75rem", fontWeight: 500 },
+})
 
 export type ImageUploadDialogProps = {
 	title: JSX.Element
@@ -22,8 +30,8 @@ export function ImageUploadDialog(props: ImageUploadDialogProps) {
 			{props.trigger}
 			<Dialog.Portal>
 				<Dialog.Overlay />
-				<Dialog.Content class="w-full max-w-md p-6">
-					<Dialog.Title class="text-lg font-medium">{props.title}</Dialog.Title>
+				<Dialog.Content styles={styles.content}>
+					<Dialog.Title styles={styles.title}>{props.title}</Dialog.Title>
 					<ImageCropper
 						croppieOption={{
 							viewport: {

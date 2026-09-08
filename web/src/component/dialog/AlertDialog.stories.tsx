@@ -1,7 +1,8 @@
 import { createSignal } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Button } from "../atomic/button"
+import { Button } from "~/component/atomic/button"
+
 import { AlertDialog } from "./AlertDialog"
 
 const meta = {
@@ -40,7 +41,8 @@ export const Default: Story = {
 					triggerAs={(triggerProps) => (
 						<Button
 							{...triggerProps}
-							variant="Tertiary"
+							appearance="ghost"
+							tone="gray"
 						>
 							打开对话框
 						</Button>
@@ -77,8 +79,8 @@ export const DeleteConfirmation: Story = {
 					triggerAs={(triggerProps) => (
 						<Button
 							{...triggerProps}
-							variant="Primary"
-							color="Reimu"
+							appearance="solid"
+							tone="reimu"
 						>
 							删除项目
 						</Button>
@@ -104,7 +106,13 @@ export const CustomButtonText: Story = {
 				<AlertDialog
 					{...args}
 					triggerAs={(triggerProps) => (
-						<Button {...triggerProps}>自定义按钮文本</Button>
+						<Button
+							{...triggerProps}
+							appearance="soft"
+							tone="gray"
+						>
+							自定义按钮文本
+						</Button>
 					)}
 					defaultOpen={false}
 				/>
@@ -129,7 +137,8 @@ export const NoCancel: Story = {
 					triggerAs={(triggerProps) => (
 						<Button
 							{...triggerProps}
-							variant="Primary"
+							appearance="solid"
+							tone="gray"
 						>
 							只有确认按钮
 						</Button>
@@ -157,7 +166,8 @@ export const NonDismissable: Story = {
 					triggerAs={(triggerProps) => (
 						<Button
 							{...triggerProps}
-							variant="Primary"
+							appearance="solid"
+							tone="gray"
 						>
 							不可撤销的对话框
 						</Button>
@@ -187,7 +197,8 @@ export const BackdropBlurExample: Story = {
 					triggerAs={(triggerProps) => (
 						<Button
 							{...triggerProps}
-							variant="Primary"
+							appearance="solid"
+							tone="gray"
 						>
 							背景模糊对话框
 						</Button>

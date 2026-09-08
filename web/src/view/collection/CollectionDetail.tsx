@@ -1,17 +1,176 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { DotsHorizontalIcon } from "@thc/icons/radix"
 import { createSignal, For, Match, Show, Switch } from "solid-js"
 
 import { DropdownMenu } from "~/component/atomic"
-import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import type { UserCollection } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 
+import { animationStyles } from "../../style/animations.stylex"
 import { CollectionFormDialog } from "./CollectionFormDialog"
 import { CollectionItemCard } from "./CollectionItemCard"
 import type { UserCollectionItemDetail } from "./CollectionItemCard"
 import { CollectionLoadMore } from "./CollectionLoadMore"
+
+const styles = stylex.create({
+	dotsHorizontalIcon: { width: px[16], height: px[16] },
+	metadata: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		rowGap: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	owner: { minWidth: 0, overflowWrap: "break-word" },
+	ownerLink: {
+		fontWeight: 500,
+		color: colors.textPrimary,
+		textDecorationLine: {
+			default: null,
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	separator: {
+		marginLeft: px[8],
+		marginRight: px[8],
+		color: palette.slate[300],
+	},
+	followError: { fontSize: fontSizes.sm, lineHeight: lineHeights.sm },
+	header: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		display: "flex",
+		flexDirection: "column",
+		gap: px[16],
+		borderColor: palette.slate[300],
+		paddingBottom: px[24],
+	},
+	heading: {
+		display: "flex",
+		alignItems: "flex-start",
+		justifyContent: "space-between",
+		gap: px[16],
+	},
+	title: {
+		minWidth: 0,
+		overflowWrap: "break-word",
+		fontSize: fontSizes["3xl"],
+		lineHeight: 1.2,
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	description: {
+		marginTop: px[8],
+		whiteSpace: "pre-wrap",
+		overflowWrap: "break-word",
+		color: colors.textSecondary,
+	},
+	list: { display: "flex", flexDirection: "column", gap: px[12] },
+	main: { display: "flex", flexDirection: "column", gap: px[16] },
+	statusPanel: {
+		display: "grid",
+		minHeight: px[128],
+		placeItems: "center",
+		borderRadius: radius.sm,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderStyle: "dashed",
+		borderColor: palette.slate[300],
+	},
+	statusMessage: {
+		display: "inline-flex",
+		alignItems: "center",
+		gap: px[8],
+		borderRadius: radius.full,
+		backgroundColor: palette.white,
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		paddingTop: px[4],
+		paddingBottom: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+		boxShadow: `inset 0 0 0 1px ${palette.slate[200]}, 0 1px 2px 0 rgb(0 0 0 / 0.05)`,
+	},
+	loadingDot: {
+		display: "inline-block",
+		width: px[6],
+		height: px[6],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[300],
+	},
+	errorPanel: {
+		display: "grid",
+		minHeight: px[128],
+		placeItems: "center",
+		borderRadius: radius.sm,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderStyle: "dashed",
+	},
+	errorContent: {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "center",
+		gap: px[8],
+	},
+	errorMessage: {
+		display: "inline-flex",
+		alignItems: "center",
+		gap: px[8],
+		borderRadius: radius.full,
+		backgroundColor: palette.white,
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		paddingTop: px[4],
+		paddingBottom: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		boxShadow: "inset 0 0 0 1px currentColor, 0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	errorDot: {
+		display: "inline-block",
+		width: px[6],
+		height: px[6],
+		borderRadius: radius.full,
+	},
+	emptyDot: {
+		display: "inline-block",
+		width: px[6],
+		height: px[6],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[300],
+	},
+	loadMore: { paddingTop: px[8] },
+	detail: { display: "flex", flexDirection: "column", gap: px[24] },
+})
 
 type LoadingItemsFetchState = { status: "loading" }
 
@@ -83,7 +242,7 @@ function OwnerCollectionActions(props: OwnerCollectionActionsProps) {
 			>
 				<DropdownMenu.Trigger aria-label={t`Collection actions`}>
 					<DropdownMenu.Icon>
-						<DotsHorizontalIcon class="size-4" />
+						<DotsHorizontalIcon {...stylex.attrs(styles.dotsHorizontalIcon)} />
 					</DropdownMenu.Icon>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Portal>
@@ -101,7 +260,6 @@ function OwnerCollectionActions(props: OwnerCollectionActionsProps) {
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item
-							class="text-red-700 data-[highlighted]:bg-red-50"
 							disabled={props.owner.isDeletingCollection}
 							onSelect={() => setDeleteDialogOpen(true)}
 						>
@@ -137,10 +295,11 @@ function VisitorCollectionActions(props: VisitorCollectionActionsProps) {
 
 	return (
 		<Button
-			variant="SecondaryV2"
-			size="Sm"
 			disabled={props.visitor.isTogglingFollow}
 			onClick={props.controller.toggleFollow}
+			appearance="outline"
+			tone="gray"
+			size="sm"
 		>
 			{followButtonText(props.visitor)}
 		</Button>
@@ -185,20 +344,20 @@ function CollectionMetadata(props: { collection: UserCollection }) {
 	const { t } = useLingui()
 
 	return (
-		<div class="flex flex-wrap items-center gap-y-1 text-sm text-tertiary">
-			<span class="min-w-0 wrap-break-word">
+		<div {...stylex.attrs(styles.metadata)}>
+			<span {...stylex.attrs(styles.owner)}>
 				{t`Created by`}{" "}
 				<Link
 					to="/profile/$username"
 					params={{ username: props.collection.owner.name }}
-					class="font-medium text-primary hover:underline"
+					class={stylex.attrs(link.base, link.text, styles.ownerLink).class}
 				>
 					{props.collection.owner.name}
 				</Link>
 			</span>
-			<span class="mx-2 text-slate-300">•</span>
+			<span {...stylex.attrs(styles.separator)}>•</span>
 			<span>{props.collection.is_public ? t`Public` : t`Private`}</span>
-			<span class="mx-2 text-slate-300">•</span>
+			<span {...stylex.attrs(styles.separator)}>•</span>
 			<span>
 				{props.collection.item_count}{" "}
 				{props.collection.item_count === 1 ? t`item` : t`items`}
@@ -217,7 +376,9 @@ function VisitorFollowError(props: { viewer: CollectionDetailViewer }) {
 						: undefined
 				}
 			>
-				{(message) => <div class="text-sm text-red-600">{message()}</div>}
+				{(message) => (
+					<div {...stylex.attrs(styles.followError)}>{message()}</div>
+				)}
 			</Match>
 		</Switch>
 	)
@@ -233,11 +394,9 @@ type CollectionDetailHeaderProps = {
 
 function CollectionDetailHeader(props: CollectionDetailHeaderProps) {
 	return (
-		<header class="flex flex-col gap-4 border-b border-slate-300 pb-6">
-			<div class="flex items-start justify-between gap-4">
-				<h1 class="min-w-0 wrap-break-word text-3xl font-light tracking-tight text-primary">
-					{props.model.collection.name}
-				</h1>
+		<header {...stylex.attrs(styles.header)}>
+			<div {...stylex.attrs(styles.heading)}>
+				<h1 {...stylex.attrs(styles.title)}>{props.model.collection.name}</h1>
 				<CollectionHeaderActions
 					viewer={props.model.viewer}
 					controller={props.controller}
@@ -250,7 +409,7 @@ function CollectionDetailHeader(props: CollectionDetailHeaderProps) {
 			<CollectionMetadata collection={props.model.collection} />
 
 			<Show when={props.model.collection.description}>
-				<p class="mt-2 whitespace-pre-wrap wrap-break-word text-secondary">
+				<p {...stylex.attrs(styles.description)}>
 					{props.model.collection.description}
 				</p>
 			</Show>
@@ -299,7 +458,7 @@ function OwnerItemsList(props: OwnerItemsListProps) {
 	}
 
 	return (
-		<ul class="flex flex-col gap-3">
+		<ul {...stylex.attrs(styles.list)}>
 			<For each={props.state.items}>
 				{(item, index) => (
 					<CollectionItemCard
@@ -332,27 +491,30 @@ function CollectionItems(props: CollectionItemsProps) {
 	const { t } = useLingui()
 
 	return (
-		<main class="flex flex-col gap-4">
+		<main {...stylex.attrs(styles.main)}>
 			<Switch>
 				<Match when={props.model.items.status === "loading"}>
-					<div class="grid min-h-32 place-items-center rounded-sm border border-dashed border-slate-300 bg-slate-50/50">
-						<div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-tertiary shadow-xs ring-1 ring-slate-200 ring-inset">
-							<span class="inline-block size-1.5 animate-pulse rounded-full bg-slate-300"></span>
+					<div {...stylex.attrs(styles.statusPanel)}>
+						<div {...stylex.attrs(styles.statusMessage)}>
+							<span
+								{...stylex.attrs(styles.loadingDot, animationStyles.pulse)}
+							></span>
 							{t`Loading items...`}
 						</div>
 					</div>
 				</Match>
 				<Match when={props.model.items.status === "error"}>
-					<div class="grid min-h-32 place-items-center rounded-sm border border-dashed border-red-200 bg-red-50/50">
-						<div class="flex flex-col items-center gap-2">
-							<div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-red-600 shadow-xs ring-1 ring-red-200 ring-inset">
-								<span class="inline-block size-1.5 rounded-full bg-red-400"></span>
+					<div {...stylex.attrs(styles.errorPanel)}>
+						<div {...stylex.attrs(styles.errorContent)}>
+							<div {...stylex.attrs(styles.errorMessage)}>
+								<span {...stylex.attrs(styles.errorDot)}></span>
 								{t`Failed to load items.`}
 							</div>
 							<Button
-								variant="SecondaryV2"
-								size="Sm"
 								onClick={props.controller.retryItems}
+								appearance="outline"
+								tone="gray"
+								size="sm"
 							>
 								{t`Retry`}
 							</Button>
@@ -370,7 +532,7 @@ function CollectionItems(props: CollectionItemsProps) {
 						<>
 							<Switch
 								fallback={
-									<ul class="flex flex-col gap-3">
+									<ul {...stylex.attrs(styles.list)}>
 										<For each={state().items}>
 											{(item, index) => (
 												<CollectionItemCard
@@ -391,9 +553,9 @@ function CollectionItems(props: CollectionItemsProps) {
 								}
 							>
 								<Match when={state().items.length === 0}>
-									<div class="grid min-h-32 place-items-center rounded-sm border border-dashed border-slate-300 bg-slate-50/50">
-										<div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-tertiary shadow-xs ring-1 ring-slate-200 ring-inset">
-											<span class="inline-block size-1.5 rounded-full bg-slate-300"></span>
+									<div {...stylex.attrs(styles.statusPanel)}>
+										<div {...stylex.attrs(styles.statusMessage)}>
+											<span {...stylex.attrs(styles.emptyDot)}></span>
 											{t`This collection is empty`}
 										</div>
 									</div>
@@ -415,7 +577,7 @@ function CollectionItems(props: CollectionItemsProps) {
 									)}
 								</Match>
 							</Switch>
-							<div class="pt-2">
+							<div {...stylex.attrs(styles.loadMore)}>
 								<CollectionLoadMore
 									when={state().hasMore || state().isFetchingMore}
 									isLoading={state().isFetchingMore}
@@ -440,7 +602,7 @@ export function CollectionDetailPage(props: Props) {
 	const [isEditingItems, setIsEditingItems] = createSignal(false)
 
 	return (
-		<div class="flex flex-col gap-6">
+		<div {...stylex.attrs(styles.detail)}>
 			<CollectionDetailHeader
 				model={props.model}
 				controller={props.controller}

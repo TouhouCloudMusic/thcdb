@@ -1,9 +1,44 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
-import { Link } from "~/component/atomic"
 import { DateWithPrecision } from "~/domain/shared"
 import type { EventListItem } from "~/hey-api"
+import { link } from "~/style/link"
+import {
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	name: {
+		overflowWrap: "break-word",
+		fontSize: fontSizes.base,
+		lineHeight: lineHeights.base,
+		textDecorationLine: {
+			default: "none",
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	details: {
+		marginTop: px[4],
+		fontFamily: fonts.sans,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	description: {
+		marginTop: px[4],
+		overflowWrap: "break-word",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+})
 
 export function EventItem(props: { event: EventListItem }) {
 	const { t } = useLingui()
@@ -29,12 +64,12 @@ export function EventItem(props: { event: EventListItem }) {
 			<Link
 				to="/event/$id"
 				params={{ id: props.event.id.toString() }}
-				class="wrap-break-word text-base no-underline"
+				class={stylex.attrs(link.base, link.text, styles.name).class}
 			>
 				{props.event.name}
 			</Link>
 
-			<div class="mt-1 font-sans text-sm text-tertiary">
+			<div {...stylex.attrs(styles.details)}>
 				<span>{dateRange() ?? t`Unknown event date`}</span>
 				<span aria-hidden="true"> · </span>
 				<span>{location() ?? t`Unknown location`}</span>
@@ -42,9 +77,7 @@ export function EventItem(props: { event: EventListItem }) {
 
 			<Show when={props.event.short_description}>
 				{(description) => (
-					<p class="mt-1 wrap-break-word text-sm text-tertiary">
-						{description()}
-					</p>
+					<p {...stylex.attrs(styles.description)}>{description()}</p>
 				)}
 			</Show>
 		</div>

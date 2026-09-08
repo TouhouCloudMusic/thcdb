@@ -1,24 +1,98 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { For, Match, Show, Switch } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Divider } from "~/component/atomic/Divider"
 import { Intersperse } from "~/component/data/Intersperse"
 import { EmptyExplorePlaceholder } from "~/component/feature/entity_explore"
 import type { ViewMode } from "~/component/feature/entity_explore"
 import type { ReleaseListItem } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles } from "~/style/primitives"
+import { radius, colors, px } from "~/style/tokens.stylex"
 import { ReleaseGridItem, ReleaseItem } from "~/view/release/ReleaseItems"
 
-const GRID_CONTAINER_CLASS =
-	"grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5"
+import { animationStyles } from "../../../style/animations.stylex"
+
+const styles = stylex.create({
+	listSkeleton: {
+		display: "grid",
+		gridTemplateColumns: "3lh minmax(0,1fr)",
+		alignItems: "flex-start",
+		gap: px[12],
+		lineHeight: "1.5rem",
+	},
+	skeletonCover: {
+		aspectRatio: "1 / 1",
+		borderRadius: radius.sm,
+		backgroundColor: colors.backgroundSecondary,
+	},
+	skeletonTitle: {
+		marginBottom: px[8],
+		height: px[20],
+		width: "66.66666666666666%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonArtist: {
+		height: px[16],
+		width: "50%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	gridSkeletonCover: {
+		aspectRatio: "1 / 1",
+		borderRadius: radius.md,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.slate[100],
+	},
+	gridSkeletonTitle: {
+		marginTop: px[8],
+		height: px[16],
+		width: "75%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	gridSkeletonArtist: {
+		marginTop: px[4],
+		height: px[12],
+		width: "50%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	grid: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: "repeat(2, minmax(0, 1fr))",
+			"@media (min-width: 40rem)": "repeat(3, minmax(0, 1fr))",
+			"@media (min-width: 48rem)": "repeat(4, minmax(0, 1fr))",
+			"@media (min-width: 64rem)": "repeat(5, minmax(0, 1fr))",
+			"@media (min-width: 80rem)": "repeat(5, minmax(0, 1fr))",
+		},
+		gap: px[8],
+	},
+	pagination: {
+		display: "flex",
+		justifyContent: "center",
+		paddingBlock: px[24],
+	},
+})
 
 function ReleaseItemSkeleton() {
 	return (
-		<div class="animate-pulse grid grid-cols-[3lh_minmax(0,1fr)] items-start gap-3 leading-6">
-			<div class="aspect-square rounded-sm bg-secondary"></div>
+		<div {...stylex.attrs(styles.listSkeleton, animationStyles.pulse)}>
+			<div {...stylex.attrs(styles.skeletonCover)}></div>
 			<div>
-				<div class="mb-2 h-5 w-2/3 rounded bg-slate-200"></div>
-				<div class="h-4 w-1/2 rounded bg-slate-100"></div>
+				<div {...stylex.attrs(styles.skeletonTitle)}></div>
+				<div {...stylex.attrs(styles.skeletonArtist)}></div>
 			</div>
 		</div>
 	)
@@ -26,10 +100,10 @@ function ReleaseItemSkeleton() {
 
 function ReleaseGridItemSkeleton() {
 	return (
-		<div class="animate-pulse">
-			<div class="aspect-square rounded-md border border-slate-200 bg-slate-100"></div>
-			<div class="mt-2 h-4 w-3/4 rounded bg-slate-200"></div>
-			<div class="mt-1 h-3 w-1/2 rounded bg-slate-100"></div>
+		<div {...stylex.attrs(animationStyles.pulse)}>
+			<div {...stylex.attrs(styles.gridSkeletonCover)}></div>
+			<div {...stylex.attrs(styles.gridSkeletonTitle)}></div>
+			<div {...stylex.attrs(styles.gridSkeletonArtist)}></div>
 		</div>
 	)
 }
@@ -45,17 +119,17 @@ export function ReleaseExploreListSkeleton(
 	return (
 		<Switch>
 			<Match when={props.displayType === "list"}>
-				<div class="flex flex-col gap-2 p-4">
+				<div {...stylex.attrs(styles.list)}>
 					<Intersperse
 						of={Array.from({ length: props.limit })}
-						with={<Divider horizontal />}
+						with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					>
 						{() => <ReleaseItemSkeleton />}
 					</Intersperse>
 				</div>
 			</Match>
 			<Match when={props.displayType === "grid"}>
-				<div class={GRID_CONTAINER_CLASS}>
+				<div {...stylex.attrs(styles.grid)}>
 					<For each={Array.from({ length: props.limit })}>
 						{() => <ReleaseGridItemSkeleton />}
 					</For>
@@ -93,20 +167,22 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 			<Switch>
 				<Match when={props.store.displayType === "list"}>
 					<Show when={props.store.releases.length > 0 || props.store.isLoading}>
-						<div class="flex flex-col gap-2 p-4">
+						<div {...stylex.attrs(styles.list)}>
 							<Intersperse
 								of={props.store.releases}
-								with={<Divider horizontal />}
+								with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 							>
 								{(release) => <ReleaseItem release={release} />}
 							</Intersperse>
 							<Show when={props.store.isLoading}>
 								<Show when={props.store.releases.length > 0}>
-									<Divider horizontal />
+									<span {...stylex.attrs(dividerStyles.horizontal)}></span>
 								</Show>
 								<Intersperse
 									of={Array.from({ length: props.store.limit })}
-									with={<Divider horizontal />}
+									with={
+										<span {...stylex.attrs(dividerStyles.horizontal)}></span>
+									}
 								>
 									{() => <ReleaseItemSkeleton />}
 								</Intersperse>
@@ -115,7 +191,7 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 					</Show>
 				</Match>
 				<Match when={props.store.displayType === "grid"}>
-					<div class={GRID_CONTAINER_CLASS}>
+					<div {...stylex.attrs(styles.grid)}>
 						<For each={props.store.releases}>
 							{(release) => <ReleaseGridItem release={release} />}
 						</For>
@@ -131,7 +207,7 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 			</Show>
 
 			<Show when={props.store.totalPages > 1}>
-				<div class="flex justify-center py-6">
+				<div {...stylex.attrs(styles.pagination)}>
 					<Pagination
 						current={props.store.page}
 						total={props.store.totalPages}

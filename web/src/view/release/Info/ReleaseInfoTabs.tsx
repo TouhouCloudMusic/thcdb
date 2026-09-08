@@ -1,8 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { Release } from "@thc/api"
 import { createSignal, Show } from "solid-js"
 
 import { Tab } from "~/component/atomic"
+import { px } from "~/style/tokens.stylex"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import type { EntityCommentsModel } from "~/view/comment/EntityComments"
@@ -11,6 +13,11 @@ import { useEntityComments } from "~/view/comment/useEntityComments"
 
 import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
 import { ReleaseInfoTracks } from "./comp/ReleaseInfoTracks"
+
+const styles = stylex.create({
+	tabTrigger: { paddingBlock: px[12] },
+	tabPanel: { padding: px[16] },
+})
 
 type ReleaseInfoTabsProps = {
 	release: Release
@@ -22,8 +29,6 @@ type ReleaseInfoTabsViewProps = {
 	comments: EntityCommentsModel
 	onActiveTabChange: (value: string) => void
 }
-
-const TRIGGER_CLASS = "py-3"
 
 export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 	const hasTracks = () => (props.release.tracks?.length ?? 0) > 0
@@ -58,11 +63,11 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 			onChange={props.onActiveTabChange}
 		>
 			<Tab.ScrollArea>
-				<Tab.List class={Tab.CONTAINER_CLASS}>
+				<Tab.List styles={Tab.containerStyles}>
 					<Show when={hasTracks()}>
 						<Tab.Trigger
 							value="Tracks"
-							class={TRIGGER_CLASS}
+							styles={styles.tabTrigger}
 						>
 							{t`Tracks`}
 						</Tab.Trigger>
@@ -70,18 +75,18 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 					<Show when={hasCredits()}>
 						<Tab.Trigger
 							value="Credits"
-							class={TRIGGER_CLASS}
+							styles={styles.tabTrigger}
 						>
 							{t`Credits`}
 						</Tab.Trigger>
 					</Show>
 					<EntityCommentsTabTrigger
 						count={props.comments.activeCommentCount()}
-						class={TRIGGER_CLASS}
+						styles={styles.tabTrigger}
 					/>
 					<Tab.Trigger
 						value="Collections"
-						class={TRIGGER_CLASS}
+						styles={styles.tabTrigger}
 					>
 						{t`Collections`}
 					</Tab.Trigger>
@@ -91,7 +96,7 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 			<Show when={hasTracks()}>
 				<Tab.Content
 					value="Tracks"
-					class="p-4"
+					styles={styles.tabPanel}
 				>
 					<ReleaseInfoTracks
 						discs={props.release.discs}
@@ -102,20 +107,20 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 			<Show when={hasCredits()}>
 				<Tab.Content
 					value="Credits"
-					class="p-4"
+					styles={styles.tabPanel}
 				>
 					<ReleaseInfoCredits credits={props.release.credits} />
 				</Tab.Content>
 			</Show>
 			<Tab.Content
 				value="Comments"
-				class="p-4"
+				styles={styles.tabPanel}
 			>
 				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				class="p-4"
+				styles={styles.tabPanel}
 			>
 				<EntityCollectionsTab
 					entityType="release"

@@ -1,68 +1,50 @@
-import type { LinkComponentProps } from "@tanstack/solid-router"
-import { Link as RouterLink } from "@tanstack/solid-router"
-import { createMemo, splitProps } from "solid-js"
-import type { ParentProps, Ref } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
 
-import { ButtonClass_new } from "../atomic/button"
-import type { Props as ButtonProps } from "../atomic/button"
+import { buttonStyles } from "~/component/atomic/button"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
-export function Sidebar(
-	props: ParentProps & {
-		class?: string
-		ref?: Ref<HTMLDivElement> | undefined
+export const sidebar = stylex.create({
+	panel: {
+		marginLeft: "auto",
+		display: "flex",
+		height: "100%",
+		width: "100vw",
+		maxWidth: px[240],
+		overflow: "auto",
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderTopColor: palette.reimu[600],
+		backgroundColor: colors.backgroundPrimary,
 	},
-) {
-	return (
-		<div
-			ref={props.ref}
-			tabindex={-1}
-			class={twMerge(
-				"ml-auto flex h-full w-screen max-w-60 overflow-auto border-t border-t-reimu-600 bg-primary",
-				props.class,
-			)}
-		>
-			{props.children}
-		</div>
-	)
-}
+	item: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "flex-start",
+		textAlign: "left",
+		width: "100%",
+		paddingBlock: px[4],
+		paddingInline: px[4],
+		fontWeight: 300,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[700],
+	},
+	content: { marginInline: px[4] },
+	icon: {
+		marginInline: px[4],
+		width: px[16],
+		height: px[16],
+		color: palette.slate[600],
+	},
+})
 
-type ListItemStyleProps = Pick<
-	ButtonProps,
-	"class" | "size" | "color" | "variant"
->
-type ListItemProps = ParentProps<LinkComponentProps & ListItemStyleProps>
-
-const LIST_ITEM_CLASS = `
-  flex items-center justify-start text-left w-full
-  py-1 px-1
-  font-light text-sm text-slate-700
-  *:mx-1
-  [&_svg]:size-4 [&_svg]:text-slate-600
-`
-export function ListItem(props: ListItemProps) {
-	const [style_props, other_props] = splitProps(props, [
-		"class",
-		"size",
-		"color",
-		"variant",
-	])
-	const tw_class = createMemo(() =>
-		twMerge(
-			ButtonClass_new({
-				variant: "Tertiary",
-				size: style_props.size,
-				color: style_props.color,
-			}),
-			LIST_ITEM_CLASS,
-			style_props.class,
-		),
-	)
-
-	return (
-		<RouterLink
-			{...(other_props as LinkComponentProps)}
-			class={tw_class()}
-		/>
-	)
-}
+export const sidebarLink = stylex.attrs(
+	link.base,
+	buttonStyles.base,
+	buttonStyles.ghost,
+	buttonStyles.gray,
+	buttonStyles.ghostGray,
+	sidebar.item,
+).class

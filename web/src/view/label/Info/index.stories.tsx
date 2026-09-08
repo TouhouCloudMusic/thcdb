@@ -1,11 +1,22 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Label } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { MOCK_CORRECTION_HISTORY } from "~/mock/correction"
 import { withEntityDetailStoryState } from "~/storybook/entityDetail"
+import { palette } from "~/style/color/palette.stylex"
+import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { LabelInfoPage } from "."
+
+const styles = stylex.create({
+	preview: {
+		minHeight: "900px",
+		backgroundColor: palette.slate[100],
+		padding: px[24],
+	},
+})
 
 const LABEL: Label = {
 	links: [],
@@ -32,7 +43,7 @@ const LABEL: Label = {
 
 function StoryRoot() {
 	return (
-		<div class="min-h-[900px] bg-slate-100 p-6">
+		<div {...stylex.attrs(styles.preview)}>
 			<LabelInfoPage
 				label={LABEL}
 				correctionHistory={MOCK_CORRECTION_HISTORY}

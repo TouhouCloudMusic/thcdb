@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useMutation } from "@tanstack/solid-query"
 import { createSignal, createUniqueId, Show, untrack } from "solid-js"
 
@@ -12,6 +13,115 @@ import {
 	userCollectionsQueryKey,
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	dialog: {
+		display: "flex",
+		width: "100%",
+		maxWidth: px[448],
+		flexDirection: "column",
+		borderRadius: radius.md,
+		backgroundColor: palette.white,
+		paddingTop: px[24],
+		paddingRight: px[24],
+		paddingBottom: px[24],
+		paddingLeft: px[24],
+		boxShadow:
+			"0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+	},
+	title: {
+		marginBottom: px[8],
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	form: { display: "flex", flexDirection: "column", gap: px[16] },
+	fieldGroup: { display: "flex", flexDirection: "column", gap: px[4] },
+	label: {
+		marginBottom: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: palette.slate[700],
+	},
+	nameInput: {
+		borderRadius: radius.md,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		outlineStyle: { default: null, ":focus": "none" },
+		boxShadow: { default: null, ":focus": "0 0 0 1px currentColor" },
+	},
+	descriptionInput: {
+		height: px[96],
+		resize: "none",
+		borderRadius: radius.md,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		outlineStyle: { default: null, ":focus": "none" },
+		boxShadow: { default: null, ":focus": "0 0 0 1px currentColor" },
+	},
+	visibility: {
+		marginTop: px[8],
+		display: "flex",
+		alignItems: "center",
+		gap: px[8],
+	},
+	visibilityCheckbox: {
+		height: px[16],
+		width: px[16],
+		borderRadius: radius.sm,
+		borderColor: palette.slate[300],
+	},
+	visibilityLabel: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[700],
+	},
+	submitError: { fontSize: fontSizes.sm, lineHeight: lineHeights.sm },
+	actions: {
+		display: "grid",
+		width: { default: "100%", "@media (min-width: 40rem)": px[224] },
+		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		gap: px[12],
+		alignSelf: "flex-end",
+	},
+})
 
 type Props = {
 	open: boolean
@@ -95,19 +205,19 @@ export function CollectionFormDialog(props: Props) {
 		>
 			<Dialog.Portal>
 				<Dialog.Overlay data-blur />
-				<Dialog.Content class="flex w-full max-w-md flex-col rounded-md bg-white p-6 shadow-xl">
-					<Dialog.Title class="mb-2 text-xl font-light tracking-tight text-primary">
+				<Dialog.Content styles={styles.dialog}>
+					<Dialog.Title styles={styles.title}>
 						{props.collection ? t`Edit Collection` : t`Create Collection`}
 					</Dialog.Title>
 
 					<form
 						onSubmit={handleSubmit}
-						class="flex flex-col gap-4"
+						{...stylex.attrs(styles.form)}
 					>
-						<div class="flex flex-col gap-1">
+						<div {...stylex.attrs(styles.fieldGroup)}>
 							<label
 								for={nameId}
-								class="mb-1 text-sm font-medium text-slate-700"
+								{...stylex.attrs(styles.label)}
 							>
 								{t`Name`}
 							</label>
@@ -117,16 +227,16 @@ export function CollectionFormDialog(props: Props) {
 								aria-label={t`Name`}
 								value={name()}
 								onInput={(e) => setName(e.currentTarget.value)}
-								class="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+								{...stylex.attrs(styles.nameInput)}
 								required
 								maxLength={100}
 							/>
 						</div>
 
-						<div class="flex flex-col gap-1">
+						<div {...stylex.attrs(styles.fieldGroup)}>
 							<label
 								for={descriptionId}
-								class="mb-1 text-sm font-medium text-slate-700"
+								{...stylex.attrs(styles.label)}
 							>
 								{t`Description`}
 							</label>
@@ -135,40 +245,41 @@ export function CollectionFormDialog(props: Props) {
 								aria-label={t`Description`}
 								value={description()}
 								onInput={(e) => setDescription(e.currentTarget.value)}
-								class="h-24 resize-none rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+								{...stylex.attrs(styles.descriptionInput)}
 								maxLength={1000}
 							></textarea>
 						</div>
 
-						<div class="mt-2 flex items-center gap-2">
+						<div {...stylex.attrs(styles.visibility)}>
 							<input
 								type="checkbox"
 								id={isPublicId}
 								aria-label={t`Make this collection public`}
 								checked={isPublic()}
 								onChange={(e) => setIsPublic(e.currentTarget.checked)}
-								class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+								{...stylex.attrs(styles.visibilityCheckbox)}
 							/>
 							<label
 								for={isPublicId}
-								class="text-sm text-slate-700"
+								{...stylex.attrs(styles.visibilityLabel)}
 							>
 								{t`Make this collection public`}
 							</label>
 						</div>
 
 						<Show when={mutation.error}>
-							<div class="text-sm text-red-500">
+							<div {...stylex.attrs(styles.submitError)}>
 								{mutation.error?.message
 									?? t`An error occurred. Please try again.`}
 							</div>
 						</Show>
 
-						<div class="grid w-full grid-cols-2 gap-3 self-end sm:w-56">
+						<div {...stylex.attrs(styles.actions)}>
 							<Button
 								type="button"
-								variant="Secondary"
-								size="Md"
+								appearance="soft"
+								tone="gray"
+								size="md"
 								onClick={() => props.onOpenChange(false)}
 								disabled={mutation.isPending}
 							>
@@ -176,15 +287,20 @@ export function CollectionFormDialog(props: Props) {
 							</Button>
 							<Button
 								type="submit"
-								variant="Primary"
-								size="Md"
+								appearance="solid"
+								tone="gray"
+								size="md"
 								disabled={mutation.isPending || !name().trim()}
 							>
 								{props.collection ? t`Save` : t`Create`}
 							</Button>
 						</div>
 					</form>
-					<Dialog.CloseButton />
+					<Dialog.CloseButton
+						as={Button}
+						appearance="ghost"
+						tone="gray"
+					/>
 				</Dialog.Content>
 			</Dialog.Portal>
 		</Dialog.Root>

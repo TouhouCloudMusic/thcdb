@@ -1,5 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { LinkComponentProps } from "@tanstack/solid-router"
+import { Link } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
 import {
 	CardStackIcon,
@@ -15,10 +17,46 @@ import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
 
 import { LocaleSelect } from "~/component/Header/LocaleSelect"
-import { ListItem, Sidebar } from "~/component/Sidebar"
+import { sidebar, sidebarLink } from "~/component/Sidebar"
 import type { UserAuthorization } from "~/domain/user/authorization"
 import { hasAdminRole } from "~/domain/user/authorization"
 import { useCurrentUser } from "~/state/user"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	layout: {
+		display: "flex",
+		maxWidth: px[256],
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	heading: {
+		marginLeft: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[4],
+		paddingRight: px[8],
+	},
+	settings: { marginTop: "auto", paddingInline: px[8] },
+	settingsHeading: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+		marginBottom: px[8],
+	},
+	label: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+		marginBottom: px[8],
+	},
+})
 
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
@@ -104,49 +142,52 @@ export function LeftSidebarView(props: { authorization?: UserAuthorization }) {
 	]
 
 	return (
-		<Sidebar class="flex max-w-64 flex-col gap-2 p-4">
-			<h3 class="ml-2 text-sm text-secondary ">{t`Explore`}</h3>
+		<div
+			tabindex={-1}
+			{...stylex.attrs(sidebar.panel, styles.layout)}
+		>
+			<h3 {...stylex.attrs(styles.heading)}>{t`Explore`}</h3>
 
-			<ul class="space-y-1 pr-2">
+			<ul {...stylex.attrs(styles.list)}>
 				<For each={LIST_ITEMS}>
 					{(item) => {
 						return (
-							<ListItem
-								class="w-full"
+							<Link
+								class={sidebarLink}
 								aria-label={item.text}
 								title={item.text}
 								to={item.to}
 							>
-								<item.icon class="mr-3 h-4 w-4" />
-								<span>{item.text}</span>
-							</ListItem>
+								<item.icon {...stylex.attrs(sidebar.icon)} />
+								<span {...stylex.attrs(sidebar.content)}>{item.text}</span>
+							</Link>
 						)
 					}}
 				</For>
 			</ul>
 
 			<Show when={hasAdminRole(props.authorization)}>
-				<div class="space-y-1 pr-2">
-					<h3 class="ml-2 text-sm text-secondary">{t`Admin`}</h3>
-					<ListItem
-						class="w-full"
+				<div {...stylex.attrs(styles.list)}>
+					<h3 {...stylex.attrs(styles.heading)}>{t`Admin`}</h3>
+					<Link
+						class={sidebarLink}
 						aria-label={t`Users`}
 						title={t`Users`}
 						to="/admin/users"
 					>
-						<PersonIcon class="mr-3 h-4 w-4" />
-						<span>{t`Users`}</span>
-					</ListItem>
+						<PersonIcon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>{t`Users`}</span>
+					</Link>
 				</div>
 			</Show>
 
-			<div class="mt-auto space-y-2 px-2">
-				<h3 class="text-sm text-secondary">{t`Settings`}</h3>
-				<div class="space-y-2">
-					<div class="text-sm text-tertiary">{t`Language`}</div>
+			<div {...stylex.attrs(styles.settings)}>
+				<h3 {...stylex.attrs(styles.settingsHeading)}>{t`Settings`}</h3>
+				<div>
+					<div {...stylex.attrs(styles.label)}>{t`Language`}</div>
 					<LocaleSelect />
 				</div>
 			</div>
-		</Sidebar>
+		</div>
 	)
 }

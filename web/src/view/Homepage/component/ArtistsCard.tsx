@@ -1,34 +1,84 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { For, Show } from "solid-js"
 
-import { Card } from "~/component/atomic/Card"
 import type { ArtistListItem } from "~/hey-api"
-import { tw } from "~/utils"
+import { palette } from "~/style/color/palette.stylex"
+import { surfaceStyles } from "~/style/primitives"
+import { radius, px } from "~/style/tokens.stylex"
 import { ArtistCard } from "~/view/Homepage/component/ArtistCard"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { ARTISTS_LIMIT } from "~/view/Homepage/constants"
 
-const ARTISTS_GRID_CLASS = tw(`
-	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(8.75rem,25%)),1fr))] gap-0.5
-`)
+import { animationNames } from "../../../style/animations.stylex"
+
+const styles = stylex.create({
+	grid: {
+		display: "grid",
+		gridTemplateColumns:
+			"repeat(auto-fit,minmax(min(100%,max(8.75rem,25%)),1fr))",
+		gap: px[2],
+	},
+	skeleton: {
+		display: "flex",
+		flexDirection: "column",
+		borderRadius: 0,
+		padding: px[12],
+		boxShadow: "none",
+		animationName: {
+			default: animationNames.pulse,
+			"@media (prefers-reduced-motion: reduce)": "none",
+		},
+		animationDuration: "2s",
+		animationTimingFunction: "cubic-bezier(0.4, 0, 0.6, 1)",
+		animationIterationCount: "infinite",
+	},
+	avatar: {
+		aspectRatio: "1",
+		width: "100%",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+	},
+	content: {
+		display: "flex",
+		flex: "1",
+		flexDirection: "column",
+		justifyContent: "space-between",
+		gap: px[4],
+		paddingTop: px[8],
+	},
+	name: {
+		height: px[14],
+		width: "80%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	country: {
+		height: px[12],
+		width: "40%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	empty: { height: px[144] },
+})
 
 function ArtistTileSkeleton() {
 	return (
-		<Card class="flex flex-col rounded-none p-3 shadow-none animate-pulse motion-reduce:animate-none">
-			<div class="aspect-square w-full rounded-full bg-slate-100"></div>
+		<div {...stylex.attrs(surfaceStyles.card, styles.skeleton)}>
+			<div {...stylex.attrs(styles.avatar)}></div>
 
-			<div class="flex flex-1 flex-col justify-between gap-1 pt-2">
-				<div class="h-3.5 w-4/5 rounded bg-slate-200"></div>
-				<div class="h-3 w-2/5 rounded bg-slate-100"></div>
+			<div {...stylex.attrs(styles.content)}>
+				<div {...stylex.attrs(styles.name)}></div>
+				<div {...stylex.attrs(styles.country)}></div>
 			</div>
-		</Card>
+		</div>
 	)
 }
 
 function ArtistsGridSkeleton() {
 	return (
-		<div class={ARTISTS_GRID_CLASS}>
+		<div {...stylex.attrs(styles.grid)}>
 			<For each={Array.from({ length: ARTISTS_LIMIT })}>
 				{() => <ArtistTileSkeleton />}
 			</For>
@@ -40,9 +90,9 @@ function ArtistsGrid(props: { artists: ArtistListItem[] }) {
 	return (
 		<Show
 			when={props.artists.length > 0}
-			fallback={<HomeEmptySlot class="h-36" />}
+			fallback={<HomeEmptySlot styles={styles.empty} />}
 		>
-			<div class={ARTISTS_GRID_CLASS}>
+			<div {...stylex.attrs(styles.grid)}>
 				<For each={props.artists}>
 					{(artist) => <ArtistCard artist={artist} />}
 				</For>

@@ -1,18 +1,44 @@
 import { Field, FieldArray, getErrors, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { For } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FieldArrayFallback } from "~/component/form"
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { useEventForm } from "../context"
 
+const styles = stylex.create({
+	field: { display: "flex", minHeight: px[128], flexDirection: "column" },
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		alignContent: "space-between",
+		justifyContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	fieldLabel: { margin: 0 },
+	editButton: { height: "max-content", padding: px[8] },
+	editIcon: { width: px[16], height: px[16] },
+	names: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	nameRow: { display: "flex", gap: px[8] },
+	nameInput: { flexGrow: 1 },
+})
+
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function EventAlternativeNamesField(props: Props) {
@@ -30,15 +56,18 @@ export function EventAlternativeNamesField(props: Props) {
 	}
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Alternative Names`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.fieldLabel)}
+				>{t`Alternative Names`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addAltName}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.editButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.editIcon)} />
 				</Button>
 			</div>
 			<FormComp.ErrorList
@@ -49,19 +78,19 @@ export function EventAlternativeNamesField(props: Props) {
 				path={["data", "alternative_names"]}
 			>
 				{(fieldArray) => (
-					<ul class="flex h-full flex-col gap-2">
+					<ul {...stylex.attrs(styles.names)}>
 						<For
 							each={fieldArray.items}
 							fallback={<FieldArrayFallback />}
 						>
 							{(_, idx) => (
-								<li class="flex gap-2">
+								<li {...stylex.attrs(styles.nameRow)}>
 									<Field
 										of={formStore}
 										path={["data", "alternative_names", idx()]}
 									>
 										{(field) => (
-											<InputField.Root class="grow">
+											<InputField.Root styles={styles.nameInput}>
 												<InputField.Input
 													{...field.props}
 													value={field.input ?? ""}
@@ -74,9 +103,10 @@ export function EventAlternativeNamesField(props: Props) {
 										)}
 									</Field>
 									<Button
-										variant="Tertiary"
-										size="Sm"
 										onClick={removeAltNameAt(idx())}
+										appearance="ghost"
+										tone="gray"
+										size="sm"
 									>
 										<Cross1Icon />
 									</Button>

@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { CorrectionHistoryItem, Label } from "@thc/api"
 import { createSignal, Show, Suspense } from "solid-js"
 
@@ -7,19 +8,60 @@ import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
-import {
-	ADD_TO_COLLECTION_ACTIONS_CLASS,
-	AddToUserCollectionButton,
-} from "~/view/collection/AddToUserCollectionButton"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { entityDetailStyles } from "~/view/entity/detailStyles"
 
 import { LabelInfoPageContext } from "./context"
 import type { LabelInfoPageContextValue } from "./context"
+
+const styles = stylex.create({
+	page: { padding: "clamp(1rem,4vw,2rem)" },
+	content: {
+		display: "flex",
+		flexDirection: "column",
+		rowGap: px[24],
+	},
+	title: {
+		fontSize: fontSizes["3xl"],
+		lineHeight: 1.25,
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	details: {
+		display: "grid",
+		gridTemplateColumns: "auto 1fr",
+		columnGap: px[16],
+		rowGap: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	detailLabel: { color: colors.textTertiary },
+	localizedNames: {
+		display: "flex",
+		flexWrap: "wrap",
+		gap: px[2],
+		whiteSpace: "pre",
+	},
+	separator: { whiteSpace: "pre" },
+	detailText: { color: colors.textSecondary },
+	founders: {
+		display: "flex",
+		flexWrap: "wrap",
+		gap: px[2],
+		whiteSpace: "pre",
+	},
+	links: { display: "contents" },
+	tabTrigger: { paddingBlock: px[12] },
+	tabPanel: { padding: px[16] },
+})
 
 type Props = {
 	label: Label
@@ -35,13 +77,13 @@ export function LabelInfoPage(props: Props) {
 	}
 
 	return (
-		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
+		<PageLayout styles={styles.page}>
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<LabelInfoPageContext.Provider value={contextValue}>
-					<div class="flex flex-col gap-y-6">
+					<div {...stylex.attrs(styles.content)}>
 						<LabelInfoHeader />
 						<LabelInfoDetails />
-						<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+						<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
 							<AddToUserCollectionButton
 								entityType="Label"
 								entityId={props.label.id}
@@ -64,9 +106,7 @@ function LabelInfoHeader() {
 	const ctx = assertContext(LabelInfoPageContext)
 	return (
 		<header>
-			<h1 class="text-3xl leading-tight font-light tracking-tight text-primary">
-				{ctx.label.name}
-			</h1>
+			<h1 {...stylex.attrs(styles.title)}>{ctx.label.name}</h1>
 		</header>
 	)
 }
@@ -80,24 +120,24 @@ function LabelInfoDetails() {
 	const dissolved = () => DateWithPrecision.display(ctx.label.dissolved_date)
 
 	return (
-		<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
+		<div {...stylex.attrs(styles.details)}>
 			<Show when={founded()}>
-				<span class="text-tertiary">{t`Founded`}</span>
+				<span {...stylex.attrs(styles.detailLabel)}>{t`Founded`}</span>
 				<span>{founded()}</span>
 			</Show>
 			<Show when={dissolved()}>
-				<span class="text-tertiary">{t`Dissolved`}</span>
+				<span {...stylex.attrs(styles.detailLabel)}>{t`Dissolved`}</span>
 				<span>{dissolved()}</span>
 			</Show>
 			<Show when={hasLocalizedNames()}>
-				<span class="text-tertiary">{t`Localized Names`}</span>
-				<ul class="flex flex-wrap gap-0.5 whitespace-pre">
+				<span {...stylex.attrs(styles.detailLabel)}>{t`Localized Names`}</span>
+				<ul {...stylex.attrs(styles.localizedNames)}>
 					<Intersperse
 						of={ctx.label.localized_names}
-						with={<span class="whitespace-pre">, </span>}
+						with={<span {...stylex.attrs(styles.separator)}>, </span>}
 					>
 						{(item) => (
-							<li class="text-secondary">
+							<li {...stylex.attrs(styles.detailText)}>
 								{item.name} ({item.language.code})
 							</li>
 						)}
@@ -105,20 +145,20 @@ function LabelInfoDetails() {
 				</ul>
 			</Show>
 			<Show when={hasFounders()}>
-				<span class="text-tertiary">{t`Founders`}</span>
-				<ul class="flex flex-wrap gap-0.5 whitespace-pre">
+				<span {...stylex.attrs(styles.detailLabel)}>{t`Founders`}</span>
+				<ul {...stylex.attrs(styles.founders)}>
 					<Intersperse
 						of={ctx.label.founders}
-						with={<span class="whitespace-pre">, </span>}
+						with={<span {...stylex.attrs(styles.separator)}>, </span>}
 					>
-						{(id) => <li class="text-secondary">#{id}</li>}
+						{(id) => <li {...stylex.attrs(styles.detailText)}>#{id}</li>}
 					</Intersperse>
 				</ul>
 			</Show>
 			<ExternalLinks
 				links={ctx.label.links}
-				class="contents"
-				labelClass="text-tertiary"
+				styles={styles.links}
+				labelStyles={styles.detailLabel}
 			/>
 		</div>
 	)
@@ -140,14 +180,14 @@ function LabelInfoComments() {
 			onChange={setActiveTab}
 		>
 			<Tab.ScrollArea>
-				<Tab.List class={Tab.CONTAINER_CLASS}>
+				<Tab.List styles={Tab.containerStyles}>
 					<EntityCommentsTabTrigger
 						count={comments.activeCommentCount()}
-						class="py-3"
+						styles={styles.tabTrigger}
 					/>
 					<Tab.Trigger
 						value="Collections"
-						class="py-3"
+						styles={styles.tabTrigger}
 					>
 						{t`Collections`}
 					</Tab.Trigger>
@@ -156,13 +196,13 @@ function LabelInfoComments() {
 			</Tab.ScrollArea>
 			<Tab.Content
 				value="Comments"
-				class="p-4"
+				styles={styles.tabPanel}
 			>
 				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				class="p-4"
+				styles={styles.tabPanel}
 			>
 				<EntityCollectionsTab
 					entityType="label"

@@ -1,4 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import type { UserProfile } from "@thc/api"
 import { MathExt } from "@thc/toolkit"
 import type { JSX } from "solid-js"
@@ -6,8 +8,6 @@ import { createMemo, Match, Show, Switch } from "solid-js"
 
 import * as ImageCropDialog from "~/component/ImageCropDialog"
 import { Badge } from "~/component/atomic/Badge"
-import { Card } from "~/component/atomic/Card"
-import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
@@ -18,6 +18,17 @@ import {
 	USER_PROFILE_BANNER_MIN_WIDTH,
 } from "~/constant/server"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { surfaceStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 import type {
@@ -27,6 +38,217 @@ import type {
 } from "./store"
 
 export { createEditProfileStore } from "./store"
+
+const styles = stylex.create({
+	page: {
+		display: "grid",
+		minHeight: "100dvh",
+		gridTemplateRows: "auto 1fr",
+	},
+	content: { display: "grid", gap: px[24], padding: px[32] },
+	bannerCanvas: { height: px[384] },
+	avatarCanvas: { height: px[320] },
+	header: {
+		position: "relative",
+		overflow: "hidden",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: `color-mix(in oklab, ${colors.backgroundPrimary} 70%, transparent)`,
+		paddingInline: px[32],
+		paddingBlock: px[24],
+	},
+	headerPattern: {
+		backgroundSize: "26px 26px",
+		pointerEvents: "none",
+		position: "absolute",
+		inset: "0rem",
+		opacity: 0.65,
+		backgroundImage:
+			"linear-gradient(to right,rgba(15,23,42,0.06) 1px,transparent 1px),linear-gradient(to bottom,rgba(15,23,42,0.06) 1px,transparent 1px)",
+	},
+	headerContent: {
+		display: "flex",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	title: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes["3xl"],
+		lineHeight: 1.2,
+		fontWeight: 300,
+		letterSpacing: "-.025em",
+		color: colors.textPrimary,
+	},
+	role: { marginTop: px[12] },
+	profileLink: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: {
+			default: colors.textSecondary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+	},
+	appearanceCard: {
+		overflow: "hidden",
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: "0rem",
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	appearanceHeading: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[16],
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingInline: px[20],
+		paddingBlock: px[16],
+	},
+	appearanceTitle: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.22em",
+		color: palette.slate[600],
+	},
+	uploadBanner: { paddingInline: px[12] },
+	appearanceSection: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+	},
+	banner: {
+		position: "relative",
+		height: px[224],
+		overflow: "hidden",
+		backgroundColor: palette.slate[100],
+	},
+	bannerFallback: {
+		position: "absolute",
+		inset: "0rem",
+		backgroundImage:
+			"radial-gradient(circle at 20% 20%,rgba(248,250,252,0.95),rgba(226,232,240,1))",
+	},
+	bannerImage: {
+		position: "absolute",
+		inset: "0rem",
+		width: "100%",
+		height: "100%",
+		objectFit: "cover",
+	},
+	bannerShade: {
+		pointerEvents: "none",
+		position: "absolute",
+		inset: "0rem",
+		backgroundImage:
+			"linear-gradient(to bottom,transparent 0%,rgba(15,23,42,0.40) 100%)",
+	},
+	avatarSection: {
+		paddingInline: px[20],
+		paddingTop: px[20],
+		paddingBottom: px[24],
+	},
+	avatarControls: {
+		display: "grid",
+		gap: px[20],
+		gridTemplateColumns: {
+			default: null,
+			"@media (min-width: 64rem)": "auto 1fr",
+		},
+		alignItems: { default: null, "@media (min-width: 64rem)": "flex-end" },
+	},
+	avatarFrame: {
+		marginTop: "-3.5rem",
+		position: "relative",
+		zIndex: 10,
+		width: "fit-content",
+		borderRadius: radius.md,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+		padding: px[8],
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	avatar: { width: px[96], height: px[96] },
+	uploadAvatar: { paddingInline: px[12], width: "fit-content" },
+	bioCard: {
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: "0rem",
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	bioHeading: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[16],
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingInline: px[20],
+		paddingBlock: px[16],
+	},
+	bioTitle: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.22em",
+		color: palette.slate[600],
+	},
+	bioCounters: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		gap: px[8],
+	},
+	characterCount: {
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	remainingCount: {
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[400],
+	},
+	bioContent: { padding: px[20] },
+	bioField: { gap: px[8] },
+	bioInput: { minHeight: px[192] },
+	bioError: {
+		marginTop: px[12],
+		borderRadius: radius.md,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.reimu[200],
+		paddingInline: px[12],
+		paddingBlock: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[800],
+	},
+	bioActions: {
+		display: "grid",
+		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		gap: px[8],
+		width: "fit-content",
+		height: "fit-content",
+		marginLeft: "auto",
+		marginTop: px[8],
+	},
+	cancel: { paddingInline: px[12] },
+	save: { paddingInline: px[16] },
+})
 
 export type EditProfileViewProps = {
 	user: UserProfile
@@ -93,10 +315,10 @@ const computeBannerOutputSize = (
 export function EditProfileView(props: EditProfileViewProps) {
 	const { t } = useLingui()
 	return (
-		<PageLayout class="grid min-h-dvh grid-rows-[auto_1fr]">
+		<PageLayout styles={styles.page}>
 			<EditProfileHeader isBioDirty={props.store.bio.isDirty} />
 
-			<div class="grid gap-6 p-8">
+			<div {...stylex.attrs(styles.content)}>
 				<AppearanceCard
 					user={props.user}
 					avatar={props.store.avatar}
@@ -116,7 +338,7 @@ export function EditProfileView(props: EditProfileViewProps) {
 				onSave={props.store.avatar.onUpload}
 				title={t`Update avatar`}
 			>
-				<ImageCropDialog.Canvas class="h-96" />
+				<ImageCropDialog.Canvas styles={styles.bannerCanvas} />
 			</ImageCropDialog.Root>
 
 			<ImageCropDialog.Root
@@ -129,7 +351,7 @@ export function EditProfileView(props: EditProfileViewProps) {
 				onSave={props.store.banner.onUpload}
 				title={t`Update banner`}
 			>
-				<ImageCropDialog.Canvas class="h-80" />
+				<ImageCropDialog.Canvas styles={styles.avatarCanvas} />
 			</ImageCropDialog.Root>
 		</PageLayout>
 	)
@@ -137,16 +359,14 @@ export function EditProfileView(props: EditProfileViewProps) {
 
 function EditProfileHeader(props: { isBioDirty: boolean }) {
 	return (
-		<header class="relative overflow-hidden border-b border-slate-300 bg-primary/70 px-8 py-6">
-			<div class="pointer-events-none absolute inset-0 opacity-65 bg-[linear-gradient(to_right,rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.06)_1px,transparent_1px)] bg-size-[26px_26px]"></div>
-			<div class="flex justify-between items-center">
-				<h1 class="truncate text-3xl font-light tracking-tight text-primary">
-					Edit profile
-				</h1>
+		<header {...stylex.attrs(styles.header)}>
+			<div {...stylex.attrs(styles.headerPattern)}></div>
+			<div {...stylex.attrs(styles.headerContent)}>
+				<h1 {...stylex.attrs(styles.title)}>Edit profile</h1>
 				<Show when={props.isBioDirty}>
 					<Badge
 						color="Marisa"
-						class="mt-3"
+						styles={styles.role}
 					>
 						Unsaved
 					</Badge>
@@ -154,7 +374,7 @@ function EditProfileHeader(props: { isBioDirty: boolean }) {
 
 				<Link
 					to="/profile"
-					class="text-sm text-secondary hover:text-primary"
+					class={stylex.attrs(link.base, link.text, styles.profileLink).class}
 				>
 					Back to profile
 				</Link>
@@ -180,17 +400,16 @@ function AppearanceCard(props: {
 	}
 
 	return (
-		<Card class="overflow-hidden border border-slate-300 p-0 shadow-xs">
-			<div class="flex items-center justify-between gap-4 border-b border-slate-300 bg-slate-50 px-5 py-4">
-				<div class="text-xs font-medium tracking-[0.22em] text-slate-600">
-					APPEARANCE
-				</div>
+		<div {...stylex.attrs(surfaceStyles.card, styles.appearanceCard)}>
+			<div {...stylex.attrs(styles.appearanceHeading)}>
+				<div {...stylex.attrs(styles.appearanceTitle)}>APPEARANCE</div>
 				<Button
-					size="Sm"
-					variant="SecondaryV2"
-					class="px-3"
 					disabled={props.banner.isUploading}
 					onClick={handleEditBanner}
+					appearance="outline"
+					tone="gray"
+					size="sm"
+					styles={styles.uploadBanner}
 				>
 					<Switch>
 						<Match when={props.banner.isUploading}>{t`Uploading…`}</Match>
@@ -199,40 +418,39 @@ function AppearanceCard(props: {
 				</Button>
 			</div>
 
-			<section class="border-b border-slate-300">
-				<div class="relative h-56 overflow-hidden bg-slate-100">
+			<section {...stylex.attrs(styles.appearanceSection)}>
+				<div {...stylex.attrs(styles.banner)}>
 					<Show
 						when={bannerUrl()}
-						fallback={
-							<div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(248,250,252,0.95),rgba(226,232,240,1))]"></div>
-						}
+						fallback={<div {...stylex.attrs(styles.bannerFallback)}></div>}
 					>
 						{(src) => (
 							<img
 								src={src()}
 								alt={t`Profile banner`}
-								class="absolute inset-0 size-full object-cover"
+								{...stylex.attrs(styles.bannerImage)}
 							/>
 						)}
 					</Show>
-					<div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(15,23,42,0.40)_100%)]"></div>
+					<div {...stylex.attrs(styles.bannerShade)}></div>
 				</div>
 
-				<div class="px-5 pt-5 pb-6">
-					<div class="grid gap-5 lg:grid-cols-[auto_1fr] lg:items-end">
-						<div class="-mt-14 relative z-10 w-fit rounded-md border border-slate-300 bg-primary p-2 shadow-xs">
+				<div {...stylex.attrs(styles.avatarSection)}>
+					<div {...stylex.attrs(styles.avatarControls)}>
+						<div {...stylex.attrs(styles.avatarFrame)}>
 							<Avatar
 								user={props.user}
-								class="size-24"
+								styles={styles.avatar}
 							/>
 						</div>
 
 						<Button
-							size="Sm"
-							variant="SecondaryV2"
-							class="px-3 w-fit"
 							disabled={props.avatar.isUploading}
 							onClick={handleEditAvatar}
+							appearance="outline"
+							tone="gray"
+							size="sm"
+							styles={styles.uploadAvatar}
 						>
 							<Switch>
 								<Match when={props.avatar.isUploading}>{t`Uploading…`}</Match>
@@ -244,7 +462,7 @@ function AppearanceCard(props: {
 					</div>
 				</div>
 			</section>
-		</Card>
+		</div>
 	)
 }
 
@@ -266,17 +484,15 @@ function BioEditorCard(props: { bio: EditProfileBioStore }) {
 	}
 
 	return (
-		<Card class="border border-slate-300 p-0 shadow-xs">
-			<div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-300 bg-slate-50 px-5 py-4">
-				<div class="text-xs font-medium tracking-[0.22em] text-slate-600">
-					BIO
-				</div>
+		<div {...stylex.attrs(surfaceStyles.card, styles.bioCard)}>
+			<div {...stylex.attrs(styles.bioHeading)}>
+				<div {...stylex.attrs(styles.bioTitle)}>BIO</div>
 
-				<div class="flex flex-wrap items-center gap-2">
-					<div class="font-mono text-xs text-slate-500">{count()} chars</div>
+				<div {...stylex.attrs(styles.bioCounters)}>
+					<div {...stylex.attrs(styles.characterCount)}>{count()} chars</div>
 					<Show when={savedAt()}>
 						{(label) => (
-							<div class="font-mono text-xs text-slate-400">
+							<div {...stylex.attrs(styles.remainingCount)}>
 								saved {label()}
 							</div>
 						)}
@@ -284,47 +500,44 @@ function BioEditorCard(props: { bio: EditProfileBioStore }) {
 				</div>
 			</div>
 
-			<div class="p-5">
-				<InputField.Root class="gap-2">
+			<div {...stylex.attrs(styles.bioContent)}>
+				<InputField.Root styles={styles.bioField}>
 					<InputField.Textarea
 						value={props.bio.value}
 						onInput={handleInput}
 						placeholder={t`Write something about you.`}
-						class="min-h-48"
+						styles={styles.bioInput}
 					/>
 				</InputField.Root>
 
 				<Show when={props.bio.error}>
-					{(error) => (
-						<div class="mt-3 rounded-md border border-reimu-200 bg-reimu-50 px-3 py-2 text-sm text-reimu-800">
-							{error()}
-						</div>
-					)}
+					{(error) => <div {...stylex.attrs(styles.bioError)}>{error()}</div>}
 				</Show>
 
-				<div class="grid grid-cols-2 gap-2 size-fit ml-auto mt-2">
+				<div {...stylex.attrs(styles.bioActions)}>
 					<Button
-						variant="SecondaryV2"
-						size="Sm"
-						class="px-3"
 						disabled={isDisabled()}
 						onClick={() => {
 							if (isDisabled()) return
 							props.bio.onReset()
 						}}
+						appearance="outline"
+						tone="gray"
+						size="sm"
+						styles={styles.cancel}
 					>
 						Discard
 					</Button>
 					<Button
-						variant="Primary"
-						color="Reimu"
-						size="Sm"
-						class="px-4"
 						disabled={isDisabled()}
 						onClick={() => {
 							if (isDisabled()) return
 							void props.bio.onSave()
 						}}
+						appearance="solid"
+						tone="reimu"
+						size="sm"
+						styles={styles.save}
 					>
 						<Switch>
 							<Match when={props.bio.isSaving}>{t`Saving…`}</Match>
@@ -333,6 +546,6 @@ function BioEditorCard(props: { bio: EditProfileBioStore }) {
 					</Button>
 				</div>
 			</div>
-		</Card>
+		</div>
 	)
 }

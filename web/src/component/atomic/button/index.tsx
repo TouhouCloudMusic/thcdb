@@ -1,363 +1,440 @@
-import * as Kobalte from "@kobalte/core/button"
-import { match } from "arktype"
-import { mergeProps } from "solid-js"
-import type { JSX } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import type { PolymorphicProps } from "@kobalte/core"
+import { Button as KobalteButton } from "@kobalte/core/button"
+import type { ButtonRootProps } from "@kobalte/core/button"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
+import { createMemo, mergeProps, splitProps } from "solid-js"
 
-import type { AppColor } from "~/component"
+import { buttonVars } from "~/component/atomic/button/button.stylex"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 
-/**
- * Note: 样式没做完
- */
-
-export type Size = "Xs" | "Sm" | "Md" | "Lg"
-export const Size = {
-	*iter() {
-		yield "Xs" as Size
-		yield "Sm"
-		yield "Md"
-		yield "Lg"
+export const buttonStyles = stylex.create({
+	gray: {
+		[buttonVars.solidFocusRing]: palette.slate[600],
+		[buttonVars.solidBackground]: palette.slate[900],
+		[buttonVars.solidBackgroundHover]: palette.slate[900],
+		[buttonVars.solidBackgroundActive]: palette.slate[800],
+		[buttonVars.focusRing]: palette.slate[500],
+		[buttonVars.softBackgroundHover]: palette.slate[200],
+		[buttonVars.softBackgroundActive]: palette.slate[300],
+		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[100]} 90%, transparent)`,
+		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[100]} 80%, transparent)`,
+		[buttonVars.softText]: palette.slate[700],
+		[buttonVars.ghostText]: palette.slate[800],
+		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
+		[buttonVars.surfaceBackground]: palette.slate[100],
+		[buttonVars.surfaceBackgroundHover]: palette.slate[200],
+		[buttonVars.surfaceBackgroundActive]: palette.slate[300],
+		[buttonVars.border]: palette.slate[400],
+		[buttonVars.surfaceText]: palette.slate[700],
+		[buttonVars.outlineBackgroundActive]: palette.slate[100],
+		[buttonVars.borderHover]: palette.slate[500],
+		[buttonVars.outlineText]: palette.slate[600],
 	},
-	default(): Size {
-		return "Md"
+	slate: {
+		[buttonVars.solidFocusRing]: palette.slate[500],
+		[buttonVars.solidBackground]: palette.slate[700],
+		[buttonVars.solidBackgroundHover]: palette.slate[600],
+		[buttonVars.solidBackgroundActive]: palette.slate[500],
+		[buttonVars.focusRing]: palette.slate[500],
+		[buttonVars.softBackgroundHover]: palette.slate[900],
+		[buttonVars.softBackgroundActive]: palette.slate[900],
+		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[900]} 90%, transparent)`,
+		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[900]} 80%, transparent)`,
+		[buttonVars.softText]: palette.slate[700],
+		[buttonVars.ghostText]: palette.slate[700],
+		[buttonVars.ghostBackgroundDisabled]: palette.slate[200],
+		[buttonVars.surfaceBackground]: palette.slate[100],
+		[buttonVars.surfaceBackgroundHover]: palette.slate[200],
+		[buttonVars.surfaceBackgroundActive]: palette.slate[300],
+		[buttonVars.border]: palette.slate[400],
+		[buttonVars.surfaceText]: palette.slate[700],
+		[buttonVars.outlineBackgroundActive]: palette.slate[100],
+		[buttonVars.borderHover]: palette.slate[500],
+		[buttonVars.outlineText]: palette.slate[600],
 	},
-}
-
-export type Variant =
-	| "Primary"
-	| "Secondary"
-	| "Tertiary"
-	| "PrimaryV2"
-	| "SecondaryV2"
-export const Variant = {
-	*iter() {
-		yield "Primary" as Variant
-		yield "Secondary"
-		yield "Tertiary"
-		yield "PrimaryV2"
-		yield "SecondaryV2"
+	blue: {
+		[buttonVars.solidFocusRing]: palette.blue[500],
+		[buttonVars.solidBackground]: palette.blue[700],
+		[buttonVars.solidBackgroundHover]: palette.blue[600],
+		[buttonVars.solidBackgroundActive]: palette.blue[500],
+		[buttonVars.focusRing]: palette.blue[500],
+		[buttonVars.softBackgroundHover]: palette.blue[800],
+		[buttonVars.softBackgroundActive]: palette.blue[900],
+		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[100]} 90%, transparent)`,
+		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[100]} 80%, transparent)`,
+		[buttonVars.softText]: palette.blue[700],
+		[buttonVars.ghostText]: palette.blue[700],
+		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
+		[buttonVars.surfaceBackground]: palette.blue[100],
+		[buttonVars.surfaceBackgroundHover]: palette.blue[200],
+		[buttonVars.surfaceBackgroundActive]: palette.blue[300],
+		[buttonVars.border]: palette.blue[300],
+		[buttonVars.surfaceText]: palette.blue[700],
+		[buttonVars.outlineBackgroundActive]: palette.blue[100],
+		[buttonVars.borderHover]: palette.blue[400],
+		[buttonVars.outlineText]: palette.blue[600],
 	},
-	// TODO: remove default value
-	default(): Variant {
-		return "Secondary"
+	reimu: {
+		[buttonVars.solidFocusRing]: palette.reimu[600],
+		[buttonVars.solidBackground]: palette.reimu[600],
+		[buttonVars.solidBackgroundHover]: palette.reimu[650],
+		[buttonVars.solidBackgroundActive]: palette.reimu[500],
+		[buttonVars.focusRing]: palette.reimu[600],
+		[buttonVars.softBackgroundHover]: palette.reimu[600],
+		[buttonVars.softBackgroundActive]: palette.reimu[600],
+		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[100]} 90%, transparent)`,
+		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[100]} 80%, transparent)`,
+		[buttonVars.softText]: palette.reimu[600],
+		[buttonVars.ghostText]: palette.reimu[700],
+		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
+		[buttonVars.surfaceBackground]: palette.reimu[100],
+		[buttonVars.surfaceBackgroundHover]: palette.reimu[200],
+		[buttonVars.surfaceBackgroundActive]: palette.reimu[300],
+		[buttonVars.border]: palette.reimu[300],
+		[buttonVars.surfaceText]: palette.reimu[700],
+		[buttonVars.outlineBackgroundActive]: palette.reimu[100],
+		[buttonVars.borderHover]: palette.reimu[400],
+		[buttonVars.outlineText]: palette.reimu[600],
 	},
-}
+	marisa: {
+		[buttonVars.solidFocusRing]: palette.marisa[500],
+		[buttonVars.solidBackground]: palette.marisa[700],
+		[buttonVars.solidBackgroundHover]: palette.marisa[600],
+		[buttonVars.solidBackgroundActive]: palette.marisa[500],
+		[buttonVars.focusRing]: palette.marisa[500],
+		[buttonVars.softBackgroundHover]: palette.marisa[800],
+		[buttonVars.softBackgroundActive]: palette.marisa[900],
+		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.marisa[900]} 90%, transparent)`,
+		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.marisa[900]} 80%, transparent)`,
+		[buttonVars.softText]: palette.marisa[700],
+		[buttonVars.ghostText]: palette.marisa[700],
+		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
+		[buttonVars.surfaceBackground]: palette.marisa[100],
+		[buttonVars.surfaceBackgroundHover]: palette.marisa[200],
+		[buttonVars.surfaceBackgroundActive]: palette.marisa[300],
+		[buttonVars.border]: palette.marisa[300],
+		[buttonVars.surfaceText]: palette.marisa[800],
+		[buttonVars.outlineBackgroundActive]: palette.marisa[200],
+		[buttonVars.borderHover]: palette.marisa[400],
+		[buttonVars.outlineText]: palette.marisa[600],
+	},
+	green: {
+		[buttonVars.solidFocusRing]: palette.green[500],
+		[buttonVars.solidBackground]: palette.green[700],
+		[buttonVars.solidBackgroundHover]: palette.green[600],
+		[buttonVars.solidBackgroundActive]: palette.green[500],
+		[buttonVars.focusRing]: palette.green[500],
+		[buttonVars.softBackgroundHover]: palette.green[900],
+		[buttonVars.softBackgroundActive]: palette.green[900],
+		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.green[900]} 90%, transparent)`,
+		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.green[900]} 80%, transparent)`,
+		[buttonVars.softText]: palette.green[700],
+		[buttonVars.ghostText]: palette.green[700],
+		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
+		[buttonVars.surfaceBackground]: palette.green[100],
+		[buttonVars.surfaceBackgroundHover]: palette.green[200],
+		[buttonVars.surfaceBackgroundActive]: palette.green[300],
+		[buttonVars.border]: palette.green[300],
+		[buttonVars.surfaceText]: palette.green[800],
+		[buttonVars.outlineBackgroundActive]: palette.green[100],
+		[buttonVars.borderHover]: palette.green[400],
+		[buttonVars.outlineText]: palette.green[600],
+	},
+	base: {
+		display: "inline-flex",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: px[8],
+		borderRadius: radius.sm,
+		fontWeight: 500,
+		userSelect: "none",
+		whiteSpace: "nowrap",
+		outlineWidth: 1,
+		outlineStyle: "solid",
+		outlineColor: "transparent",
+		outlineOffset: -1,
+		pointerEvents: {
+			default: null,
+			":disabled": "none",
+		},
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionDuration: "100ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+	xs: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		paddingBlock: px[4],
+		paddingInline: px[6],
+	},
+	sm: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		paddingBlock: px[4],
+		paddingInline: px[10],
+	},
+	md: {
+		fontSize: fontSizes.base,
+		lineHeight: lineHeights.base,
+		paddingBlock: px[6],
+		paddingInline: px[14],
+	},
+	lg: {
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+		paddingBlock: px[16],
+		paddingInline: px[32],
+	},
+	solid: {
+		boxShadow: {
+			default: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+			":disabled": "none",
+		},
+		color: {
+			default: colors.backgroundPrimary,
+			":disabled": palette.slate[700],
+			':is(:where([data-mode="dark"] *):disabled)': palette.slate[400],
+		},
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": buttonVars.solidFocusRing,
+		},
+		backgroundColor: {
+			default: buttonVars.solidBackground,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": buttonVars.solidBackgroundHover,
+			},
+			":active": buttonVars.solidBackgroundActive,
+			":disabled": `color-mix(in oklab, ${palette.slate[200]} 70%, transparent)`,
+			':is(:where([data-mode="dark"] *):disabled)': `color-mix(in oklab, ${palette.slate[800]} 60%, transparent)`,
+		},
+	},
+	softGray: {
+		boxShadow: "none",
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": {
+					default: buttonVars.softBackgroundHover,
+					':is(:where([data-mode="dark"] *))':
+						buttonVars.softBackgroundDarkHover,
+				},
+			},
+			":active": buttonVars.softBackgroundActive,
+			":disabled": palette.slate[400],
+			':is(:where([data-mode="dark"] *):active)':
+				buttonVars.softBackgroundDarkActive,
+		},
+		color: buttonVars.softText,
+	},
+	softDarkHover: {
+		backgroundColor: {
+			default: palette.slate[100],
+			":hover": {
+				default: null,
+				"@media (hover: hover)": {
+					default: buttonVars.softBackgroundHover,
+					':is(:where([data-mode="dark"] *))':
+						buttonVars.softBackgroundDarkHover,
+				},
+			},
+			":active": buttonVars.softBackgroundActive,
+			':is(:where([data-mode="dark"] *):active)':
+				buttonVars.softBackgroundDarkActive,
+		},
+	},
+	soft: {
+		boxShadow: `0 1px 2px 0 ${palette.slate[100]}`,
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": buttonVars.focusRing,
+		},
+		backgroundColor: {
+			default: palette.slate[100],
+			":hover": {
+				default: null,
+				"@media (hover: hover)": buttonVars.softBackgroundHover,
+			},
+			":active": buttonVars.softBackgroundActive,
+		},
+		color: {
+			default: buttonVars.softText,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": palette.white,
+			},
+			":active": palette.white,
+		},
+	},
+	ghostGray: {
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": palette.slate[100],
+			},
+			":active": palette.slate[200],
+			":disabled": {
+				default: colors.backgroundSecondary,
+				":hover": {
+					default: null,
+					"@media (hover: hover)": colors.backgroundSecondary,
+				},
+				":active": colors.backgroundSecondary,
+			},
+		},
+		color: {
+			default: buttonVars.ghostText,
+			":disabled": palette.slate[600],
+		},
+		boxShadow: {
+			default: "none",
+			":disabled": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+		},
+	},
+	ghost: {
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": palette.slate[100],
+			},
+			":active": palette.slate[200],
+			":disabled": {
+				default: buttonVars.ghostBackgroundDisabled,
+				":hover": {
+					default: null,
+					"@media (hover: hover)": colors.backgroundSecondary,
+				},
+				":active": colors.backgroundSecondary,
+			},
+		},
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": buttonVars.focusRing,
+		},
+		color: buttonVars.ghostText,
+	},
+	surface: {
+		borderWidth: 1,
+		borderStyle: "solid",
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": buttonVars.focusRing,
+		},
+		backgroundColor: {
+			default: buttonVars.surfaceBackground,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": buttonVars.surfaceBackgroundHover,
+			},
+			":active": buttonVars.surfaceBackgroundActive,
+		},
+		borderColor: buttonVars.border,
+		color: buttonVars.surfaceText,
+	},
+	outline: {
+		borderWidth: 1,
+		borderStyle: "solid",
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": buttonVars.focusRing,
+		},
+		backgroundColor: {
+			default: palette.white,
+			":active": buttonVars.outlineBackgroundActive,
+			":disabled": palette.slate[100],
+		},
+		borderColor: {
+			default: buttonVars.border,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": buttonVars.borderHover,
+			},
+			":disabled": palette.slate[200],
+		},
+		color: {
+			default: buttonVars.outlineText,
+			":disabled": palette.slate[400],
+		},
+	},
+	outlineMarisa: {
+		backgroundColor: {
+			default: palette.white,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": palette.marisa[100],
+			},
+			":active": buttonVars.outlineBackgroundActive,
+			":disabled": palette.slate[100],
+		},
+	},
+})
 
-export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-	variant?: Variant
-	size?: Size
-	color?: AppColor
-}
-
-const BUTTON_COMMON_STYLES =
-	"inline-flex items-center justify-center gap-2 rounded-sm font-medium select-none whitespace-nowrap outline-1 outline-transparent -outline-offset-1 disabled:pointer-events-none transition-colors duration-100"
-const DEFAULT_COLOR: AppColor = "Gray"
-
-const PRIMARY_DISABLED_CLASS =
-	"disabled:bg-slate-200/70 disabled:text-slate-700 disabled:shadow-none"
-const PRIMARY_DISABLED_DARK_CLASS =
-	"dark:disabled:bg-slate-800/60 dark:disabled:text-slate-400"
-
-const getVariantColorClass = (variant: Variant, color: AppColor) =>
-	match.in<Variant>().match({
-		"'PrimaryV2'": () => PrimaryV2Color[color],
-		"'SecondaryV2'": () => SecondaryV2Color[color],
-		"'Primary'": () => PrimaryColor[color],
-		"'Tertiary'": () => TertiaryColor[color],
-		default: () => SecondaryColor[color],
-	})(variant)
-
-export type ButtonClassProps = Pick<
-	Props,
-	"variant" | "size" | "color" | "class"
+export type ButtonProps = PolymorphicProps<
+	"button",
+	ButtonRootProps<"button"> & {
+		appearance?: "solid" | "soft" | "ghost" | "surface" | "outline"
+		tone?: "gray" | "slate" | "blue" | "reimu" | "marisa" | "green"
+		size?: "xs" | "sm" | "md" | "lg"
+		styles?: StyleXStyles
+	}
 >
 
-export const ButtonClass_new = (options: ButtonClassProps) => {
-	const variant = options.variant ?? "Secondary"
-	const size = options.size ?? (variant.endsWith("V2") ? "Md" : undefined)
-	const size_class = size ? SizeClass[size] : undefined
-
-	const color = options.color ?? DEFAULT_COLOR
-	const variant_class = VariantClass[variant]
-	const color_class = getVariantColorClass(variant, color)
-	const disabled_class =
-		variant === "Primary"
-			? `${PRIMARY_DISABLED_CLASS} ${PRIMARY_DISABLED_DARK_CLASS}`
-			: undefined
-
-	return twMerge(
-		BUTTON_COMMON_STYLES,
-		size_class,
-		variant_class,
-		color_class,
-		disabled_class,
-		options.class,
+export function Button(props: ButtonProps) {
+	const merged = mergeProps(
+		{ appearance: "soft", tone: "gray" } satisfies ButtonProps,
+		props,
 	)
-}
+	const [local, others] = splitProps(merged, [
+		"appearance",
+		"tone",
+		"size",
+		"styles",
+	])
+	const attrs = createMemo(() =>
+		stylex.attrs(
+			buttonStyles.base,
+			buttonStyles[local.appearance],
+			buttonStyles[local.tone],
+			local.appearance === "soft"
+				&& local.tone === "gray"
+				&& buttonStyles.softGray,
+			local.appearance === "soft"
+				&& (local.tone === "slate"
+					|| local.tone === "marisa"
+					|| local.tone === "green")
+				&& buttonStyles.softDarkHover,
+			local.appearance === "ghost"
+				&& local.tone === "gray"
+				&& buttonStyles.ghostGray,
+			local.appearance === "outline"
+				&& local.tone === "marisa"
+				&& buttonStyles.outlineMarisa,
+			local.size && buttonStyles[local.size],
+			local.styles,
+		),
+	)
 
-export function Button(props: Props) {
-	const final_props: Props = mergeProps({ type: "button" as const }, props, {
-		get class() {
-			return ButtonClass_new({
-				variant: props.variant,
-				size: props.size,
-				color: props.color,
-				class: props.class,
-			})
-		},
-	})
-
-	return <Kobalte.Button {...final_props} />
-}
-
-const SizeClass = {
-	// @tw
-	Xs: "text-xs py-1 px-1.5",
-	// @tw
-	Sm: "text-sm py-1 px-2.5",
-	// @tw
-	Md: "text-base py-1.5 px-3.5",
-	// @tw
-	Lg: "text-xl py-4 px-8",
-}
-
-// @tw
-const VariantClass = {
-	Primary: `shadow-sm text-(--background-color-primary)`,
-	Secondary: `shadow-xs shadow-slate-100`,
-	// @tw
-	Tertiary: `bg-primary hover:bg-slate-100 active:bg-slate-200 disabled:bg-secondary disabled:hover:bg-secondary disabled:active:bg-secondary`,
-	PrimaryV2: "border shadow-xs shadow-slate-950/10",
-	SecondaryV2: "border shadow-xs shadow-slate-950/5",
-}
-
-const PrimaryColor: Record<AppColor, string> = {
-	Gray:
-		// @tw
-		`
-    bg-slate-900 hover:bg-slate-900 active:bg-slate-800
-    focus-visible:outline-slate-600
-    `,
-	Slate:
-		// @tw
-		`
-    bg-slate-700 hover:bg-slate-600 active:bg-slate-500
-    focus-visible:outline-slate-500
-    `,
-	Blue:
-		// @tw
-		`
-    bg-blue-700 hover:bg-blue-600 active:bg-blue-500
-    focus-visible:outline-blue-500
-    `,
-	Reimu:
-		// @tw
-		`
-    bg-reimu-600
-    hover:bg-reimu-650 active:bg-reimu-500
-    focus-visible:outline-reimu-600
-    `,
-	Marisa:
-		// @tw
-		`
-    bg-marisa-700 hover:bg-marisa-600 active:bg-marisa-500
-    focus-visible:outline-marisa-500
-    `,
-	Green:
-		// @tw
-		`
-    bg-green-700 hover:bg-green-600 active:bg-green-500
-    focus-visible:outline-green-500
-    `,
-}
-
-const PrimaryV2Color: Record<AppColor, string> = {
-	Gray:
-		// @tw
-		`
-    bg-slate-100 hover:bg-slate-200 active:bg-slate-300
-    border-slate-400 text-slate-700
-    focus-visible:outline-slate-500
-    `,
-	Slate:
-		// @tw
-		`
-    bg-slate-100 hover:bg-slate-200 active:bg-slate-300
-    border-slate-400 text-slate-700
-    focus-visible:outline-slate-500
-    `,
-	Blue:
-		// @tw
-		`
-    bg-blue-100 hover:bg-blue-200 active:bg-blue-300
-    border-blue-300 text-blue-700
-    focus-visible:outline-blue-500
-    `,
-	Reimu:
-		// @tw
-		`
-    bg-reimu-100 hover:bg-reimu-200 active:bg-reimu-300
-    border-reimu-300 text-reimu-700
-    focus-visible:outline-reimu-600
-    `,
-	Marisa:
-		// @tw
-		`
-    bg-marisa-100 hover:bg-marisa-200 active:bg-marisa-300
-    border-marisa-300 text-marisa-800
-    focus-visible:outline-marisa-500
-    `,
-	Green:
-		// @tw
-		`
-    bg-green-100 hover:bg-green-200 active:bg-green-300
-    border-green-300 text-green-800
-    focus-visible:outline-green-500
-    `,
-}
-
-const SecondaryColor: Record<AppColor, string> = {
-	Gray:
-		// @tw
-		`
-		bg-primary
-		shadow-none
-		text-slate-700	hover:bg-slate-200 active:bg-slate-300 disabled:bg-slate-400
-		dark:hover:bg-slate-100/90 dark:active:bg-slate-100/80
-		focus-visible:outline-slate-500
-		`,
-	Blue:
-		// @tw
-		`
-		text-blue-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-blue-800 active:bg-blue-900
-		focus-visible:outline-blue-500
-		`,
-	Reimu:
-		// @tw
-		`
-		text-reimu-600 hover:text-white active:text-white
-		bg-slate-100 hover:bg-reimu-600 active:bg-reimu-600
-		focus-visible:outline-reimu-600
-		`,
-	Marisa:
-		// @tw
-		`
-		text-marisa-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-marisa-800 active:bg-marisa-900
-		dark:hover:bg-marisa-900/90 dark:active:bg-marisa-900/80
-		focus-visible:outline-marisa-500
-		`,
-	Green:
-		// @tw
-		`
-		text-green-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-green-900 active:bg-green-900
-		dark:hover:bg-green-900/90 dark:active:bg-green-900/80
-		focus-visible:outline-green-500
-		`,
-	Slate:
-		// @tw
-		`
-		text-slate-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-slate-900 active:bg-slate-900
-		dark:hover:bg-slate-900/90 dark:active:bg-slate-900/80
-		focus-visible:outline-slate-500
-		`,
-}
-
-const SecondaryV2Color: Record<AppColor, string> = {
-	Gray:
-		// @tw
-		`
-    bg-white border-slate-400 text-slate-600
-    hover:bg-slate-50 hover:border-slate-500 active:bg-slate-100
-    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus-visible:outline-slate-500
-    `,
-	Slate:
-		// @tw
-		`
-    bg-white border-slate-400 text-slate-600
-    hover:bg-slate-50 hover:border-slate-500 active:bg-slate-100
-    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus-visible:outline-slate-500
-    `,
-	Blue:
-		// @tw
-		`
-    bg-white border-blue-300 text-blue-600
-    hover:bg-blue-50 hover:border-blue-400 active:bg-blue-100
-    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus-visible:outline-blue-500
-    `,
-	Reimu:
-		// @tw
-		`
-    bg-white border-reimu-300 text-reimu-600
-    hover:bg-reimu-50 hover:border-reimu-400 active:bg-reimu-100
-    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus-visible:outline-reimu-600
-    `,
-	Marisa:
-		// @tw
-		`
-    bg-white border-marisa-300 text-marisa-600
-    hover:bg-marisa-100 hover:border-marisa-400 active:bg-marisa-200
-    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus-visible:outline-marisa-500
-    `,
-	Green:
-		// @tw
-		`
-    bg-white border-green-300 text-green-600
-    hover:bg-green-50 hover:border-green-400 active:bg-green-100
-    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus-visible:outline-green-500
-    `,
-}
-
-const TertiaryColor: Record<AppColor, string> = {
-	Gray:
-		// @tw
-		`
-      text-slate-800 disabled:text-slate-600
-      disabled:shadow-xs
-      focus-visible:outline-slate-500
-      `,
-	Blue:
-		// @tw
-		`
-      text-blue-700
-      disabled:bg-slate-300
-      focus-visible:outline-blue-500
-      `,
-	Reimu:
-		// @tw
-		`
-      text-reimu-700
-      disabled:bg-slate-300
-      focus-visible:outline-reimu-600
-      `,
-	Marisa:
-		// @tw
-		`
-      text-marisa-700
-      disabled:bg-slate-300
-      focus-visible:outline-marisa-500
-      `,
-	Green:
-		// @tw
-		`
-      text-green-700
-      disabled:bg-slate-300
-      focus-visible:outline-green-500
-      `,
-	Slate:
-		// @tw
-		`
-      text-slate-700
-      disabled:bg-slate-200
-      focus-visible:outline-slate-500
-      `,
+	return (
+		<KobalteButton
+			{...others}
+			class={attrs().class}
+			style={attrs().style}
+			data-style-src={attrs()["data-style-src"]}
+		/>
+	)
 }

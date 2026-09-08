@@ -1,5 +1,6 @@
 import { Field, Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { Navigate, useNavigate } from "@tanstack/solid-router"
 import { onCleanup, onMount } from "solid-js"
 import type * as v from "valibot"
@@ -7,13 +8,10 @@ import type * as v from "valibot"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { ResetPassword as ResetPasswordSchema } from "~/domain/auth/schema"
+import { px } from "~/style/tokens.stylex"
 
 import { PasswordField } from "../component/PasswordField"
-import {
-	AUTH_DESCRIPTION_CLASS,
-	AUTH_HEADER_CLASS,
-	AUTH_TITLE_CLASS,
-} from "../styles"
+import { authStyles } from "../styles"
 import { requestResetPassword } from "./request"
 import { resetPasswordByKey } from "./reset_password_by_key"
 import {
@@ -24,6 +22,12 @@ import {
 	markResetPasswordSuccess,
 } from "./session"
 import { createResetPasswordUiStore } from "./store"
+
+const styles = stylex.create({
+	form: { width: "100%" },
+	confirmation: { marginTop: px[16] },
+	submit: { marginTop: px[24], height: px[36], width: "100%" },
+})
 
 type ResetPasswordValues = v.InferOutput<typeof ResetPasswordSchema>
 
@@ -97,16 +101,16 @@ export function ResetPasswordPage() {
 
 	return (
 		<>
-			<header class={AUTH_HEADER_CLASS}>
-				<h1 class={AUTH_TITLE_CLASS}>{t`Set a new password`}</h1>
+			<header {...stylex.attrs(authStyles.header)}>
+				<h1 {...stylex.attrs(authStyles.title)}>{t`Set a new password`}</h1>
 				<p
-					class={AUTH_DESCRIPTION_CLASS}
+					{...stylex.attrs(authStyles.description)}
 				>{t`This is valid for ${formatMinuteCount(resetSession.keyExpiresMinutes)}.`}</p>
 			</header>
 			<Form
 				of={form}
 				onSubmit={handleSubmit}
-				class="w-full"
+				{...stylex.attrs(styles.form)}
 			>
 				<Field
 					of={form}
@@ -129,7 +133,7 @@ export function ResetPasswordPage() {
 						<PasswordField
 							label={t`Repeat new password`}
 							field={field}
-							class="mt-4"
+							styles={styles.confirmation}
 						/>
 					)}
 				</Field>
@@ -140,11 +144,11 @@ export function ResetPasswordPage() {
 
 				<Button
 					type="submit"
-					variant="Primary"
-					color="Reimu"
-					size="Sm"
-					class="mt-6 h-9 w-full"
 					disabled={form.isSubmitting}
+					appearance="solid"
+					tone="reimu"
+					size="sm"
+					styles={styles.submit}
 				>
 					{t`Reset password`}
 				</Button>

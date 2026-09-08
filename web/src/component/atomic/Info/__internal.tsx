@@ -1,70 +1,34 @@
-import type { ComponentProps, JSX, ParentProps } from "solid-js"
-import { mergeProps, splitProps } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import type { ComponentProps, JSX } from "solid-js"
+import { splitProps } from "solid-js"
 
 import { Intersperse } from "../../data/Intersperse"
-
+const styles = stylex.create({ list: { display: "flex", flexWrap: "wrap" } })
 type ListProps<T> = {
 	items: T[] | null | undefined
 	separator?: string | JSX.Element
 	children: (item: T, index: () => number) => JSX.Element
-} & Omit<ComponentProps<"ul">, "children">
-
-const LIST_CLASS = "flex flex-wrap"
-
+	styles?: StyleXStyles
+} & Omit<ComponentProps<"ul">, "children" | "class">
 export function List<T>(props: ListProps<T>) {
-	const [listProps, ulProps] = splitProps(props, [
+	const [local, rest] = splitProps(props, [
 		"items",
 		"separator",
 		"children",
+		"styles",
 	])
-	const ulProps2 = mergeProps(ulProps, {
-		get class() {
-			return props.class ? twMerge(LIST_CLASS, props.class) : LIST_CLASS
-		},
-	})
 	return (
-		<ul {...ulProps2}>
+		<ul
+			{...rest}
+			{...stylex.attrs(styles.list, local.styles)}
+		>
 			<Intersperse
-				of={listProps.items}
-				with={listProps.separator ?? <>,&nbsp;</>}
+				of={local.items}
+				with={local.separator ?? <>,&nbsp;</>}
 			>
-				{listProps.children}
+				{local.children}
 			</Intersperse>
 		</ul>
 	)
-}
-
-type LabelProps = ParentProps<ComponentProps<"div">>
-
-const LABEL_CLASS = "text-sm text-tertiary tracking-wide"
-
-export function Label(props: LabelProps) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			if (props.class) {
-				return twMerge(LABEL_CLASS, props.class)
-			}
-
-			return LABEL_CLASS
-		},
-	})
-	return <div {...finalProps}></div>
-}
-
-type DetailProps = ParentProps<ComponentProps<"div">>
-
-const DETAIL_CLASS = "text-slate-900"
-
-export function Detail(props: DetailProps) {
-	const finalProps = mergeProps(props, {
-		get class() {
-			if (props.class) {
-				return twMerge(DETAIL_CLASS, props.class)
-			}
-
-			return DETAIL_CLASS
-		},
-	})
-	return <div {...finalProps}></div>
 }

@@ -1,12 +1,13 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import { Link } from "@tanstack/solid-router"
 import type { Tag } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
 import { For, Match, Show, Switch, createMemo, createSignal } from "solid-js"
-import { twMerge, twJoin } from "tailwind-merge"
 
-import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { Intersperse } from "~/component/data/Intersperse"
 import { Dialog } from "~/component/dialog"
@@ -18,6 +19,15 @@ import {
 	voteTagMutation,
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 
 import { EntityTagAddDialog } from "./EntityTagAddDialog"
 import {
@@ -32,8 +42,161 @@ import type {
 	EntityTaggableType,
 } from "./model"
 
+const styles = stylex.create({
+	listChild: {
+		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
+		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: palette.slate[100],
+	},
+	tagSummaryChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[4] },
+	},
+	root: {
+		display: "grid",
+		minHeight: px[24],
+		gridTemplateColumns: "auto minmax(0,1fr) auto",
+		alignItems: "center",
+		columnGap: px[16],
+	},
+	heading: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	status: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	tagLists: {
+		display: "flex",
+		minWidth: 0,
+		flexDirection: "column",
+		gap: px[4],
+	},
+	primaryTags: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textPrimary,
+	},
+	secondaryWithPrimary: { fontSize: fontSizes.xs, lineHeight: lineHeights.xs },
+	secondaryOnly: { fontSize: fontSizes.sm, lineHeight: lineHeights.sm },
+	secondaryTags: { color: colors.textTertiary },
+	trigger: { width: px[24], height: px[24] },
+	dialog: {
+		display: "flex",
+		minHeight: "60vh",
+		width: "100%",
+		maxWidth: px[896],
+		flexDirection: "column",
+		borderRadius: radius.md,
+		backgroundColor: palette.white,
+		paddingTop: px[24],
+		paddingRight: px[24],
+		paddingBottom: px[24],
+		paddingLeft: px[24],
+		boxShadow:
+			"0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+	},
+	dialogHeader: {
+		marginBottom: px[8],
+		display: "flex",
+		flexShrink: 0,
+		alignItems: "center",
+		gap: px[16],
+	},
+	title: {
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+	},
+	count: {
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+		paddingLeft: px[8],
+		paddingRight: px[8],
+		paddingTop: px[2],
+		paddingBottom: px[2],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: colors.textTertiary,
+	},
+	spacer: { flex: "1" },
+	plusIcon: { width: px[16], height: px[16] },
+	closeButton: {
+		display: "flex",
+		height: px[32],
+		width: px[32],
+		alignItems: "center",
+		justifyContent: "center",
+		paddingTop: 0,
+		paddingRight: 0,
+		paddingBottom: 0,
+		paddingLeft: 0,
+		color: { default: palette.slate[500], ":disabled": palette.slate[600] },
+	},
+	list: { minHeight: 0, flex: "1", overflowY: "auto" },
+	item: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[16],
+		paddingTop: px[12],
+		paddingBottom: px[12],
+	},
+	tagSummary: { minWidth: 0, flex: "1" },
+	tagName: {
+		fontSize: fontSizes.lg,
+		lineHeight: lineHeights.lg,
+		fontWeight: 300,
+		color: colors.textPrimary,
+	},
+	description: {
+		overflow: "hidden",
+		display: "-webkit-box",
+		WebkitBoxOrient: "vertical",
+		WebkitLineClamp: 2,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	metadata: {
+		marginTop: px[4],
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		columnGap: px[12],
+		rowGap: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	voteHistory: {
+		marginTop: px[8],
+		display: "flex",
+		flexDirection: "column",
+		gap: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	voteValue: { fontWeight: 500 },
+	actions: {
+		display: "flex",
+		flexShrink: 0,
+		flexWrap: "wrap",
+		alignItems: "center",
+		gap: px[8],
+	},
+	vote: { minWidth: px[64] },
+	pendingVote: { opacity: 0.7 },
+})
+
 type EntityTagsProps = {
-	class?: string
+	styles?: StyleXStyles
 	entityType: EntityTaggableType
 	entityId: number
 }
@@ -51,6 +214,7 @@ type ManageTagsDialogProps = {
 }
 
 type EntityTagRowProps = {
+	styles?: StyleXStyles
 	tag: EntityTagAggregate
 	isSignedIn: boolean
 	pendingKey?: string
@@ -118,7 +282,7 @@ export function EntityTags(props: EntityTagsProps) {
 
 	return (
 		<EntityTagsView
-			class={props.class}
+			styles={props.styles}
 			tags={tags()}
 			isSignedIn={userCtx.profile !== undefined}
 			isLoading={tagsQuery.isLoading}
@@ -131,7 +295,7 @@ export function EntityTags(props: EntityTagsProps) {
 }
 
 export type EntityTagsViewProps = {
-	class?: string
+	styles?: StyleXStyles
 	tags: EntityTagAggregate[]
 	isSignedIn: boolean
 	isLoading: boolean
@@ -161,34 +325,30 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 	const secondaryTags = () => tags().secondaryTags
 
 	return (
-		<div
-			class={twMerge(
-				"grid min-h-6 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4",
-				props.class,
-			)}
-		>
-			<div class="text-sm text-tertiary">{t`Tags`}</div>
+		<div {...stylex.attrs(styles.root, props.styles)}>
+			<div {...stylex.attrs(styles.heading)}>{t`Tags`}</div>
 			<Switch>
 				<Match when={props.isLoading}>
 					<div>
-						<span class="text-xs text-tertiary">{t`Loading...`}</span>
+						<span {...stylex.attrs(styles.status)}>{t`Loading...`}</span>
 					</div>
 				</Match>
 				<Match when={props.tags.length === 0}>
 					<div>
-						<span class="text-xs text-tertiary">{t`No tags yet`}</span>
+						<span {...stylex.attrs(styles.status)}>{t`No tags yet`}</span>
 					</div>
 				</Match>
 				<Match when={props.tags.length > 0}>
-					<div class="flex min-w-0 flex-col gap-1">
+					<div {...stylex.attrs(styles.tagLists)}>
 						<Show when={primaryTags().length > 0}>
-							<div class="text-sm text-primary">
+							<div {...stylex.attrs(styles.primaryTags)}>
 								<Intersperse
 									of={primaryTags()}
 									with=", "
 								>
 									{(tag) => (
 										<Link
+											class={stylex.attrs(link.base, link.text).class}
 											to="/tag/$id"
 											params={{ id: tag.id.toString() }}
 										>
@@ -201,9 +361,11 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 
 						<Show when={secondaryTags().length > 0}>
 							<div
-								class={twJoin(
-									primaryTags().length > 0 ? "text-xs" : "text-sm",
-									"text-tertiary",
+								{...stylex.attrs(
+									primaryTags().length > 0
+										? styles.secondaryWithPrimary
+										: styles.secondaryOnly,
+									styles.secondaryTags,
 								)}
 							>
 								<Intersperse
@@ -214,7 +376,10 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 										<Link
 											to="/tag/$id"
 											params={{ id: tag.id.toString() }}
-											class="text-tertiary"
+											class={
+												stylex.attrs(link.base, link.text, styles.secondaryTags)
+													.class
+											}
 										>
 											{tag.name}
 										</Link>
@@ -236,8 +401,9 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 					trigger={
 						<Dialog.Trigger
 							as={Button}
-							variant="Tertiary"
-							class="size-6"
+							appearance="ghost"
+							tone="gray"
+							styles={styles.trigger}
 						>
 							{props.tags.length ? <Pencil1Icon /> : <PlusIcon />}
 						</Dialog.Trigger>
@@ -255,13 +421,11 @@ function ManageTagsDialog(props: ManageTagsDialogProps) {
 			{props.trigger}
 			<Dialog.Portal>
 				<Dialog.Overlay data-blur />
-				<Dialog.Content class="flex min-h-[60vh] w-full max-w-4xl flex-col rounded-md bg-white p-6 shadow-xl">
-					<div class="mb-2 flex shrink-0 items-center gap-4">
-						<Dialog.Title class="text-xl font-light tracking-tight">{t`Manage Tags`}</Dialog.Title>
-						<div class="rounded bg-slate-100 px-2 py-0.5 text-sm font-medium text-tertiary">
-							{props.tags.length}
-						</div>
-						<div class="flex-1"></div>
+				<Dialog.Content styles={styles.dialog}>
+					<div {...stylex.attrs(styles.dialogHeader)}>
+						<Dialog.Title styles={styles.title}>{t`Manage Tags`}</Dialog.Title>
+						<div {...stylex.attrs(styles.count)}>{props.tags.length}</div>
+						<div {...stylex.attrs(styles.spacer)}></div>
 						<Show when={props.isSignedIn}>
 							<EntityTagAddDialog
 								dataFilter={props.dataFilter}
@@ -270,23 +434,26 @@ function ManageTagsDialog(props: ManageTagsDialogProps) {
 								trigger={
 									<Dialog.Trigger
 										as={Button}
-										variant="SecondaryV2"
-										size="Sm"
+										appearance="outline"
+										tone="gray"
+										size="sm"
 									>
-										<PlusIcon class="size-4" />
+										<PlusIcon {...stylex.attrs(styles.plusIcon)} />
 										{t`Add tag`}
 									</Dialog.Trigger>
 								}
 							/>
 						</Show>
 						<Dialog.CloseButton
-							variant="Tertiary"
-							class="flex h-8 w-8 items-center justify-center p-0 text-slate-500"
+							as={Button}
+							appearance="ghost"
+							tone="gray"
+							styles={styles.closeButton}
 						>
-							<Cross1Icon class="size-4" />
+							<Cross1Icon {...stylex.attrs(styles.plusIcon)} />
 						</Dialog.CloseButton>
 					</div>
-					<ul class="min-h-0 flex-1 overflow-y-auto divide-y divide-slate-100">
+					<ul {...stylex.attrs(styles.list)}>
 						<For each={props.tags}>
 							{(tag) => (
 								<EntityTagRow
@@ -295,6 +462,7 @@ function ManageTagsDialog(props: ManageTagsDialogProps) {
 									pendingKey={props.pendingKey}
 									onVote={props.onVote}
 									onRemoveVote={props.onRemoveVote}
+									styles={styles.listChild}
 								/>
 							)}
 						</For>
@@ -316,21 +484,28 @@ function EntityTagRow(props: EntityTagRowProps) {
 		|| props.pendingKey === `remove:${props.tag.id}`
 
 	return (
-		<li class="flex flex-wrap items-center justify-between gap-4 py-3">
-			<div class="min-w-0 flex-1 space-y-1">
+		<li {...stylex.attrs(styles.item, props.styles)}>
+			<div {...stylex.attrs(styles.tagSummary)}>
 				<Link
 					to="/tag/$id"
 					params={{ id: props.tag.id.toString() }}
-					class="text-lg font-light text-primary"
+					class={
+						stylex.attrs(
+							link.base,
+							link.text,
+							styles.tagSummaryChild,
+							styles.tagName,
+						).class
+					}
 				>
 					{props.tag.name}
 				</Link>
 				<Show when={props.tag.short_description}>
-					<div class="line-clamp-2 text-sm text-tertiary">
+					<div {...stylex.attrs(styles.tagSummaryChild, styles.description)}>
 						{props.tag.short_description}
 					</div>
 				</Show>
-				<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-tertiary">
+				<div {...stylex.attrs(styles.tagSummaryChild, styles.metadata)}>
 					<div>
 						<TagSummaryText
 							count={props.tag.count}
@@ -339,12 +514,15 @@ function EntityTagRow(props: EntityTagRowProps) {
 					</div>
 				</div>
 				<Show when={votes().length > 0}>
-					<div class="mt-2 flex flex-col gap-1 text-xs text-tertiary">
+					<div {...stylex.attrs(styles.tagSummaryChild, styles.voteHistory)}>
 						<For each={votes()}>
 							{(vote) => (
 								<div>
-									<span class="font-medium">{vote.user_name}</span> voted{" "}
-									<span class="font-medium">{vote.score}</span>
+									<span {...stylex.attrs(styles.voteValue)}>
+										{vote.user_name}
+									</span>{" "}
+									voted{" "}
+									<span {...stylex.attrs(styles.voteValue)}>{vote.score}</span>
 								</div>
 							)}
 						</For>
@@ -352,22 +530,23 @@ function EntityTagRow(props: EntityTagRowProps) {
 				</Show>
 			</div>
 			<Show when={props.isSignedIn}>
-				<div class="flex shrink-0 flex-wrap items-center gap-2">
+				<div {...stylex.attrs(styles.actions)}>
 					<For each={ENTITY_TAG_VOTE_OPTIONS}>
 						{(option) => (
 							<Button
-								size="Sm"
-								variant={
+								appearance={
 									props.tag.user_vote === option.userVote
-										? "PrimaryV2"
-										: "SecondaryV2"
+										? "surface"
+										: "outline"
 								}
+								tone="gray"
+								size="sm"
+								styles={[
+									styles.vote,
+									votePending(option.value) && styles.pendingVote,
+								]}
 								disabled={isPending()}
 								onClick={() => void props.onVote(props.tag.id, option.value)}
-								class={twMerge(
-									"min-w-16",
-									votePending(option.value) && "opacity-70",
-								)}
 							>
 								<VoteOptionLabel value={option.value} />
 							</Button>
@@ -379,14 +558,15 @@ function EntityTagRow(props: EntityTagRowProps) {
 						}
 					>
 						<Button
-							size="Sm"
-							variant="Tertiary"
+							appearance="ghost"
+							tone="gray"
+							size="sm"
+							styles={styles.closeButton}
 							disabled={isPending()}
 							onClick={() => void props.onRemoveVote(props.tag.id)}
-							class="flex h-8 w-8 items-center justify-center p-0 text-slate-500"
 							title={t`Remove`}
 						>
-							<Cross1Icon class="size-4" />
+							<Cross1Icon {...stylex.attrs(styles.plusIcon)} />
 						</Button>
 					</Show>
 				</div>

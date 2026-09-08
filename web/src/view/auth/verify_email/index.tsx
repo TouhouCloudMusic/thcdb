@@ -1,24 +1,53 @@
 import { Field, Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { Navigate, useNavigate } from "@tanstack/solid-router"
+import * as stylex from "@stylexjs/stylex"
+import { Link, Navigate, useNavigate } from "@tanstack/solid-router"
 import { AuthApi } from "@thc/api"
 import { Either } from "effect"
 import { createSignal, onMount, onCleanup, Show } from "solid-js"
 
-import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { VerifyEmail as FormSchema } from "~/domain/auth/schema"
 import { useCurrentUser } from "~/state/user"
+import { link } from "~/style/link"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { VerificationCodeField } from "../component/VerificationCodeField"
-import {
-	AUTH_HEADER_CLASS,
-	AUTH_TITLE_CLASS,
-	AUTH_DESCRIPTION_CLASS,
-} from "../styles"
+import { authStyles } from "../styles"
 import { getVerificationSession, setVerificationSession } from "./session"
 import type { VerificationSession } from "./session"
+
+const styles = stylex.create({
+	formChild: {
+		marginBlockEnd: { default: px[24], ":last-child": 0 },
+	},
+	form: { width: "100%" },
+	recipient: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	submitInfo: {
+		marginTop: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	actions: { display: "flex", gap: px[8] },
+	verify: { height: px[36], width: "100%" },
+	resend: { height: px[36] },
+	signinPrompt: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	signinLink: {
+		color: colors.textSecondary,
+		textDecorationLine: "underline",
+		textUnderlineOffset: "2px",
+	},
+})
 
 function VerifyEmailForm(props: { session: VerificationSession }) {
 	const { t } = useLingui()
@@ -86,20 +115,20 @@ function VerifyEmailForm(props: { session: VerificationSession }) {
 	}
 	return (
 		<>
-			<header class={AUTH_HEADER_CLASS}>
-				<h1 class={AUTH_TITLE_CLASS}>{t`Verify email`}</h1>
+			<header {...stylex.attrs(authStyles.header)}>
+				<h1 {...stylex.attrs(authStyles.title)}>{t`Verify email`}</h1>
 				<p
-					class={AUTH_DESCRIPTION_CLASS}
+					{...stylex.attrs(authStyles.description)}
 				>{t`Enter the 6-digit code sent to your email.`}</p>
 			</header>
 			<Form
 				of={form}
 				onSubmit={handleSubmit}
-				class="w-full space-y-6"
+				{...stylex.attrs(styles.form)}
 			>
 				<Show when={props.session.email}>
 					{(email) => (
-						<div class="text-sm text-secondary">
+						<div {...stylex.attrs(styles.formChild, styles.recipient)}>
 							{t`Enter the code for ${email()}. If you did not receive one, use Resend.`}
 						</div>
 					)}
@@ -109,30 +138,36 @@ function VerifyEmailForm(props: { session: VerificationSession }) {
 					of={form}
 					path={["code"]}
 				>
-					{(field) => <VerificationCodeField field={field} />}
+					{(field) => (
+						<VerificationCodeField
+							field={field}
+							styles={styles.formChild}
+						/>
+					)}
 				</Field>
 
-				<FormComp.ErrorMessage>{submitError()}</FormComp.ErrorMessage>
+				<FormComp.ErrorMessage styles={styles.formChild}>
+					{submitError()}
+				</FormComp.ErrorMessage>
 				<Show when={submitInfo()}>
-					<div class="mt-2 text-sm text-secondary">{submitInfo()}</div>
+					<div {...stylex.attrs(styles.formChild, styles.submitInfo)}>
+						{submitInfo()}
+					</div>
 				</Show>
 
-				<div class="flex gap-2">
+				<div {...stylex.attrs(styles.formChild, styles.actions)}>
 					<Button
 						type="submit"
-						variant="Primary"
-						color="Reimu"
-						size="Sm"
-						class="h-9 w-full"
 						disabled={form.isSubmitting}
+						appearance="solid"
+						tone="reimu"
+						size="sm"
+						styles={styles.verify}
 					>
 						{t`Verify Email`}
 					</Button>
 					<Button
 						type="button"
-						variant="Secondary"
-						size="Sm"
-						class="h-9"
 						onClick={() => {
 							void handleResend()
 						}}
@@ -141,6 +176,10 @@ function VerifyEmailForm(props: { session: VerificationSession }) {
 							|| props.session.requestStatus === "resending"
 							|| resendCooldownSeconds() > 0
 						}
+						appearance="soft"
+						tone="gray"
+						size="sm"
+						styles={styles.resend}
 					>
 						{resendCooldownSeconds() > 0
 							? `Resend (${resendCooldownSeconds()}s)`
@@ -148,11 +187,11 @@ function VerifyEmailForm(props: { session: VerificationSession }) {
 					</Button>
 				</div>
 
-				<div class="text-sm text-tertiary">
+				<div {...stylex.attrs(styles.formChild, styles.signinPrompt)}>
 					{t`Already have an account?`}{" "}
 					<Link
 						to="/auth/sign-in"
-						class="text-secondary underline underline-offset-2"
+						class={stylex.attrs(link.base, link.text, styles.signinLink).class}
 					>
 						{t`Sign in`}
 					</Link>

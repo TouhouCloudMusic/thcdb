@@ -1,3 +1,4 @@
+import * as stylex from "@stylexjs/stylex"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import type {
 	CorrectionDetail,
@@ -7,11 +8,10 @@ import type {
 } from "@thc/api"
 import { CorrectionQueryOption } from "@thc/query"
 import { createEffect, createMemo, createSignal, For, Show } from "solid-js"
-import { twMerge } from "tailwind-merge"
 import * as v from "valibot"
 
 import { Badge } from "~/component/atomic/Badge"
-import { INPUT_LIKE_BASE_CLASS } from "~/component/atomic/Input"
+import { inputStyles } from "~/component/atomic/Input"
 import { Button } from "~/component/atomic/button"
 import {
 	MOCK_CORRECTION_COMPARE,
@@ -23,7 +23,116 @@ import {
 	MOCK_CORRECTION_REVISIONS,
 } from "~/mock/correction"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { CorrectionDetailPage } from "~/view/correction/Detail"
+
+const styles = stylex.create({
+	selectedScenario: {
+		boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+	},
+	compareInput: {
+		appearance: "textfield",
+		WebkitAppearance: {
+			default: null,
+			"::-webkit-outer-spin-button": "none",
+			"::-webkit-inner-spin-button": "none",
+		},
+		margin: {
+			default: null,
+			"::-webkit-outer-spin-button": 0,
+			"::-webkit-inner-spin-button": 0,
+		},
+		height: px[36],
+		paddingInline: px[8],
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+	},
+	panelPosition: {
+		position: "fixed",
+		right: px[16],
+		bottom: px[16],
+		zIndex: 50,
+		maxWidth: "calc(100vw - 2rem)",
+	},
+	panel: {
+		display: "flex",
+		maxWidth: "420px",
+		flexDirection: "column",
+		gap: px[12],
+		borderRadius: radius.md,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		backgroundColor: `color-mix(in oklab, ${palette.white} 85%, transparent)`,
+		padding: px[12],
+		boxShadow: `inset 0 0 0 1px color-mix(in oklab, ${palette.slate[200]} 60%, transparent), 0 30px 80px -50px rgba(0,0,0,0.35)`,
+		backdropFilter: "blur(12px)",
+	},
+	panelHeader: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+	},
+	heading: { minWidth: "0rem" },
+	scenarioHeading: { display: "flex", alignItems: "center", gap: px[12] },
+	eyebrow: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.18em",
+		color: palette.slate[500],
+	},
+	subtitle: {
+		marginTop: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[600],
+	},
+	toggle: { flexShrink: 0, paddingInline: px[8] },
+	controls: { display: "flex", flexDirection: "column", gap: px[12] },
+	fieldLabel: {
+		fontSize: "11px",
+		fontWeight: 500,
+		letterSpacing: "0.22em",
+		color: palette.slate[500],
+	},
+	scenarioOptions: {
+		scrollbarWidth: "none",
+		display: { default: "flex", "::-webkit-scrollbar": "none" },
+		flexWrap: "wrap",
+		gap: px[8],
+	},
+	fields: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: "repeat(1, minmax(0, 1fr))",
+			"@media (min-width: 40rem)": "repeat(2, minmax(0, 1fr))",
+		},
+		gap: px[12],
+	},
+	field: { display: "flex", flexDirection: "column", gap: px[6] },
+	quickPicks: { display: "flex", flexWrap: "wrap", gap: px[8] },
+	idButton: { paddingInline: px[12], fontFamily: fonts.mono },
+	muted: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	routePath: { fontFamily: fonts.mono },
+	action: { paddingInline: px[12] },
+	scenarioFieldChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[6] },
+	},
+})
 
 type MockScenarioData = {
 	detail: CorrectionDetail
@@ -50,6 +159,15 @@ type MockScenario = {
 	tone: "Slate" | "Blue" | "Green" | "Reimu" | "Marisa" | "Gray"
 	data: MockScenarioData
 }
+
+const BUTTON_TONE = {
+	Slate: "slate",
+	Blue: "blue",
+	Green: "green",
+	Reimu: "reimu",
+	Marisa: "marisa",
+	Gray: "gray",
+} as const
 
 const HANDLED_AT = "2025-12-30T12:05:00+08:00"
 
@@ -330,33 +448,31 @@ function RouteComponent() {
 
 	return (
 		<>
-			<div class="fixed right-4 bottom-4 z-50 max-w-[calc(100vw-2rem)]">
+			<div {...stylex.attrs(styles.panelPosition)}>
 				<section
 					aria-label="Correction mock controls"
-					class="flex max-w-[420px] flex-col gap-3 rounded-md border border-slate-300 bg-white/85 p-3 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.35)] ring-1 ring-slate-200/60 backdrop-blur-md ring-inset"
+					{...stylex.attrs(styles.panel)}
 				>
-					<div class="flex items-center justify-between gap-3">
-						<div class="min-w-0">
-							<div class="flex items-center gap-3">
-								<div class="text-xs font-medium tracking-[0.18em] text-slate-500">
-									CORRECTION LAB
-								</div>
+					<div {...stylex.attrs(styles.panelHeader)}>
+						<div {...stylex.attrs(styles.heading)}>
+							<div {...stylex.attrs(styles.scenarioHeading)}>
+								<div {...stylex.attrs(styles.eyebrow)}>CORRECTION LAB</div>
 								<Badge color={activeScenario().tone}>
 									{activeScenario().label}
 								</Badge>
 							</div>
-							<div class="mt-1 text-xs text-slate-600">
+							<div {...stylex.attrs(styles.subtitle)}>
 								{activeScenario().caption}
 							</div>
 						</div>
 						<Button
-							size="Xs"
-							variant="Tertiary"
-							color="Slate"
-							class="shrink-0 px-2"
 							aria-controls={controlPanelId}
 							aria-expanded={!collapsed()}
 							onClick={toggleCollapsed}
+							appearance="ghost"
+							tone="slate"
+							size="xs"
+							styles={styles.toggle}
 						>
 							{collapsed() ? "Expand" : "Collapse"}
 						</Button>
@@ -365,30 +481,41 @@ function RouteComponent() {
 					<Show when={!collapsed()}>
 						<div
 							id={controlPanelId}
-							class="flex flex-col gap-3"
+							{...stylex.attrs(styles.controls)}
 						>
-							<div class="space-y-1.5">
-								<div class="text-[11px] font-medium tracking-[0.22em] text-slate-500">
+							<div>
+								<div
+									{...stylex.attrs(
+										styles.fieldLabel,
+										styles.scenarioFieldChild,
+									)}
+								>
 									SCENARIO
 								</div>
-								<div class="hide-scrollbar flex flex-wrap gap-2">
+								<div
+									{...stylex.attrs(
+										styles.scenarioOptions,
+										styles.scenarioFieldChild,
+									)}
+								>
 									<For each={SCENARIOS}>
 										{(item) => (
 											<Button
-												size="Xs"
-												variant={
-													activeScenarioKey() === item.key
-														? "Primary"
-														: "Secondary"
-												}
-												color={
-													activeScenarioKey() === item.key ? item.tone : "Slate"
-												}
-												class={twMerge(
-													"px-3",
-													activeScenarioKey() === item.key && "shadow-sm",
-												)}
 												onClick={() => setScenario(item.key)}
+												appearance={
+													activeScenarioKey() === item.key ? "solid" : "soft"
+												}
+												tone={
+													activeScenarioKey() === item.key
+														? BUTTON_TONE[item.tone]
+														: "slate"
+												}
+												size="xs"
+												styles={[
+													styles.action,
+													activeScenarioKey() === item.key
+														&& styles.selectedScenario,
+												]}
 											>
 												{item.label}
 											</Button>
@@ -397,56 +524,49 @@ function RouteComponent() {
 								</div>
 							</div>
 
-							<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-								<label class="flex flex-col gap-1.5">
-									<div class="text-[11px] font-medium tracking-[0.22em] text-slate-500">
-										COMPARE ID
-									</div>
+							<div {...stylex.attrs(styles.fields)}>
+								<label {...stylex.attrs(styles.field)}>
+									<div {...stylex.attrs(styles.fieldLabel)}>COMPARE ID</div>
 									<input
 										type="number"
 										aria-label="Compare ID"
 										inputmode="numeric"
-										class={twMerge(
-											INPUT_LIKE_BASE_CLASS,
-											"no-spinner h-9 px-2 font-mono text-xs",
-										)}
+										{...stylex.attrs(inputStyles.like, styles.compareInput)}
 										placeholder="(empty = baseline)"
 										value={search().compare ?? ""}
 										onChange={onCompareInputChange}
 									/>
 								</label>
 
-								<div class="flex flex-col gap-1.5">
-									<div class="text-[11px] font-medium tracking-[0.22em] text-slate-500">
-										QUICK PICKS
-									</div>
-									<div class="flex flex-wrap gap-2">
+								<div {...stylex.attrs(styles.field)}>
+									<div {...stylex.attrs(styles.fieldLabel)}>QUICK PICKS</div>
+									<div {...stylex.attrs(styles.quickPicks)}>
 										<Button
-											size="Xs"
-											variant={search().compare ? "Secondary" : "Primary"}
-											color={search().compare ? "Slate" : "Blue"}
-											class="px-3 font-mono"
 											onClick={() => setCompare(undefined)}
+											appearance={search().compare ? "soft" : "solid"}
+											tone={search().compare ? "slate" : "blue"}
+											size="xs"
+											styles={styles.idButton}
 										>
 											none
 										</Button>
 										<For each={compareIds()}>
 											{(value) => (
 												<Button
-													size="Xs"
-													variant={
-														search().compare === value ? "Primary" : "Secondary"
-													}
-													color={search().compare === value ? "Reimu" : "Slate"}
-													class="px-3 font-mono"
 													onClick={() => setCompare(value)}
+													appearance={
+														search().compare === value ? "solid" : "soft"
+													}
+													tone={search().compare === value ? "reimu" : "slate"}
+													size="xs"
+													styles={styles.idButton}
 												>
 													#{value}
 												</Button>
 											)}
 										</For>
 										<Show when={compareIds().length === 0}>
-											<span class="text-xs text-slate-500">
+											<span {...stylex.attrs(styles.muted)}>
 												No compare baselines.
 											</span>
 										</Show>
@@ -454,16 +574,19 @@ function RouteComponent() {
 								</div>
 							</div>
 
-							<div class="flex items-center justify-between gap-3">
-								<div class="text-xs text-slate-500">
-									Route: <span class="font-mono">/correction/mock</span>
+							<div {...stylex.attrs(styles.panelHeader)}>
+								<div {...stylex.attrs(styles.muted)}>
+									Route:{" "}
+									<span {...stylex.attrs(styles.routePath)}>
+										/correction/mock
+									</span>
 								</div>
 								<Button
-									size="Xs"
-									variant="Tertiary"
-									color="Slate"
-									class="px-3"
 									onClick={reset}
+									appearance="ghost"
+									tone="slate"
+									size="xs"
+									styles={styles.action}
 								>
 									Reset
 								</Button>

@@ -1,18 +1,40 @@
 import { Field } from "@formisch/solid"
 import { Trans, useLingui } from "@lingui/solid/macro"
-import { For } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import { createUniqueId, For } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
 import { Select } from "~/component/atomic/form/select"
 import { RELEASE_TYPES } from "~/domain/release"
+import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
+import { radius, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import type { ReleaseFormStore } from "./types"
 
+const styles = stylex.create({
+	field: { display: "flex", flexDirection: "column" },
+	trigger: {
+		height: "auto",
+		minHeight: px[36],
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[400],
+		paddingInline: px[8],
+		paddingBlock: px[4],
+		fontSize: fontSizes.lg,
+		lineHeight: lineHeights.lg,
+		fontWeight: 300,
+	},
+})
+
 export function ReleaseTypeField(props: {
 	of: ReleaseFormStore
-	class?: string
+	styles?: StyleXStyles
 }) {
+	const triggerId = createUniqueId()
 	const { t } = useLingui()
 	const typeOptions = ["", ...RELEASE_TYPES] as ["", ...typeof RELEASE_TYPES]
 
@@ -22,10 +44,13 @@ export function ReleaseTypeField(props: {
 			path={["data", "release_type"]}
 		>
 			{(field) => (
-				<div class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>
+				<div {...stylex.attrs(styles.field, props.styles)}>
+					<label
+						for={triggerId}
+						{...stylex.attrs(formStyles.label)}
+					>
 						<Trans>Release Type</Trans>
-					</FormComp.Label>
+					</label>
 					<Select.Root<(typeof typeOptions)[number]>
 						name={field.props.name}
 						value={field.input ?? ""}
@@ -47,7 +72,10 @@ export function ReleaseTypeField(props: {
 							onBlur={field.props.onBlur}
 							onFocus={field.props.onFocus}
 						/>
-						<Select.Trigger class="h-auto min-h-9 rounded border border-slate-400 px-2 py-1 text-lg font-light">
+						<Select.Trigger
+							id={triggerId}
+							styles={styles.trigger}
+						>
 							<Select.Value<string>>
 								{(state) => {
 									const selectedOption = state.selectedOption()

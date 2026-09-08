@@ -8,6 +8,7 @@ import {
 	setInput,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Release } from "@thc/api"
 import type { JSX } from "solid-js"
@@ -20,6 +21,9 @@ import { DateWithPrecision } from "~/component/form/DateWithPrecision"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewReleaseCorrection as NewReleaseCorrectionSchema } from "~/domain/release"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { LocalizedTitlesField } from "./comp/LocalizedTitlesField"
@@ -33,13 +37,63 @@ import { TitleField } from "./comp/TitleField"
 import { useReleaseFormInitialValues } from "./hook/useFormInitialValues"
 import { useReleaseFormSubmission } from "./hook/useFormSubmission"
 
+const styles = stylex.create({
+	dateField: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		gridColumn: "span 3 / span 3",
+	},
+	releaseDate: { gridRowStart: "4" },
+	recordingStart: { gridRowStart: "5" },
+	recordingEnd: { gridRowStart: "6" },
+	page: { display: "grid", gridTemplateRows: "auto 1fr auto" },
+	header: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: px[32],
+	},
+	headerContent: { display: "flex", alignItems: "center", gap: px[16] },
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+	},
+	form: {
+		display: "grid",
+		gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+		alignContent: "flex-start",
+		columnGap: px[8],
+		paddingInline: px[32],
+		paddingTop: px[32],
+		paddingBottom: px[32],
+		rowGap: px[32],
+	},
+	titleField: { gridColumn: "span 2 / span 2", gridRowStart: "1" },
+	typeField: { gridColumn: "span 1 / span 1", gridRowStart: "2" },
+	localizedTitlesField: { gridColumn: "span 2 / span 2", gridRowStart: "3" },
+	dateLabel: { gridColumn: "1 / -1" },
+	artistsField: { gridColumn: "span 2 / span 2", gridRowStart: "7" },
+	catalogsField: {
+		gridColumn: "span 2 / span 2",
+		gridRowStart: "8",
+	},
+	eventsField: { gridColumn: "span 2 / span 2", gridRowStart: "9" },
+	tracksField: { gridColumn: "span 2 / span 2", gridRowStart: "10" },
+	creditsField: { gridColumn: "span 2 / span 2", gridRowStart: "11" },
+	linksField: { gridColumn: "span 2 / span 2", gridRowStart: "12" },
+	correctionField: { gridColumn: "span 3 / span 3", gridRowStart: "13" },
+	correctionInput: { minHeight: px[128] },
+	actions: { marginTop: px[48] },
+})
+
 type Props =
 	| { type: "new" }
 	| { type: "edit"; release: Release; pendingCorrectionId?: number }
 
 export function EditReleasePage(props: Props): JSX.Element {
 	return (
-		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
+		<PageLayout styles={styles.page}>
 			<PageHeader type={props.type} />
 			<FormContent {...props} />
 		</PageLayout>
@@ -49,9 +103,9 @@ export function EditReleasePage(props: Props): JSX.Element {
 function PageHeader(props: { type: Props["type"] }) {
 	const { t } = useLingui()
 	return (
-		<div class="border-b-1 border-slate-300 p-8">
-			<div class="flex items-center gap-4">
-				<h1 class="text-2xl font-light">
+		<div {...stylex.attrs(styles.header)}>
+			<div {...stylex.attrs(styles.headerContent)}>
+				<h1 {...stylex.attrs(styles.title)}>
 					<Show
 						when={props.type === "new"}
 						fallback={<>{t`Edit Release`}</>}
@@ -109,20 +163,20 @@ function FormContent(props: Props) {
 				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
 				onSubmit={(out, _) => handleSubmit(out)}
 			>
-				<div class="grid grid-cols-5 content-start space-y-8 gap-x-2 px-8 pt-8">
+				<div {...stylex.attrs(styles.form)}>
 					<TitleField
 						of={form}
-						class="col-span-2 row-start-1"
+						styles={styles.titleField}
 					/>
 
 					<ReleaseTypeField
 						of={form}
-						class="col-span-1 row-start-2"
+						styles={styles.typeField}
 					/>
 
 					<LocalizedTitlesField
 						of={form}
-						class="col-span-2 row-start-3"
+						styles={styles.localizedTitlesField}
 					/>
 
 					{(
@@ -130,29 +184,25 @@ function FormContent(props: Props) {
 							{
 								key: "release_date",
 								label: t`Release date`,
-								class: "row-start-4",
+								styles: styles.releaseDate,
 							},
 							{
 								key: "recording_date_start",
 								label: t`Recording start`,
-								class: "row-start-5",
+								styles: styles.recordingStart,
 							},
 							{
 								key: "recording_date_end",
 								label: t`Recording end`,
-								class: "row-start-6",
+								styles: styles.recordingEnd,
 							},
 						] as const
 					).map((it) => {
 						return (
-							<div
-								class={["col-span-3 grid grid-cols-subgrid", it.class].join(
-									" ",
-								)}
-							>
-								<FormComp.Label class="col-span-full">
+							<div {...stylex.attrs(styles.dateField, it.styles)}>
+								<label {...stylex.attrs(formStyles.label, styles.dateLabel)}>
 									{it.label}
-								</FormComp.Label>
+								</label>
 								<DateWithPrecision
 									setValue={(v) =>
 										setInput(form, {
@@ -174,7 +224,7 @@ function FormContent(props: Props) {
 					<ReleaseArtistsField
 						of={form}
 						initArtists={props.type === "edit" ? props.release.artists : []}
-						class="col-span-2 row-start-7"
+						styles={styles.artistsField}
 					/>
 
 					<ReleaseCatalogNumbersField
@@ -185,30 +235,30 @@ function FormContent(props: Props) {
 									?? [])
 								: []
 						}
-						class="col-span-2 row-start-8"
+						styles={styles.catalogsField}
 					/>
 
 					<ReleaseEventsField
 						of={form}
 						initEvents={props.type === "edit" ? props.release.events : []}
-						class="col-span-2 row-start-9"
+						styles={styles.eventsField}
 					/>
 
 					<ReleaseTracksField
 						of={form}
 						initTracks={props.type === "edit" ? props.release.tracks : []}
-						class="col-span-2 row-start-10"
+						styles={styles.tracksField}
 					/>
 
 					<ReleaseCreditsField
 						of={form}
 						initCredits={props.type === "edit" ? props.release.credits : []}
-						class="col-span-2 row-start-11"
+						styles={styles.creditsField}
 					/>
 
 					<ExternalLinksField
 						of={form}
-						class="col-span-2 row-start-12"
+						styles={styles.linksField}
 					/>
 
 					<Field
@@ -216,12 +266,12 @@ function FormContent(props: Props) {
 						path={["description"]}
 					>
 						{(field) => (
-							<InputField.Root class="col-span-3 row-start-13">
+							<InputField.Root styles={styles.correctionField}>
 								<InputField.Label>{t`Correction Description`}</InputField.Label>
 								<InputField.Textarea
 									{...field.props}
 									value={field.input ?? ""}
-									class="min-h-32"
+									styles={styles.correctionInput}
 								/>
 
 								<For each={field.errors}>
@@ -230,11 +280,10 @@ function FormContent(props: Props) {
 							</InputField.Root>
 						)}
 					</Field>
-					<div></div>
 				</div>
 				<FormActionBar
 					submitting={form.isSubmitting}
-					class="mt-12"
+					styles={styles.actions}
 					onSubmit={handleSubmitClick}
 				/>
 			</Form>

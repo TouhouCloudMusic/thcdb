@@ -17,7 +17,7 @@ type Story = StoryObj<typeof Footer>
 
 export const Default: Story = {
 	render: () => (
-		<div class="size-full">
+		<div style={{ width: "100%", height: "100%" }}>
 			<Footer />
 		</div>
 	),

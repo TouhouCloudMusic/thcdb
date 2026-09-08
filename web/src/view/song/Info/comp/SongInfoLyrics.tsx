@@ -1,11 +1,65 @@
 /* @refresh skip */
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { createSignal } from "solid-js"
 
 import { Select } from "~/component/atomic/form/select"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
+
+const styles = stylex.create({
+	lyrics: {
+		padding: px[24],
+	},
+	languageField: {
+		marginBlockStart: 0,
+		marginBlockEnd: px[32],
+		display: "flex",
+		alignItems: "baseline",
+		gap: px[24],
+	},
+	label: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.1em",
+		color: colors.textSecondary,
+		textTransform: "uppercase",
+	},
+	languageTrigger: {
+		height: "auto",
+		minHeight: px[32],
+		borderWidth: 0,
+		borderStyle: "solid",
+		borderBottomWidth: 1,
+		borderBottomStyle: "solid",
+		borderColor: {
+			default: palette.slate[400],
+			':is([aria-invalid="true"])': palette.reimu[600],
+		},
+		borderRadius: 0,
+		paddingInline: px[4],
+		paddingBlock: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		letterSpacing: "0.025em",
+		color: { default: colors.textSecondary, ":disabled": palette.slate[400] },
+		outlineStyle: {
+			default: "solid",
+			":focus": "none",
+		},
+	},
+	text: {
+		fontSize: fontSizes.lg,
+		lineHeight: 1.625,
+		fontWeight: 300,
+		whiteSpace: "pre-wrap",
+		color: colors.textSecondary,
+	},
+})
 
 export function SongInfoLyrics() {
 	const { t } = useLingui()
@@ -24,11 +78,9 @@ export function SongInfoLyrics() {
 	const selectedLangId = () => activeLang() ?? firstLangId() ?? 0
 
 	return (
-		<div class="space-y-8 p-6">
-			<label class="flex items-baseline gap-6">
-				<span class="text-xs font-medium tracking-widest text-secondary uppercase">
-					Language
-				</span>
+		<div {...stylex.attrs(styles.lyrics)}>
+			<label {...stylex.attrs(styles.languageField)}>
+				<span {...stylex.attrs(styles.label)}>Language</span>
 				<Select.Root<string>
 					options={langOptions()}
 					value={selectedLangId().toString()}
@@ -44,7 +96,7 @@ export function SongInfoLyrics() {
 				>
 					<Select.Trigger
 						aria-label={t`Language`}
-						class="h-auto min-h-8 border-0 border-b border-slate-400 rounded-none px-1 py-2 text-sm tracking-wide text-secondary focus:outline-none"
+						styles={[styles.languageTrigger]}
 					>
 						<Select.Value<string>>
 							{(state) => getLangName(state.selectedOption())}
@@ -60,7 +112,7 @@ export function SongInfoLyrics() {
 			</label>
 
 			<div>
-				<div class="text-lg leading-relaxed font-light whitespace-pre-wrap text-secondary">
+				<div {...stylex.attrs(styles.text)}>
 					{lyricsList()?.find((x) => x.language.id == activeLang())?.content}
 				</div>
 			</div>

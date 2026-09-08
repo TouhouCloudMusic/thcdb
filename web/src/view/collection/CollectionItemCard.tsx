@@ -1,8 +1,9 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { ArrowDownIcon, ArrowUpIcon } from "@thc/icons/radix"
 import { Match, Show, Switch } from "solid-js"
 
-import { Link } from "~/component/atomic/Link"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { Image } from "~/component/image"
 import { DateWithPrecision } from "~/domain/shared"
@@ -17,7 +18,241 @@ import type {
 	SongSummary,
 	TagSummary,
 } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
+
+const styles = stylex.create({
+	entityLink: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[16],
+		textDecorationLine: {
+			default: "none",
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	artistImage: {
+		height: px[48],
+		width: px[48],
+		flexShrink: 0,
+		overflow: "hidden",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[200],
+	},
+	img: { height: "100%", width: "100%", objectFit: "cover" },
+	entitySummary: { display: "flex", minWidth: 0, flexDirection: "column" },
+	entityName: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontWeight: 500,
+		color: {
+			default: palette.slate[900],
+			"@media (hover: hover)": {
+				default: null,
+				[stylex.when.ancestor(":hover")]: palette.blue[600],
+			},
+		},
+	},
+	entityMetadata: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	coverImage: {
+		height: px[48],
+		width: px[48],
+		flexShrink: 0,
+		overflow: "hidden",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[200],
+	},
+	artistNames: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+		overflow: "hidden",
+		display: "-webkit-box",
+		WebkitBoxOrient: "vertical",
+		WebkitLineClamp: 1,
+	},
+	textEntityLink: {
+		display: "block",
+		textDecorationLine: {
+			default: "none",
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	textEntitySummary: { display: "flex", flexDirection: "column" },
+	textEntityName: {
+		overflowWrap: "break-word",
+		fontWeight: 500,
+		color: {
+			default: palette.slate[900],
+			"@media (hover: hover)": {
+				default: null,
+				[stylex.when.ancestor(":hover")]: palette.blue[600],
+			},
+		},
+	},
+	missingEntity: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	item: {
+		borderRadius: radius.sm,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+		paddingTop: px[16],
+		paddingRight: px[16],
+		paddingBottom: px[16],
+		paddingLeft: px[16],
+		boxShadow: {
+			default: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+			":hover": {
+				default: null,
+				"@media (hover: hover)":
+					"0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+			},
+		},
+		transitionProperty: "box-shadow",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "150ms",
+	},
+	body: { display: "flex", flexDirection: "column", gap: px[12] },
+	header: { display: "flex", alignItems: "center", gap: px[12] },
+	position: {
+		display: "flex",
+		height: px[24],
+		width: px[24],
+		flexShrink: 0,
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[100],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		color: colors.textTertiary,
+	},
+	entityType: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	reorderActions: {
+		marginLeft: "auto",
+		display: "flex",
+		flexShrink: 0,
+		alignItems: "center",
+		gap: px[4],
+	},
+	moveAction: {
+		display: "grid",
+		width: px[28],
+		height: px[28],
+		placeItems: "center",
+		borderRadius: radius.sm,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: {
+			default: palette.white,
+			":hover": { default: null, "@media (hover: hover)": palette.slate[100] },
+		},
+		color: {
+			default: colors.textTertiary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+		pointerEvents: { default: null, ":disabled": "none" },
+		opacity: { default: null, ":disabled": 0.35 },
+		outlineStyle: {
+			default: null,
+			":focus": "none",
+			":focus-visible": "solid",
+		},
+		outlineWidth: { default: null, ":focus-visible": "1px" },
+		outlineColor: { default: null, ":focus-visible": palette.slate[500] },
+	},
+	moveIcon: { width: px[14], height: px[14] },
+	entityContent: { marginLeft: px[36] },
+	footer: {
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		marginTop: px[12],
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "flex-start",
+		columnGap: px[16],
+		rowGap: px[12],
+		borderColor: palette.slate[100],
+		paddingTop: px[12],
+	},
+	description: {
+		minWidth: 0,
+		flex: "1",
+		flexBasis: px[256],
+		overflowWrap: "break-word",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	deleteAction: {
+		marginLeft: "auto",
+		alignSelf: "flex-end",
+		flexShrink: 0,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+		textDecorationLine: {
+			default: null,
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+		opacity: { default: null, ":disabled": 0.5 },
+		outlineStyle: { default: null, ":focus": "none" },
+	},
+})
 
 export type UserCollectionItemDetail =
 	PageResponseUserCollectionItemDetail["items"][number]
@@ -35,33 +270,37 @@ type Props = {
 	onMoveDown: () => void
 }
 
-const MOVE_BUTTON_CLASS =
-	"grid size-7 place-items-center rounded-sm border border-slate-200 bg-white text-tertiary hover:bg-slate-100 hover:text-primary disabled:pointer-events-none disabled:opacity-35 focus:outline-none focus-visible:outline-1 focus-visible:outline-slate-500"
-
 function ArtistCard(props: { id: number; summary: ArtistSummary }) {
 	return (
 		<Link
 			to="/artist/$id"
 			params={{ id: props.id.toString() }}
-			class="flex items-center gap-4 no-underline hover:underline group"
+			class={
+				stylex.attrs(
+					link.base,
+					link.text,
+					stylex.defaultMarker(),
+					styles.entityLink,
+				).class
+			}
 		>
-			<div class="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-100 border border-slate-200">
+			<div {...stylex.attrs(styles.artistImage)}>
 				<Image.Root>
 					<Show when={props.summary.profile_image_url}>
 						{(url) => (
 							<Image.Img
 								src={imgUrl(url())}
-								class="h-full w-full object-cover"
+								styles={styles.img}
 							/>
 						)}
 					</Show>
 				</Image.Root>
 			</div>
-			<div class="flex min-w-0 flex-col">
-				<span class="truncate font-medium text-slate-900 group-hover:text-blue-600">
-					{props.summary.name}
+			<div {...stylex.attrs(styles.entitySummary)}>
+				<span {...stylex.attrs(styles.entityName)}>{props.summary.name}</span>
+				<span {...stylex.attrs(styles.entityMetadata)}>
+					{props.summary.artist_type}
 				</span>
-				<span class="text-xs text-slate-500">{props.summary.artist_type}</span>
 			</div>
 		</Link>
 	)
@@ -75,32 +314,37 @@ function ReleaseCard(props: { id: number; summary: ReleaseSummary }) {
 		<Link
 			to="/release/$id"
 			params={{ id: props.id.toString() }}
-			class="flex items-center gap-4 no-underline hover:underline group"
+			class={
+				stylex.attrs(
+					link.base,
+					link.text,
+					stylex.defaultMarker(),
+					styles.entityLink,
+				).class
+			}
 		>
-			<div class="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-slate-100 border border-slate-200">
+			<div {...stylex.attrs(styles.coverImage)}>
 				<Image.Root>
 					<Show when={props.summary.cover_art_url}>
 						{(url) => (
 							<Image.Img
 								src={imgUrl(url())}
-								class="h-full w-full object-cover"
+								styles={styles.img}
 							/>
 						)}
 					</Show>
 				</Image.Root>
 			</div>
-			<div class="flex min-w-0 flex-col">
-				<span class="truncate font-medium text-slate-900 group-hover:text-blue-600">
-					{props.summary.title}
-				</span>
+			<div {...stylex.attrs(styles.entitySummary)}>
+				<span {...stylex.attrs(styles.entityName)}>{props.summary.title}</span>
 				<Show when={artistNames()}>
 					{(names) => (
-						<span class="text-xs text-slate-500 line-clamp-1">{names()}</span>
+						<span {...stylex.attrs(styles.artistNames)}>{names()}</span>
 					)}
 				</Show>
 				<Show when={props.summary.release_date}>
 					{(date) => (
-						<span class="text-xs text-slate-500">
+						<span {...stylex.attrs(styles.entityMetadata)}>
 							{DateWithPrecision.display(date())}
 						</span>
 					)}
@@ -118,27 +362,32 @@ function SongCard(props: { id: number; summary: SongSummary }) {
 		<Link
 			to="/song/$id"
 			params={{ id: props.id.toString() }}
-			class="flex items-center gap-4 no-underline hover:underline group"
+			class={
+				stylex.attrs(
+					link.base,
+					link.text,
+					stylex.defaultMarker(),
+					styles.entityLink,
+				).class
+			}
 		>
-			<div class="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-slate-100 border border-slate-200">
+			<div {...stylex.attrs(styles.coverImage)}>
 				<Image.Root>
 					<Show when={props.summary.cover_art_url}>
 						{(url) => (
 							<Image.Img
 								src={imgUrl(url())}
-								class="h-full w-full object-cover"
+								styles={styles.img}
 							/>
 						)}
 					</Show>
 				</Image.Root>
 			</div>
-			<div class="flex min-w-0 flex-col">
-				<span class="truncate font-medium text-slate-900 group-hover:text-blue-600">
-					{props.summary.title}
-				</span>
+			<div {...stylex.attrs(styles.entitySummary)}>
+				<span {...stylex.attrs(styles.entityName)}>{props.summary.title}</span>
 				<Show when={artistNames()}>
 					{(names) => (
-						<span class="text-xs text-slate-500 line-clamp-1">{names()}</span>
+						<span {...stylex.attrs(styles.artistNames)}>{names()}</span>
 					)}
 				</Show>
 			</div>
@@ -151,13 +400,22 @@ function TagCard(props: { id: number; summary: TagSummary }) {
 		<Link
 			to="/tag/$id"
 			params={{ id: props.id.toString() }}
-			class="block no-underline hover:underline group"
+			class={
+				stylex.attrs(
+					link.base,
+					link.text,
+					stylex.defaultMarker(),
+					styles.textEntityLink,
+				).class
+			}
 		>
-			<div class="flex flex-col">
-				<span class="wrap-break-word font-medium text-slate-900 group-hover:text-blue-600">
+			<div {...stylex.attrs(styles.textEntitySummary)}>
+				<span {...stylex.attrs(styles.textEntityName)}>
 					{props.summary.name}
 				</span>
-				<span class="text-xs text-slate-500">{props.summary.tag_type}</span>
+				<span {...stylex.attrs(styles.entityMetadata)}>
+					{props.summary.tag_type}
+				</span>
 			</div>
 		</Link>
 	)
@@ -168,15 +426,22 @@ function EventCard(props: { id: number; summary: EventSummary }) {
 		<Link
 			to="/event/$id"
 			params={{ id: props.id.toString() }}
-			class="block no-underline hover:underline group"
+			class={
+				stylex.attrs(
+					link.base,
+					link.text,
+					stylex.defaultMarker(),
+					styles.textEntityLink,
+				).class
+			}
 		>
-			<div class="flex flex-col">
-				<span class="wrap-break-word font-medium text-slate-900 group-hover:text-blue-600">
+			<div {...stylex.attrs(styles.textEntitySummary)}>
+				<span {...stylex.attrs(styles.textEntityName)}>
 					{props.summary.name}
 				</span>
 				<Show when={props.summary.start_date}>
 					{(date) => (
-						<span class="text-xs text-slate-500">
+						<span {...stylex.attrs(styles.entityMetadata)}>
 							{DateWithPrecision.display(date())}
 						</span>
 					)}
@@ -191,11 +456,16 @@ function LabelCard(props: { id: number; summary: LabelSummary }) {
 		<Link
 			to="/label/$id"
 			params={{ id: props.id.toString() }}
-			class="block no-underline hover:underline group"
+			class={
+				stylex.attrs(
+					link.base,
+					link.text,
+					stylex.defaultMarker(),
+					styles.textEntityLink,
+				).class
+			}
 		>
-			<span class="wrap-break-word font-medium text-slate-900 group-hover:text-blue-600">
-				{props.summary.name}
-			</span>
+			<span {...stylex.attrs(styles.textEntityName)}>{props.summary.name}</span>
 		</Link>
 	)
 }
@@ -203,7 +473,9 @@ function LabelCard(props: { id: number; summary: LabelSummary }) {
 function EntityContent(props: { summary: EntitySummary }) {
 	return (
 		<Switch
-			fallback={<span class="text-sm text-tertiary">#{props.summary.id}</span>}
+			fallback={
+				<span {...stylex.attrs(styles.missingEntity)}>#{props.summary.id}</span>
+			}
 		>
 			<Match
 				keyed
@@ -306,45 +578,45 @@ export function CollectionItemCard(props: Props) {
 		}
 	}
 	return (
-		<li class="rounded-sm border border-slate-300 bg-primary p-4 shadow-xs transition-shadow hover:shadow-md">
-			<div class="flex flex-col gap-3">
-				<div class="flex items-center gap-3">
-					<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-tertiary">
-						{props.number}
-					</span>
+		<li {...stylex.attrs(styles.item)}>
+			<div {...stylex.attrs(styles.body)}>
+				<div {...stylex.attrs(styles.header)}>
+					<span {...stylex.attrs(styles.position)}>{props.number}</span>
 					{/* Entity type label */}
-					<span class="text-xs text-tertiary">{entityTypeLabel()}</span>
+					<span {...stylex.attrs(styles.entityType)}>{entityTypeLabel()}</span>
 					<Show when={props.isEditing}>
-						<div class="ml-auto flex shrink-0 items-center gap-1">
+						<div {...stylex.attrs(styles.reorderActions)}>
 							<button
 								type="button"
-								class={MOVE_BUTTON_CLASS}
+								{...stylex.attrs(styles.moveAction)}
 								aria-label={t`Move item up`}
 								title={t`Move item up`}
 								disabled={props.isReordering || !props.canMoveUp}
 								onClick={() => props.onMoveUp()}
 							>
-								<ArrowUpIcon class="size-3.5" />
+								<ArrowUpIcon {...stylex.attrs(styles.moveIcon)} />
 							</button>
 							<button
 								type="button"
-								class={MOVE_BUTTON_CLASS}
+								{...stylex.attrs(styles.moveAction)}
 								aria-label={t`Move item down`}
 								title={t`Move item down`}
 								disabled={props.isReordering || !props.canMoveDown}
 								onClick={() => props.onMoveDown()}
 							>
-								<ArrowDownIcon class="size-3.5" />
+								<ArrowDownIcon {...stylex.attrs(styles.moveIcon)} />
 							</button>
 						</div>
 					</Show>
 				</div>
 
-				<div class="ml-9">
+				<div {...stylex.attrs(styles.entityContent)}>
 					<Show
 						when={props.item.entity}
 						fallback={
-							<span class="text-sm text-tertiary">#{props.item.entity_id}</span>
+							<span {...stylex.attrs(styles.missingEntity)}>
+								#{props.item.entity_id}
+							</span>
 						}
 					>
 						{(summary) => <EntityContent summary={summary()} />}
@@ -352,9 +624,9 @@ export function CollectionItemCard(props: Props) {
 
 					{/* Description + Remove row */}
 					<Show when={props.item.description || props.isEditing}>
-						<div class="mt-3 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-slate-100 pt-3">
+						<div {...stylex.attrs(styles.footer)}>
 							<Show when={props.item.description}>
-								<p class="min-w-0 flex-1 basis-64 wrap-break-word text-sm text-secondary">
+								<p {...stylex.attrs(styles.description)}>
 									{props.item.description}
 								</p>
 							</Show>
@@ -369,7 +641,7 @@ export function CollectionItemCard(props: Props) {
 									triggerAs={(triggerProps) => (
 										<button
 											{...triggerProps}
-											class="ml-auto self-end shrink-0 text-xs text-tertiary hover:text-red-600 hover:underline disabled:opacity-50 focus:outline-none"
+											{...stylex.attrs(styles.deleteAction)}
 											disabled={props.isDeleting}
 										>
 											{t`Remove`}

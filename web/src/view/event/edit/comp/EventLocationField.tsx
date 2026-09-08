@@ -1,15 +1,23 @@
 import { Field, getInput, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import { For } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
-import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { useEventForm } from "../context"
 
+const styles = stylex.create({
+	location: { display: "flex", flexDirection: "column", gap: px[8] },
+	locationFields: { display: "flex", flexWrap: "wrap", gap: px[16] },
+	locationInput: { minWidth: px[192], flex: "1" },
+})
+
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 }
 
 type LocationFieldKey = "country" | "province" | "city"
@@ -30,9 +38,9 @@ export function EventLocationField(props: Props) {
 	const { formStore } = useEventForm()
 
 	return (
-		<div class={twMerge("flex flex-col gap-2", props.class)}>
-			<FormComp.Label>{t`Location`}</FormComp.Label>
-			<div class="flex flex-wrap gap-4">
+		<div {...stylex.attrs(styles.location, props.styles)}>
+			<label {...stylex.attrs(formStyles.label)}>{t`Location`}</label>
+			<div {...stylex.attrs(styles.locationFields)}>
 				<For each={DESCRIPTORS}>
 					{(descriptor) => (
 						<Field
@@ -60,7 +68,7 @@ export function EventLocationField(props: Props) {
 								}
 
 								return (
-									<InputField.Root class="min-w-48 flex-1">
+									<InputField.Root styles={styles.locationInput}>
 										<InputField.Input
 											{...field.props}
 											value={field.input ?? ""}

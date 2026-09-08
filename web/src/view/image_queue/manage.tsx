@@ -1,26 +1,216 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
-import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { Link, getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { StrExt } from "@thc/toolkit/data"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
 
 import { Badge } from "~/component/atomic/Badge"
-import { Link } from "~/component/atomic/Link"
 import { Select } from "~/component/atomic/form/select"
 import { StickyFilterBar } from "~/component/feature/entity_explore"
 import type {
 	CursorResponsePendingImageQueueItem,
 	ImageQueueStatus,
 	ImageQueueType,
-	PendingImageQueueData,
 } from "~/hey-api"
 import {
 	pendingImageQueueCountOptions,
 	pendingImageQueueInfiniteOptions,
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	page: { display: "flex", flexDirection: "column", padding: px[32] },
+	header: { display: "flex", flexDirection: "column", rowGap: px[8] },
+	eyebrow: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.2em",
+		color: colors.textTertiary,
+	},
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	panel: { borderRadius: radius.sm, backgroundColor: palette.white },
+	filterBar: { borderColor: palette.slate[300] },
+	filters: { display: "flex", columnGap: px[16] },
+	filter: { display: "flex", alignItems: "center", gap: px[8] },
+	label: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	typeSelect: { minWidth: px[96] },
+	selectTrigger: { width: "100%" },
+	queueList: { paddingTop: px[8] },
+	error: {
+		padding: px[24],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[700],
+	},
+	emptyState: { padding: px[40] },
+	emptyTitle: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: colors.textPrimary,
+	},
+	emptyDescription: {
+		marginTop: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	progress: { height: px[4] },
+	listEnd: {
+		borderTopStyle: "solid",
+		borderTopWidth: "1px",
+		borderColor: palette.slate[200],
+		paddingInline: px[16],
+		paddingBlock: px[32],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+	},
+	queueRow: {
+		position: "relative",
+		borderRadius: radius.sm,
+		isolation: "isolate",
+	},
+	rowLink: {
+		position: "absolute",
+		inset: "0rem",
+		borderRadius: radius.sm,
+		textDecorationLine: {
+			default: "none",
+			":hover": { default: null, "@media (hover: hover)": "underline" },
+		},
+	},
+	rowContent: {
+		pointerEvents: "none",
+		display: "grid",
+		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		gridTemplateRows: "repeat(2, minmax(0, 1fr))",
+		rowGap: px[8],
+		paddingInline: px[4],
+		paddingBlock: px[16],
+	},
+	identity: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		gridTemplateRows: "subgrid",
+		gridRow: "span 2 / span 2",
+	},
+	identityHeader: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "baseline",
+		gap: px[8],
+	},
+	queueId: {
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	status: { paddingInline: px[8], paddingBlock: px[2] },
+	entityLink: {
+		pointerEvents: "auto",
+		position: "relative",
+		zIndex: 10,
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+		width: "fit-content",
+		height: "fit-content",
+	},
+	timestamps: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		gridTemplateRows: "subgrid",
+		justifyItems: "end",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[600],
+		gridRow: "span 2 / span 2",
+	},
+	skeletonRow: {
+		display: "grid",
+		gap: px[12],
+		paddingInline: px[16],
+		paddingBlock: px[16],
+		gridTemplateColumns: {
+			default: null,
+			"@media (min-width: 48rem)": "minmax(0,1fr) 11rem",
+		},
+		alignItems: { default: null, "@media (min-width: 48rem)": "center" },
+	},
+	skeletonTitle: {
+		height: px[20],
+		width: px[160],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonDescription: {
+		marginTop: px[8],
+		height: px[16],
+		width: px[224],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonMetadata: {
+		display: { default: "flex", "@media (min-width: 48rem)": "block" },
+		justifyContent: "space-between",
+		gap: px[12],
+		textAlign: { default: null, "@media (min-width: 48rem)": "right" },
+	},
+	skeletonDate: {
+		marginLeft: "auto",
+		height: px[12],
+		width: px[64],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonActor: {
+		marginTop: px[8],
+		marginLeft: "auto",
+		height: px[16],
+		width: px[112],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	queueListChild: {
+		borderTopWidth: { default: null, ":not(:last-child)": 0 },
+		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
+		borderTopStyle: { default: null, ":not(:last-child)": "solid" },
+		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: { default: null, ":not(:last-child)": palette.slate[200] },
+	},
+})
 
 const route = getRouteApi("/image-queue/")
 
@@ -87,7 +277,6 @@ export type ImageQueueManagePageContentProps = {
 	onLoadNextPage: () => void
 }
 
-const QUEUE_LIST_CONTAINER_CLASS = "divide-y divide-slate-200 pt-2"
 export function ImageQueueManagePageContent(
 	props: ImageQueueManagePageContentProps,
 ) {
@@ -113,26 +302,22 @@ export function ImageQueueManagePageContent(
 	})
 
 	return (
-		<PageLayout class="flex flex-col p-8">
-			<header class="flex flex-col gap-y-2">
-				<div class="text-xs font-medium tracking-[0.2em] text-tertiary">
-					{t`MODERATION`}
-				</div>
-				<h1 class="text-2xl font-light tracking-tight text-primary">
-					{t`Image Queue`}
-				</h1>
+		<PageLayout styles={styles.page}>
+			<header {...stylex.attrs(styles.header)}>
+				<div {...stylex.attrs(styles.eyebrow)}>{t`MODERATION`}</div>
+				<h1 {...stylex.attrs(styles.title)}>{t`Image Queue`}</h1>
 			</header>
 
-			<section class="rounded-sm bg-white ">
+			<section {...stylex.attrs(styles.panel)}>
 				<StickyFilterBar
 					scrollDirection={scrollDirection}
-					class="border-slate-300"
+					styles={styles.filterBar}
 				>
-					<div class="flex gap-x-4">
-						<div class="flex items-center gap-2">
-							<span class="text-sm text-tertiary">{t`Type`}</span>
+					<div {...stylex.attrs(styles.filters)}>
+						<div {...stylex.attrs(styles.filter)}>
+							<span {...stylex.attrs(styles.label)}>{t`Type`}</span>
 							<Select.Root<TypeFilterOption>
-								class="min-w-24"
+								{...stylex.attrs(styles.typeSelect)}
 								options={typeFilterOptions()}
 								optionValue="value"
 								optionTextValue="label"
@@ -148,7 +333,7 @@ export function ImageQueueManagePageContent(
 									</Select.Item>
 								)}
 							>
-								<Select.Trigger class="w-full">
+								<Select.Trigger styles={styles.selectTrigger}>
 									<Select.Value<TypeFilterOption>>
 										{(state) => state.selectedOption().label}
 									</Select.Value>
@@ -162,8 +347,8 @@ export function ImageQueueManagePageContent(
 							</Select.Root>
 						</div>
 
-						<div class="flex items-center gap-2">
-							<span class="text-sm text-tertiary">{t`Status`}</span>
+						<div {...stylex.attrs(styles.filter)}>
+							<span {...stylex.attrs(styles.label)}>{t`Status`}</span>
 							<Select.Root<StatusFilterKind>
 								options={STATUS_FILTER_OPTIONS}
 								value={props.filters.status}
@@ -194,7 +379,7 @@ export function ImageQueueManagePageContent(
 
 				<Switch>
 					<Match when={props.isListLoading}>
-						<div class={QUEUE_LIST_CONTAINER_CLASS}>
+						<div {...stylex.attrs(styles.queueList)}>
 							<For each={Array.from({ length: PAGE_SIZE })}>
 								{() => <RowSkeleton />}
 							</For>
@@ -202,7 +387,7 @@ export function ImageQueueManagePageContent(
 					</Match>
 
 					<Match when={props.isListError}>
-						<div class="p-6 text-sm text-reimu-700">
+						<div {...stylex.attrs(styles.error)}>
 							{t`Failed to load image queue.`}
 						</div>
 					</Match>
@@ -214,17 +399,17 @@ export function ImageQueueManagePageContent(
 							&& props.items.length > 0
 						}
 					>
-						<div class={QUEUE_LIST_CONTAINER_CLASS}>
+						<div {...stylex.attrs(styles.queueList)}>
 							<For each={props.items}>{(item) => <QueueRow item={item} />}</For>
 						</div>
 					</Match>
 
 					<Match when={props.items.length === 0}>
-						<div class="p-10">
-							<div class="text-sm font-medium text-primary">
+						<div {...stylex.attrs(styles.emptyState)}>
+							<div {...stylex.attrs(styles.emptyTitle)}>
 								{t`No entries found`}
 							</div>
-							<div class="mt-1 text-sm text-tertiary">
+							<div {...stylex.attrs(styles.emptyDescription)}>
 								{t`No entries match the current filters.`}
 							</div>
 						</div>
@@ -233,11 +418,11 @@ export function ImageQueueManagePageContent(
 
 				<div
 					ref={setSentinelRef}
-					class="h-1"
+					{...stylex.attrs(styles.progress)}
 				></div>
 
 				<Show when={props.isFetchingNextPage}>
-					<div class={QUEUE_LIST_CONTAINER_CLASS}>
+					<div {...stylex.attrs(styles.queueList)}>
 						<For each={Array.from({ length: Math.min(10, PAGE_SIZE) })}>
 							{() => <RowSkeleton />}
 						</For>
@@ -245,9 +430,7 @@ export function ImageQueueManagePageContent(
 				</Show>
 
 				<Show when={!props.hasNextPage && props.items.length > 0}>
-					<div class="border-t border-slate-200 px-4 py-8 text-center text-sm text-tertiary">
-						{t`No more entries`}
-					</div>
+					<div {...stylex.attrs(styles.listEnd)}>{t`No more entries`}</div>
 				</Show>
 			</section>
 		</PageLayout>
@@ -265,12 +448,12 @@ export function ImageQueueManagePage() {
 	const pendingCountQuery = useQuery(() => pendingImageQueueCountOptions())
 
 	const listQuery = useInfiniteQuery(() => {
-		const filter_ = filters()
+		const filter = filters()
 		const request = {
 			query: {
 				limit: PAGE_SIZE,
-				type: filter_.type,
-				status: filter_.status === "pending" ? ("Pending" as const) : undefined,
+				type: filter.type,
+				status: filter.status === "pending" ? ("Pending" as const) : undefined,
 			},
 		}
 
@@ -331,23 +514,21 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 	})
 
 	return (
-		<div class="relative rounded-sm isolate">
+		<div {...stylex.attrs(styles.queueRow, styles.queueListChild)}>
 			<Link
 				to="/image-queue/$id"
 				params={{ id: props.item.id.toString() }}
 				aria-label={ariaLabel()}
-				class="absolute inset-0 rounded-sm no-underline"
+				class={stylex.attrs(link.base, link.text, styles.rowLink).class}
 			/>
 
-			<div class="pointer-events-none grid grid-cols-2 grid-rows-2 gap-y-2 px-1 py-4 ">
-				<div class="grid grid-cols-subgrid grid-rows-subgrid row-span-2">
-					<div class="flex flex-wrap items-baseline gap-2">
-						<span class="font-mono text-xs text-tertiary">
-							#{props.item.id}
-						</span>
+			<div {...stylex.attrs(styles.rowContent)}>
+				<div {...stylex.attrs(styles.identity)}>
+					<div {...stylex.attrs(styles.identityHeader)}>
+						<span {...stylex.attrs(styles.queueId)}>#{props.item.id}</span>
 						<Badge
 							color={tone().color}
-							class="px-2 py-0.5"
+							styles={styles.status}
 						>
 							<ImageQueueStatusLabel status={props.item.status} />
 						</Badge>
@@ -356,13 +537,13 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 					<Link
 						to="/profile/$username/image-queue"
 						params={{ username: props.item.created_by.name }}
-						class="pointer-events-auto relative z-10 truncate text-sm text-secondary size-fit"
+						class={stylex.attrs(link.base, link.text, styles.entityLink).class}
 					>
 						{props.item.created_by.name}
 					</Link>
 				</div>
 
-				<div class="grid grid-cols-subgrid grid-rows-subgrid justify-items-end text-sm text-slate-600 row-span-2">
+				<div {...stylex.attrs(styles.timestamps)}>
 					<div>{t`Created at`}</div>
 					<div>{createdAtLabel()}</div>
 				</div>
@@ -399,14 +580,20 @@ function ImageQueueStatusLabel(props: { status: ImageQueueStatus }) {
 
 function RowSkeleton() {
 	return (
-		<div class="grid animate-pulse gap-3 px-4 py-4 md:grid-cols-[minmax(0,1fr)_11rem] md:items-center">
+		<div
+			{...stylex.attrs(
+				animationStyles.pulse,
+				styles.skeletonRow,
+				styles.queueListChild,
+			)}
+		>
 			<div>
-				<div class="h-5 w-40 rounded bg-slate-200"></div>
-				<div class="mt-2 h-4 w-56 rounded bg-slate-100"></div>
+				<div {...stylex.attrs(styles.skeletonTitle)}></div>
+				<div {...stylex.attrs(styles.skeletonDescription)}></div>
 			</div>
-			<div class="flex justify-between gap-3 md:block md:text-right">
-				<div class="ml-auto h-3 w-16 rounded bg-slate-100"></div>
-				<div class="mt-2 ml-auto h-4 w-28 rounded bg-slate-200"></div>
+			<div {...stylex.attrs(styles.skeletonMetadata)}>
+				<div {...stylex.attrs(styles.skeletonDate)}></div>
+				<div {...stylex.attrs(styles.skeletonActor)}></div>
 			</div>
 		</div>
 	)

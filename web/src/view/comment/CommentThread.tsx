@@ -1,5 +1,8 @@
 import { Trans, useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { useMutation } from "@tanstack/solid-query"
+import { Link } from "@tanstack/solid-router"
 import {
 	createMemo,
 	createSignal,
@@ -10,13 +13,141 @@ import {
 	Switch,
 } from "solid-js"
 import type { Accessor, JSX } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
-import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import type { Comment, UserProfile } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	inputChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	bodyChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	messageChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[4] },
+	},
+	textarea: {
+		display: "block",
+		width: "100%",
+		resize: "none",
+		borderRadius: radius.sm,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":disabled": palette.slate[100],
+		},
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		outlineWidth: "1px",
+		outlineStyle: "solid",
+		outlineColor: { default: "transparent", ":focus": palette.reimu[600] },
+		outlineOffset: "-1px",
+		color: { default: null, ":disabled": palette.slate[400] },
+		transitionProperty: "all",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "100ms",
+	},
+	inputError: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.reimu[600],
+	},
+	replyInput: { marginTop: px[8] },
+	replyActions: { display: "flex", gap: px[8] },
+	item: { paddingTop: px[16], paddingBottom: px[16] },
+	comment: { display: "flex", gap: px[12] },
+	indented: { marginLeft: px[44] },
+	avatar: { marginTop: px[2], flexShrink: 0 },
+	body: { minWidth: 0, flex: "1" },
+	metadata: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "baseline",
+		gap: px[8],
+	},
+	author: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 600,
+	},
+	replyTarget: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		color: palette.slate[400],
+	},
+	timestamp: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	commentText: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+		overflowWrap: "break-word",
+	},
+	actions: { display: "flex", alignItems: "center", gap: px[12] },
+	replyAction: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		color: {
+			default: colors.textTertiary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "150ms",
+	},
+	deleteAction: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		color: {
+			default: colors.textTertiary,
+			":hover": { default: null, "@media (hover: hover)": palette.reimu[600] },
+		},
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		transitionDuration: "150ms",
+	},
+	deletedMessage: {
+		paddingTop: px[4],
+		paddingBottom: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[400],
+		fontStyle: "italic",
+	},
+	composerActions: { display: "flex", justifyContent: "flex-end" },
+})
 
 type CommentRenderNode = {
 	comment: Comment
@@ -69,9 +200,6 @@ function formatDate(isoString: string): string {
 	return new Date(isoString).toLocaleDateString()
 }
 
-const TEXTAREA_CLASS =
-	"block w-full resize-none rounded border border-slate-300 bg-primary px-3 py-2 text-sm outline-1 outline-transparent -outline-offset-1 focus:outline-reimu-600 disabled:bg-slate-100 disabled:text-slate-400 transition-all duration-100"
-
 function useCommentInputStore(options: {
 	onSubmit: (content: string) => Promise<void>
 }) {
@@ -121,9 +249,9 @@ type CommentInputProps = {
 	onSubmit: (content: string) => Promise<void>
 	placeholder: string
 	submitText: JSX.Element
-	actionClass: string
+	actionStyles: StyleXStyles
 	onCancel?: () => void
-	class?: string
+	styles?: StyleXStyles
 }
 
 function CommentInput(props: CommentInputProps) {
@@ -132,9 +260,9 @@ function CommentInput(props: CommentInputProps) {
 	})
 
 	return (
-		<div class={props.class}>
+		<div {...stylex.attrs(props.styles)}>
 			<textarea
-				class={TEXTAREA_CLASS}
+				{...stylex.attrs(styles.inputChild, styles.textarea)}
 				value={input.content()}
 				aria-label={props.placeholder}
 				onInput={(e) => input.setContent(e.currentTarget.value)}
@@ -143,14 +271,19 @@ function CommentInput(props: CommentInputProps) {
 				placeholder={props.placeholder}
 			></textarea>
 			<Show when={input.errorMessage()}>
-				{(message) => <p class="text-xs text-reimu-600">{message()}</p>}
+				{(message) => (
+					<p {...stylex.attrs(styles.inputChild, styles.inputError)}>
+						{message()}
+					</p>
+				)}
 			</Show>
-			<div class={props.actionClass}>
+			<div {...stylex.attrs(props.actionStyles, styles.inputChild)}>
 				<Button
-					size="Sm"
-					variant="Primary"
 					disabled={input.isSubmitting()}
 					onClick={input.submit}
+					appearance="solid"
+					tone="gray"
+					size="sm"
 				>
 					<Show
 						when={input.isSubmitting()}
@@ -162,10 +295,11 @@ function CommentInput(props: CommentInputProps) {
 				<Show when={props.onCancel}>
 					{(onCancel) => (
 						<Button
-							size="Sm"
-							variant="Tertiary"
 							disabled={input.isSubmitting()}
 							onClick={onCancel()}
+							appearance="ghost"
+							tone="gray"
+							size="sm"
 						>
 							<Trans>Cancel</Trans>
 						</Button>
@@ -177,6 +311,7 @@ function CommentInput(props: CommentInputProps) {
 }
 
 function ReplyInput(props: {
+	styles?: StyleXStyles
 	onSubmit: (content: string) => Promise<void>
 	onCancel: () => void
 }) {
@@ -184,8 +319,8 @@ function ReplyInput(props: {
 
 	return (
 		<CommentInput
-			class="mt-2 space-y-2"
-			actionClass="flex gap-2"
+			styles={[styles.replyInput, props.styles]}
+			actionStyles={styles.replyActions}
 			placeholder={t`Write a reply...`}
 			submitText={<Trans>Reply</Trans>}
 			onSubmit={props.onSubmit}
@@ -195,6 +330,7 @@ function ReplyInput(props: {
 }
 
 type CommentItemProps = {
+	styles?: StyleXStyles
 	comment: Comment
 	currentUser: UserProfile | undefined
 	canDelete: boolean
@@ -219,43 +355,45 @@ function CommentItem(props: CommentItemProps) {
 	}
 
 	return (
-		<li class="py-4">
-			<div class={twJoin("flex gap-3", props.indented && "ml-11")}>
+		<li {...stylex.attrs(styles.item, props.styles)}>
+			<div {...stylex.attrs(styles.comment, props.indented && styles.indented)}>
 				<Avatar
 					user={props.comment.author}
-					class="mt-0.5 shrink-0"
+					styles={styles.avatar}
 				/>
-				<div class="min-w-0 flex-1 space-y-2">
+				<div {...stylex.attrs(styles.body)}>
 					<Show
 						when={props.comment.state === "Deleted"}
 						fallback={
 							<>
-								<div class="space-y-1">
-									<div class="flex flex-wrap items-baseline gap-2">
+								<div {...stylex.attrs(styles.bodyChild)}>
+									<div {...stylex.attrs(styles.messageChild, styles.metadata)}>
 										<Link
 											to="/profile/$username"
 											params={{ username: props.comment.author.name }}
-											class="text-sm font-semibold"
+											class={
+												stylex.attrs(link.base, link.text, styles.author).class
+											}
 										>
 											{props.comment.author.name}
 										</Link>
 										<Show when={props.replyToName}>
-											<span class="text-xs font-medium text-slate-400">
+											<span {...stylex.attrs(styles.replyTarget)}>
 												▶ {props.replyToName}
 											</span>
 										</Show>
-										<span class="text-xs text-tertiary">
+										<span {...stylex.attrs(styles.timestamp)}>
 											{formatDate(props.comment.created_at)}
 										</span>
 									</div>
-									<p class="text-sm text-secondary wrap-break-word">
+									<p {...stylex.attrs(styles.messageChild, styles.commentText)}>
 										{props.comment.content}
 									</p>
 								</div>
-								<div class="flex items-center gap-3">
+								<div {...stylex.attrs(styles.bodyChild, styles.actions)}>
 									<Show when={props.currentUser !== undefined}>
 										<button
-											class="text-xs font-medium text-tertiary transition-colors hover:text-primary"
+											{...stylex.attrs(styles.replyAction)}
 											onClick={() => props.onReply()}
 										>
 											{t`Reply`}
@@ -276,7 +414,7 @@ function CommentItem(props: CommentItemProps) {
 											triggerAs={(triggerProps) => (
 												<button
 													{...triggerProps}
-													class="text-xs font-medium text-tertiary transition-colors hover:text-reimu-600"
+													{...stylex.attrs(styles.deleteAction)}
 												>
 													{t`Delete`}
 												</button>
@@ -285,18 +423,23 @@ function CommentItem(props: CommentItemProps) {
 									</Show>
 								</div>
 								<Show when={deleteMutation.isError}>
-									<p class="text-xs text-reimu-600">{deleteErrorMessage()}</p>
+									<p {...stylex.attrs(styles.bodyChild, styles.inputError)}>
+										{deleteErrorMessage()}
+									</p>
 								</Show>
 								<Show when={props.isReplyOpen}>
 									<ReplyInput
 										onSubmit={props.onSubmitReply}
 										onCancel={props.onCancelReply}
+										styles={styles.bodyChild}
 									/>
 								</Show>
 							</>
 						}
 					>
-						<div class="py-1 text-sm text-slate-400 italic">{t`[deleted]`}</div>
+						<div
+							{...stylex.attrs(styles.bodyChild, styles.deletedMessage)}
+						>{t`[deleted]`}</div>
 					</Show>
 				</div>
 			</div>
@@ -305,6 +448,7 @@ function CommentItem(props: CommentItemProps) {
 }
 
 type CommentThreadListItemProps = {
+	styles?: StyleXStyles
 	comment: Comment
 	currentUser: UserProfile | undefined
 	canManage: boolean
@@ -330,6 +474,7 @@ function CommentThreadListItem(props: CommentThreadListItemProps) {
 
 	return (
 		<CommentItem
+			styles={props.styles}
 			comment={props.comment}
 			currentUser={props.currentUser}
 			canDelete={canDelete()}
@@ -360,16 +505,16 @@ function TopLevelInput(props: {
 	const { t } = useLingui()
 
 	return (
-		<div class="flex gap-3">
+		<div {...stylex.attrs(styles.comment)}>
 			<Show when={props.currentUser}>
 				<Avatar
 					user={props.currentUser}
-					class="mt-0.5 shrink-0"
+					styles={styles.avatar}
 				/>
 			</Show>
 			<CommentInput
-				class="min-w-0 flex-1 space-y-2"
-				actionClass="flex justify-end"
+				styles={styles.body}
+				actionStyles={styles.composerActions}
 				placeholder={t`Add a comment...`}
 				submitText={<Trans>Comment</Trans>}
 				onSubmit={props.onSubmit}
@@ -413,12 +558,13 @@ export type CommentThreadModel = {
 }
 
 type CommentThreadListProps = {
+	itemStyles?: StyleXStyles
 	model: CommentThreadModel
 	currentUser: UserProfile | undefined
 	emptyText: JSX.Element
-	listClass: string
-	statusClass: string
-	loadMoreClass: string
+	listStyles?: StyleXStyles
+	statusStyles: StyleXStyles
+	loadMoreStyles: StyleXStyles
 }
 
 export function CommentThreadList(props: CommentThreadListProps) {
@@ -426,15 +572,20 @@ export function CommentThreadList(props: CommentThreadListProps) {
 
 	return (
 		<Suspense
-			fallback={<div class={props.statusClass}>{t`Loading comments...`}</div>}
+			fallback={
+				<div
+					{...stylex.attrs(props.statusStyles)}
+				>{t`Loading comments...`}</div>
+			}
 		>
 			<CommentThreadListContent
+				itemStyles={props.itemStyles}
 				model={props.model}
 				currentUser={props.currentUser}
 				emptyText={props.emptyText}
-				listClass={props.listClass}
-				statusClass={props.statusClass}
-				loadMoreClass={props.loadMoreClass}
+				listStyles={props.listStyles}
+				statusStyles={props.statusStyles}
+				loadMoreStyles={props.loadMoreStyles}
 			/>
 		</Suspense>
 	)
@@ -490,21 +641,26 @@ function CommentThreadListContent(props: CommentThreadListProps) {
 							: undefined
 					}
 				>
-					{(message) => <div class={props.statusClass}>{message()}</div>}
+					{(message) => (
+						<div {...stylex.attrs(props.statusStyles)}>{message()}</div>
+					)}
 				</Match>
 				<Match when={commentGroups().length === 0}>
-					<div class={props.statusClass}>{props.emptyText}</div>
+					<div {...stylex.attrs(props.statusStyles)}>{props.emptyText}</div>
 				</Match>
 				<Match when={commentGroups().length > 0}>
 					<>
 						<Show when={props.model.errorMessage()}>
-							{(message) => <div class={props.statusClass}>{message()}</div>}
+							{(message) => (
+								<div {...stylex.attrs(props.statusStyles)}>{message()}</div>
+							)}
 						</Show>
-						<ul class={props.listClass}>
+						<ul {...stylex.attrs(props.listStyles)}>
 							<For each={commentGroups()}>
 								{(root) => (
 									<>
 										<CommentThreadListItem
+											styles={props.itemStyles}
 											comment={root.comment}
 											currentUser={props.currentUser}
 											canManage={props.model.canManage()}
@@ -518,6 +674,7 @@ function CommentThreadListContent(props: CommentThreadListProps) {
 										<For each={root.replies}>
 											{(reply) => (
 												<CommentThreadListItem
+													styles={props.itemStyles}
 													comment={reply.comment}
 													currentUser={props.currentUser}
 													canManage={props.model.canManage()}
@@ -541,14 +698,15 @@ function CommentThreadListContent(props: CommentThreadListProps) {
 			</Switch>
 
 			<Show when={props.model.hasMore()}>
-				<div class={props.loadMoreClass}>
+				<div {...stylex.attrs(props.loadMoreStyles)}>
 					<Button
-						variant="Secondary"
-						size="Sm"
 						disabled={props.model.isLoadingMore()}
 						onClick={() => {
 							void props.model.loadMore()
 						}}
+						appearance="soft"
+						tone="gray"
+						size="sm"
 					>
 						{props.model.isLoadingMore() ? t`Loading...` : t`Load more`}
 					</Button>

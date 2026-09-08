@@ -1,5 +1,6 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { Trans, useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import { Link, useNavigate } from "@tanstack/solid-router"
 import { BellIcon } from "@thc/icons/heroicons/24/outline"
@@ -7,20 +8,234 @@ import { HamburgerMenuIcon, MagnifyingGlassIcon } from "@thc/icons/radix"
 import { StrExt } from "@thc/toolkit/data"
 import { createSignal, Match, Show, Switch } from "solid-js"
 
-import { Button } from "~/component/atomic/button"
+import { Button, buttonStyles } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import { unreadCountOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import type { SessionProfile } from "~/state/user"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { dividerStyles } from "~/style/primitives"
+import {
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+	radius,
+} from "~/style/tokens.stylex"
 import { createClickOutside } from "~/utils/solid/createClickOutside"
 
-import { Divider } from "../atomic/Divider"
 import { Avatar } from "../atomic/avatar"
 import { Dialog } from "../dialog"
 import { LeftSidebar } from "./LeftSidebar"
 import { RightSidebar } from "./RightSidebar"
 
-const HEADER_BTN_CLASS = "m-auto size-fit cursor-pointer p-1"
+const pulse = stylex.keyframes({ "50%": { opacity: 0.5 } })
+
+const styles = stylex.create({
+	skeleton: {
+		display: "grid",
+		width: px[32],
+		height: px[32],
+		placeItems: "center",
+	},
+	skeletonDot: {
+		width: px[16],
+		height: px[16],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[200],
+		animationName: pulse,
+		animationDuration: "2s",
+		animationTimingFunction: "cubic-bezier(.4,0,.6,1)",
+		animationIterationCount: "infinite",
+	},
+	skeletonAvatar: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.full,
+		backgroundColor: palette.slate[200],
+		animationName: pulse,
+		animationDuration: "2s",
+		animationTimingFunction: "cubic-bezier(.4,0,.6,1)",
+		animationIterationCount: "infinite",
+	},
+	header: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderBottomColor: palette.slate[300],
+		backgroundColor: colors.backgroundPrimary,
+		paddingInline: px[16],
+		paddingBlock: px[8],
+	},
+	layout: {
+		minHeight: px[32],
+		display: "grid",
+		gridTemplateColumns: {
+			default: "auto minmax(0,1fr) auto",
+			"@media (min-width: 40rem)": "repeat(3,minmax(0,1fr))",
+		},
+		rowGap: px[8],
+		alignItems: "center",
+	},
+	left: {
+		display: "flex",
+		alignItems: "center",
+		justifySelf: "start",
+		gap: px[12],
+	},
+	menuIcon: {
+		margin: "auto",
+		width: px[20],
+		height: px[20],
+		color: palette.slate[400],
+	},
+	navigation: { position: "fixed", inset: 0, zIndex: 50, width: "fit-content" },
+	divider: { height: px[24] },
+	right: {
+		gridColumnStart: "3",
+		gridRowStart: "1",
+		display: "flex",
+		height: "100%",
+		alignItems: "center",
+		justifySelf: "end",
+		gap: px[12],
+	},
+	bellContainer: {
+		display: "grid",
+		height: px[32],
+		width: px[32],
+		placeItems: "center",
+	},
+	avatarTrigger: {
+		width: "fit-content",
+		height: "fit-content",
+		cursor: "pointer",
+		borderRadius: radius.full,
+		padding: 0,
+	},
+	dialog: { position: "fixed", inset: 0, zIndex: 50 },
+	form: {
+		gridColumn: {
+			default: "span 3 / span 3",
+			"@media (min-width: 40rem)": "span 1 / span 1",
+		},
+		gridColumnStart: { default: "1", "@media (min-width: 40rem)": "2" },
+		gridRowStart: { default: "2", "@media (min-width: 40rem)": "1" },
+		width: "100%",
+		maxWidth: { default: null, "@media (min-width: 40rem)": px[384] },
+		justifySelf: { default: null, "@media (min-width: 40rem)": "center" },
+	},
+	search: { position: "relative", display: "grid", alignItems: "center" },
+	input: {
+		marginRight: "auto",
+		height: px[28],
+		width: "100%",
+		borderRadius: radius.xs,
+		backgroundColor: { default: palette.slate[100], ":focus": palette.white },
+		paddingLeft: px[28],
+		transitionDuration: "200ms",
+		outlineColor: {
+			default: "transparent",
+			":hover": { default: null, "@media (hover: hover)": palette.reimu[600] },
+			":focus": palette.reimu[600],
+		},
+		outlineStyle: {
+			default: null,
+			":hover": { default: null, "@media (hover: hover)": "solid" },
+			":focus": "solid",
+		},
+		outlineWidth: {
+			default: null,
+			":hover": { default: null, "@media (hover: hover)": "1px" },
+			":focus": "1.5px",
+		},
+	},
+	searchIcon: {
+		pointerEvents: "none",
+		position: "absolute",
+		left: px[8],
+		top: "50%",
+		width: px[16],
+		height: px[16],
+		translate: "0 -50%",
+		color: palette.slate[500],
+	},
+	filter: {
+		position: "absolute",
+		left: 0,
+		top: "100%",
+		zIndex: 50,
+		marginTop: px[8],
+		width: "100%",
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.white,
+		padding: px[8],
+		boxShadow:
+			"0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+	},
+	filterRow: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+	},
+	filterTitle: {
+		fontSize: "11px",
+		fontWeight: 500,
+		letterSpacing: ".18em",
+		color: palette.slate[500],
+	},
+	filterTrigger: {
+		height: px[28],
+		width: px[160],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	bell: {
+		position: "relative",
+		display: "grid",
+		placeItems: "center",
+		padding: px[4],
+	},
+	bellIcon: { margin: "auto", width: px[16], height: px[16] },
+	unread: {
+		position: "absolute",
+		right: "-.375rem",
+		top: "-.375rem",
+		display: "grid",
+		height: px[16],
+		minWidth: px[16],
+		placeItems: "center",
+		borderRadius: radius.full,
+		backgroundColor: palette.reimu[600],
+		paddingInline: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: 1,
+		color: palette.white,
+	},
+	auth: {
+		display: "grid",
+		gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+		gap: px[12],
+	},
+	headerButton: {
+		margin: "auto",
+		width: "fit-content",
+		height: "fit-content",
+		cursor: "pointer",
+		padding: px[4],
+	},
+	authButton: {
+		paddingBlock: px[4],
+		paddingInline: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	signIn: { color: palette.slate[900] },
+})
 
 type EntityFilter =
 	| "all"
@@ -45,13 +260,13 @@ function HeaderSkeleton() {
 	return (
 		<>
 			<div
-				class="grid size-8 place-items-center"
+				{...stylex.attrs(styles.skeleton)}
 				aria-hidden="true"
 			>
-				<div class="size-4 animate-pulse rounded-full bg-slate-200"></div>
+				<div {...stylex.attrs(styles.skeletonDot)}></div>
 			</div>
 			<div
-				class="size-8 animate-pulse rounded-full bg-slate-200"
+				{...stylex.attrs(styles.skeletonAvatar)}
 				aria-hidden="true"
 			></div>
 		</>
@@ -67,41 +282,40 @@ export function Header() {
 	}))
 
 	return (
-		<header class="border-b border-slate-300 bg-primary px-4 py-2">
-			<div class="min-h-8 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-y-2 items-center sm:grid-cols-3">
+		<header {...stylex.attrs(styles.header)}>
+			<div {...stylex.attrs(styles.layout)}>
 				{/* Left */}
-				<div class="flex items-center justify-self-start gap-3">
+				<div {...stylex.attrs(styles.left)}>
 					<Dialog.Root>
 						<K_Dialog.Trigger
-							variant="Tertiary"
-							class={HEADER_BTN_CLASS}
 							aria-label={t`Open navigation menu`}
 							as={Button}
+							appearance="ghost"
+							tone="gray"
+							styles={styles.headerButton}
 						>
-							<HamburgerMenuIcon class={"m-auto size-5 text-slate-400"} />
+							<HamburgerMenuIcon {...stylex.attrs(styles.menuIcon)} />
 						</K_Dialog.Trigger>
 						<Dialog.Portal>
 							<Dialog.Overlay />
-							<K_Dialog.Content class="fixed inset-0 z-50 w-fit">
+							<K_Dialog.Content {...stylex.attrs(styles.navigation)}>
 								<LeftSidebar />
 							</K_Dialog.Content>
 						</Dialog.Portal>
 					</Dialog.Root>
 
-					<Divider
-						vertical
-						class="h-6"
-					/>
+					<span
+						{...stylex.attrs(dividerStyles.vertical, styles.divider)}
+					></span>
 				</div>
 				<SearchBar />
 
 				{/* Right	*/}
 
-				<div class="col-start-3 row-start-1 flex h-full items-center justify-self-end gap-3">
-					<Divider
-						vertical
-						class="h-6"
-					/>
+				<div {...stylex.attrs(styles.right)}>
+					<span
+						{...stylex.attrs(dividerStyles.vertical, styles.divider)}
+					></span>
 					<Switch>
 						<Match when={currentUser.session.status === "loading"}>
 							<HeaderSkeleton />
@@ -136,7 +350,7 @@ function AuthenticatedContent(props: AuthenticatedContentProps) {
 
 	return (
 		<>
-			<div class="grid h-8 w-8 place-items-center">
+			<div {...stylex.attrs(styles.bellContainer)}>
 				<BellButton unreadCount={props.unreadCount} />
 			</div>
 			<Dialog.Root
@@ -145,15 +359,16 @@ function AuthenticatedContent(props: AuthenticatedContentProps) {
 			>
 				<K_Dialog.Trigger
 					as={Button}
-					variant="Tertiary"
-					class="size-fit cursor-pointer rounded-full p-0"
 					aria-label={t`Open user menu`}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.avatarTrigger}
 				>
 					<Avatar user={props.user} />
 				</K_Dialog.Trigger>
 				<Dialog.Portal>
 					<Dialog.Overlay onClick={close} />
-					<K_Dialog.Content class="fixed inset-0 z-50">
+					<K_Dialog.Content {...stylex.attrs(styles.dialog)}>
 						<RightSidebar
 							ref={setRef}
 							onClose={() => setShow(false)}
@@ -190,12 +405,11 @@ function SearchBar() {
 
 	return (
 		<form
-			class="col-span-3 col-start-1 row-start-2 w-full
-				sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:max-w-96 sm:justify-self-center"
+			{...stylex.attrs(styles.form)}
 			onSubmit={submit}
 		>
 			<div
-				class="relative grid items-center"
+				{...stylex.attrs(styles.search)}
 				onFocusIn={() => setShowFilter(true)}
 				onFocusOut={(e) => {
 					const next = e.relatedTarget
@@ -210,14 +424,14 @@ function SearchBar() {
 					type="search"
 					aria-label={t`Search artists, releases, songs`}
 					placeholder={t`Search artists, releases, songs…`}
-					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
+					{...stylex.attrs(styles.input)}
 				/>
-				<MagnifyingGlassIcon class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+				<MagnifyingGlassIcon {...stylex.attrs(styles.searchIcon)} />
 
 				<Show when={showFilter()}>
-					<div class="absolute left-0 top-full z-50 mt-2 w-full rounded-sm border border-slate-200 bg-white p-2 shadow-md">
-						<div class="flex items-center justify-between gap-3">
-							<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
+					<div {...stylex.attrs(styles.filter)}>
+						<div {...stylex.attrs(styles.filterRow)}>
+							<div {...stylex.attrs(styles.filterTitle)}>
 								<Trans>Filter</Trans>
 							</div>
 							<Select.Root
@@ -233,7 +447,7 @@ function SearchBar() {
 									</Select.Item>
 								)}
 							>
-								<Select.Trigger class="h-7 w-40 text-sm">
+								<Select.Trigger styles={styles.filterTrigger}>
 									<Select.Value<EntityFilter>>
 										{(state) => StrExt.capitalize(state.selectedOption())}
 									</Select.Value>
@@ -261,11 +475,11 @@ function BellButton(props: { unreadCount: number }) {
 			to="/notifications"
 			search={{ state: "inbox" }}
 			aria-label={t`Notifications`}
-			class="relative grid place-items-center p-1"
+			{...stylex.attrs(styles.bell)}
 		>
-			<BellIcon class="m-auto size-4" />
+			<BellIcon {...stylex.attrs(styles.bellIcon)} />
 			<Show when={props.unreadCount > 0}>
-				<span class="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-reimu-600 px-1 text-xs leading-none text-white">
+				<span {...stylex.attrs(styles.unread)}>
 					{props.unreadCount > 99 ? "99+" : props.unreadCount}
 				</span>
 			</Show>
@@ -275,25 +489,39 @@ function BellButton(props: { unreadCount: number }) {
 
 function UnauthenticatedButtons() {
 	const { t } = useLingui()
-	// @tw
-	const BTN_CLASS = "py-1 px-3 text-sm"
 
 	return (
-		<div class="grid grid-cols-2 gap-3">
-			<Button
-				variant="Tertiary"
-				class={BTN_CLASS.concat(" ", "text-slate-900")}
-				type="button"
+		<div {...stylex.attrs(styles.auth)}>
+			<Link
+				to="/auth/sign-in"
+				class={
+					stylex.attrs(
+						link.base,
+						buttonStyles.base,
+						buttonStyles.ghost,
+						buttonStyles.gray,
+						buttonStyles.ghostGray,
+						styles.authButton,
+						styles.signIn,
+					).class
+				}
 			>
-				<Link to="/auth/sign-in">{t`Sign In`}</Link>
-			</Button>
-			<Button
-				variant="Primary"
-				class={BTN_CLASS}
-				type="button"
+				{t`Sign In`}
+			</Link>
+			<Link
+				to="/auth/sign-up"
+				class={
+					stylex.attrs(
+						link.base,
+						buttonStyles.base,
+						buttonStyles.solid,
+						buttonStyles.gray,
+						styles.authButton,
+					).class
+				}
 			>
-				<Link to="/auth/sign-up">{t`Sign Up`}</Link>
-			</Button>
+				{t`Sign Up`}
+			</Link>
 		</div>
 	)
 }

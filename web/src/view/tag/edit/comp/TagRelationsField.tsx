@@ -7,11 +7,12 @@ import {
 	setInput,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import type { Tag, TagRef, TagRelationType } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { FormComp, Select } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
@@ -19,12 +20,62 @@ import { Dialog } from "~/component/dialog"
 import { FieldArrayFallback } from "~/component/form"
 import { TagSearchDialog } from "~/component/form/SearchDialog"
 import { TagM } from "~/domain/tag"
+import { formStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 
 import { useTagForm } from "../context"
 import type { TagFormStore } from "./types"
 
+const styles = stylex.create({
+	arrayField: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+	},
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		alignContent: "space-between",
+		justifyContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	fieldLabel: { margin: 0 },
+	editButton: { height: "max-content", padding: px[8] },
+	editIcon: { width: px[16], height: px[16] },
+	relations: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+		gap: px[8],
+	},
+	relationRow: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
+		columnGap: px[8],
+		rowGap: px[4],
+	},
+	tagSelection: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) auto",
+		alignItems: "center",
+		columnGap: px[8],
+	},
+	field: { display: "flex", flexDirection: "column" },
+	select: { width: "100%" },
+	removeButton: { aspectRatio: "1 / 1" },
+	removeIcon: { marginInline: "auto" },
+	relationErrors: {
+		gridColumn: "span 3 / span 3",
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+	},
+	muted: { color: colors.textTertiary },
+	primary: { color: colors.textPrimary },
+})
+
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 }
 
 const TAG_RELATION_TYPES: TagRelationType[] = ["Inherit", "Derive"]
@@ -72,21 +123,24 @@ export function TagFormRelationsField(props: Props) {
 	}
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Relations`}</FormComp.Label>
+		<div {...stylex.attrs(styles.arrayField, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.fieldLabel)}
+				>{t`Relations`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addRelation}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.editButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.editIcon)} />
 				</Button>
 			</div>
 			<FormComp.ErrorList
 				errors={getErrors(formStore, { path: ["data", "relations"] })}
 			/>
-			<ul class="flex min-h-32 flex-col gap-2">
+			<ul {...stylex.attrs(styles.relations)}>
 				<FieldArray
 					of={formStore}
 					path={["data", "relations"]}
@@ -141,8 +195,8 @@ function RelationRow(props: RelationRowProps) {
 		}
 	})
 	return (
-		<li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-x-2 gap-y-1">
-			<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
+		<li {...stylex.attrs(styles.relationRow)}>
+			<div {...stylex.attrs(styles.tagSelection)}>
 				<RelationTagLabel
 					value={props.tagRef?.name}
 					placeholder={t`Select tag`}
@@ -153,23 +207,24 @@ function RelationRow(props: RelationRowProps) {
 					trigger={
 						<Dialog.Trigger
 							as={Button}
-							variant="Tertiary"
-							class="h-max p-2"
+							appearance="ghost"
+							tone="gray"
+							styles={styles.editButton}
 						>
-							<Pencil1Icon class="size-4" />
+							<Pencil1Icon {...stylex.attrs(styles.editIcon)} />
 						</Dialog.Trigger>
 					}
-				/>
+				/>{" "}
 			</div>
 			<Field
 				of={props.formStore}
 				path={["data", "relations", props.index, "type"]}
 			>
 				{(field) => (
-					<div class="flex flex-col">
+					<div {...stylex.attrs(styles.field)}>
 						<Select.Root<"" | TagRelationType>
 							name={field.props.name}
-							class="w-full"
+							{...stylex.attrs(styles.select)}
 							value={field.input ?? ""}
 							onChange={(value) => {
 								const next = value ?? ""
@@ -190,7 +245,7 @@ function RelationRow(props: RelationRowProps) {
 								onBlur={field.props.onBlur}
 								onFocus={field.props.onFocus}
 							/>
-							<Select.Trigger class="w-full">
+							<Select.Trigger styles={styles.select}>
 								<Select.Value<"" | TagRelationType>>
 									{(state) => {
 										const selectedOption = state.selectedOption()
@@ -216,11 +271,12 @@ function RelationRow(props: RelationRowProps) {
 				)}
 			</Field>
 			<Button
-				variant="Tertiary"
 				onClick={props.onRemove}
-				class="aspect-square"
+				appearance="ghost"
+				tone="gray"
+				styles={styles.removeButton}
 			>
-				<Cross1Icon class="mx-auto" />
+				<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
 			</Button>
 			<Field
 				of={props.formStore}
@@ -234,7 +290,7 @@ function RelationRow(props: RelationRowProps) {
 							hidden
 							value={field.input ?? undefined}
 						/>
-						<ul class="col-span-3 grid grid-cols-subgrid">
+						<ul {...stylex.attrs(styles.relationErrors)}>
 							<FormComp.ErrorList errors={field.errors} />
 						</ul>
 					</>
@@ -248,9 +304,11 @@ function RelationTagLabel(props: { value?: string; placeholder: string }) {
 	return (
 		<Show
 			when={props.value}
-			fallback={<span class="text-tertiary">{props.placeholder}</span>}
+			fallback={
+				<span {...stylex.attrs(styles.muted)}>{props.placeholder}</span>
+			}
 		>
-			{(value) => <span class="text-primary">{value()}</span>}
+			{(value) => <span {...stylex.attrs(styles.primary)}>{value()}</span>}
 		</Show>
 	)
 }

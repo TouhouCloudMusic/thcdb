@@ -16,6 +16,14 @@ hooks = [
 repo = "local"
 
 [[repos.hooks]]
+id             = "web-stylex"
+name           = "web StyleX check"
+entry          = "pnpm --dir web exec oxlint --allow all --deny @stylexjs/valid-styles --no-error-on-unmatched-pattern src"
+language       = "system"
+pass_filenames = false
+stages         = [ "pre-push" ]
+
+[[repos.hooks]]
 id             = "toml-fmt-check"
 name           = "toml format check"
 entry          = "taplo fmt --check"

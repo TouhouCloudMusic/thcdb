@@ -1,5 +1,7 @@
 import { FileField } from "@kobalte/core/file-field"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { unknownToError } from "@thc/toolkit"
 import { CropperSelection } from "cropperjs"
 import { Cropper } from "solid-cropper"
@@ -14,7 +16,6 @@ import {
 	Switch,
 } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
@@ -23,12 +24,115 @@ import {
 	AVATAR_MIN_FILE_SIZE,
 	REQUEST_BODY_MAX_SIZE,
 } from "~/constant/server"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { getImageBounds, getImageScale } from "./cropperImageUtils"
 import { ensureCropperSelectionChangeBounded } from "./cropperSelectionPatch"
 import type { FileSizeRange } from "./utils"
 import { formatBytes, validateImageFile } from "./utils"
+
+const styles = stylex.create({
+	dialog: {
+		width: "min(56rem,calc(100vw - 2rem))",
+		borderRadius: radius.md,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.white,
+		boxShadow:
+			"0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1)",
+	},
+	header: {
+		display: "flex",
+		alignItems: "flex-end",
+		justifyContent: "space-between",
+		gap: px[16],
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderBottomColor: palette.slate[300],
+		padding: px[16],
+	},
+	title: {
+		fontSize: fontSizes.lg,
+		lineHeight: lineHeights.lg,
+		fontWeight: 300,
+		color: colors.textPrimary,
+	},
+	close: { paddingInline: px[12] },
+	content: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	grid: { display: "grid", gap: px[16] },
+	dropzoneTitle: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+	},
+	select: { paddingInline: px[16] },
+	toolbar: { display: "flex", alignItems: "center", gap: px[8] },
+	replace: {
+		marginLeft: "auto",
+		paddingInline: px[12],
+		alignSelf: "flex-end",
+	},
+	remove: { paddingInline: px[12], alignSelf: "flex-end" },
+	actions: { display: "grid", gridTemplateColumns: "1fr auto" },
+	messages: {
+		display: "flex",
+		flexDirection: "column",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	error: {
+		borderRadius: radius.md,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.reimu[200],
+		paddingInline: px[12],
+		paddingBlock: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[800],
+	},
+	save: { height: "fit-content", width: px[96] },
+	cropper: { height: "100%", width: "100%" },
+	canvas: {
+		height: "100%",
+		width: "100%",
+		borderRadius: radius.md,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / .05)",
+	},
+	dropzone: {
+		display: "flex",
+		height: px[224],
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: radius.md,
+		borderWidth: "2px",
+		borderStyle: "dashed",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.white,
+		color: palette.slate[600],
+		flexDirection: "column",
+		gap: px[12],
+		paddingInline: px[24],
+		textAlign: "center",
+	},
+})
 
 type OutputSize = { width: number; height: number }
 type ComputeOutputSize = (
@@ -69,9 +173,6 @@ const ImageCropDialogContext = createContext<ImageCropDialogContextValue>()
 
 const useImageCropDialog = () =>
 	assertContext(ImageCropDialogContext, "ImageCropDialog")
-
-const DROPZONE_CLASS =
-	"flex h-56 items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-white text-slate-600"
 
 const DEFAULT_FILE_SIZE_RANGE: FileSizeRange = {
 	min: AVATAR_MIN_FILE_SIZE,
@@ -453,7 +554,7 @@ export function Root(props: RootProps) {
 			>
 				<Dialog.Portal>
 					<Dialog.Overlay data-blur />
-					<Dialog.Content class="w-[min(56rem,calc(100vw-2rem))] rounded-md border border-slate-300 bg-white shadow-xl">
+					<Dialog.Content styles={styles.dialog}>
 						<Header title={props.title} />
 						<Content>{props.children}</Content>
 					</Dialog.Content>
@@ -469,14 +570,13 @@ type HeaderProps = {
 
 function Header(props: HeaderProps) {
 	return (
-		<div class="flex items-end justify-between gap-4 border-b border-slate-300 bg-slate-50 p-4">
-			<Dialog.Title class="text-lg font-light text-primary">
-				{props.title}
-			</Dialog.Title>
+		<div {...stylex.attrs(styles.header)}>
+			<Dialog.Title styles={styles.title}>{props.title}</Dialog.Title>
 			<Dialog.CloseButton
-				variant="SecondaryV2"
-				size="Sm"
-				class="px-3"
+				appearance="outline"
+				tone="gray"
+				size="sm"
+				styles={styles.close}
 			>
 				Close
 			</Dialog.CloseButton>
@@ -492,9 +592,9 @@ function Content(props: ContentProps) {
 	const errorMessage = () => context.localError ?? context.error
 
 	return (
-		<div class="flex flex-col gap-2 p-4">
+		<div {...stylex.attrs(styles.content)}>
 			<FileField
-				class="grid gap-4"
+				{...stylex.attrs(styles.grid)}
 				multiple={false}
 				accept="image/png,image/jpeg"
 				onFileChange={context.onFileChange}
@@ -503,18 +603,16 @@ function Content(props: ContentProps) {
 					when={context.isFileSelected && context.previewSrc}
 					keyed
 					fallback={
-						<FileField.Dropzone
-							class={twMerge(DROPZONE_CLASS, "flex-col gap-3 px-6 text-center")}
-						>
-							<div class="text-sm font-medium">
+						<FileField.Dropzone {...stylex.attrs(styles.dropzone)}>
+							<div {...stylex.attrs(styles.dropzoneTitle)}>
 								Drop an image here, or pick a file
 							</div>
 							<FileField.Trigger
 								as={Button}
-								variant="PrimaryV2"
-								color="Reimu"
-								size="Sm"
-								class="px-4"
+								appearance="surface"
+								tone="reimu"
+								size="sm"
+								styles={styles.select}
 							>
 								Select file
 							</FileField.Trigger>
@@ -523,21 +621,23 @@ function Content(props: ContentProps) {
 				>
 					<FileField.ItemList>
 						{(_) => (
-							<div class="grid gap-4">
-								<div class="flex items-center gap-2">
+							<div {...stylex.attrs(styles.grid)}>
+								<div {...stylex.attrs(styles.toolbar)}>
 									<FileField.Trigger
 										as={Button}
-										variant="SecondaryV2"
-										size="Xs"
-										class="ml-auto px-3 self-end"
+										appearance="outline"
+										tone="gray"
+										size="xs"
+										styles={styles.replace}
 									>
 										Replace
 									</FileField.Trigger>
 									<FileField.ItemDeleteTrigger
 										as={Button}
-										variant="SecondaryV2"
-										size="Xs"
-										class="px-3 self-end"
+										appearance="outline"
+										tone="gray"
+										size="xs"
+										styles={styles.remove}
 										onClick={() => {
 											context.clearLocalState()
 										}}
@@ -554,21 +654,17 @@ function Content(props: ContentProps) {
 
 				<FileField.HiddenInput />
 			</FileField>
-			<div class="grid grid-cols-[1fr_auto]">
-				<div class="flex flex-col text-sm">
+			<div {...stylex.attrs(styles.actions)}>
+				<div {...stylex.attrs(styles.messages)}>
 					<Show when={errorMessage()}>
-						{(error) => (
-							<div class="rounded-md border border-reimu-200 bg-reimu-50 px-3 py-2 text-sm text-reimu-800">
-								{error()}
-							</div>
-						)}
+						{(error) => <div {...stylex.attrs(styles.error)}>{error()}</div>}
 					</Show>
 				</div>
 				<Button
-					variant="Primary"
-					color="Reimu"
-					size="Sm"
-					class="size-fit w-24"
+					appearance="solid"
+					tone="reimu"
+					size="sm"
+					styles={styles.save}
 					disabled={!context.canSave}
 					onClick={() => {
 						if (!context.canSave) return
@@ -586,7 +682,7 @@ function Content(props: ContentProps) {
 }
 
 export type CanvasProps = {
-	class: string
+	styles?: StyleXStyles
 }
 
 export function Canvas(props: CanvasProps) {
@@ -597,14 +693,11 @@ export function Canvas(props: CanvasProps) {
 			ref={(el) => {
 				context.setCropperRoot(el)
 			}}
-			class={twMerge(
-				"size-full rounded-md border border-slate-300 shadow-xs",
-				props.class,
-			)}
+			{...stylex.attrs(styles.canvas, props.styles)}
 		>
 			<Cropper.Canvas
 				background
-				class="h-full w-full"
+				{...stylex.attrs(styles.cropper)}
 			>
 				<Cropper.Image
 					src={context.previewSrc}

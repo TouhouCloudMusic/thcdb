@@ -1,5 +1,216 @@
+import * as stylex from "@stylexjs/stylex"
 import { For } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
+
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, px, radius } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	root: { display: "flex", flexDirection: "column", gap: px[32] },
+	palette: {
+		display: "grid",
+		width: "fit-content",
+		gridTemplateColumns: "1fr auto",
+	},
+	name: { marginRight: px[8], display: "flex" },
+	swatches: { display: "flex" },
+	swatch: {
+		margin: px[4],
+		width: px[40],
+		height: px[40],
+		borderRadius: radius.sm,
+	},
+	column: { display: "flex", flexDirection: "column" },
+	heading: {
+		marginBottom: px[4],
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+		color: palette.slate[900],
+	},
+	darkColumn: {
+		display: "flex",
+		flexDirection: "column",
+		backgroundColor: palette.slate[900],
+	},
+	borderGrid: {
+		display: "grid",
+		width: "fit-content",
+		gridTemplateColumns: "repeat(6,minmax(0,1fr))",
+		gap: px[8],
+	},
+	circles: {
+		display: "grid",
+		gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+		gap: px[8],
+	},
+	circle: {
+		margin: "auto",
+		display: "flex",
+		placeContent: "center",
+		borderRadius: radius.full,
+	},
+	center: {
+		margin: "auto",
+		borderRadius: radius.full,
+		backgroundColor: palette.white,
+	},
+	border100: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[100],
+	},
+	border200: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+	},
+	border300: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+	},
+	border400: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[400],
+	},
+	border500: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[500],
+	},
+	border600: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[600],
+	},
+	border100On100: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[100],
+		backgroundColor: palette.slate[100],
+	},
+	border200On100: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.slate[100],
+	},
+	border300On100: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.slate[100],
+	},
+	border400On100: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[400],
+		backgroundColor: palette.slate[100],
+	},
+	border500On100: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[500],
+		backgroundColor: palette.slate[100],
+	},
+	border600On100: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[600],
+		backgroundColor: palette.slate[100],
+	},
+	border100On200: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[100],
+		backgroundColor: palette.slate[200],
+	},
+	border200On200: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.slate[200],
+	},
+	border300On200: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.slate[200],
+	},
+	border400On200: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[400],
+		backgroundColor: palette.slate[200],
+	},
+	border500On200: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[500],
+		backgroundColor: palette.slate[200],
+	},
+	border600On200: {
+		width: px[32],
+		height: px[32],
+		borderRadius: radius.sm,
+		borderWidth: "1.5px",
+		borderStyle: "solid",
+		borderColor: palette.slate[600],
+		backgroundColor: palette.slate[200],
+	},
+})
 
 type Color = {
 	name: string
@@ -79,31 +290,19 @@ const colors: Color[] = [
 	},
 ]
 
-// oxlint-disable-next-line no-underscore-dangle
-const _cssOverride = colors
-	.flatMap((color) =>
-		color.colors.map((hex, index) => ({
-			[`--color-${color.name.toLowerCase()}-${(index + 1) * 100}`]: hex,
-		})),
-	)
-	.reduce((a, b) => Object.assign(a, b))
-
 function Palette() {
 	return (
-		<div
-			// style={_cssOverride}
-			class="flex flex-col gap-8"
-		>
-			<div class="grid w-fit grid-cols-[1fr_auto]">
+		<div {...stylex.attrs(styles.root)}>
+			<div {...stylex.attrs(styles.palette)}>
 				<For each={colors}>
 					{(color) => (
 						<>
-							<div class="mr-2 flex">{color.name}</div>
-							<ul class="flex">
+							<div {...stylex.attrs(styles.name)}>{color.name}</div>
+							<ul {...stylex.attrs(styles.swatches)}>
 								<For each={color.colors}>
 									{(hex) => (
 										<li
-											class="m-1 size-10 rounded"
+											{...stylex.attrs(styles.swatch)}
 											style={{
 												"background-color": hex,
 											}}
@@ -115,59 +314,59 @@ function Palette() {
 					)}
 				</For>
 			</div>
-			<div class="flex flex-col">
-				<h1 class="mb-1 text-xl text-slate-900">Text comparison</h1>
-				<div class="flex flex-col">
+			<div {...stylex.attrs(styles.column)}>
+				<h1 {...stylex.attrs(styles.heading)}>Text comparison</h1>
+				<div {...stylex.attrs(styles.column)}>
 					<For
 						each={colors.find((c) => c.name === "Slate")?.colors.toReversed()}
 					>
 						{(color) => <span style={{ color }}>Text is {color}</span>}
 					</For>
 				</div>
-				<div class="flex flex-col bg-slate-900">
+				<div {...stylex.attrs(styles.darkColumn)}>
 					<For each={colors.find((c) => c.name === "Slate")?.colors}>
 						{(color) => <span style={{ color }}>Text is {color}</span>}
 					</For>
 				</div>
 			</div>
 
-			<div class="p2 space-y-4">
-				<h1 class="mb-1 text-xl text-slate-900">Border</h1>
-				<div class="grid w-fit grid-cols-6 gap-2 *:border-[1.5px]">
-					<div class="size-8 rounded border border-slate-100"></div>
-					<div class="size-8 rounded border border-slate-200"></div>
-					<div class="size-8 rounded border border-slate-300"></div>
-					<div class="size-8 rounded border border-slate-400"></div>
-					<div class="size-8 rounded border border-slate-500"></div>
-					<div class="size-8 rounded border border-slate-600"></div>
-					<div class="size-8 rounded border border-slate-100 bg-slate-100"></div>
-					<div class="size-8 rounded border border-slate-200 bg-slate-100"></div>
-					<div class="size-8 rounded border border-slate-300 bg-slate-100"></div>
-					<div class="size-8 rounded border border-slate-400 bg-slate-100"></div>
-					<div class="size-8 rounded border border-slate-500 bg-slate-100"></div>
-					<div class="size-8 rounded border border-slate-600 bg-slate-100"></div>
-					<div class="size-8 rounded border border-slate-100 bg-slate-200"></div>
-					<div class="size-8 rounded border border-slate-200 bg-slate-200"></div>
-					<div class="size-8 rounded border border-slate-300 bg-slate-200"></div>
-					<div class="size-8 rounded border border-slate-400 bg-slate-200"></div>
-					<div class="size-8 rounded border border-slate-500 bg-slate-200"></div>
-					<div class="size-8 rounded border border-slate-600 bg-slate-200"></div>
+			<div>
+				<h1 {...stylex.attrs(styles.heading)}>Border</h1>
+				<div {...stylex.attrs(styles.borderGrid)}>
+					<div {...stylex.attrs(styles.border100)}></div>
+					<div {...stylex.attrs(styles.border200)}></div>
+					<div {...stylex.attrs(styles.border300)}></div>
+					<div {...stylex.attrs(styles.border400)}></div>
+					<div {...stylex.attrs(styles.border500)}></div>
+					<div {...stylex.attrs(styles.border600)}></div>
+					<div {...stylex.attrs(styles.border100On100)}></div>
+					<div {...stylex.attrs(styles.border200On100)}></div>
+					<div {...stylex.attrs(styles.border300On100)}></div>
+					<div {...stylex.attrs(styles.border400On100)}></div>
+					<div {...stylex.attrs(styles.border500On100)}></div>
+					<div {...stylex.attrs(styles.border600On100)}></div>
+					<div {...stylex.attrs(styles.border100On200)}></div>
+					<div {...stylex.attrs(styles.border200On200)}></div>
+					<div {...stylex.attrs(styles.border300On200)}></div>
+					<div {...stylex.attrs(styles.border400On200)}></div>
+					<div {...stylex.attrs(styles.border500On200)}></div>
+					<div {...stylex.attrs(styles.border600On200)}></div>
 				</div>
 			</div>
 
-			<div class="grid grid-cols-2 gap-2">
+			<div {...stylex.attrs(styles.circles)}>
 				<For each={colors}>
-					{(palette) => {
-						const colorStack = palette.colors.slice(0, 5)
+					{(colorPalette) => {
+						const colorStack = colorPalette.colors.slice(0, 5)
 						const nested = colorStack.reduce(
 							(child, color, idx) => {
-								const size = `${(16 + idx * 8) * 4}px`
+								const diameter = `${(16 + idx * 8) * 4}px`
 								return (
 									<div
-										class="m-auto flex place-content-center rounded-full"
+										{...stylex.attrs(styles.circle)}
 										style={{
-											width: size,
-											height: size,
+											width: diameter,
+											height: diameter,
 											"background-color": color,
 										}}
 									>
@@ -176,7 +375,7 @@ function Palette() {
 								)
 							},
 							<div
-								class="m-auto rounded-full bg-white"
+								{...stylex.attrs(styles.center)}
 								style={{ width: "32px", height: "32px" }}
 							></div>,
 						)

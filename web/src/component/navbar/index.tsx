@@ -1,5 +1,54 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { createSignal, For } from "solid-js"
+
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, px, radius } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	root: {
+		position: "sticky",
+		top: 0,
+		zIndex: 10,
+		backgroundColor: palette.white,
+		boxShadow: "0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1)",
+	},
+	nav: {
+		display: "flex",
+		alignItems: "center",
+		columnGap: px[24],
+		overflowX: "auto",
+		scrollbarWidth: "none",
+		"::-webkit-scrollbar": { display: "none" },
+		paddingInline: px[24],
+	},
+	marker: {
+		position: "absolute",
+		right: 0,
+		bottom: 0,
+		left: 0,
+		height: px[2],
+		borderRadius: radius.full,
+	},
+	item: {
+		position: "relative",
+		paddingBlock: px[16],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		whiteSpace: "nowrap",
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionDuration: "150ms",
+		transitionTimingFunction: "cubic-bezier(.4,0,.2,1)",
+	},
+	inactive: {
+		color: {
+			default: palette.slate[600],
+			":hover": { default: null, "@media (hover: hover)": palette.slate[900] },
+		},
+	},
+})
 
 type NavItem = {
 	id: string
@@ -31,22 +80,16 @@ export function Navbar() {
 	}
 
 	return (
-		<div class="sticky top-0 z-10 bg-white shadow-sm">
-			<div class="hide-scrollbar flex items-center space-x-6 overflow-x-auto px-6">
+		<div {...stylex.attrs(styles.root)}>
+			<div {...stylex.attrs(styles.nav)}>
 				<For each={items()}>
 					{(item) => (
 						<button
-							class={`relative py-4 text-sm font-medium whitespace-nowrap transition-colors ${
-								item.active
-									? "text-rose-600"
-									: "text-slate-600 hover:text-slate-900"
-							}`}
+							{...stylex.attrs(styles.item, !item.active && styles.inactive)}
 							onClick={() => setActive(item.id)}
 						>
 							{item.label}
-							{item.active && (
-								<div class="bg-rose-600 absolute right-0 bottom-0 left-0 h-0.5 rounded-full"></div>
-							)}
+							{item.active && <div {...stylex.attrs(styles.marker)}></div>}
 						</button>
 					)}
 				</For>

@@ -20,7 +20,7 @@ types_or = [
     "tsx",
     "yaml",
 ]
-stages = [ "pre-commit" ]
+stages = [ "pre-commit", "pre-push" ]
 
 [[repos.hooks]]
 id             = "web-check"

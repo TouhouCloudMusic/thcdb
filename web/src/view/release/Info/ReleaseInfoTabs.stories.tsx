@@ -1,12 +1,25 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Release } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { createMockRelease } from "~/mock/release"
+import { palette } from "~/style/color/palette.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
 
 import { ReleaseInfoTabsView } from "./ReleaseInfoTabs"
+
+const styles = stylex.create({
+	preview: {
+		width: "100%",
+		maxWidth: "960px",
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.white,
+	},
+})
 
 type StoryRootProps = {
 	release: Release
@@ -15,7 +28,7 @@ type StoryRootProps = {
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<div class="w-full max-w-[960px] border border-slate-200 bg-white">
+		<div {...stylex.attrs(styles.preview)}>
 			<ReleaseInfoTabsView
 				release={props.release}
 				activeTab={props.activeTab}

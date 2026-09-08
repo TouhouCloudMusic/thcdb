@@ -7,24 +7,77 @@ import {
 	getErrors,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { Language, LocalizedTitle } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FieldArrayFallback } from "~/component/form"
 import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import type { SongFormStore } from "./types"
+
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+	},
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: {
+		margin: 0,
+	},
+	addButton: {
+		height: "max-content",
+		padding: px[8],
+	},
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+	entries: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+		gap: px[8],
+	},
+	entry: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
+		gridTemplateRows: "auto auto",
+		alignItems: "stretch",
+		columnGap: px[8],
+		rowGap: px[4],
+	},
+	removeControl: {
+		height: "100%",
+		alignSelf: "stretch",
+	},
+	removeButton: {
+		display: "grid",
+		height: "100%",
+		width: "100%",
+		placeItems: "center",
+	},
+})
 
 export function SongLocalizedTitlesField(props: {
 	of: SongFormStore
 	initLocalizedTitles?: LocalizedTitle[]
-	class?: string
+	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
 	const formStore = createMemo(() => props.of)
@@ -57,15 +110,18 @@ export function SongLocalizedTitlesField(props: {
 	}
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Localized Titles`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Localized Titles`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addLocalizedTitle}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.addButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
 			<FieldArray
@@ -73,7 +129,7 @@ export function SongLocalizedTitlesField(props: {
 				path={["data", "localized_titles"]}
 			>
 				{(fa) => (
-					<ul class="flex min-h-32 flex-col gap-2">
+					<ul {...stylex.attrs(styles.entries)}>
 						<For
 							each={fa.items}
 							fallback={<FieldArrayFallback />}
@@ -104,7 +160,7 @@ function LocalizedTitleItem(props: {
 }) {
 	const { t } = useLingui()
 	return (
-		<li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] grid-rows-[auto_auto] items-stretch gap-x-2 gap-y-1">
+		<li {...stylex.attrs(styles.entry)}>
 			<Field
 				of={props.of}
 				path={["data", "localized_titles", props.index, "name"]}
@@ -138,12 +194,13 @@ function LocalizedTitleItem(props: {
 					</>
 				)}
 			</Field>
-			<div class="h-full self-stretch">
+			<div {...stylex.attrs(styles.removeControl)}>
 				<Button
-					variant="Tertiary"
-					size="Sm"
 					onClick={props.onRemove}
-					class="grid h-full w-full place-items-center"
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+					styles={styles.removeButton}
 				>
 					<Cross1Icon />
 				</Button>

@@ -1,6 +1,7 @@
 /* @refresh reload */
 import { Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Tag } from "@thc/api"
 import type { JSX } from "solid-js"
@@ -9,6 +10,8 @@ import { Show } from "solid-js"
 import { FormActionBar } from "~/component/form"
 import { NewTagCorrection } from "~/domain/tag"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { TagFormAltNamesField } from "./comp/TagAltNames"
@@ -22,6 +25,46 @@ import { TagFormProvider } from "./context"
 import { toTagFormInitValue } from "./hook/init"
 import { createTagFormSubmission } from "./hook/submit"
 
+const styles = stylex.create({
+	page: { display: "grid", gridTemplateRows: "auto 1fr auto" },
+	pageHeader: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: px[32],
+	},
+	headingRow: { display: "flex", alignItems: "center", gap: px[16] },
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-.025em",
+	},
+	form: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: "repeat(1, minmax(0, 1fr))",
+			"@media (min-width: 64rem)": "repeat(12, minmax(0, 1fr))",
+		},
+		columnGap: px[8],
+		rowGap: px[32],
+		paddingTop: px[32],
+		paddingInline: px[32],
+		paddingBottom: 0,
+	},
+	formField6: {
+		gridColumnStart: "1",
+		gridColumnEnd: { default: "-1", "@media (min-width: 64rem)": "6" },
+	},
+	formField4: {
+		gridColumnStart: "1",
+		gridColumnEnd: { default: "-1", "@media (min-width: 64rem)": "4" },
+	},
+	fullField: {
+		gridColumn: "1 / -1",
+	},
+})
+
 type Props =
 	| {
 			type: "new"
@@ -34,7 +77,7 @@ type Props =
 
 export function EditTagPage(props: Props): JSX.Element {
 	return (
-		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
+		<PageLayout styles={styles.page}>
 			<PageHeader type={props.type} />
 			<FormContent {...props} />
 		</PageLayout>
@@ -44,9 +87,9 @@ export function EditTagPage(props: Props): JSX.Element {
 function PageHeader(props: { type: Props["type"] }) {
 	const { t } = useLingui()
 	return (
-		<div class="border-b-1 border-slate-300 p-8">
-			<div class="flex items-center gap-4">
-				<h1 class="text-2xl font-light tracking-tight">
+		<div {...stylex.attrs(styles.pageHeader)}>
+			<div {...stylex.attrs(styles.headingRow)}>
+				<h1 {...stylex.attrs(styles.title)}>
 					<Show
 						when={props.type === "new"}
 						fallback={t`Edit Tag`}
@@ -103,15 +146,15 @@ function FormContent(props: Props) {
 					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
 					onSubmit={(output, _) => handleSubmit(output)}
 				>
-					<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
-						<TagFormNameField class="lg:col-end-6" />
-						<TagFormTypeField class="lg:col-end-4" />
-						<TagFormShortDescriptionField class="lg:col-end-6" />
-						<TagFormDescriptionField class="lg:col-end-6" />
-						<TagFormAltNamesField class="lg:col-end-6" />
-						<TagFormRelationsField class="lg:col-end-6" />
+					<div {...stylex.attrs(styles.form)}>
+						<TagFormNameField styles={styles.formField6} />
+						<TagFormTypeField styles={styles.formField4} />
+						<TagFormShortDescriptionField styles={styles.formField6} />
+						<TagFormDescriptionField styles={styles.formField6} />
+						<TagFormAltNamesField styles={styles.formField6} />
+						<TagFormRelationsField styles={styles.formField6} />
 						<TagFormDesc
-							class=""
+							styles={styles.fullField}
 							mutation={mutation}
 						/>
 					</div>

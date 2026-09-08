@@ -1,17 +1,30 @@
 import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { LabelMutation } from "@thc/query"
 import { For } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { useLabelForm } from "../context"
 
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[16],
+	},
+	description: { minHeight: px[128] },
+	errors: { display: "flex", flexDirection: "column" },
+	errorMessage: { fontSize: fontSizes.lg, lineHeight: lineHeights.lg },
+})
+
 type Props = {
 	mutation: ReturnType<typeof LabelMutation.getInstance>
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function LabelFormDesc(props: Props) {
@@ -19,7 +32,7 @@ export function LabelFormDesc(props: Props) {
 	const { formStore } = useLabelForm()
 
 	return (
-		<div class={twMerge("flex flex-col gap-4", props.class)}>
+		<div {...stylex.attrs(styles.field, props.styles)}>
 			<Field
 				of={formStore}
 				path={["description"]}
@@ -30,7 +43,7 @@ export function LabelFormDesc(props: Props) {
 						<InputField.Textarea
 							{...field.props}
 							value={field.input ?? ""}
-							class="min-h-32"
+							styles={styles.description}
 						/>
 						<For each={field.errors}>
 							{(error) => <InputField.Error>{error}</InputField.Error>}
@@ -57,8 +70,8 @@ export function LabelFormDesc(props: Props) {
 				)}
 			</Field>
 
-			<div class="flex flex-col">
-				<FormComp.ErrorMessage class="text-lg">
+			<div {...stylex.attrs(styles.errors)}>
+				<FormComp.ErrorMessage styles={styles.errorMessage}>
 					{props.mutation.isError ? props.mutation.error.message : undefined}
 				</FormComp.ErrorMessage>
 			</div>

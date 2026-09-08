@@ -1,5 +1,12 @@
+import * as stylex from "@stylexjs/stylex"
+
 import { Select } from "~/component/atomic/form/select"
 import { ExploreFilterField } from "~/component/feature/entity_explore/ExploreFilterField"
+import { px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	trigger: { height: px[40], width: "100%" },
+})
 
 type ExploreFilterOption<T extends string> = {
 	value: T
@@ -44,7 +51,7 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 					</Select.Item>
 				)}
 			>
-				<Select.Trigger class="h-10 w-full">
+				<Select.Trigger styles={styles.trigger}>
 					<Select.Value<ExploreFilterOption<T>>>
 						{() => selectedOption()?.label ?? ""}
 					</Select.Value>

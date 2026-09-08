@@ -1,23 +1,103 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import type { CorrectionHistoryItem, Tag } from "@thc/api"
 import { createSignal, Show, Suspense } from "solid-js"
 
-import { Link, Tab } from "~/component/atomic"
+import { Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { PageLayout } from "~/layout/PageLayout"
-import { assertContext } from "~/utils/solid/assertContext"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
 import {
-	ADD_TO_COLLECTION_ACTIONS_CLASS,
-	AddToUserCollectionButton,
-} from "~/view/collection/AddToUserCollectionButton"
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
+import { assertContext } from "~/utils/solid/assertContext"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { entityDetailStyles } from "~/view/entity/detailStyles"
 
 import { TagInfoPageContext } from "./context"
 import type { TagInfoPageContextValue } from "./context"
+
+const styles = stylex.create({
+	page: { padding: "clamp(1rem,4vw,2rem)" },
+	pageContent: { display: "flex", flexDirection: "column", rowGap: px[24] },
+	title: {
+		fontSize: fontSizes["3xl"],
+		lineHeight: 1.25,
+		fontWeight: 300,
+		letterSpacing: "-.025em",
+		color: colors.textPrimary,
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	shortDescription: {
+		fontSize: fontSizes.base,
+		lineHeight: lineHeights.base,
+		fontWeight: 300,
+		letterSpacing: ".025em",
+		color: colors.textTertiary,
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	metadata: {
+		display: "grid",
+		gridTemplateColumns: "auto 1fr",
+		columnGap: px[16],
+		rowGap: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	muted: { color: colors.textTertiary },
+	alternativeNames: { display: "flex", flexWrap: "wrap", whiteSpace: "pre" },
+	secondary: { color: colors.textSecondary },
+	tabTrigger: { paddingBlock: px[12] },
+	tabContent: { padding: px[16] },
+	descriptionContainer: { padding: px[8] },
+	description: {
+		fontSize: fontSizes.base,
+		lineHeight: 1.625,
+		fontWeight: 300,
+		whiteSpace: "pre-wrap",
+		color: colors.textSecondary,
+	},
+	relationsList: {
+		overflow: "hidden",
+		borderRadius: radius.md,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+	},
+	relation: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		alignItems: "center",
+		gap: px[16],
+		padding: px[16],
+		borderBottomWidth: { default: 0, ":not(:last-child)": "1px" },
+		borderTopWidth: 0,
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+	},
+	field: { display: "flex", flexDirection: "column" },
+	tagType: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	relationType: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+})
 
 type Props = {
 	tag: Tag
@@ -33,13 +113,13 @@ export function TagInfoPage(props: Props) {
 	}
 
 	return (
-		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
+		<PageLayout styles={styles.page}>
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<TagInfoPageContext.Provider value={contextValue}>
-					<div class="flex flex-col gap-y-6">
+					<div {...stylex.attrs(styles.pageContent)}>
 						<TagInfoHeader />
 						<TagInfoDetails />
-						<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+						<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
 							<AddToUserCollectionButton
 								entityType="Tag"
 								entityId={props.tag.id}
@@ -61,12 +141,10 @@ export function TagInfoPage(props: Props) {
 function TagInfoHeader() {
 	const ctx = assertContext(TagInfoPageContext)
 	return (
-		<header class="space-y-2">
-			<h1 class="text-3xl leading-tight font-light tracking-tight text-primary">
-				{ctx.tag.name}
-			</h1>
+		<header>
+			<h1 {...stylex.attrs(styles.title)}>{ctx.tag.name}</h1>
 			<Show when={ctx.tag.short_description}>
-				<p class="text-base font-light tracking-wide text-tertiary">
+				<p {...stylex.attrs(styles.shortDescription)}>
 					{ctx.tag.short_description}
 				</p>
 			</Show>
@@ -78,25 +156,23 @@ function TagInfoDetails() {
 	const { t } = useLingui()
 	const ctx = assertContext(TagInfoPageContext)
 	return (
-		<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
-			<div class="text-tertiary">{t`Type`}</div>
+		<div {...stylex.attrs(styles.metadata)}>
+			<div {...stylex.attrs(styles.muted)}>{t`Type`}</div>
 			<div>{ctx.tag.type}</div>
 			<Show when={ctx.tag.alt_names && ctx.tag.alt_names.length > 0}>
-				<span class="text-tertiary">{t`AKAs`}</span>
-				<ul class="flex flex-wrap whitespace-pre">
+				<span {...stylex.attrs(styles.muted)}>{t`AKAs`}</span>
+				<ul {...stylex.attrs(styles.alternativeNames)}>
 					<Intersperse
 						of={ctx.tag.alt_names}
 						with={<span>, </span>}
 					>
-						{(x) => <li class="text-secondary">{x.name}</li>}
+						{(x) => <li {...stylex.attrs(styles.secondary)}>{x.name}</li>}
 					</Intersperse>
 				</ul>
 			</Show>
 		</div>
 	)
 }
-
-const TRIGGER_CLASS = "py-3"
 
 function TagInfoTabs() {
 	const { t } = useLingui()
@@ -118,11 +194,11 @@ function TagInfoTabs() {
 			onChange={setActiveTab}
 		>
 			<Tab.ScrollArea>
-				<Tab.List class={Tab.CONTAINER_CLASS}>
+				<Tab.List styles={Tab.containerStyles}>
 					<Show when={hasDesc()}>
 						<Tab.Trigger
 							value="Description"
-							class={TRIGGER_CLASS}
+							styles={styles.tabTrigger}
 						>
 							{t`Description`}
 						</Tab.Trigger>
@@ -130,18 +206,18 @@ function TagInfoTabs() {
 					<Show when={hasRelations()}>
 						<Tab.Trigger
 							value="Relations"
-							class={TRIGGER_CLASS}
+							styles={styles.tabTrigger}
 						>
 							{t`Relations`}
 						</Tab.Trigger>
 					</Show>
 					<EntityCommentsTabTrigger
 						count={comments.activeCommentCount()}
-						class={TRIGGER_CLASS}
+						styles={styles.tabTrigger}
 					/>
 					<Tab.Trigger
 						value="Collections"
-						class={TRIGGER_CLASS}
+						styles={styles.tabTrigger}
 					>
 						{t`Collections`}
 					</Tab.Trigger>
@@ -151,7 +227,7 @@ function TagInfoTabs() {
 			<Show when={hasDesc()}>
 				<Tab.Content
 					value="Description"
-					class="p-4"
+					styles={styles.tabContent}
 				>
 					<TagInfoDescription />
 				</Tab.Content>
@@ -159,20 +235,20 @@ function TagInfoTabs() {
 			<Show when={hasRelations()}>
 				<Tab.Content
 					value="Relations"
-					class="p-4"
+					styles={styles.tabContent}
 				>
 					<TagInfoRelations />
 				</Tab.Content>
 			</Show>
 			<Tab.Content
 				value="Comments"
-				class="p-4"
+				styles={styles.tabContent}
 			>
 				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				class="p-4"
+				styles={styles.tabContent}
 			>
 				<EntityCollectionsTab
 					entityType="tag"
@@ -187,10 +263,8 @@ function TagInfoTabs() {
 function TagInfoDescription() {
 	const ctx = assertContext(TagInfoPageContext)
 	return (
-		<div class="p-2">
-			<p class="text-base leading-relaxed font-light whitespace-pre-wrap text-secondary">
-				{ctx.tag.description}
-			</p>
+		<div {...stylex.attrs(styles.descriptionContainer)}>
+			<p {...stylex.attrs(styles.description)}>{ctx.tag.description}</p>
 		</div>
 	)
 }
@@ -199,20 +273,21 @@ function TagInfoRelations() {
 	const ctx = assertContext(TagInfoPageContext)
 	const list = () => ctx.tag.relations ?? []
 	return (
-		<div class="space-y-4">
-			<ul class="divide-y divide-slate-300 overflow-hidden rounded-md border border-slate-300">
+		<div>
+			<ul {...stylex.attrs(styles.relationsList)}>
 				{list().map((rel) => (
-					<li class="grid grid-cols-[1fr_auto] items-center gap-4 p-4">
-						<div class="flex flex-col">
+					<li {...stylex.attrs(styles.relation)}>
+						<div {...stylex.attrs(styles.field)}>
 							<Link
+								class={stylex.attrs(link.base, link.text).class}
 								to="/tag/$id"
 								params={{ id: rel.tag.id.toString() }}
 							>
 								{rel.tag.name}
 							</Link>
-							<span class="text-xs text-tertiary">{rel.tag.type}</span>
+							<span {...stylex.attrs(styles.tagType)}>{rel.tag.type}</span>
 						</div>
-						<span class="text-sm text-secondary">{rel.type}</span>
+						<span {...stylex.attrs(styles.relationType)}>{rel.type}</span>
 					</li>
 				))}
 			</ul>

@@ -1,11 +1,46 @@
 import { Trans } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
+import type { LinkComponentProps } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
-import { Link } from "~/component/atomic"
-import type { LinkProps } from "~/component/atomic/Link"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	root: { paddingInline: px[16], paddingBlock: px[40] },
+	content: {
+		marginInline: "auto",
+		display: "flex",
+		maxWidth: px[448],
+		flexDirection: "column",
+		alignItems: "center",
+		textAlign: "center",
+	},
+	title: {
+		fontSize: fontSizes.base,
+		lineHeight: 1.5,
+		color: palette.slate[900],
+	},
+	description: {
+		marginTop: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	inlineAction: { textDecorationLine: "underline" },
+	action: {
+		marginTop: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 300,
+		color: colors.textTertiary,
+	},
+})
 
 type Action = {
-	to: LinkProps["to"]
+	to: LinkComponentProps["to"]
 	label?: string
 }
 
@@ -17,21 +52,24 @@ type Props = {
 
 export function EmptyExplorePlaceholder(props: Props) {
 	return (
-		<section class="px-4 py-10">
-			<div class="mx-auto flex max-w-md flex-col items-center text-center">
-				<h2 class="text-base text-slate-900">{props.title}</h2>
+		<section {...stylex.attrs(styles.root)}>
+			<div {...stylex.attrs(styles.content)}>
+				<h2 {...stylex.attrs(styles.title)}>{props.title}</h2>
 
 				<Show
 					when={props.description}
 					fallback={
 						<Show when={props.action}>
 							{(action) => (
-								<p class="mt-1 text-sm text-secondary">
+								<p {...stylex.attrs(styles.description)}>
 									<Trans>
 										Try adjusting the filters, or{" "}
 										<Link
 											to={action().to}
-											class="underline"
+											class={
+												stylex.attrs(link.base, link.text, styles.inlineAction)
+													.class
+											}
 										>
 											create
 										</Link>{" "}
@@ -42,7 +80,7 @@ export function EmptyExplorePlaceholder(props: Props) {
 						</Show>
 					}
 				>
-					{(text) => <p class="mt-1 text-sm text-secondary">{text()}</p>}
+					{(text) => <p {...stylex.attrs(styles.description)}>{text()}</p>}
 				</Show>
 
 				<Show when={props.action}>
@@ -50,7 +88,7 @@ export function EmptyExplorePlaceholder(props: Props) {
 						<Show when={props.description && action().label}>
 							<Link
 								to={action().to}
-								class="mt-1 text-sm font-light text-tertiary "
+								class={stylex.attrs(link.base, link.text, styles.action).class}
 							>
 								{action().label}
 							</Link>

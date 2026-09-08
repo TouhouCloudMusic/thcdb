@@ -1,7 +1,9 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { createMockArtist } from "~/mock/artist"
+import { palette } from "~/style/color/palette.stylex"
 import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
@@ -13,6 +15,17 @@ import { ArtistReleaseInfoView } from "./ArtistReleaseInfo"
 async function noop() {
 	await Promise.resolve()
 }
+
+const styles = stylex.create({
+	story: {
+		width: "100%",
+		maxWidth: "960px",
+		borderWidth: 1,
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		backgroundColor: palette.white,
+	},
+})
 
 function createInfiniteQuery<T>(data: T[]): InfiniteQuery<T> {
 	return {
@@ -132,7 +145,7 @@ function StoryRoot(props: StoryRootProps) {
 	}
 
 	return (
-		<div class="w-full max-w-[960px] border border-slate-200 bg-white">
+		<div {...stylex.attrs(styles.story)}>
 			<ArtistContext.Provider value={contextValue}>
 				<ArtistReleaseInfoView
 					activeTab="Discography"

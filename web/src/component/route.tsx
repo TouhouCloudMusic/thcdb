@@ -1,20 +1,81 @@
 import { useLingui } from "@lingui/solid/macro"
-import { Navigate } from "@tanstack/solid-router"
+import * as stylex from "@stylexjs/stylex"
+import { Link, Navigate } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
 import { Match, Switch } from "solid-js"
 
-import { Link } from "~/component/atomic/Link"
-import { Button } from "~/component/atomic/button"
+import { buttonStyles } from "~/component/atomic/button"
 import { hasAdminRole } from "~/domain/user/authorization"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { radius, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	page: {
+		display: "grid",
+		minHeight: "60vh",
+		placeItems: "center",
+		paddingInline: px[24],
+		paddingBlock: px[56],
+	},
+	loading: {
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.white,
+		paddingInline: px[20],
+		paddingBlock: px[16],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / .05)",
+	},
+	card: {
+		width: "100%",
+		maxWidth: px[448],
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		backgroundColor: palette.white,
+		padding: px[24],
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / .05)",
+	},
+	eyebrow: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: ".22em",
+		color: palette.slate[500],
+	},
+	title: {
+		marginTop: px[12],
+		fontSize: fontSizes.lg,
+		lineHeight: lineHeights.lg,
+		fontWeight: 300,
+		color: palette.slate[900],
+	},
+	description: {
+		marginTop: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+	actions: {
+		marginTop: px[20],
+		display: "flex",
+		flexWrap: "wrap",
+		gap: px[12],
+	},
+})
 
 export function SessionLoading() {
 	const { t } = useLingui()
 	return (
-		<div class="grid min-h-[60vh] place-items-center px-6 py-14">
-			<div class="rounded-sm border border-slate-300 bg-white px-5 py-4 text-sm text-slate-500 shadow-xs">
-				{t`Checking session…`}
-			</div>
+		<div {...stylex.attrs(styles.page)}>
+			<div {...stylex.attrs(styles.loading)}>{t`Checking session…`}</div>
 		</div>
 	)
 }
@@ -22,40 +83,41 @@ export function SessionLoading() {
 function AuthRequired() {
 	const { t } = useLingui()
 	return (
-		<div class="grid min-h-[60vh] place-items-center px-6 py-14">
-			<div class="w-full max-w-md rounded-sm border border-slate-300 bg-white p-6 shadow-xs">
-				<div class="text-xs font-medium tracking-[0.22em] text-slate-500">
-					{t`AUTH REQUIRED`}
-				</div>
-				<div class="mt-3 text-lg font-light text-slate-900">
-					{t`Sign in to continue`}
-				</div>
-				<div class="mt-1 text-sm text-slate-500">
+		<div {...stylex.attrs(styles.page)}>
+			<div {...stylex.attrs(styles.card)}>
+				<div {...stylex.attrs(styles.eyebrow)}>{t`AUTH REQUIRED`}</div>
+				<div {...stylex.attrs(styles.title)}>{t`Sign in to continue`}</div>
+				<div {...stylex.attrs(styles.description)}>
 					{t`This page requires an authenticated account.`}
 				</div>
 
-				<div class="mt-5 flex flex-wrap gap-3">
+				<div {...stylex.attrs(styles.actions)}>
 					<Link
 						to="/auth/sign-in"
-						class="no-underline hover:no-underline"
+						class={
+							stylex.attrs(
+								link.base,
+								buttonStyles.base,
+								buttonStyles.solid,
+								buttonStyles.reimu,
+							).class
+						}
 					>
-						<Button
-							variant="Primary"
-							color="Reimu"
-						>
-							{t`Sign in`}
-						</Button>
+						{t`Sign in`}
 					</Link>
 					<Link
 						to="/auth/sign-up"
-						class="no-underline hover:no-underline"
+						class={
+							stylex.attrs(
+								link.base,
+								buttonStyles.base,
+								buttonStyles.soft,
+								buttonStyles.slate,
+								buttonStyles.softDarkHover,
+							).class
+						}
 					>
-						<Button
-							variant="Secondary"
-							color="Slate"
-						>
-							{t`Create account`}
-						</Button>
+						{t`Create account`}
 					</Link>
 				</div>
 			</div>

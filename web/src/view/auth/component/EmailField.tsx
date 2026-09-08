@@ -1,11 +1,13 @@
 import type { FieldElementProps } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { JSX } from "solid-js"
 import { createSignal } from "solid-js"
 
 import { InputField } from "~/component/atomic/form/Input"
 import { callHandlerUnion } from "~/utils/dom/event"
 
+import { authStyles } from "../styles"
 import { FieldLayout } from "./FieldLayout"
 
 type EmailFieldStore = {
@@ -16,7 +18,7 @@ type EmailFieldStore = {
 
 type EmailFieldProps = {
 	field: EmailFieldStore
-	class?: string
+	styles?: StyleXStyles
 	disabled?: boolean
 	onChange?: JSX.EventHandler<HTMLInputElement, Event>
 	onKeyDown?: JSX.EventHandler<HTMLInputElement, KeyboardEvent>
@@ -30,11 +32,11 @@ export function EmailField(props: EmailFieldProps) {
 		<FieldLayout
 			label={t`Email`}
 			error={isEditing() ? undefined : props.field.errors?.[0]}
-			class={props.class}
+			styles={props.styles}
 		>
 			<InputField.Input
 				{...props.field.props}
-				class="h-9 w-full"
+				styles={authStyles.input}
 				type="email"
 				id="email"
 				value={props.field.input ?? ""}

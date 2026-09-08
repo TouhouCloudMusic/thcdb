@@ -1,12 +1,12 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 import type { Component } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Divider } from "~/component/atomic/Divider"
-import { Input } from "~/component/atomic/Input"
+import { inputStyles } from "~/component/atomic/Input"
 import { Intersperse } from "~/component/data/Intersperse"
 import {
 	EmptyExplorePlaceholder,
@@ -17,18 +17,71 @@ import {
 } from "~/component/feature/entity_explore"
 import type { EventListItem } from "~/hey-api"
 import { exploreEventOptions } from "~/hey-api/@tanstack/solid-query.gen"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles } from "~/style/primitives"
+import { radius, px } from "~/style/tokens.stylex"
 import { EventItem } from "~/view/event/EventItem"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	skeletonTitle: {
+		marginBottom: px[8],
+		height: px[20],
+		width: "calc(2/3 * 100%)",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonDetails: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		columnGap: px[8],
+		rowGap: px[4],
+	},
+	skeletonDate: {
+		height: px[16],
+		width: px[112],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonLocation: {
+		height: px[16],
+		width: px[160],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonDescription: {
+		marginTop: px[8],
+		height: px[16],
+		width: "calc(3/5 * 100%)",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	dateInput: { height: px[40], width: "100%" },
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	pagination: {
+		display: "flex",
+		justifyContent: "center",
+		paddingBlock: px[24],
+	},
+})
 
 const route = getRouteApi("/event/explore")
 
 const EventItemSkeleton: Component = () => (
-	<div class="animate-pulse">
-		<div class="mb-2 h-5 w-2/3 rounded bg-slate-200"></div>
-		<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-			<div class="h-4 w-28 rounded bg-slate-100"></div>
-			<div class="h-4 w-40 rounded bg-slate-100"></div>
+	<div {...stylex.attrs(animationStyles.pulse)}>
+		<div {...stylex.attrs(styles.skeletonTitle)}></div>
+		<div {...stylex.attrs(styles.skeletonDetails)}>
+			<div {...stylex.attrs(styles.skeletonDate)}></div>
+			<div {...stylex.attrs(styles.skeletonLocation)}></div>
 		</div>
-		<div class="mt-2 h-4 w-3/5 rounded bg-slate-100"></div>
+		<div {...stylex.attrs(styles.skeletonDescription)}></div>
 	</div>
 )
 
@@ -48,24 +101,32 @@ function EventExploreFilterBar(props: EventExploreFilterBarProps) {
 	return (
 		<ExploreFilterBar>
 			<ExploreFilterField label={t`From`}>
-				<Input
-					class="h-10 w-full"
+				<input
 					type="date"
 					value={props.startDateFrom ?? ""}
 					onChange={(e) =>
 						props.onChangeStartDate("start_date_from", e.currentTarget.value)
 					}
+					{...stylex.attrs(
+						inputStyles.like,
+						inputStyles.input,
+						styles.dateInput,
+					)}
 				/>
 			</ExploreFilterField>
 
 			<ExploreFilterField label={t`To`}>
-				<Input
-					class="h-10 w-full"
+				<input
 					type="date"
 					value={props.startDateTo ?? ""}
 					onChange={(e) =>
 						props.onChangeStartDate("start_date_to", e.currentTarget.value)
 					}
+					{...stylex.attrs(
+						inputStyles.like,
+						inputStyles.input,
+						styles.dateInput,
+					)}
 				/>
 			</ExploreFilterField>
 
@@ -101,20 +162,20 @@ function EventExploreList(props: EventExploreListProps) {
 			<Show
 				when={props.events.length > 0 || props.isFetching || props.isLoading}
 			>
-				<div class="flex flex-col gap-2 p-4">
+				<div {...stylex.attrs(styles.list)}>
 					<Intersperse
 						of={props.events}
-						with={<Divider horizontal />}
+						with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					>
 						{(event) => <EventItem event={event} />}
 					</Intersperse>
 					<Show when={props.isFetching || props.isLoading}>
 						<Show when={props.events.length > 0}>
-							<Divider horizontal />
+							<span {...stylex.attrs(dividerStyles.horizontal)}></span>
 						</Show>
 						<Intersperse
 							of={Array.from({ length: props.limit })}
-							with={<Divider horizontal />}
+							with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 						>
 							{() => <EventItemSkeleton />}
 						</Intersperse>
@@ -123,7 +184,7 @@ function EventExploreList(props: EventExploreListProps) {
 			</Show>
 
 			<Show when={props.totalPages > 1}>
-				<div class="flex justify-center py-6">
+				<div {...stylex.attrs(styles.pagination)}>
 					<Pagination
 						current={props.page}
 						total={props.totalPages}

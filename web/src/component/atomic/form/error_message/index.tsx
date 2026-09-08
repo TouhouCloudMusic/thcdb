@@ -1,14 +1,26 @@
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { JSX } from "solid-js"
-import { mergeProps, Show } from "solid-js"
+import { splitProps, Show } from "solid-js"
 import { Dynamic } from "solid-js/web"
-import { twMerge } from "tailwind-merge"
 
-export const ERROR_MESSAGE_CLASSNAME = "text-reimu-600 text-sm mt-2"
+import { palette } from "~/style/color/palette.stylex"
+import { fontSizes, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	error: {
+		color: palette.reimu[600],
+		fontSize: fontSizes.sm,
+		lineHeight: "1.25rem",
+		marginTop: px[8],
+	},
+})
 
 export type ErrorMessageProps<T extends "span" | "li"> = Omit<
 	JSX.HTMLAttributes<T>,
 	"children"
 > & {
+	styles?: StyleXStyles
 	children?: string
 	as?: T
 }
@@ -16,20 +28,15 @@ export type ErrorMessageProps<T extends "span" | "li"> = Omit<
 export function ErrorMessage<T extends "span" | "li" = "span">(
 	props: ErrorMessageProps<T>,
 ): JSX.Element {
-	const localProps = mergeProps(props, {
-		get class() {
-			return props.class
-				? twMerge(ERROR_MESSAGE_CLASSNAME, props.class)
-				: ERROR_MESSAGE_CLASSNAME
-		},
-	})
+	const [local, others] = splitProps(props, ["styles"])
 
 	return (
 		<Show when={props.children}>
 			{/** @ts-expect-error */}
 			<Dynamic
 				component={props.as ?? "span"}
-				{...localProps}
+				{...others}
+				{...stylex.attrs(styles.error, local.styles)}
 			>
 				{props.children}
 			</Dynamic>

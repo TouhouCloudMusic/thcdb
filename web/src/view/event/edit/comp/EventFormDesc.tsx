@@ -1,17 +1,26 @@
 import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import type { EventMutation } from "@thc/query"
 import { For } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { useEventForm } from "../context"
 
+const styles = stylex.create({
+	correction: { display: "flex", flexDirection: "column", gap: px[16] },
+	descriptionInput: { minHeight: px[128] },
+	field: { display: "flex", flexDirection: "column" },
+	error: { fontSize: fontSizes.lg, lineHeight: lineHeights.lg },
+})
+
 type Props = {
 	mutation: ReturnType<typeof EventMutation.getInstance>
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function EventFormDesc(props: Props) {
@@ -19,7 +28,7 @@ export function EventFormDesc(props: Props) {
 	const { formStore } = useEventForm()
 
 	return (
-		<div class={twMerge("flex flex-col gap-4", props.class)}>
+		<div {...stylex.attrs(styles.correction, props.styles)}>
 			<Field
 				of={formStore}
 				path={["description"]}
@@ -30,7 +39,7 @@ export function EventFormDesc(props: Props) {
 						<InputField.Textarea
 							{...field.props}
 							value={field.input ?? ""}
-							class="min-h-32"
+							styles={styles.descriptionInput}
 						/>
 
 						<For each={field.errors}>
@@ -58,8 +67,8 @@ export function EventFormDesc(props: Props) {
 				)}
 			</Field>
 
-			<div class="flex flex-col">
-				<FormComp.ErrorMessage class="text-lg">
+			<div {...stylex.attrs(styles.field)}>
+				<FormComp.ErrorMessage styles={styles.error}>
 					{props.mutation.isError
 						? `Error: ${props.mutation.error.message}`
 						: undefined}

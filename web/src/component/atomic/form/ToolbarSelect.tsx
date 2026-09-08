@@ -1,4 +1,8 @@
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+
+import { palette } from "~/style/color/palette.stylex"
+import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
 
 import { Select } from "./select"
 
@@ -8,20 +12,39 @@ export type ToolbarSelectOption<T extends string> = {
 	itemLabel: string
 }
 
-export const TOOLBAR_CONTROL_CLASS =
-	"h-9 rounded-sm border-slate-400 text-sm outline-none outline-offset-0 transition-colors hover:border-slate-500 focus-visible:border-slate-500"
-
-const TOOLBAR_SELECT_CLASS = twMerge(
-	TOOLBAR_CONTROL_CLASS,
-	"gap-1 pl-3 pr-2 font-normal text-primary",
-)
+export const toolbarStyles = stylex.create({
+	control: {
+		height: px[36],
+		borderRadius: radius.sm,
+		borderColor: {
+			default: palette.slate[400],
+			":hover": { default: null, "@media (hover: hover)": palette.slate[500] },
+			":focus-visible": palette.slate[500],
+		},
+		fontSize: fontSizes.sm,
+		lineHeight: "1.25rem",
+		outlineStyle: "none",
+		outlineOffset: 0,
+		transitionProperty:
+			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+		transitionDuration: "150ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+	select: {
+		gap: px[4],
+		paddingLeft: px[12],
+		paddingRight: px[8],
+		fontWeight: 400,
+		color: colors.textPrimary,
+	},
+})
 
 export function ToolbarSelect<T extends string>(props: {
 	options: ToolbarSelectOption<T>[]
 	value: T
 	placeholder: string
 	ariaLabel: string
-	class?: string
+	styles?: StyleXStyles
 	onChange: (value: T) => void
 }) {
 	const selectedOption = () =>
@@ -46,9 +69,9 @@ export function ToolbarSelect<T extends string>(props: {
 		>
 			<Select.Trigger
 				aria-label={props.ariaLabel}
-				class={twMerge(TOOLBAR_SELECT_CLASS, props.class)}
+				styles={[toolbarStyles.control, toolbarStyles.select, props.styles]}
 			>
-				<Select.Value<ToolbarSelectOption<T>> class="truncate">
+				<Select.Value<ToolbarSelectOption<T>>>
 					{(state) => state.selectedOption().label}
 				</Select.Value>
 				<Select.Icon />

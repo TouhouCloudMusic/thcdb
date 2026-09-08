@@ -1,21 +1,21 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { CorrectionHistoryItem, Song } from "@thc/api"
 import { createContext, createSignal, Show } from "solid-js"
 
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { PageLayout } from "~/layout/PageLayout"
+import { px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
-import {
-	ADD_TO_COLLECTION_ACTIONS_CLASS,
-	AddToUserCollectionButton,
-} from "~/view/collection/AddToUserCollectionButton"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import type { EntityCommentsModel } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { entityDetailStyles } from "~/view/entity/detailStyles"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
 
 import { SongInfoCoverImage } from "./comp/SongInfoCoverImage"
@@ -25,6 +25,38 @@ import { SongInfoLyrics } from "./comp/SongInfoLyrics"
 import { SongInfoRelations } from "./comp/SongInfoRelations"
 import { SongInfoRelease } from "./comp/SongInfoRelease"
 import { SongInfoTitleAndCreditName } from "./comp/SongInfoTitleAndCreditName"
+
+const styles = stylex.create({
+	page: {
+		padding: "clamp(1rem,4vw,2rem)",
+	},
+	content: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[32],
+	},
+	overview: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "flex-start",
+		justifyContent: "center",
+		gap: px[24],
+	},
+	details: {
+		display: "flex",
+		minWidth: 0,
+		flex: "1",
+		flexBasis: px[288],
+		flexDirection: "column",
+		rowGap: px[16],
+	},
+	tabTrigger: {
+		paddingBlock: px[12],
+	},
+	tabContent: {
+		padding: px[16],
+	},
+})
 
 export type SongInfoPageContext = {
 	song: Song
@@ -70,12 +102,12 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 	}
 
 	return (
-		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
+		<PageLayout styles={[styles.page]}>
 			<SongInfoPageContext.Provider value={contextValue}>
-				<div class="flex flex-col gap-8">
-					<div class="flex flex-wrap items-start justify-center gap-6">
+				<div {...stylex.attrs(styles.content)}>
+					<div {...stylex.attrs(styles.overview)}>
 						<SongInfoCoverImage />
-						<div class="flex min-w-0 flex-1 basis-72 flex-col gap-y-4">
+						<div {...stylex.attrs(styles.details)}>
 							<SongInfoTitleAndCreditName />
 							<SongInfoLanguages />
 							<ExternalLinks links={props.song.links} />
@@ -83,7 +115,7 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 								entityType="song"
 								entityId={props.song.id}
 							/>
-							<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+							<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
 								<AddToUserCollectionButton
 									entityType="Song"
 									entityId={props.song.id}
@@ -109,8 +141,6 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 
 // TODO: Fix primary color.
 
-const TRIGGER_CLASS = "py-3"
-
 type SongInfoTabsViewProps = {
 	activeTab: string
 	comments: EntityCommentsModel
@@ -132,17 +162,17 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 			onChange={props.onActiveTabChange}
 		>
 			<Tab.ScrollArea>
-				<Tab.List class={Tab.CONTAINER_CLASS}>
+				<Tab.List styles={[Tab.containerStyles]}>
 					<Tab.Trigger
 						value="Release"
-						class={TRIGGER_CLASS}
+						styles={[styles.tabTrigger]}
 					>
 						{t`Release`}
 					</Tab.Trigger>
 					<Show when={hasCredits()}>
 						<Tab.Trigger
 							value="Credits"
-							class={TRIGGER_CLASS}
+							styles={[styles.tabTrigger]}
 						>
 							{t`Credits`}
 						</Tab.Trigger>
@@ -150,7 +180,7 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 					<Show when={hasLyrics()}>
 						<Tab.Trigger
 							value="Lyrics"
-							class={TRIGGER_CLASS}
+							styles={[styles.tabTrigger]}
 						>
 							{t`Lyrics`}
 						</Tab.Trigger>
@@ -158,18 +188,18 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 					<Show when={hasRelations()}>
 						<Tab.Trigger
 							value="Relations"
-							class={TRIGGER_CLASS}
+							styles={[styles.tabTrigger]}
 						>
 							{t`Relations`}
 						</Tab.Trigger>
 					</Show>
 					<EntityCommentsTabTrigger
 						count={props.comments.activeCommentCount()}
-						class={TRIGGER_CLASS}
+						styles={[styles.tabTrigger]}
 					/>
 					<Tab.Trigger
 						value="Collections"
-						class={TRIGGER_CLASS}
+						styles={[styles.tabTrigger]}
 					>
 						{t`Collections`}
 					</Tab.Trigger>
@@ -196,13 +226,13 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 			</Show>
 			<Tab.Content
 				value="Comments"
-				class="p-4"
+				styles={[styles.tabContent]}
 			>
 				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				class="p-4"
+				styles={[styles.tabContent]}
 			>
 				<EntityCollectionsTab
 					entityType="song"

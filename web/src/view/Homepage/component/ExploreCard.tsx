@@ -1,32 +1,174 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 
-import { Card } from "~/component/atomic/Card"
-import { Link } from "~/component/atomic/Link"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { surfaceStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import type { HomeNavItem } from "~/view/Homepage/mock"
 
-const ACCENT = {
+const styles = stylex.create({
+	link: {
+		display: "block",
+	},
+	root: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		justifyContent: "space-between",
+		gap: px[16],
+		borderRadius: 0,
+		borderWidth: 1,
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: px[20],
+		boxShadow: {
+			default:
+				"inset 0 0 0 1px var(--explore-ring), 0 1px 2px 0 rgb(0 0 0 / 0.05)",
+			":hover": {
+				default: null,
+				"@media (hover: hover)":
+					"inset 0 0 0 1px var(--explore-ring), 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+			},
+		},
+		transitionProperty: {
+			default: "all",
+			"@media (prefers-reduced-motion: reduce)": "none",
+		},
+		transitionDuration: "150ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+		translate: {
+			default: null,
+			":hover": {
+				default: null,
+				"@media (hover: hover)": "0 -0.125rem",
+				"@media (hover: hover) and (prefers-reduced-motion: reduce)": "0 0",
+			},
+		},
+	},
+	header: {
+		display: "flex",
+		alignItems: "start",
+		justifyContent: "space-between",
+		gap: px[16],
+	},
+	heading: { display: "flex", flexDirection: "column", gap: px[8] },
+	badge: {
+		display: "inline-flex",
+		width: "fit-content",
+		alignItems: "center",
+		gap: px[8],
+		borderRadius: radius.full,
+		paddingInline: px[12],
+		paddingBlock: px[4],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+	},
+	dot: {
+		display: "inline-block",
+		width: px[6],
+		height: px[6],
+		borderRadius: radius.full,
+		backgroundColor: "currentColor",
+		opacity: 0.7,
+	},
+	title: {
+		fontSize: fontSizes.base,
+		lineHeight: 1.5,
+		fontWeight: 500,
+		color: colors.textPrimary,
+	},
+	arrow: {
+		fontFamily: fonts.mono,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: {
+			default: colors.textTertiary,
+			"@media (hover: hover)": {
+				[stylex.when.ancestor(":hover")]: colors.textSecondary,
+			},
+		},
+		transitionProperty: {
+			default:
+				"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
+			"@media (prefers-reduced-motion: reduce)": "none",
+		},
+		transitionDuration: "150ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+	description: {
+		fontSize: fontSizes.sm,
+		lineHeight: 1.625,
+		color: colors.textSecondary,
+	},
+})
+const cardAccentStyles = stylex.create({
 	Reimu: {
-		badge: "bg-reimu-100 text-reimu-800 ring-reimu-200",
-		ring: "ring-reimu-200 hover:ring-reimu-300",
+		"--explore-ring": {
+			default: palette.reimu[200],
+			":hover": { default: null, "@media (hover: hover)": palette.reimu[300] },
+		},
 	},
 	Marisa: {
-		badge: "bg-marisa-100 text-marisa-800 ring-marisa-200",
-		ring: "ring-marisa-200 hover:ring-marisa-300",
+		"--explore-ring": {
+			default: palette.marisa[200],
+			":hover": { default: null, "@media (hover: hover)": palette.marisa[300] },
+		},
 	},
 	Blue: {
-		badge: "bg-blue-100 text-blue-800 ring-blue-200",
-		ring: "ring-blue-200 hover:ring-blue-300",
+		"--explore-ring": {
+			default: palette.blue[200],
+			":hover": { default: null, "@media (hover: hover)": palette.blue[300] },
+		},
 	},
 	Green: {
-		badge: "bg-green-100 text-green-800 ring-green-200",
-		ring: "ring-green-200 hover:ring-green-300",
+		"--explore-ring": {
+			default: palette.green[200],
+			":hover": { default: null, "@media (hover: hover)": palette.green[300] },
+		},
 	},
 	Slate: {
-		badge: "bg-slate-100 text-primary ring-slate-200",
-		ring: "ring-slate-200 hover:ring-slate-300",
+		"--explore-ring": {
+			default: palette.slate[200],
+			":hover": { default: null, "@media (hover: hover)": palette.slate[300] },
+		},
 	},
-} satisfies Record<HomeNavItem["accent"], { badge: string; ring: string }>
-
+})
+const badgeAccentStyles = stylex.create({
+	Reimu: {
+		backgroundColor: palette.reimu[100],
+		color: palette.reimu[800],
+		boxShadow: `inset 0 0 0 1px ${palette.reimu[200]}`,
+	},
+	Marisa: {
+		backgroundColor: palette.marisa[100],
+		color: palette.marisa[800],
+		boxShadow: `inset 0 0 0 1px ${palette.marisa[200]}`,
+	},
+	Blue: {
+		backgroundColor: palette.blue[100],
+		color: palette.blue[800],
+		boxShadow: `inset 0 0 0 1px ${palette.blue[200]}`,
+	},
+	Green: {
+		backgroundColor: palette.green[100],
+		color: palette.green[800],
+		boxShadow: `inset 0 0 0 1px ${palette.green[200]}`,
+	},
+	Slate: {
+		backgroundColor: palette.slate[100],
+		color: colors.textPrimary,
+		boxShadow: `inset 0 0 0 1px ${palette.slate[200]}`,
+	},
+})
 type ExploreCardProps = {
 	item: HomeNavItem
 }
@@ -80,30 +222,33 @@ export function ExploreCard(props: ExploreCardProps) {
 	return (
 		<Link
 			to={props.item.to}
-			class="group block no-underline hover:no-underline"
+			class={stylex.attrs(link.base, stylex.defaultMarker(), styles.link).class}
 		>
-			<Card
-				class={`flex h-full flex-col justify-between gap-4 rounded-none border border-slate-300 p-5 shadow-xs ring-1 transition-all duration-150 ring-inset motion-reduce:transition-none ${ACCENT[props.item.accent].ring} hover:-translate-y-0.5 hover:shadow-sm motion-reduce:hover:translate-y-0`}
+			<div
+				{...stylex.attrs(
+					surfaceStyles.card,
+					styles.root,
+					cardAccentStyles[props.item.accent],
+				)}
 			>
-				<div class="flex items-start justify-between gap-4">
-					<div class="flex flex-col gap-2">
+				<div {...stylex.attrs(styles.header)}>
+					<div {...stylex.attrs(styles.heading)}>
 						<div
-							class={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs ring-1 ring-inset ${ACCENT[props.item.accent].badge}`}
+							{...stylex.attrs(
+								styles.badge,
+								badgeAccentStyles[props.item.accent],
+							)}
 						>
-							<span class="inline-block size-1.5 rounded-full bg-current opacity-70"></span>
+							<span {...stylex.attrs(styles.dot)}></span>
 							{t`Explore`}
 						</div>
-						<div class="text-base font-medium text-primary">{title()}</div>
+						<div {...stylex.attrs(styles.title)}>{title()}</div>
 					</div>
-					<div class="font-mono text-xs text-tertiary transition-colors duration-150 group-hover:text-secondary motion-reduce:transition-none">
-						→
-					</div>
+					<div {...stylex.attrs(styles.arrow)}>→</div>
 				</div>
 
-				<div class="text-sm leading-relaxed text-secondary">
-					{description()}
-				</div>
-			</Card>
+				<div {...stylex.attrs(styles.description)}>{description()}</div>
+			</div>
 		</Link>
 	)
 }

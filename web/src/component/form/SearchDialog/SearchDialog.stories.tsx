@@ -1,12 +1,44 @@
+import * as stylex from "@stylexjs/stylex"
 import { Cross2Icon, PlusIcon } from "@thc/icons/radix"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { SearchDialog } from "."
 
 // Create a wrapper component for the story
+const styles = stylex.create({
+	trigger: { aspectRatio: "1", padding: px[6] },
+	header: {
+		marginInline: px[16],
+		display: "flex",
+		justifyContent: "space-between",
+	},
+	close: { aspectRatio: "1", height: "100%", padding: px[4] },
+	closeIcon: { margin: "auto" },
+	body: { marginInline: px[16] },
+	search: {
+		position: "relative",
+		marginTop: px[12],
+		marginBottom: px[24],
+	},
+	item: {
+		borderColor: palette.slate[200],
+		backgroundColor: colors.backgroundPrimary,
+		paddingInline: px[16],
+		paddingBlock: px[8],
+	},
+	name: { fontWeight: 500 },
+	category: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+})
+
 function SearchDialogExample() {
 	const sampleData = [
 		{ id: 1, name: "Apple", category: "Fruit" },
@@ -19,33 +51,34 @@ function SearchDialogExample() {
 		<SearchDialog.Root defaultOpen={true}>
 			<Dialog.Trigger
 				as={Button}
-				variant="Tertiary"
-				size="Xs"
-				class="aspect-square p-1.5"
+				appearance="ghost"
+				tone="gray"
+				size="xs"
+				styles={styles.trigger}
 			>
 				<PlusIcon />
 			</Dialog.Trigger>
 			<SearchDialog.Content>
-				<div class="mx-4 flex justify-between">
+				<div {...stylex.attrs(styles.header)}>
 					<SearchDialog.Label>添加物品</SearchDialog.Label>
-					<Dialog.CloseButton class="aspect-square h-full p-1">
-						<Cross2Icon class="m-auto" />
+					<Dialog.CloseButton styles={styles.close}>
+						<Cross2Icon {...stylex.attrs(styles.closeIcon)} />
 					</Dialog.CloseButton>
 				</div>
-				<div class="mx-4">
-					<div class="relative mt-3 mb-6">
+				<div {...stylex.attrs(styles.body)}>
+					<div {...stylex.attrs(styles.search)}>
 						<SearchDialog.Input placeholder="搜索物品..." />
 					</div>
 				</div>
 
-				<SearchDialog.List>
+				<ul {...stylex.attrs(SearchDialog.searchDialogStyles.list)}>
 					{sampleData.map((item) => (
-						<li class="border-y-1.5 border-slate-200 bg-primary px-4 py-2">
-							<div class="font-medium">{item.name}</div>
-							<div class="text-sm text-slate-500">{item.category}</div>
+						<li {...stylex.attrs(styles.item)}>
+							<div {...stylex.attrs(styles.name)}>{item.name}</div>
+							<div {...stylex.attrs(styles.category)}>{item.category}</div>
 						</li>
 					))}
-				</SearchDialog.List>
+				</ul>
 			</SearchDialog.Content>
 		</SearchDialog.Root>
 	)

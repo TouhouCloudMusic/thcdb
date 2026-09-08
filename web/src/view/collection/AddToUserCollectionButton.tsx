@@ -1,20 +1,24 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { PlusIcon } from "@thc/icons/radix"
 import { createSignal, Show } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import type { UserCollectionItemEntityType } from "~/hey-api"
 import { useCurrentUser } from "~/state/user"
+import { px } from "~/style/tokens.stylex"
 
 import { AddToCollectionDialog } from "./AddToCollectionDialog"
 
-export const ADD_TO_COLLECTION_ACTIONS_CLASS =
-	"flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 empty:hidden"
+const styles = stylex.create({
+	plusIcon: { width: px[16], height: px[16] },
+})
 
 type Props = {
 	entityId: number
 	entityType: UserCollectionItemEntityType
-	class?: string
+	styles?: StyleXStyles
 }
 
 export function AddToUserCollectionButton(props: Props) {
@@ -25,12 +29,13 @@ export function AddToUserCollectionButton(props: Props) {
 	return (
 		<Show when={userCtx.profile}>
 			<Button
-				variant="SecondaryV2"
-				size="Sm"
 				onClick={() => setOpen(true)}
-				class={props.class}
+				appearance="outline"
+				tone="gray"
+				size="sm"
+				styles={props.styles}
 			>
-				<PlusIcon class="size-4" />
+				<PlusIcon {...stylex.attrs(styles.plusIcon)} />
 				{t`Add to Collection`}
 			</Button>
 

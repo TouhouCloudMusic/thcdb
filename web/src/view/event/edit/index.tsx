@@ -1,5 +1,6 @@
 import { Form, createForm, getInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, Show } from "solid-js"
@@ -8,6 +9,8 @@ import { FormActionBar } from "~/component/form"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewEventCorrection } from "~/domain/event"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { EventAlternativeNamesField } from "./comp/EventAlternativeNamesField"
@@ -22,6 +25,39 @@ import type { EventWithLocation } from "./hook/init"
 import { toEventFormInitValue } from "./hook/init"
 import { createEventFormSubmission } from "./hook/submit"
 
+const styles = stylex.create({
+	page: { display: "grid", gridTemplateRows: "auto 1fr auto" },
+	pageHeader: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: px[32],
+	},
+	headingRow: { display: "flex", alignItems: "center", gap: px[16] },
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-.025em",
+	},
+	form: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: "repeat(1, minmax(0, 1fr))",
+			"@media (min-width: 64rem)": "repeat(12, minmax(0, 1fr))",
+		},
+		columnGap: px[8],
+		rowGap: px[32],
+		paddingTop: px[32],
+		paddingInline: px[32],
+		paddingBottom: 0,
+	},
+	formField7: {
+		gridColumnStart: "1",
+		gridColumnEnd: { default: "-1", "@media (min-width: 64rem)": "7" },
+	},
+})
+
 type Props =
 	| { type: "new" }
 	| {
@@ -32,7 +68,7 @@ type Props =
 
 export function EditEventPage(props: Props): JSX.Element {
 	return (
-		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
+		<PageLayout styles={styles.page}>
 			<PageHeader type={props.type} />
 			<FormContent {...props} />
 		</PageLayout>
@@ -42,9 +78,9 @@ export function EditEventPage(props: Props): JSX.Element {
 function PageHeader(props: { type: Props["type"] }) {
 	const { t } = useLingui()
 	return (
-		<div class="border-b-1 border-slate-300 p-8">
-			<div class="flex items-center gap-4">
-				<h1 class="text-2xl font-light tracking-tight">
+		<div {...stylex.attrs(styles.pageHeader)}>
+			<div {...stylex.attrs(styles.headingRow)}>
+				<h1 {...stylex.attrs(styles.title)}>
 					<Show
 						when={props.type === "new"}
 						fallback={t`Edit Event`}
@@ -108,19 +144,19 @@ function FormContent(props: Props) {
 					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
 					onSubmit={(output, _) => handleSubmit(output)}
 				>
-					<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
-						<EventNameField class="lg:col-end-7" />
-						<EventShortDescriptionField class="lg:col-end-7" />
-						<EventDateFields class="lg:col-end-7" />
-						<EventLocationField class="lg:col-end-7" />
-						<EventDescriptionField class="lg:col-end-7" />
-						<EventAlternativeNamesField class="lg:col-end-7" />
+					<div {...stylex.attrs(styles.form)}>
+						<EventNameField styles={styles.formField7} />
+						<EventShortDescriptionField styles={styles.formField7} />
+						<EventDateFields styles={styles.formField7} />
+						<EventLocationField styles={styles.formField7} />
+						<EventDescriptionField styles={styles.formField7} />
+						<EventAlternativeNamesField styles={styles.formField7} />
 						<ExternalLinksField
 							of={form}
-							class="lg:col-end-7"
+							styles={styles.formField7}
 						/>
 						<EventFormDesc
-							class="lg:col-end-7"
+							styles={styles.formField7}
 							mutation={mutation}
 						/>
 					</div>

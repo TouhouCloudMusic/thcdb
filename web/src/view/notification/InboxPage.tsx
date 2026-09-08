@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { Accessor } from "solid-js"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic/Tab"
 import { Button } from "~/component/atomic/button"
@@ -13,10 +13,132 @@ import type {
 	NotificationState,
 } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 import { useNow } from "~/utils/solid/useNow"
 
 import { NotificationCard } from "./NotificationCard"
+
+const styles = stylex.create({
+	notificationsChild: {
+		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
+		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: palette.slate[200],
+	},
+	body: {
+		marginTop: px[16],
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	status: {
+		paddingTop: px[32],
+		paddingBottom: px[32],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[400],
+	},
+	error: {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "center",
+		gap: px[8],
+		paddingTop: px[32],
+		paddingBottom: px[32],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[400],
+	},
+	pageStatus: {
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[400],
+	},
+	pageError: {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "center",
+		gap: px[8],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[400],
+	},
+	sentinel: { height: px[4] },
+	pageLayout: {
+		paddingTop: px[16],
+		paddingRight: px[16],
+		paddingBottom: px[16],
+		paddingLeft: px[16],
+	},
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+	},
+	toolbar: {
+		marginTop: px[12],
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "flex-end",
+		rowGap: px[4],
+	},
+	tabs: { gap: px[4] },
+	tab: {
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		fontWeight: 400,
+		letterSpacing: 0,
+		textTransform: "none",
+		color: {
+			default: palette.slate[500],
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+			":is([data-selected])": palette.reimu[600],
+		},
+	},
+	actions: {
+		marginLeft: "auto",
+		display: "flex",
+		gap: px[8],
+		paddingBottom: px[4],
+	},
+	markAllRead: {
+		height: px[32],
+		borderRadius: radius.sm,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingLeft: px[12],
+		paddingRight: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: { default: palette.slate[600], ":disabled": palette.slate[300] },
+	},
+	sort: { height: px[32] },
+})
 
 const NOTIFICATION_STATES: readonly NotificationState[] = [
 	"inbox",
@@ -67,21 +189,22 @@ function NotificationInboxList(props: NotificationInboxListProps) {
 	})
 
 	return (
-		<div class="mt-4 flex flex-col gap-2">
+		<div {...stylex.attrs(styles.body)}>
 			<Switch>
 				<Match when={props.list().status === "loading"}>
-					<div class="py-8 text-center text-sm text-slate-400">
+					<div {...stylex.attrs(styles.status)}>
 						<Trans>Loading…</Trans>
 					</div>
 				</Match>
 
 				<Match when={props.list().status === "error"}>
-					<div class="flex flex-col items-center gap-2 py-8 text-center text-sm text-slate-400">
+					<div {...stylex.attrs(styles.error)}>
 						<Trans>Failed to load notifications.</Trans>
 						<Button
-							variant="SecondaryV2"
-							size="Sm"
 							onClick={props.retry}
+							appearance="outline"
+							tone="gray"
+							size="sm"
 						>
 							{t`Retry`}
 						</Button>
@@ -94,12 +217,12 @@ function NotificationInboxList(props: NotificationInboxListProps) {
 							<Show
 								when={state().items.length}
 								fallback={
-									<div class="py-8 text-center text-sm text-slate-400">
+									<div {...stylex.attrs(styles.status)}>
 										<Trans>No notifications.</Trans>
 									</div>
 								}
 							>
-								<div class="divide-y divide-slate-200">
+								<div>
 									<For each={state().items}>
 										{(item) => (
 											<NotificationCard
@@ -109,6 +232,7 @@ function NotificationInboxList(props: NotificationInboxListProps) {
 												setSaved={props.setSaved}
 												isUpdatingRead={props.isUpdatingRead(item)}
 												isUpdatingSaved={props.isUpdatingSaved(item)}
+												styles={styles.notificationsChild}
 											/>
 										)}
 									</For>
@@ -117,18 +241,19 @@ function NotificationInboxList(props: NotificationInboxListProps) {
 
 							<Switch>
 								<Match when={state().loadMoreStatus === "loading"}>
-									<div class="py-2 text-center text-sm text-slate-400">
+									<div {...stylex.attrs(styles.pageStatus)}>
 										<Trans>Loading…</Trans>
 									</div>
 								</Match>
 
 								<Match when={state().loadMoreStatus === "error"}>
-									<div class="flex flex-col items-center gap-2 py-2 text-center text-sm text-slate-400">
+									<div {...stylex.attrs(styles.pageError)}>
 										<Trans>Failed to load more notifications.</Trans>
 										<Button
-											variant="SecondaryV2"
-											size="Sm"
 											onClick={props.loadMore}
+											appearance="outline"
+											tone="gray"
+											size="sm"
 										>
 											{t`Retry`}
 										</Button>
@@ -138,7 +263,7 @@ function NotificationInboxList(props: NotificationInboxListProps) {
 								<Match when={state().loadMoreStatus === "ready"}>
 									<div
 										ref={setLoadMoreTrigger}
-										class="h-1"
+										{...stylex.attrs(styles.sentinel)}
 									></div>
 								</Match>
 							</Switch>
@@ -227,9 +352,9 @@ export function NotificationInboxPage(props: NotificationInboxPageProps) {
 	])
 
 	return (
-		<PageLayout class="p-4">
+		<PageLayout styles={styles.pageLayout}>
 			{/* TODO: Header Text component */}
-			<h1 class="text-2xl font-light tracking-tight">
+			<h1 {...stylex.attrs(styles.title)}>
 				<Trans>Notifications</Trans>
 			</h1>
 
@@ -237,21 +362,16 @@ export function NotificationInboxPage(props: NotificationInboxPageProps) {
 				value={props.state()}
 				onChange={selectState}
 			>
-				<div
-					class={twJoin(
-						Tab.CONTAINER_CLASS,
-						"mt-3 flex flex-wrap items-end gap-y-1",
-					)}
-				>
+				<div {...stylex.attrs(Tab.containerStyles, styles.toolbar)}>
 					<Tab.List
 						aria-label={t`Notifications`}
-						class="gap-1"
+						styles={styles.tabs}
 					>
 						<For each={NOTIFICATION_STATES}>
 							{(tab) => (
 								<Tab.Trigger
 									value={tab}
-									class="px-3 py-2 font-normal tracking-normal normal-case text-slate-500 data-selected:text-reimu-600"
+									styles={styles.tab}
 								>
 									{tabLabel(tab)}
 								</Tab.Trigger>
@@ -260,12 +380,12 @@ export function NotificationInboxPage(props: NotificationInboxPageProps) {
 						<Tab.Indicator />
 					</Tab.List>
 					{/* Actions */}
-					<div class="ml-auto flex gap-2 pb-1">
+					<div {...stylex.attrs(styles.actions)}>
 						<button
 							type="button"
 							onClick={() => props.markAllRead()}
 							disabled={!props.canMarkAllRead()}
-							class="h-8 rounded-sm border border-slate-300 px-3 text-sm text-slate-600 disabled:text-slate-300"
+							{...stylex.attrs(styles.markAllRead)}
 						>
 							<Trans>Mark all read</Trans>
 						</button>
@@ -275,7 +395,7 @@ export function NotificationInboxPage(props: NotificationInboxPageProps) {
 							value={props.category() ?? "all"}
 							placeholder={t`All categories`}
 							ariaLabel={t`Filter by category`}
-							class="h-8"
+							styles={styles.sort}
 							onChange={(category) =>
 								props.setCategory(category === "all" ? undefined : category)
 							}

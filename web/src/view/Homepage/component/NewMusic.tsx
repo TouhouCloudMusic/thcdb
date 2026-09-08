@@ -1,47 +1,120 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { For } from "solid-js"
+
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	header: {
+		marginBottom: px[16],
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	title: {
+		fontSize: fontSizes.xl,
+		lineHeight: 1.4,
+		fontWeight: 700,
+		color: colors.textPrimary,
+	},
+	more: { fontSize: fontSizes.sm, lineHeight: lineHeights.sm },
+	content: {
+		borderRadius: radius.lg,
+		backgroundColor: palette.white,
+		padding: px[16],
+		boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+	},
+	grid: {
+		display: "grid",
+		gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+		gap: px[16],
+	},
+	track: {
+		display: "flex",
+		alignItems: "center",
+		borderRadius: radius.md,
+		padding: px[8],
+		backgroundColor: {
+			default: null,
+			":hover": { default: null, "@media (hover: hover)": palette.slate[100] },
+		},
+	},
+	cover: {
+		height: px[40],
+		width: px[40],
+		flexShrink: 0,
+		overflow: "hidden",
+		borderRadius: radius.sm,
+	},
+	image: { height: "100%", width: "100%", objectFit: "cover" },
+	detail: { marginLeft: px[12], flex: "1", overflow: "hidden" },
+	name: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: colors.textPrimary,
+	},
+	artist: {
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textTertiary,
+	},
+	play: { padding: px[8], color: colors.textTertiary },
+	icon: { height: px[20], width: px[20] },
+})
 
 export function NewMusic() {
 	const { t } = useLingui()
 	return (
 		<div>
-			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-bold text-primary">{t`最新音乐`}</h2>
+			<div {...stylex.attrs(styles.header)}>
+				<h2 {...stylex.attrs(styles.title)}>{t`最新音乐`}</h2>
 				<button
 					type="button"
-					class="text-rose-600 hover:text-rose-700 text-sm"
+					{...stylex.attrs(styles.more)}
 				>
 					{t`View more`}
 				</button>
 			</div>
 
-			<div class="rounded-lg bg-white p-4 shadow">
-				<div class="grid grid-cols-2 gap-4">
+			<div {...stylex.attrs(styles.content)}>
+				<div {...stylex.attrs(styles.grid)}>
 					<For each={Array.from({ length: 6 }).fill(0)}>
 						{(_, i) => (
-							<div class="flex items-center rounded-md p-2 hover:bg-slate-100">
-								<div class="bg-rose-100 h-10 w-10 flex-shrink-0 overflow-hidden rounded">
+							<div {...stylex.attrs(styles.track)}>
+								<div {...stylex.attrs(styles.cover)}>
 									<img
 										src={`https://placehold.co/100x100/red/white?text=${i() + 1}`}
 										alt={t`cover art`}
-										class="h-full w-full object-cover"
+										{...stylex.attrs(styles.image)}
 									/>
 								</div>
-								<div class="ml-3 flex-1 overflow-hidden">
-									<h4 class="truncate text-sm font-medium text-primary">
+								<div {...stylex.attrs(styles.detail)}>
+									<h4 {...stylex.attrs(styles.name)}>
 										{t`Touhou Cloud DB track`} {i() + 1}
 									</h4>
-									<p class="truncate text-xs text-tertiary">
-										{t`幻想乡音乐人`}
-									</p>
+									<p {...stylex.attrs(styles.artist)}>{t`幻想乡音乐人`}</p>
 								</div>
 								<button
-									class="hover:text-rose-600 p-2 text-tertiary"
+									{...stylex.attrs(styles.play)}
 									aria-label={t`Play track`}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
-										class="h-5 w-5"
+										{...stylex.attrs(styles.icon)}
 										fill="none"
 										viewBox="0 0 24 24"
 										stroke="currentColor"

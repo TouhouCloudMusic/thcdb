@@ -1,4 +1,33 @@
 import { Trans } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+
+import { palette } from "~/style/color/palette.stylex"
+import { radius, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	root: {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "center",
+		gap: px[16],
+	},
+	preview: {
+		width: "100%",
+		height: px[256],
+		borderWidth: 2,
+		borderStyle: "dashed",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	save: {
+		paddingInline: px[16],
+		paddingBlock: px[8],
+		backgroundColor: palette.blue[600],
+		color: palette.white,
+		borderRadius: radius.sm,
+	},
+})
 
 export type ImageDropProps = {
 	croppieOption?: unknown
@@ -7,15 +36,15 @@ export type ImageDropProps = {
 
 export function ImageCropper(props: ImageDropProps) {
 	return (
-		<div class="flex flex-col items-center gap-4">
-			<div class="w-full h-64 bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-				<p class="text-gray-500">
+		<div {...stylex.attrs(styles.root)}>
+			<div {...stylex.attrs(styles.preview)}>
+				<p>
 					<Trans>Image Cropper Placeholder</Trans>
 				</p>
 			</div>
 			<button
 				type="button"
-				class="px-4 py-2 bg-blue-600 text-white rounded"
+				{...stylex.attrs(styles.save)}
 				onClick={() => props.onSave("data:image/png;base64,...")}
 			>
 				<Trans>Save Image</Trans>

@@ -1,5 +1,7 @@
 import { FieldArray, getInput, insert, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { ReleaseTrack } from "@thc/api"
 import {
 	PlusIcon,
@@ -8,27 +10,112 @@ import {
 	ArrowRightIcon,
 } from "@thc/icons/radix"
 import { For, createMemo, createSignal } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
-import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { Dialog } from "~/component/dialog"
 import type { NewDisc } from "~/domain/release"
+import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 
 import { TrackItem } from "./TrackFieldItem"
 import type { ReleaseFormStore } from "./types"
 
+const styles = stylex.create({
+	inputSpacing: {
+		marginBlockStart: 0,
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	field: { display: "flex", flexDirection: "column" },
+	list: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[16],
+	},
+	emptyTrack: {
+		display: "flex",
+		height: px[128],
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: radius.sm,
+		color: colors.textSecondary,
+	},
+	track: {
+		display: "grid",
+		gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+		gap: px[8],
+		borderRadius: radius.sm,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[400],
+		padding: px[12],
+	},
+	header: {
+		marginBottom: px[16],
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	heading: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	label: { margin: "0rem" },
+	addTrackButton: { height: "max-content", padding: px[8] },
+	icon: { width: px[16], height: px[16] },
+	navigation: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[8],
+	},
+	previousDiscButton: { height: "max-content", padding: px[8] },
+	discActions: { display: "flex", alignItems: "center", gap: px[8] },
+	discName: {
+		borderRadius: radius.sm,
+		paddingInline: px[8],
+		lineHeight: 1,
+		color: colors.textPrimary,
+	},
+	defaultDiscName: { color: colors.textTertiary },
+	addDiscButton: { padding: px[8] },
+	nextDiscButton: { padding: px[8] },
+	renameTrigger: { height: "100%", padding: px[8] },
+	renameDialog: {
+		width: "100%",
+		maxWidth: px[384],
+		borderRadius: radius.sm,
+		padding: px[16],
+	},
+	renameTitle: { fontSize: fontSizes.lg, lineHeight: lineHeights.lg },
+	renameInput: { marginTop: px[16] },
+	renameActions: {
+		marginTop: px[16],
+		display: "flex",
+		justifyContent: "flex-end",
+		gap: px[8],
+	},
+})
+
 export function ReleaseTracksField(props: {
 	of: ReleaseFormStore
 	initTracks?: ReleaseTrack[]
-	class?: string
+	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
 	const [selectedDisc, setSelectedDisc] = createSignal(0)
 
 	return (
-		<div class={twJoin("flex flex-col", props.class)}>
+		<div {...stylex.attrs(styles.field, props.styles)}>
 			<TrackHeader
 				of={props.of}
 				selectedDisc={selectedDisc}
@@ -52,17 +139,17 @@ export function ReleaseTracksField(props: {
 					})
 
 					return (
-						<ul class="flex h-full flex-col gap-4">
+						<ul {...stylex.attrs(styles.list)}>
 							<For
 								each={visibleTrackIndices()}
 								fallback={
-									<li class="flex h-32 items-center justify-center rounded text-secondary">
+									<li {...stylex.attrs(styles.emptyTrack)}>
 										{t`No tracks under this disc.`}
 									</li>
 								}
 							>
 								{(trackIdx) => (
-									<li class="grid grid-cols-1 gap-2 rounded border border-slate-400 p-3">
+									<li {...stylex.attrs(styles.track)}>
 										<TrackItem
 											index={trackIdx}
 											of={props.of}
@@ -140,32 +227,36 @@ function TrackHeader(props: {
 	}
 
 	return (
-		<div class="mb-4 flex flex-col gap-2">
-			<div class="flex items-center justify-between">
-				<FormComp.Label class="m-0">{t`Tracks`}</FormComp.Label>
+		<div {...stylex.attrs(styles.header)}>
+			<div {...stylex.attrs(styles.heading)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Tracks`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
+					appearance="ghost"
+					tone="gray"
+					styles={styles.addTrackButton}
 					onClick={onAddTrack}
 					title={t`Add track`}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
-			<div class="flex items-center justify-between gap-2">
+			<div {...stylex.attrs(styles.navigation)}>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
+					appearance="ghost"
+					tone="gray"
+					styles={styles.previousDiscButton}
 					onClick={onPrevDisc}
 					title={t`Previous disc`}
 				>
-					<ArrowLeftIcon class="size-4" />
+					<ArrowLeftIcon {...stylex.attrs(styles.icon)} />
 				</Button>
-				<div class="flex items-center gap-2">
+				<div {...stylex.attrs(styles.discActions)}>
 					<div
-						class={twJoin(
-							"rounded px-2 leading-none text-primary",
-							isDefaultName() && "text-tertiary",
+						{...stylex.attrs(
+							styles.discName,
+							isDefaultName() && styles.defaultDiscName,
 						)}
 					>
 						{currentDiscName()} {isDefaultName() && "(default)"}
@@ -175,22 +266,24 @@ function TrackHeader(props: {
 						onConfirm={onConfirmRename}
 					/>
 					<Button
-						variant="Tertiary"
-						size="Sm"
+						appearance="ghost"
+						tone="gray"
+						size="sm"
+						styles={styles.addDiscButton}
 						onClick={onAddDisc}
-						class="p-2"
 						title={t`Add disc`}
 					>
-						<PlusIcon class="size-4" />
+						<PlusIcon {...stylex.attrs(styles.icon)} />
 					</Button>
 				</div>
 				<Button
-					variant="Tertiary"
-					class="p-2"
+					appearance="ghost"
+					tone="gray"
+					styles={styles.nextDiscButton}
 					onClick={onNextDisc}
 					title={t`Next disc`}
 				>
-					<ArrowRightIcon class="size-4" />
+					<ArrowRightIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
 		</div>
@@ -228,19 +321,22 @@ function EditDiscNameDialog(props: DiscNameDialogProps) {
 		>
 			<Dialog.Trigger
 				as={Button}
-				variant="Tertiary"
-				class="h-full p-2"
-				size="Sm"
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+				styles={styles.renameTrigger}
 				title={t`Rename disc`}
 			>
-				<Pencil1Icon class="size-4" />
+				<Pencil1Icon {...stylex.attrs(styles.icon)} />
 			</Dialog.Trigger>
 			<Dialog.Portal>
 				<Dialog.Overlay />
-				<Dialog.Content class="w-full max-w-sm rounded p-4">
-					<Dialog.Title class="text-lg">{t`Rename Disc`}</Dialog.Title>
-					<div class="mt-4 space-y-2">
-						<InputField.Root>
+				<Dialog.Content styles={styles.renameDialog}>
+					<Dialog.Title
+						styles={styles.renameTitle}
+					>{t`Rename Disc`}</Dialog.Title>
+					<div {...stylex.attrs(styles.renameInput)}>
+						<InputField.Root styles={styles.inputSpacing}>
 							<InputField.Input
 								placeholder={t`Disc name`}
 								value={name()}
@@ -251,13 +347,17 @@ function EditDiscNameDialog(props: DiscNameDialogProps) {
 							/>
 						</InputField.Root>
 					</div>
-					<div class="mt-4 flex justify-end gap-2">
-						<Dialog.CloseButton variant="Tertiary">
+					<div {...stylex.attrs(styles.renameActions)}>
+						<Dialog.CloseButton
+							as={Button}
+							appearance="ghost"
+							tone="gray"
+						>
 							{t`Cancel`}
 						</Dialog.CloseButton>
 						<Button
-							variant="Primary"
-							color="Reimu"
+							appearance="solid"
+							tone="reimu"
 							onClick={confirm}
 						>
 							Confirm

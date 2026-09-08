@@ -1,10 +1,28 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Divider } from "~/component/atomic/Divider"
 import { Intersperse } from "~/component/data/Intersperse"
 import type { EventListItem } from "~/hey-api"
+import { dividerStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { EventItem } from "~/view/event/EventItem"
+
+const styles = stylex.create({
+	story: {
+		marginInline: "auto",
+		width: "100%",
+		backgroundColor: colors.backgroundPrimary,
+	},
+	narrow: { maxWidth: px[384] },
+	wide: { maxWidth: px[768] },
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+})
 
 const EVENTS: EventListItem[] = [
 	{
@@ -51,12 +69,15 @@ type StoryRootProps = {
 function StoryRoot(props: StoryRootProps) {
 	return (
 		<div
-			class={`mx-auto w-full bg-primary ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+			{...stylex.attrs(
+				styles.story,
+				props.width === "narrow" ? styles.narrow : styles.wide,
+			)}
 		>
-			<div class="flex flex-col gap-2 p-4">
+			<div {...stylex.attrs(styles.list)}>
 				<Intersperse
 					of={props.events}
-					with={<Divider horizontal />}
+					with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 				>
 					{(event) => <EventItem event={event} />}
 				</Intersperse>

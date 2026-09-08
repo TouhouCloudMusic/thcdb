@@ -1,6 +1,7 @@
 // @refresh-reload
 import { Field, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleRef } from "@thc/api"
 import { CheckIcon, Cross1Icon } from "@thc/icons/radix"
@@ -11,8 +12,48 @@ import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 
 import { Combobox } from "~/component/atomic/Combobox"
+import { palette } from "~/style/color/palette.stylex"
+import { radius, px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../../context"
+
+const styles = stylex.create({
+	nameField: {
+		gridRowStart: "2",
+	},
+	roleInput: {
+		display: "flex",
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: px[4],
+		padding: px[4],
+	},
+	searchInput: {
+		flex: "1",
+		paddingLeft: px[4],
+	},
+	role: {
+		display: "flex",
+		alignItems: "center",
+		borderRadius: radius.sm,
+		borderWidth: 1,
+		borderStyle: "solid",
+		borderColor: {
+			default: palette.slate[300],
+			":hover": { default: null, "@media (hover: hover)": palette.reimu[600] },
+		},
+		paddingInline: px[8],
+		paddingBlock: px[4],
+	},
+	roleName: { marginInlineStart: 0, marginInlineEnd: px[4] },
+	removeIcon: {
+		color: palette.slate[600],
+	},
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+})
 
 export function MembershipRoleField(props: {
 	index: number
@@ -75,7 +116,7 @@ export function MembershipRoleField(props: {
 	}
 
 	return (
-		<div class="row-start-2">
+		<div {...stylex.attrs(styles.nameField)}>
 			<Suspense>
 				<Combobox.Root
 					options={options()}
@@ -99,7 +140,7 @@ export function MembershipRoleField(props: {
 					)}
 				>
 					<Combobox.Control>
-						<Combobox.MultiInputContainer class="flex flex-row flex-wrap gap-1 p-1">
+						<Combobox.MultiInputContainer styles={[styles.roleInput]}>
 							<For each={roles}>
 								{(role, index) => (
 									<RoleBadge
@@ -114,7 +155,7 @@ export function MembershipRoleField(props: {
 								placeholder={t`Search roles...`}
 								value={searchTerm()}
 								aria-label={t`Search credit role`}
-								class="flex-1 pl-1"
+								styles={[styles.searchInput]}
 								onInput={(e) => setSearchTermDebounced(e.currentTarget.value)}
 							/>
 						</Combobox.MultiInputContainer>
@@ -151,22 +192,22 @@ function RoleBadge(props: {
 			]}
 		>
 			{(field) => (
-				<li class="flex items-center space-x-1 rounded border border-slate-300 px-2 py-1 hover:border-reimu-600">
+				<li {...stylex.attrs(styles.role)}>
 					<input
 						{...field.props}
 						type="number"
 						hidden
 						value={field.input ?? props.role.id}
 					/>
-					<span>{props.role.name}</span>
+					<span {...stylex.attrs(styles.roleName)}>{props.role.name}</span>
 					<button
 						type="button"
-						class="text-slate-600"
+						{...stylex.attrs(styles.removeIcon)}
 						aria-label={t`Remove role`}
 						title={t`Remove role`}
 						onClick={() => props.removeRole()}
 					>
-						<Cross1Icon class="size-4" />
+						<Cross1Icon {...stylex.attrs(styles.icon)} />
 					</button>
 				</li>
 			)}

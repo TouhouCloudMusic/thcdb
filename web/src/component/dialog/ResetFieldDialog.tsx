@@ -1,9 +1,21 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { ArrowPathIcon } from "@thc/icons/heroicons/24/outline"
 import { createMemo } from "solid-js"
 
-import { Button } from "../atomic/button"
+import { Button } from "~/component/atomic/button"
+import { px } from "~/style/tokens.stylex"
+
 import { AlertDialog } from "./AlertDialog"
+
+const styles = stylex.create({
+	reset: {
+		marginRight: px[2],
+		aspectRatio: "1",
+		height: "100%",
+		padding: px[6],
+	},
+})
 
 export function ResetFieldDialogTrigger(props: {
 	modal?: boolean
@@ -19,9 +31,10 @@ export function ResetFieldDialogTrigger(props: {
 			triggerAs={(triggerProps) => (
 				<Button
 					{...triggerProps}
-					variant="Tertiary"
-					class="mr-0.5 aspect-square h-full p-1.5"
 					aria-label={`Reset ${fieldNameWithoutUnderscore()} field to initial state`}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.reset}
 				>
 					<ArrowPathIcon />
 				</Button>

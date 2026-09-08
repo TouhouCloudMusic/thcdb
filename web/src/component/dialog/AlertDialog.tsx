@@ -1,9 +1,28 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { Show, splitProps } from "solid-js"
 import type { ComponentProps, JSX } from "solid-js"
 
+import { Button } from "~/component/atomic/button"
+import { radius, fontSizes, px } from "~/style/tokens.stylex"
+
 import { Dialog } from "."
-import { Button } from "../atomic/button"
+
+const styles = stylex.create({
+	content: {
+		boxShadow: "var(--shadow-2)",
+		display: "flex",
+		height: px[192],
+		width: px[384],
+		flexDirection: "column",
+		justifyContent: "space-between",
+		borderRadius: radius.md,
+		padding: px[24],
+	},
+	title: { fontSize: fontSizes.lg, lineHeight: "1.75rem" },
+	actions: { display: "flex", justifyContent: "flex-end", gap: px[8] },
+	cancel: { marginLeft: "auto" },
+})
 
 export type AlertDialogProps = Exclude<Dialog.RootProps, "children"> & {
 	title: string
@@ -17,7 +36,7 @@ export type AlertDialogProps = Exclude<Dialog.RootProps, "children"> & {
 	dismissible?: boolean | undefined
 }
 
-type TriggerAsProps = Omit<ComponentProps<typeof Button>, "children">
+type TriggerAsProps = Omit<ComponentProps<"button">, "children">
 
 export function AlertDialog(props: AlertDialogProps) {
 	const { t } = useLingui()
@@ -50,29 +69,30 @@ export function AlertDialog(props: AlertDialogProps) {
 			<Dialog.Portal>
 				<Dialog.Overlay />
 				<Dialog.Content
-					class="shadow-2 flex h-48 w-96 flex-col justify-between rounded-md p-6"
+					styles={styles.content}
 					onPointerDownOutside={handleDismiss}
 					onEscapeKeyDown={handleDismiss}
 				>
 					<div>
-						<Dialog.Title class="text-lg">{local.title}</Dialog.Title>
+						<Dialog.Title styles={styles.title}>{local.title}</Dialog.Title>
 						<Dialog.Description>{local.description}</Dialog.Description>
 					</div>
-					<div class="flex justify-end gap-2">
+					<div {...stylex.attrs(styles.actions)}>
 						<Show when={!local.hideCancel}>
 							<Dialog.CloseButton
-								class="ml-auto"
-								variant="Tertiary"
-								size="Sm"
+								appearance="ghost"
+								tone="gray"
+								size="sm"
+								styles={styles.cancel}
 								onClick={local.onCancel}
 							>
 								{local.cancelText ?? t`Cancel`}
 							</Dialog.CloseButton>
 						</Show>
 						<Button
-							variant="Primary"
-							color="Reimu"
-							size="Sm"
+							appearance="solid"
+							tone="reimu"
+							size="sm"
 							onClick={local.onConfirm}
 						>
 							{local.confirmText ?? t`Confirm`}

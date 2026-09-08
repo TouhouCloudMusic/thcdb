@@ -1,13 +1,55 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import { PlusIcon } from "@thc/icons/radix"
-import type { Accessor, JSX } from "solid-js"
-import { createMemo, For, Show, splitProps } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import type { Accessor, JSX, ComponentProps } from "solid-js"
+import { For, Show, splitProps } from "solid-js"
 
-import type { Props as CardProps } from "../common/Card"
-import { Card } from "../common/Card"
-import { Input } from "../common/Input"
-import { Button } from "../common/button"
+import { inputStyles } from "~/component/atomic/Input"
+import { Button } from "~/component/atomic/button"
+import { palette } from "~/style/color/palette.stylex"
+import { surfaceStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	size,
+} from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	root: {
+		width: size[288],
+		color: colors.textSecondary,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		display: "grid",
+		gridTemplateColumns: "auto 1fr",
+	},
+	list: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		alignItems: "baseline",
+		gridColumn: "span 2 / span 2",
+	},
+	input: {
+		gridColumn: "1 / -1",
+		borderStyle: "none",
+		backgroundColor: colors.backgroundSecondary,
+	},
+	group: { marginBlock: size[4], display: "flex" },
+	icon: { width: size[16], height: size[16] },
+	tag: {
+		paddingInline: size[6],
+		paddingBlock: size[4],
+		borderRadius: radius.md,
+		width: "fit-content",
+		display: "inline-block",
+		marginInline: size[2],
+	},
+	positive: { backgroundColor: palette.green[100], color: palette.green[800] },
+	negative: { backgroundColor: palette.reimu[200], color: palette.reimu[700] },
+})
 
 export type FilterTag = {
 	id: number
@@ -18,24 +60,20 @@ export type TagGroups = FilterTag[][]
 export type Props = {
 	pos_tags: TagGroups
 	neg_tags: TagGroups
-} & CardProps
+} & Omit<ComponentProps<"div">, "class"> & { styles?: StyleXStyles }
 
 export function ChartFilter(props: Props): JSX.Element {
 	const { t } = useLingui()
-	const CLASS = "w-72 text-secondary text-sm grid grid-cols-[auto_1fr]"
-	// @tw
-	const UL_CLASS = "grid grid-cols-subgrid items-baseline col-span-2"
 	const DELIMITER = t`OR`
 
-	const [_, card_props] = splitProps(props, ["pos_tags", "neg_tags", "class"])
-	const cls = createMemo(() => twMerge(CLASS, props.class))
+	const [_, card_props] = splitProps(props, ["pos_tags", "neg_tags", "styles"])
 
 	return (
-		<Card
+		<div
 			{...card_props}
-			class={cls()}
+			{...stylex.attrs(surfaceStyles.card, styles.root, props.styles)}
 		>
-			<ul class={UL_CLASS}>
+			<ul {...stylex.attrs(styles.list)}>
 				<span>{t`Positive:`} </span>
 				<TagGroups
 					data={props.pos_tags}
@@ -43,12 +81,16 @@ export function ChartFilter(props: Props): JSX.Element {
 				>
 					{(tag_group) => (
 						<For each={tag_group}>
-							{(tag) => <PositiveTag>{tag.name}</PositiveTag>}
+							{(tag) => (
+								<li {...stylex.attrs(styles.tag, styles.positive)}>
+									{tag.name}
+								</li>
+							)}
 						</For>
 					)}
 				</TagGroups>
 			</ul>
-			<ul class={UL_CLASS}>
+			<ul {...stylex.attrs(styles.list)}>
 				<span>{t`Negative:`} </span>
 				<TagGroups
 					data={props.neg_tags}
@@ -56,13 +98,19 @@ export function ChartFilter(props: Props): JSX.Element {
 				>
 					{(tag_group) => (
 						<For each={tag_group}>
-							{(tag) => <NegativeTag>{tag.name}</NegativeTag>}
+							{(tag) => (
+								<li {...stylex.attrs(styles.tag, styles.negative)}>
+									{tag.name}
+								</li>
+							)}
 						</For>
 					)}
 				</TagGroups>
 			</ul>
-			<Input class="col-span-full border-none bg-secondary" />
-		</Card>
+			<input
+				{...stylex.attrs(inputStyles.like, inputStyles.input, styles.input)}
+			/>
+		</div>
 	)
 }
 
@@ -72,17 +120,18 @@ function TagGroups(props: {
 	children: (item: FilterTag[], index: Accessor<number>) => JSX.Element
 }) {
 	return (
-		<li class="">
+		<li>
 			<For each={props.data}>
 				{(item, index) => (
 					<>
-						<ul class="my-1 flex align-baseline">
+						<ul {...stylex.attrs(styles.group)}>
 							{props.children(item, index)}
 							<Button
-								variant="Tertiary"
-								size="Xs"
+								appearance="ghost"
+								tone="gray"
+								size="xs"
 							>
-								<PlusIcon class="size-4" />
+								<PlusIcon {...stylex.attrs(styles.icon)} />
 							</Button>
 						</ul>
 						<Show when={index() < props.data.length - 1}>
@@ -93,16 +142,4 @@ function TagGroups(props: {
 			</For>
 		</li>
 	)
-}
-
-const TAG_CLASS = "px-1.5 py-1 rounded-md w-fit inline-block mx-0.5"
-
-function PositiveTag(props: JSX.LiHTMLAttributes<HTMLLIElement>) {
-	const CLASS = `${TAG_CLASS} bg-green-100 text-green-800 `
-	return <li class={CLASS}>{props.children}</li>
-}
-
-function NegativeTag(props: JSX.LiHTMLAttributes<HTMLLIElement>) {
-	const CLASS = `${TAG_CLASS} bg-reimu-200 text-reimu-700`
-	return <li class={CLASS}>{props.children}</li>
 }

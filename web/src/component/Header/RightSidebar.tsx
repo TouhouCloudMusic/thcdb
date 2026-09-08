@@ -1,4 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import {
 	BookmarkIcon,
 	Cross1Icon,
@@ -11,13 +13,43 @@ import {
 import type { Ref } from "solid-js"
 import { Show } from "solid-js"
 
-import { ListItem, Sidebar } from "~/component/Sidebar"
+import { sidebar, sidebarLink } from "~/component/Sidebar"
+import { Button } from "~/component/atomic/button"
 import type { SessionProfile } from "~/state/user"
 import { useCurrentUser } from "~/state/user"
+import { dividerStyles } from "~/style/primitives"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
-import { Divider } from "../atomic/Divider"
 import { Avatar } from "../atomic/avatar"
-import { Button } from "../atomic/button"
+
+const styles = stylex.create({
+	layout: {
+		position: "relative",
+		right: 0,
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[12],
+	},
+	profile: { display: "flex", paddingLeft: px[4] },
+	name: {
+		marginInline: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+	},
+	close: {
+		marginRight: px[4],
+		marginLeft: "auto",
+		width: "fit-content",
+		height: "fit-content",
+		alignSelf: "center",
+		padding: px[4],
+	},
+	divider: { marginBlock: px[2], paddingInline: px[8] },
+	list: { display: "flex", flexDirection: "column" },
+})
 
 export function RightSidebar(props: {
 	onClose: VoidFunction
@@ -51,61 +83,80 @@ export function RightSidebarView(props: {
 
 	return (
 		<>
-			<Sidebar
+			<div
 				ref={props.ref}
-				class="relative right-0 flex h-full flex-col gap-2 p-3"
+				tabindex={-1}
+				{...stylex.attrs(sidebar.panel, styles.layout)}
 			>
-				<div class="flex pl-1">
+				<div {...stylex.attrs(styles.profile)}>
 					<Avatar user={props.user} />
-					<div class="mx-2 text-sm font-medium">{props.user.name}</div>
+					<div {...stylex.attrs(styles.name)}>{props.user.name}</div>
 					<Button
-						variant="Tertiary"
-						class="mr-1 ml-auto size-fit self-center p-1"
 						onClick={props.onClose}
+						appearance="ghost"
+						tone="gray"
+						styles={styles.close}
 					>
 						<Cross1Icon />
 					</Button>
 				</div>
-				<Divider
-					class="my-0.5 px-2"
-					horizontal
-				/>
-				<div class="flex flex-col">
-					<ListItem to="/profile">
-						<PersonIcon />
-						<span>{t`Profile`}</span>
-					</ListItem>
-					<ListItem
+				<span
+					{...stylex.attrs(dividerStyles.horizontal, styles.divider)}
+				></span>
+				<div {...stylex.attrs(styles.list)}>
+					<Link
+						class={sidebarLink}
+						to="/profile"
+					>
+						<PersonIcon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>{t`Profile`}</span>
+					</Link>
+					<Link
+						class={sidebarLink}
 						to="/profile"
 						search={{ tab: "collections" }}
 					>
-						<BookmarkIcon />
-						<span>{t`Collections`}</span>
-					</ListItem>
-					<ListItem>
-						<CubeIcon />
-						<span>{t`Recommendations`}</span>
-					</ListItem>
+						<BookmarkIcon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>{t`Collections`}</span>
+					</Link>
+					<Link
+						class={sidebarLink}
+						to="."
+					>
+						<CubeIcon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>{t`Recommendations`}</span>
+					</Link>
 				</div>
-				<Divider
-					class="my-0.5 px-2"
-					horizontal
-				/>
-				<div class="flex flex-col">
-					<ListItem>
-						<Pencil2Icon />
-						<span>{t`Support`}</span>
-					</ListItem>
-					<ListItem>
-						<GearIcon />
-						<span>{t`Settings`}</span>
-					</ListItem>
-					<ListItem onClick={props.onSignOut}>
-						<ExitIcon />
-						<span>{t`Sign Out`}</span>
-					</ListItem>
+				<span
+					{...stylex.attrs(dividerStyles.horizontal, styles.divider)}
+				></span>
+				<div {...stylex.attrs(styles.list)}>
+					<Link
+						class={sidebarLink}
+						to="."
+					>
+						<Pencil2Icon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>{t`Support`}</span>
+					</Link>
+					<Link
+						class={sidebarLink}
+						to="."
+					>
+						<GearIcon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>{t`Settings`}</span>
+					</Link>
+					<Button
+						type="button"
+						appearance="ghost"
+						tone="gray"
+						styles={sidebar.item}
+						onClick={() => props.onSignOut()}
+					>
+						<ExitIcon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>{t`Sign Out`}</span>
+					</Button>
 				</div>
-			</Sidebar>
+			</div>
 		</>
 	)
 }

@@ -7,8 +7,11 @@ import { ArtistExplore } from "~/view/artist/explore"
 const DEFAULT_LIMIT = 10
 
 const exploreSearch = v.object({
-	page: v.fallback(v.pipe(v.number(), v.minValue(1)), 1),
-	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+	page: v.optional(v.fallback(v.pipe(v.number(), v.minValue(1)), 1), 1),
+	limit: v.optional(
+		v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
+		DEFAULT_LIMIT,
+	),
 	artist_type: v.optional(v.array(v.picklist(ARTIST_TYPES))),
 	sort_by: v.optional(v.picklist(["created_at", "updated_at"])),
 	order_by: v.optional(v.picklist(["asc", "desc"])),

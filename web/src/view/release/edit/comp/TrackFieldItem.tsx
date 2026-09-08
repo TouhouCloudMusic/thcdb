@@ -1,5 +1,6 @@
 import { Field, remove, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, untrack } from "solid-js"
@@ -12,9 +13,50 @@ import {
 	ArtistSearchDialog,
 	SongSearchDialog,
 } from "~/component/form/SearchDialog"
+import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { ArtistInfo, SongInfo } from "./EntityInfo"
 import type { ReleaseFormStore } from "./types"
+
+const styles = stylex.create({
+	trackFields: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
+		gap: px[8],
+	},
+	trackNumber: {
+		appearance: "textfield",
+		"::-webkit-outer-spin-button": { WebkitAppearance: "none", margin: 0 },
+		"::-webkit-inner-spin-button": { WebkitAppearance: "none", margin: 0 },
+	},
+	songPicker: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		alignItems: "center",
+		gap: px[8],
+		paddingLeft: px[4],
+	},
+	songName: { color: palette.slate[700] },
+	placeholder: { color: palette.slate[400] },
+	artists: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		paddingLeft: px[4],
+	},
+	header: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[8],
+	},
+	label: { margin: "0rem" },
+	icon: { width: px[16], height: px[16], color: palette.slate[600] },
+	list: { display: "flex", flexDirection: "column", gap: px[4] },
+	artist: { display: "grid", gridTemplateColumns: "1fr auto", gap: px[8] },
+})
 
 export function TrackItem(props: {
 	index: number
@@ -59,7 +101,7 @@ export function TrackItem(props: {
 
 	return (
 		<>
-			<div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2">
+			<div {...stylex.attrs(styles.trackFields)}>
 				<TrackNumInput
 					index={props.index}
 					of={props.of}
@@ -147,7 +189,7 @@ function DurationInput(props: { index: number; of: ReleaseFormStore }) {
 				<InputField.Root>
 					<InputField.Input
 						{...field.props}
-						class="no-spinner"
+						styles={styles.trackNumber}
 						type="number"
 						placeholder={t`Duration (ms)`}
 						value={field.input ?? undefined}
@@ -169,7 +211,7 @@ function TrackSongPicker(props: {
 }) {
 	const { t } = useLingui()
 	return (
-		<div class="grid grid-cols-[1fr_auto] items-center gap-2 pl-1">
+		<div {...stylex.attrs(styles.songPicker)}>
 			<Field
 				of={props.of}
 				path={["data", "tracks", props.index, "song_id"]}
@@ -182,11 +224,13 @@ function TrackSongPicker(props: {
 							hidden
 							value={field.input ?? undefined}
 						/>
-						<div class="text-slate-700">
+						<div {...stylex.attrs(styles.songName)}>
 							{props.song() ? (
 								<SongInfo value={props.song()!} />
 							) : (
-								<span class="text-slate-400">{t`No song selected`}</span>
+								<span
+									{...stylex.attrs(styles.placeholder)}
+								>{t`No song selected`}</span>
 							)}
 						</div>
 						<For each={field.errors}>
@@ -208,9 +252,10 @@ function TrackSongPicker(props: {
 function RemoveTrackButton(props: { onRemove: () => void }) {
 	return (
 		<Button
-			variant="Tertiary"
-			size="Sm"
 			onClick={props.onRemove}
+			appearance="ghost"
+			tone="gray"
+			size="sm"
 		>
 			<Cross1Icon />
 		</Button>
@@ -225,25 +270,28 @@ function TrackArtistsField(props: {
 }) {
 	const { t } = useLingui()
 	return (
-		<div class="flex flex-col gap-2 pl-1">
-			<div class="flex items-center justify-between gap-2">
-				<FormComp.Label class="m-0">{t`Track Artists`}</FormComp.Label>
+		<div {...stylex.attrs(styles.artists)}>
+			<div {...stylex.attrs(styles.header)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Track Artists`}</label>
 				<ArtistSearchDialog
 					onSelect={props.onAdd}
 					dataFilter={(a: SimpleArtist) => !props.hasArtist(a)}
-					icon={<PlusIcon class="size-4 text-slate-600" />}
+					icon={<PlusIcon {...stylex.attrs(styles.icon)} />}
 				/>
 			</div>
 
-			<ul class="flex flex-col gap-1">
+			<ul {...stylex.attrs(styles.list)}>
 				<For each={props.artists}>
 					{(artist, idx) => (
-						<li class="grid grid-cols-[1fr_auto] gap-2">
+						<li {...stylex.attrs(styles.artist)}>
 							<ArtistInfo value={artist} />
 							<Button
-								variant="Tertiary"
-								size="Sm"
 								onClick={() => props.onRemoveAt(idx())}
+								appearance="ghost"
+								tone="gray"
+								size="sm"
 							>
 								<Cross1Icon />
 							</Button>

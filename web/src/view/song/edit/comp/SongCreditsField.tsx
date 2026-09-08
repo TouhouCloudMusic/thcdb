@@ -1,10 +1,11 @@
 import { Field, getErrors, insert, remove, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { CreditRoleRef, SimpleArtist, SongCredit } from "@thc/api"
 import { Cross1Icon, PlusIcon, Pencil1Icon } from "@thc/icons/radix"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
@@ -13,13 +14,75 @@ import {
 	ArtistSearchDialog,
 	CreditRoleSearchDialog,
 } from "~/component/form/SearchDialog"
+import { formStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 
 import type { SongFormStore } from "./types"
+
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+	},
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: {
+		margin: 0,
+	},
+	addButton: {
+		height: "max-content",
+		padding: px[8],
+	},
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+	entries: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+		gap: px[8],
+	},
+	entry: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
+		columnGap: px[8],
+		rowGap: px[4],
+	},
+	selection: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		alignItems: "center",
+		columnGap: px[8],
+	},
+	removeButton: {
+		aspectRatio: "1 / 1",
+	},
+	removeIcon: {
+		marginInline: "auto",
+	},
+	errors: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+	},
+	placeholder: {
+		color: colors.textTertiary,
+	},
+	value: {
+		color: colors.textPrimary,
+	},
+})
 
 export function SongCreditsField(props: {
 	of: SongFormStore
 	initCredits?: SongCredit[]
-	class?: string
+	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
 	const formStore = createMemo(() => props.of)
@@ -62,21 +125,24 @@ export function SongCreditsField(props: {
 	}
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Credits`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Credits`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addCredit}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.addButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
 			<FormComp.ErrorList
 				errors={getErrors(props.of, { path: ["data", "credits"] })}
 			/>
-			<ul class="flex min-h-32 flex-col gap-2">
+			<ul {...stylex.attrs(styles.entries)}>
 				<For
 					each={meta}
 					fallback={<FieldArrayFallback />}
@@ -107,33 +173,34 @@ function CreditRow(props: {
 }) {
 	const { t } = useLingui()
 	return (
-		<li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-x-2 gap-y-1">
-			<div class="grid grid-cols-[1fr_auto] items-center gap-x-2">
+		<li {...stylex.attrs(styles.entry)}>
+			<div {...stylex.attrs(styles.selection)}>
 				<CreditEntityLabel
 					placeholder={t`Select artist`}
 					value={props.entry?.artist?.name}
 				/>
 				<ArtistSearchDialog
 					onSelect={props.onSelectArtist}
-					icon={<Pencil1Icon class="size-4" />}
+					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
 				/>
 			</div>
-			<div class="grid grid-cols-[1fr_auto] items-center gap-x-2">
+			<div {...stylex.attrs(styles.selection)}>
 				<CreditEntityLabel
 					placeholder={t`Select role`}
 					value={props.entry?.role?.name}
 				/>
 				<CreditRoleSearchDialog
 					onSelect={props.onSelectRole}
-					icon={<Pencil1Icon class="size-4" />}
+					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
 				/>
 			</div>
 			<Button
-				variant="Tertiary"
 				onClick={props.onRemove}
-				class="aspect-square"
+				appearance="ghost"
+				tone="gray"
+				styles={styles.removeButton}
 			>
-				<Cross1Icon class="mx-auto" />
+				<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
 			</Button>
 			<Field
 				of={props.of}
@@ -147,7 +214,7 @@ function CreditRow(props: {
 							hidden
 							value={field.input ?? undefined}
 						/>
-						<ul class="grid grid-cols-subgrid">
+						<ul {...stylex.attrs(styles.errors)}>
 							<FormComp.ErrorList errors={field.errors} />
 						</ul>
 					</>
@@ -165,7 +232,7 @@ function CreditRow(props: {
 							hidden
 							value={field.input ?? undefined}
 						/>
-						<ul class="grid grid-cols-subgrid">
+						<ul {...stylex.attrs(styles.errors)}>
 							<FormComp.ErrorList errors={field.errors} />
 						</ul>
 					</>
@@ -184,9 +251,11 @@ function CreditEntityLabel(props: { value?: string; placeholder: string }) {
 	return (
 		<Show
 			when={props.value}
-			fallback={<span class="text-tertiary">{props.placeholder}</span>}
+			fallback={
+				<span {...stylex.attrs(styles.placeholder)}>{props.placeholder}</span>
+			}
 		>
-			{(val) => <span class="text-primary">{val()}</span>}
+			{(val) => <span {...stylex.attrs(styles.value)}>{val()}</span>}
 		</Show>
 	)
 }

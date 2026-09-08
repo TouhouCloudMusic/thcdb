@@ -1,18 +1,62 @@
 import { Field, getErrors, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { SimpleArtist } from "@thc/api"
 import { ArtistApi } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { Either, Option as O } from "effect"
 import { For, createEffect, createSignal, on, untrack } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { FieldArrayFallback } from "~/component/form"
 import { ArtistSearchDialog } from "~/component/form/SearchDialog"
+import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { useLabelForm } from "../context"
+
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+	},
+	header: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: { margin: "0rem" },
+	icon: { width: px[16], height: px[16] },
+	list: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	founder: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		alignItems: "center",
+		gap: px[8],
+	},
+	founderDetails: { display: "flex", flexDirection: "column" },
+	founderName: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+	},
+	founderId: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+})
 
 type FounderEntry = {
 	id: number
@@ -20,7 +64,7 @@ type FounderEntry = {
 }
 
 type Props = {
-	class?: string
+	styles?: StyleXStyles
 	initFounderIds?: number[]
 }
 
@@ -93,28 +137,32 @@ export function LabelFoundersField(props: Props) {
 	)
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Founders`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.header)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Founders`}</label>
 				<ArtistSearchDialog
 					onSelect={addFounder}
-					icon={<PlusIcon class="size-4" />}
+					icon={<PlusIcon {...stylex.attrs(styles.icon)} />}
 					dataFilter={(artist) => !contain(artist)}
 				/>
 			</div>
 			<FormComp.ErrorList
 				errors={getErrors(formStore, { path: ["data", "founders"] })}
 			/>
-			<ul class="flex h-full flex-col gap-2">
+			<ul {...stylex.attrs(styles.list)}>
 				<For
 					each={founders()}
 					fallback={<FieldArrayFallback />}
 				>
 					{(founder, idx) => (
-						<li class="grid grid-cols-[1fr_auto] items-center gap-2">
-							<div class="flex flex-col">
-								<span class="text-sm font-medium">{founder.name}</span>
-								<span class="text-xs text-slate-500">#{founder.id}</span>
+						<li {...stylex.attrs(styles.founder)}>
+							<div {...stylex.attrs(styles.founderDetails)}>
+								<span {...stylex.attrs(styles.founderName)}>
+									{founder.name}
+								</span>
+								<span {...stylex.attrs(styles.founderId)}>#{founder.id}</span>
 							</div>
 							<Field
 								of={formStore}
@@ -137,9 +185,10 @@ export function LabelFoundersField(props: Props) {
 								)}
 							</Field>
 							<Button
-								variant="Tertiary"
-								size="Sm"
 								onClick={removeFounderAt(idx())}
+								appearance="ghost"
+								tone="gray"
+								size="sm"
 							>
 								<Cross1Icon />
 							</Button>

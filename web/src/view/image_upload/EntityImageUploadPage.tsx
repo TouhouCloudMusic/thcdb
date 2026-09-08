@@ -1,19 +1,151 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { For, Show } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import * as ImageCropDialog from "~/component/ImageCropDialog"
 import { formatBytes } from "~/component/ImageCropDialog/utils"
 import type { FileSizeRange } from "~/component/ImageCropDialog/utils"
-import { Link } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import {
+	radius,
+	colors,
+	fonts,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 import type { ImageDimensionRange } from "./outputSize"
 import { computeOutputSize } from "./outputSize"
 import type { EntityImageUploadStore } from "./store"
+
+const styles = stylex.create({
+	backLink: {
+		display: "inline-flex",
+		maxWidth: "100%",
+		alignItems: "center",
+		gap: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: {
+			default: colors.textSecondary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+	},
+	eyebrow: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		gap: px[8],
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: "0.1em",
+		color: colors.textTertiary,
+	},
+	title: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: 1.25,
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	requirements: {
+		display: "grid",
+		gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+		width: "fit-content",
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: colors.textSecondary,
+		columnGap: px[16],
+		rowGap: px[8],
+	},
+	headerChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[16] },
+	},
+	actions: { display: "grid", alignContent: "flex-start", gap: px[12] },
+	figureChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+	previewBox: {
+		display: "flex",
+		aspectRatio: "1 / 1",
+		alignItems: "center",
+		justifyContent: "center",
+		overflow: "hidden",
+		borderRadius: radius.sm,
+		borderStyle: "solid",
+		borderWidth: "1px",
+		borderColor: palette.slate[300],
+		backgroundColor: colors.backgroundSecondary,
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	emptyPreview: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+	previewImage: { width: "100%", height: "100%", objectFit: "cover" },
+	caption: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textSecondary,
+	},
+	actionButton: { width: "100%", justifyContent: "center" },
+	error: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.reimu[700],
+	},
+	queueLink: {
+		display: "inline-flex",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: {
+			default: colors.textSecondary,
+			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
+		},
+	},
+	page: { padding: px[32] },
+	content: { width: "100%" },
+	backLabel: { overflowWrap: "break-word" },
+	eyebrowSeparator: { opacity: 0.4 },
+	requirement: { display: "grid", gap: px[2] },
+	requirementLabel: { letterSpacing: "0.1em", color: colors.textTertiary },
+	requirementValue: { fontFamily: fonts.mono },
+	comparison: {
+		display: "grid",
+		gap: px[24],
+		gridTemplateColumns: {
+			default: null,
+			"@media (min-width: 64rem)":
+				"minmax(0,1fr) minmax(0,1fr) minmax(11rem,13rem)",
+		},
+	},
+	currentFigure: { order: { default: 2, "@media (min-width: 64rem)": 1 } },
+	draftFigure: { order: { default: 3, "@media (min-width: 64rem)": 2 } },
+	uploadActions: {
+		order: { default: 1, "@media (min-width: 64rem)": 3 },
+		paddingTop: { default: null, "@media (min-width: 64rem)": px[28] },
+	},
+	cropCanvas: { height: px[384] },
+	contentChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[24] },
+	},
+	headingChild: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
+	},
+})
 
 export { createEntityImageUploadStore } from "./store"
 
@@ -51,26 +183,28 @@ type PreviewFigureProps = {
 	src?: string
 	alt: string
 	emptyText: string
-	class?: string
+	styles?: StyleXStyles
 }
 
 type PreviewBoxProps = Omit<PreviewFigureProps, "label">
 
 function PreviewBox(props: PreviewBoxProps) {
 	return (
-		<div class="flex aspect-square items-center justify-center overflow-hidden rounded-sm border border-slate-300 bg-secondary shadow-xs">
+		<div {...stylex.attrs(styles.previewBox, styles.figureChild)}>
 			<Image.Root>
 				<Image.Fallback>
 					{(state) => (
 						<Show when={!props.src || state !== Image.State.Loading}>
-							<span class="text-sm text-slate-500">{props.emptyText}</span>
+							<span {...stylex.attrs(styles.emptyPreview)}>
+								{props.emptyText}
+							</span>
 						</Show>
 					)}
 				</Image.Fallback>
 				<Image.Img
 					src={props.src}
 					alt={props.alt}
-					class="size-full object-cover"
+					styles={styles.previewImage}
 				/>
 			</Image.Root>
 		</div>
@@ -79,8 +213,10 @@ function PreviewBox(props: PreviewBoxProps) {
 
 function PreviewFigure(props: PreviewFigureProps) {
 	return (
-		<figure class={twJoin("space-y-2", props.class)}>
-			<figcaption class="text-sm text-secondary">{props.label}</figcaption>
+		<figure {...stylex.attrs(props.styles)}>
+			<figcaption {...stylex.attrs(styles.caption, styles.figureChild)}>
+				{props.label}
+			</figcaption>
 			<PreviewBox
 				src={props.src}
 				alt={props.alt}
@@ -94,7 +230,7 @@ type CurrentImageFigureProps = {
 	entityName: string
 	imageLabel: string
 	src?: string
-	class?: string
+	styles?: StyleXStyles
 }
 
 function CurrentImageFigure(props: CurrentImageFigureProps) {
@@ -105,7 +241,7 @@ function CurrentImageFigure(props: CurrentImageFigureProps) {
 			src={props.src}
 			alt={`${props.entityName} current ${props.imageLabel}`}
 			emptyText={t`No image`}
-			class={props.class}
+			styles={props.styles}
 		/>
 	)
 }
@@ -116,33 +252,33 @@ type ImageUploadActionsProps = {
 	submitError?: string
 	onOpen: () => void
 	onSubmit: () => Promise<void>
-	class?: string
+	styles?: StyleXStyles
 }
 
 function ImageUploadActions(props: ImageUploadActionsProps) {
 	const { t } = useLingui()
 	return (
-		<section class={twJoin("grid content-start gap-3", props.class)}>
+		<section {...stylex.attrs(styles.actions, props.styles)}>
 			<Button
-				variant="Secondary"
-				color="Reimu"
-				size="Sm"
-				class="w-full justify-center"
 				disabled={props.isUploading}
 				onClick={props.onOpen}
+				appearance="soft"
+				tone="reimu"
+				size="sm"
+				styles={styles.actionButton}
 			>
 				{props.hasDraft ? t`Select another image` : t`Select image`}
 			</Button>
 
 			<Button
-				variant="Primary"
-				color="Reimu"
-				size="Sm"
-				class="w-full justify-center"
 				disabled={!props.hasDraft || props.isUploading}
 				onClick={() => {
 					void props.onSubmit()
 				}}
+				appearance="solid"
+				tone="reimu"
+				size="sm"
+				styles={styles.actionButton}
 			>
 				<Show
 					when={props.isUploading}
@@ -153,14 +289,13 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 			</Button>
 
 			<Show when={props.submitError}>
-				{(error) => <div class="text-sm text-reimu-700">{error()}</div>}
+				{(error) => <div {...stylex.attrs(styles.error)}>{error()}</div>}
 			</Show>
 
 			<Link
 				to="/image-queue"
 				search={{ status: "pending" }}
-				underline={false}
-				class="inline-flex items-center justify-center gap-2 text-sm text-secondary hover:text-primary"
+				class={stylex.attrs(link.base, styles.queueLink).class}
 			>
 				<span>{t`Open image queue`}</span>
 				<span aria-hidden="true">→</span>
@@ -172,36 +307,39 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 	const { t } = useLingui()
 	return (
-		<PageLayout class="p-8">
-			<div class="w-full space-y-6">
-				<header class="space-y-4">
+		<PageLayout styles={styles.page}>
+			<div {...stylex.attrs(styles.content)}>
+				<header {...stylex.attrs(styles.contentChild)}>
 					<Link
 						to={getBackLinkProps(props.entityLabel).to}
 						params={{ id: props.entityId }}
-						underline={false}
-						class="inline-flex max-w-full items-center gap-2 text-sm text-secondary hover:text-primary"
+						class={
+							stylex.attrs(link.base, styles.backLink, styles.headerChild).class
+						}
 					>
 						<span aria-hidden="true">←</span>
-						<span class="wrap-break-word">Back to {props.entityName}</span>
+						<span {...stylex.attrs(styles.backLabel)}>
+							Back to {props.entityName}
+						</span>
 					</Link>
 
-					<div class="space-y-2">
-						<div class="flex flex-wrap items-center gap-2 text-xs font-medium tracking-widest text-tertiary">
+					<div {...stylex.attrs(styles.headerChild)}>
+						<div {...stylex.attrs(styles.eyebrow, styles.headingChild)}>
 							<span>{props.entityLabel.toUpperCase()}</span>
 							<span
 								aria-hidden="true"
-								class="opacity-40"
+								{...stylex.attrs(styles.eyebrowSeparator)}
 							>
 								/
 							</span>
 							<span>{props.imageLabel.toUpperCase()}</span>
 						</div>
-						<h1 class="text-2xl leading-tight font-light tracking-tight text-primary">
+						<h1 {...stylex.attrs(styles.title, styles.headingChild)}>
 							{props.entityName}
 						</h1>
 					</div>
 
-					<div class="grid grid-cols-3 w-fit gap-x-4 gap-y-2 text-xs text-secondary">
+					<div {...stylex.attrs(styles.requirements, styles.headerChild)}>
 						<For
 							each={[
 								{
@@ -219,28 +357,32 @@ export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 							]}
 						>
 							{(item) => (
-								<div class="grid gap-0.5">
-									<div class="tracking-widest text-tertiary">{item.label}</div>
-									<div class="font-mono">{item.value}</div>
+								<div {...stylex.attrs(styles.requirement)}>
+									<div {...stylex.attrs(styles.requirementLabel)}>
+										{item.label}
+									</div>
+									<div {...stylex.attrs(styles.requirementValue)}>
+										{item.value}
+									</div>
 								</div>
 							)}
 						</For>
 					</div>
 				</header>
 
-				<article class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(11rem,13rem)]">
+				<article {...stylex.attrs(styles.comparison, styles.contentChild)}>
 					<CurrentImageFigure
 						entityName={props.entityName}
 						imageLabel={props.imageLabel}
 						src={imgUrl(props.imageUrl)}
-						class="order-2 lg:order-1"
+						styles={styles.currentFigure}
 					/>
 					<PreviewFigure
 						label={t`New`}
 						src={props.store.draftPreviewUrl}
 						alt={`${props.entityName} new ${props.imageLabel}`}
 						emptyText={t`No image`}
-						class="order-3 lg:order-2"
+						styles={styles.draftFigure}
 					/>
 					<ImageUploadActions
 						hasDraft={props.store.hasDraft}
@@ -248,7 +390,7 @@ export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 						submitError={props.store.submitError}
 						onOpen={props.store.onOpen}
 						onSubmit={props.store.onSubmit}
-						class="order-1 lg:order-3 lg:pt-7"
+						styles={styles.uploadActions}
 					/>
 				</article>
 			</div>
@@ -264,7 +406,7 @@ export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 				onSave={props.store.onDraftSave}
 				title={`Edit ${props.imageLabel}`}
 			>
-				<ImageCropDialog.Canvas class="h-96" />
+				<ImageCropDialog.Canvas styles={styles.cropCanvas} />
 			</ImageCropDialog.Root>
 		</PageLayout>
 	)

@@ -1,11 +1,22 @@
+import * as stylex from "@stylexjs/stylex"
 import type { Event } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { MOCK_CORRECTION_HISTORY } from "~/mock/correction"
 import { withEntityDetailStoryState } from "~/storybook/entityDetail"
+import { palette } from "~/style/color/palette.stylex"
+import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { EventInfoPage } from "."
+
+const styles = stylex.create({
+	story: {
+		minHeight: "900px",
+		backgroundColor: palette.slate[100],
+		padding: px[24],
+	},
+})
 
 const EVENT: Event = {
 	id: 31,
@@ -31,7 +42,7 @@ This edition includes a dedicated doujin music area where circles distribute eve
 
 function StoryRoot() {
 	return (
-		<div class="min-h-[900px] bg-slate-100 p-6">
+		<div {...stylex.attrs(styles.story)}>
 			<EventInfoPage
 				event={EVENT}
 				correctionHistory={MOCK_CORRECTION_HISTORY}

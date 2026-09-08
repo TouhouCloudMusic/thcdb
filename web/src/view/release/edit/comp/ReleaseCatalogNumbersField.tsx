@@ -1,24 +1,58 @@
 import { Field, FieldArray, insert, remove, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { Label, SimpleLabel } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
-import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FieldArrayFallback } from "~/component/form"
 import { LabelSearchDialog } from "~/component/form/SearchDialog"
+import { formStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 
 import { LabelInfo } from "./EntityInfo"
 import type { ReleaseFormStore } from "./types"
 
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+	},
+	header: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: { margin: "0rem" },
+	addButton: { height: "max-content", padding: px[8] },
+	icon: { width: px[16], height: px[16] },
+	list: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	item: {
+		display: "grid",
+		gridTemplateColumns: "repeat(2,minmax(0,1fr)) auto auto",
+		alignItems: "center",
+		gap: px[8],
+	},
+	placeholder: { color: colors.textTertiary },
+	removeButton: { padding: px[8] },
+})
+
 export function ReleaseCatalogNumbersField(props: {
 	of: ReleaseFormStore
 	initCatalogLabels?: (SimpleLabel | undefined)[]
-	class?: string
+	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
 	const formStore = createMemo(() => props.of)
@@ -48,18 +82,21 @@ export function ReleaseCatalogNumbersField(props: {
 	}
 
 	return (
-		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Catalog Numbers`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.header)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Catalog Numbers`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addCatalogNumber}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.addButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
-			<ul class="flex h-full flex-col gap-2">
+			<ul {...stylex.attrs(styles.list)}>
 				<FieldArray
 					of={props.of}
 					path={["data", "catalog_nums"]}
@@ -70,7 +107,7 @@ export function ReleaseCatalogNumbersField(props: {
 							fallback={<FieldArrayFallback />}
 						>
 							{(_, idx) => (
-								<li class="grid grid-cols-[repeat(2,minmax(0,1fr))_auto_auto] items-center gap-2">
+								<li {...stylex.attrs(styles.item)}>
 									<Field
 										of={props.of}
 										path={["data", "catalog_nums", idx(), "catalog_number"]}
@@ -105,7 +142,7 @@ export function ReleaseCatalogNumbersField(props: {
 													<Show
 														when={labels[idx()]}
 														fallback={
-															<span class="text-tertiary">
+															<span {...stylex.attrs(styles.placeholder)}>
 																No label selected
 															</span>
 														}
@@ -123,10 +160,11 @@ export function ReleaseCatalogNumbersField(props: {
 									</Field>
 
 									<Button
-										variant="Tertiary"
-										size="Sm"
-										class="p-2"
 										onClick={() => removeCatalogNumberAt(idx())}
+										appearance="ghost"
+										tone="gray"
+										size="sm"
+										styles={styles.removeButton}
 									>
 										<Cross1Icon />
 									</Button>

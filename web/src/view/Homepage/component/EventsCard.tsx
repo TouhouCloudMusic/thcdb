@@ -1,38 +1,133 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import type { Event } from "@thc/api"
 import { For, Show } from "solid-js"
 
-import { Card } from "~/component/atomic/Card"
-import { Link } from "~/component/atomic/Link"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { surfaceStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { EVENTS_LIMIT } from "~/view/Homepage/constants"
 import { displayEventDate, formatEventLocation } from "~/view/Homepage/utils"
 
-const EVENTS_LIST_CLASS = "divide-y divide-slate-300"
+import { animationNames } from "../../../style/animations.stylex"
+
+const styles = stylex.create({
+	skeleton: {
+		paddingTop: { default: px[12], ":first-child": 0 },
+		paddingBottom: { default: px[12], ":last-child": 0 },
+		borderTopWidth: { default: null, ":not(:last-child)": 0 },
+		borderBottomWidth: { default: null, ":not(:last-child)": 1 },
+		borderBlockStyle: "solid",
+		borderColor: palette.slate[300],
+		animationName: {
+			default: animationNames.pulse,
+			"@media (prefers-reduced-motion: reduce)": "none",
+		},
+		animationDuration: "2s",
+		animationTimingFunction: "cubic-bezier(0.4, 0, 0.6, 1)",
+		animationIterationCount: "infinite",
+	},
+	row: {
+		paddingTop: { default: px[12], ":first-child": 0 },
+		paddingBottom: { default: px[12], ":last-child": 0 },
+		borderTopWidth: { default: null, ":not(:last-child)": 0 },
+		borderBottomWidth: { default: null, ":not(:last-child)": 1 },
+		borderBlockStyle: "solid",
+		borderColor: palette.slate[300],
+	},
+	nameSkeleton: {
+		height: px[16],
+		width: "calc(2/3 * 100%)",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	empty: { height: px[176] },
+	name: {
+		minWidth: 0,
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.base,
+		lineHeight: 1.5,
+		fontWeight: 300,
+		letterSpacing: 0,
+		color: colors.textPrimary,
+	},
+	root: { padding: 0, boxShadow: "none" },
+	header: {
+		display: "flex",
+		minWidth: 0,
+		alignItems: "baseline",
+		justifyContent: "space-between",
+		gap: px[12],
+	},
+	date: {
+		flexShrink: 0,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 300,
+		fontVariantNumeric: "tabular-nums",
+		color: colors.textTertiary,
+	},
+	location: {
+		marginTop: px[4],
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 300,
+		color: colors.textTertiary,
+	},
+	skeletonHeader: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+	},
+	dateSkeleton: {
+		height: px[12],
+		width: px[64],
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	locationSkeleton: {
+		marginTop: px[6],
+		height: px[14],
+		width: "50%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+})
 
 function EventRow(props: { event: Event }) {
 	const { t } = useLingui()
 
 	return (
-		<li class="py-3 first:pt-0 last:pb-0">
-			<div class="flex min-w-0 items-baseline justify-between gap-3">
+		<li {...stylex.attrs(styles.row)}>
+			<div {...stylex.attrs(styles.header)}>
 				<Link
 					to="/event/$id"
 					params={{ id: props.event.id.toString() }}
-					class="min-w-0 truncate text-base font-light tracking-normal text-primary"
+					class={stylex.attrs(link.base, link.text, styles.name).class}
 				>
 					{props.event.name}
 				</Link>
 				<Show when={displayEventDate(props.event)}>
-					{(date) => (
-						<span class="shrink-0 text-xs font-light tabular-nums text-tertiary">
-							{date()}
-						</span>
-					)}
+					{(date) => <span {...stylex.attrs(styles.date)}>{date()}</span>}
 				</Show>
 			</div>
-			<div class="mt-1 truncate text-sm font-light text-tertiary">
+			<div {...stylex.attrs(styles.location)}>
 				{formatEventLocation(props.event) ?? t`Unknown location`}
 			</div>
 		</li>
@@ -41,19 +136,19 @@ function EventRow(props: { event: Event }) {
 
 function EventRowSkeleton() {
 	return (
-		<li class="py-3 first:pt-0 last:pb-0 animate-pulse motion-reduce:animate-none">
-			<div class="flex items-center justify-between gap-3">
-				<div class="h-4 w-2/3 rounded bg-slate-200"></div>
-				<div class="h-3 w-16 rounded bg-slate-100"></div>
+		<li {...stylex.attrs(styles.skeleton)}>
+			<div {...stylex.attrs(styles.skeletonHeader)}>
+				<div {...stylex.attrs(styles.nameSkeleton)}></div>
+				<div {...stylex.attrs(styles.dateSkeleton)}></div>
 			</div>
-			<div class="mt-1.5 h-3.5 w-1/2 rounded bg-slate-100"></div>
+			<div {...stylex.attrs(styles.locationSkeleton)}></div>
 		</li>
 	)
 }
 
 function EventsListSkeleton() {
 	return (
-		<ul class={EVENTS_LIST_CLASS}>
+		<ul>
 			<For each={Array.from({ length: EVENTS_LIMIT })}>
 				{() => <EventRowSkeleton />}
 			</For>
@@ -65,9 +160,9 @@ function EventsList(props: { events: Event[] }) {
 	return (
 		<Show
 			when={props.events.length > 0}
-			fallback={<HomeEmptySlot class="h-44" />}
+			fallback={<HomeEmptySlot styles={styles.empty} />}
 		>
-			<ul class={EVENTS_LIST_CLASS}>
+			<ul>
 				<For each={props.events}>{(event) => <EventRow event={event} />}</For>
 			</ul>
 		</Show>
@@ -77,27 +172,27 @@ function EventsList(props: { events: Event[] }) {
 export function EventsCardSkeleton() {
 	const { t } = useLingui()
 	return (
-		<Card class="p-0 shadow-none">
+		<div {...stylex.attrs(surfaceStyles.card, styles.root)}>
 			<ExploreSection
 				title={t`Upcoming Events`}
 				to="/event/explore"
 			>
 				<EventsListSkeleton />
 			</ExploreSection>
-		</Card>
+		</div>
 	)
 }
 
 export function EventsCard(props: { events: Event[] }) {
 	const { t } = useLingui()
 	return (
-		<Card class="p-0 shadow-none">
+		<div {...stylex.attrs(surfaceStyles.card, styles.root)}>
 			<ExploreSection
 				title={t`Upcoming Events`}
 				to="/event/explore"
 			>
 				<EventsList events={props.events} />
 			</ExploreSection>
-		</Card>
+		</div>
 	)
 }

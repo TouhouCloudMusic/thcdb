@@ -1,62 +1,28 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Button, Size, Variant } from "."
-import { AppColor } from "../.."
+import { Button } from "~/component/atomic/button"
+import type { ButtonProps } from "~/component/atomic/button"
 
-const meta: Meta<typeof Button> = {
+const meta: Meta<ButtonProps> = {
 	component: Button,
-	parameters: {
-		layout: "centered",
-	},
+	parameters: { layout: "centered" },
 	tags: ["autodocs"],
 	argTypes: {
-		color: {
-			control: {
-				type: "select",
-			},
-			options: AppColor.iter().toArray(),
+		appearance: {
+			control: "select",
+			options: ["solid", "soft", "ghost", "surface", "outline"],
 		},
-		size: {
-			control: {
-				type: "select",
-			},
-			options: Size.iter().toArray(),
+		tone: {
+			control: "select",
+			options: ["gray", "slate", "blue", "reimu", "marisa", "green"],
 		},
-		variant: {
-			control: {
-				type: "select",
-			},
-			options: Variant.iter().toArray(),
-		},
+		size: { control: "select", options: ["xs", "sm", "md", "lg"] },
 	},
 }
 
 export default meta
-type Story = StoryObj<typeof Button>
+type Story = StoryObj<typeof meta>
 
-export const Primary: Story = {
-	args: {
-		children: "Button",
-		variant: "Primary",
-		color: "Reimu",
-		size: "Md",
-	},
-}
-
-export const Secondary: Story = {
-	args: {
-		children: "Button",
-		variant: "Primary",
-		color: "Gray",
-		size: "Md",
-	},
-}
-
-export const Tertiary: Story = {
-	args: {
-		children: "Button",
-		variant: "Tertiary",
-		color: "Gray",
-		size: "Md",
-	},
+export const Default: Story = {
+	args: { children: "Button", appearance: "soft", tone: "gray", size: "md" },
 }

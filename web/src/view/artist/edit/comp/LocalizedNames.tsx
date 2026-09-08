@@ -7,20 +7,68 @@ import {
 	setInput,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import * as stylex from "@stylexjs/stylex"
 import type { Language } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { For } from "solid-js"
 
-import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
-import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FieldArrayFallback } from "~/component/form"
 import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
+import { dividerStyles, formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../context"
 
-export function ArtistFormLocalizedNames() {
+const styles = stylex.create({
+	field: {
+		display: "flex",
+		minHeight: px[128],
+		width: px[384],
+		flexDirection: "column",
+	},
+	fieldHeader: {
+		marginBottom: px[16],
+		display: "flex",
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: {
+		margin: 0,
+	},
+	addButton: {
+		height: "max-content",
+		padding: px[8],
+	},
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+	entries: {
+		display: "flex",
+		height: "100%",
+		flexDirection: "column",
+		gap: px[8],
+	},
+	entry: {
+		display: "grid",
+		gridTemplateColumns: "1fr auto",
+		gridTemplateRows: "repeat(2, minmax(0, 1fr))",
+		gap: px[8],
+	},
+	nameField: {
+		gridRowStart: "2",
+	},
+	removeButton: {
+		gridRow: "span 2 / span 2",
+		width: "fit-content",
+	},
+})
+
+export function ArtistFormLocalizedNames(props: { styles?: StyleXStyles }) {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
@@ -36,15 +84,18 @@ export function ArtistFormLocalizedNames() {
 	}
 
 	return (
-		<div class="flex min-h-32 w-96 flex-col">
-			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">{t`Localized Names`}</FormComp.Label>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.fieldHeader)}>
+				<label
+					{...stylex.attrs(formStyles.label, styles.label)}
+				>{t`Localized Names`}</label>
 				<Button
-					variant="Tertiary"
-					class="h-max p-2"
 					onClick={addLocalizedName}
+					appearance="ghost"
+					tone="gray"
+					styles={styles.addButton}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
 
@@ -53,19 +104,19 @@ export function ArtistFormLocalizedNames() {
 				path={["data", "localized_names"]}
 			>
 				{(fieldArray) => (
-					<ul class="flex h-full flex-col gap-2">
+					<ul {...stylex.attrs(styles.entries)}>
 						<For
 							each={fieldArray.items}
 							fallback={<FieldArrayFallback />}
 						>
 							{(_, idx) => (
-								<li class="grid grid-cols-[1fr_auto] grid-rows-2 gap-2">
+								<li {...stylex.attrs(styles.entry)}>
 									<Field
 										of={formStore}
 										path={["data", "localized_names", idx(), "name"]}
 									>
 										{(field) => (
-											<InputField.Root class="row-start-2">
+											<InputField.Root styles={[styles.nameField]}>
 												<InputField.Input
 													{...field.props}
 													id={field.path.join(".")}
@@ -80,15 +131,16 @@ export function ArtistFormLocalizedNames() {
 									{/* TODO: form init value */}
 									<LanguageCombobox onChange={createOnLangChange(idx())} />
 									<Button
-										variant="Tertiary"
-										size="Sm"
-										class="row-span-2 w-fit"
 										onClick={removeLocalizedNameAt(idx())}
+										appearance="ghost"
+										tone="gray"
+										size="sm"
+										styles={styles.removeButton}
 									>
 										<Cross1Icon />
 									</Button>
 									{idx() < fieldArray.items.length - 1 && (
-										<Divider horizontal />
+										<span {...stylex.attrs(dividerStyles.horizontal)}></span>
 									)}
 								</li>
 							)}

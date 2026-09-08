@@ -1,27 +1,94 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { For, Show } from "solid-js"
 
-import { Card } from "~/component/atomic/Card"
-import { Link } from "~/component/atomic/Link"
 import type { TagListItem } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { surfaceStyles } from "~/style/primitives"
+import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { TAGS_LIMIT } from "~/view/Homepage/constants"
 
-const TAGS_LIST_CLASS = "divide-y divide-slate-300"
+import { animationNames } from "../../../style/animations.stylex"
+
+const styles = stylex.create({
+	skeleton: {
+		paddingTop: { default: px[12], ":first-child": 0 },
+		paddingBottom: { default: px[12], ":last-child": 0 },
+		borderTopWidth: { default: null, ":not(:last-child)": 0 },
+		borderBottomWidth: { default: null, ":not(:last-child)": 1 },
+		borderBlockStyle: "solid",
+		borderColor: palette.slate[300],
+		animationName: {
+			default: animationNames.pulse,
+			"@media (prefers-reduced-motion: reduce)": "none",
+		},
+		animationDuration: "2s",
+		animationTimingFunction: "cubic-bezier(0.4, 0, 0.6, 1)",
+		animationIterationCount: "infinite",
+	},
+	row: {
+		paddingTop: { default: px[12], ":first-child": 0 },
+		paddingBottom: { default: px[12], ":last-child": 0 },
+		borderTopWidth: { default: null, ":not(:last-child)": 0 },
+		borderBottomWidth: { default: null, ":not(:last-child)": 1 },
+		borderBlockStyle: "solid",
+		borderColor: palette.slate[300],
+	},
+	nameSkeleton: {
+		height: px[16],
+		width: "calc(1/3 * 100%)",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	descriptionSkeleton: {
+		marginTop: px[6],
+		height: px[14],
+		width: "80%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	empty: { height: px[96] },
+	name: {
+		display: "block",
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+		fontSize: fontSizes.base,
+		lineHeight: 1.5,
+		fontWeight: 300,
+		letterSpacing: 0,
+		color: colors.textPrimary,
+	},
+	description: {
+		marginTop: px[4],
+		overflow: "hidden",
+		display: "-webkit-box",
+		WebkitBoxOrient: "vertical",
+		WebkitLineClamp: 2,
+		fontSize: fontSizes.sm,
+		lineHeight: 1.375,
+		fontWeight: 300,
+		color: colors.textTertiary,
+	},
+	root: { padding: 0, boxShadow: "none" },
+})
 
 function TagRowSkeleton() {
 	return (
-		<li class="py-3 first:pt-0 last:pb-0 animate-pulse motion-reduce:animate-none">
-			<div class="h-4 w-1/3 rounded bg-slate-200"></div>
-			<div class="mt-1.5 h-3.5 w-4/5 rounded bg-slate-100"></div>
+		<li {...stylex.attrs(styles.skeleton)}>
+			<div {...stylex.attrs(styles.nameSkeleton)}></div>
+			<div {...stylex.attrs(styles.descriptionSkeleton)}></div>
 		</li>
 	)
 }
 
 function TagsListSkeleton() {
 	return (
-		<ul class={TAGS_LIST_CLASS}>
+		<ul>
 			<For each={Array.from({ length: TAGS_LIMIT })}>
 				{() => <TagRowSkeleton />}
 			</For>
@@ -33,20 +100,20 @@ function TagsList(props: { tags: TagListItem[] }) {
 	return (
 		<Show
 			when={props.tags.length > 0}
-			fallback={<HomeEmptySlot class="h-24" />}
+			fallback={<HomeEmptySlot styles={styles.empty} />}
 		>
-			<ul class={TAGS_LIST_CLASS}>
+			<ul>
 				<For each={props.tags}>
 					{(tag) => (
-						<li class="py-3 first:pt-0 last:pb-0">
+						<li {...stylex.attrs(styles.row)}>
 							<Link
 								to="/tag/$id"
 								params={{ id: tag.id.toString() }}
-								class="block truncate text-base font-light tracking-normal text-primary"
+								class={stylex.attrs(link.base, link.text, styles.name).class}
 							>
 								{tag.name}
 							</Link>
-							<div class="mt-1 line-clamp-2 text-sm leading-snug font-light text-tertiary">
+							<div {...stylex.attrs(styles.description)}>
 								{tag.short_description}
 							</div>
 						</li>
@@ -60,27 +127,27 @@ function TagsList(props: { tags: TagListItem[] }) {
 export function TagsCardSkeleton() {
 	const { t } = useLingui()
 	return (
-		<Card class="p-0 shadow-none">
+		<div {...stylex.attrs(surfaceStyles.card, styles.root)}>
 			<ExploreSection
 				title={t`Trending Tags`}
 				to="/tag/explore"
 			>
 				<TagsListSkeleton />
 			</ExploreSection>
-		</Card>
+		</div>
 	)
 }
 
 export function TagsCard(props: { tags: TagListItem[] }) {
 	const { t } = useLingui()
 	return (
-		<Card class="p-0 shadow-none">
+		<div {...stylex.attrs(surfaceStyles.card, styles.root)}>
 			<ExploreSection
 				title={t`Trending Tags`}
 				to="/tag/explore"
 			>
 				<TagsList tags={props.tags} />
 			</ExploreSection>
-		</Card>
+		</div>
 	)
 }

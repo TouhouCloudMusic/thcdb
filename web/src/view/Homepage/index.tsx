@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import type { Event } from "@thc/api"
 import { ErrorBoundary, For, Show, Suspense } from "solid-js"
 
@@ -9,7 +10,7 @@ import type {
 	TagListItem,
 } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
-import { tw } from "~/utils"
+import { px } from "~/style/tokens.stylex"
 import {
 	ArtistsCard,
 	ArtistsCardSkeleton,
@@ -28,13 +29,42 @@ import {
 import { TagsCard, TagsCardSkeleton } from "~/view/Homepage/component/TagsCard"
 import { RELEASES_LIMIT } from "~/view/Homepage/constants"
 
-const RELEASES_GRID_CLASS = tw(`
-	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(8.75rem,25%)),1fr))] gap-0.5
-`)
+const styles = stylex.create({
+	releases: {
+		display: "grid",
+		gridTemplateColumns:
+			"repeat(auto-fit,minmax(min(100%,max(8.75rem,25%)),1fr))",
+		gap: px[2],
+	},
+	empty: { height: px[224] },
+	content: {
+		display: "grid",
+		columnGap: px[32],
+		rowGap: px[24],
+		paddingInline: {
+			default: px[16],
+			"@media (min-width: 40rem)": px[24],
+			"@media (min-width: 64rem)": px[32],
+		},
+		paddingTop: px[16],
+		paddingBottom: px[32],
+		gridTemplateColumns: {
+			default: null,
+			"@media (min-width: 64rem)": "1.35fr 0.65fr",
+		},
+	},
+	side: {
+		display: "grid",
+		minWidth: 0,
+		alignContent: "start",
+		gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,16rem),1fr))",
+		gap: px[32],
+	},
+})
 
 function ReleasesGridSkeleton() {
 	return (
-		<div class={RELEASES_GRID_CLASS}>
+		<div {...stylex.attrs(styles.releases)}>
 			<For each={Array.from({ length: RELEASES_LIMIT })}>
 				{() => <ReleaseCardSkeleton />}
 			</For>
@@ -46,9 +76,9 @@ function ReleasesGrid(props: { releases: ReleaseListItem[] }) {
 	return (
 		<Show
 			when={props.releases.length > 0}
-			fallback={<HomeEmptySlot class="h-56" />}
+			fallback={<HomeEmptySlot styles={styles.empty} />}
 		>
-			<div class={RELEASES_GRID_CLASS}>
+			<div {...stylex.attrs(styles.releases)}>
 				<For each={props.releases}>
 					{(release) => <ReleaseCard release={release} />}
 				</For>
@@ -75,11 +105,7 @@ export function HomePage(props: HomePageProps) {
 				</ErrorBoundary>
 			</Suspense>
 
-			<section
-				class="grid gap-x-8 gap-y-6 px-4 pt-4 pb-8
-					sm:px-6
-					lg:grid-cols-[1.35fr_0.65fr] lg:px-8"
-			>
+			<section {...stylex.attrs(styles.content)}>
 				<ExploreSection
 					title={t`Popular Releases`}
 					to="/release/explore"
@@ -92,7 +118,7 @@ export function HomePage(props: HomePageProps) {
 					</Suspense>
 				</ExploreSection>
 
-				<div class="grid min-w-0 content-start grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-8">
+				<div {...stylex.attrs(styles.side)}>
 					<Suspense fallback={<EventsCardSkeleton />}>
 						<EventsCard events={props.events} />
 					</Suspense>

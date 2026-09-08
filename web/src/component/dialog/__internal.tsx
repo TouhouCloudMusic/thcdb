@@ -9,11 +9,61 @@ import type {
 	DialogTitleProps,
 	DialogTriggerRenderProps,
 } from "@kobalte/core/dialog"
-import { mergeProps } from "solid-js"
-import type { ValidComponent } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
+import { splitProps } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, fontSizes, px } from "~/style/tokens.stylex"
+
+import { animationNames } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	overlay: {
+		position: "fixed",
+		inset: 0,
+		zIndex: 50,
+		backgroundColor: `color-mix(in oklab, ${palette.slate[900]} 20%, transparent)`,
+		opacity: { default: 0, ":is([data-expanded])": 1 },
+		animationDuration: "200ms",
+		animationTimingFunction: "ease",
+		animationName: {
+			default: animationNames.fadeOut,
+			":is([data-expanded])": animationNames.fadeIn,
+			":is([data-blur])": animationNames.blurOut,
+			":is([data-blur][data-expanded])": animationNames.blurIn,
+		},
+		backdropFilter: {
+			default: null,
+			":is([data-blur])": "none",
+			":is([data-blur][data-expanded])": "blur(2px)",
+		},
+	},
+	content: {
+		backgroundColor: colors.backgroundPrimary,
+		position: "fixed",
+		zIndex: 50,
+		margin: "auto",
+		left: "50%",
+		top: "50%",
+		translate: "-50% -50%",
+		animationDuration: "200ms",
+		animationTimingFunction: "ease",
+		animationName: {
+			default: animationNames.scaleFadeOut,
+			":is([data-expanded])": animationNames.scaleFadeIn,
+		},
+	},
+	title: { fontWeight: 500 },
+	description: {
+		marginTop: px[8],
+		paddingRight: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: "1.25rem",
+		color: palette.slate[800],
+	},
+})
 
 export type RootProps = DialogRootProps
 export type TriggerRenderProps = DialogTriggerRenderProps
@@ -26,94 +76,82 @@ export const Trigger = Dialog.Trigger
 
 export const Portal = Dialog.Portal
 
-export type OverlayProps<T extends ValidComponent> = PolymorphicProps<
-	T,
-	DialogOverlayProps<T>
-> & {
-	"data-blur"?: boolean | undefined
-}
+export type OverlayProps = PolymorphicProps<
+	"div",
+	DialogOverlayProps<"div">
+> & { styles?: StyleXStyles; "data-blur"?: boolean | undefined }
 
-export function Overlay<T extends ValidComponent = "div">(
-	props: OverlayProps<T>,
-) {
-	const CLASS = `
-    fixed inset-0 z-50 bg-slate-900/20
-    opacity-0 data-expanded:opacity-100
-    animate-fade-out data-expanded:animate-fade-in
-    data-blur:backdrop-blur-none data-blur:data-expanded:backdrop-blur-2xs
-    data-blur:animate-blur-out data-blur:data-expanded:animate-blur-in
-    `
+export function Overlay(props: OverlayProps) {
+	const [local, others] = splitProps(props, ["styles"])
 
-	const local_props = mergeProps(props, {
-		get class() {
-			return twMerge(CLASS, props["class"])
-		},
-	})
-
-	return <Dialog.Overlay {...local_props} />
-}
-
-export type ContentProps<T extends ValidComponent = "div"> = PolymorphicProps<
-	T,
-	DialogContentProps<T>
->
-
-const CONTENT_CLASS = `
-  bg-primary fixed z-50 m-auto
-  left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-  animate-scale-fade-out data-expanded:animate-scale-fade-in
-  `
-// rounded-md p-4 shadow-lg shadow-slate-300
-
-export function Content<T extends ValidComponent = "div">(
-	props: ContentProps<T>,
-) {
-	const local_props = mergeProps(props, {
-		get class() {
-			return twMerge(CONTENT_CLASS, props["class"])
-		},
-	})
-
-	return <Dialog.Content {...local_props} />
-}
-
-type CloseButtonProps<T extends ValidComponent = typeof Button> =
-	PolymorphicProps<T, DialogCloseButtonProps<"button">>
-
-export function CloseButton<T extends ValidComponent = typeof Button>(
-	props: CloseButtonProps<T>,
-) {
 	return (
-		<Dialog.CloseButton
-			{...props}
-			as={props.as ?? Button}
+		<Dialog.Overlay
+			{...others}
+			{...stylex.attrs(styles.overlay, local.styles)}
 		/>
 	)
 }
 
-export function Title<T extends ValidComponent = "h2">(
-	props: PolymorphicProps<T, DialogTitleProps<T>>,
-) {
-	const CLASS = "font-medium"
+export type ContentProps = PolymorphicProps<
+	"div",
+	DialogContentProps<"div">
+> & { styles?: StyleXStyles }
 
-	const local_props = mergeProps(props, {
-		get class() {
-			return twMerge(CLASS, props["class"])
-		},
-	})
+export function Content(props: ContentProps) {
+	const [local, others] = splitProps(props, ["styles"])
 
-	return <Dialog.Title {...local_props} />
+	return (
+		<Dialog.Content
+			{...others}
+			{...stylex.attrs(styles.content, local.styles)}
+		/>
+	)
 }
 
-export function Description<T extends ValidComponent = "p">(
-	props: PolymorphicProps<T, DialogDescriptionProps<T>>,
-) {
-	const CLASS = "mt-2 pr-2 text-sm text-slate-800"
+type CloseButtonProps = PolymorphicProps<
+	typeof Button,
+	DialogCloseButtonProps<typeof Button>
+> & {
+	styles?: StyleXStyles
+}
 
-	const local_props = mergeProps(props, {
-		get class() {
-			return twMerge(CLASS, props["class"])
-		},
-	})
-	return <Dialog.Description {...local_props} />
+export function CloseButton(props: CloseButtonProps) {
+	const [local, others] = splitProps(props, ["styles"])
+
+	return (
+		<Dialog.CloseButton
+			{...others}
+			as={Button}
+			styles={local.styles}
+		/>
+	)
+}
+
+export function Title(
+	props: PolymorphicProps<"h2", DialogTitleProps<"h2">> & {
+		styles?: StyleXStyles
+	},
+) {
+	const [local, others] = splitProps(props, ["styles"])
+
+	return (
+		<Dialog.Title
+			{...others}
+			{...stylex.attrs(styles.title, local.styles)}
+		/>
+	)
+}
+
+export function Description(
+	props: PolymorphicProps<"p", DialogDescriptionProps<"p">> & {
+		styles?: StyleXStyles
+	},
+) {
+	const [local, others] = splitProps(props, ["styles"])
+	return (
+		<Dialog.Description
+			{...others}
+			{...stylex.attrs(styles.description, local.styles)}
+		/>
+	)
 }

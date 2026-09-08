@@ -1,10 +1,25 @@
+import * as stylex from "@stylexjs/stylex"
 import { For } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { NotificationItem } from "~/hey-api"
+import { palette } from "~/style/color/palette.stylex"
+import { colors, px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { NotificationCard } from "./NotificationCard"
+
+const styles = stylex.create({
+	notificationsChild: {
+		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
+		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: palette.slate[200],
+	},
+	notifications: {
+		maxWidth: px[672],
+		backgroundColor: colors.backgroundPrimary,
+	},
+})
 
 function noop() {
 	return undefined
@@ -414,7 +429,7 @@ export default meta
 
 export const List: StoryObj = {
 	render: () => (
-		<div class="max-w-2xl divide-y divide-slate-200 bg-primary">
+		<div {...stylex.attrs(styles.notifications)}>
 			<For each={MOCK_NOTIFICATIONS}>
 				{(item) => (
 					<NotificationCard
@@ -424,6 +439,7 @@ export const List: StoryObj = {
 						setSaved={noop}
 						isUpdatingRead={item.id === "01900f01-aaaa-7000-8000-000000000014"}
 						isUpdatingSaved={item.id === "01900f01-aaaa-7000-8000-000000000017"}
+						styles={styles.notificationsChild}
 					/>
 				)}
 			</For>

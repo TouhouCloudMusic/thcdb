@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/solid-query"
 import { createMemo, createSignal, For, Match, Switch } from "solid-js"
 
@@ -9,10 +10,30 @@ import type {
 	EntityUserCollectionTarget,
 } from "~/hey-api"
 import { entityUserCollectionsInfiniteOptions } from "~/hey-api/@tanstack/solid-query.gen"
+import { palette } from "~/style/color/palette.stylex"
+import { px } from "~/style/tokens.stylex"
 import { getNextPageParam } from "~/utils/query"
 import { CollectionLoadMore } from "~/view/collection/CollectionLoadMore"
 import { CollectionStatusMessage } from "~/view/collection/CollectionStatusMessage"
 import { FollowedCollectionRow } from "~/view/collection/FollowedCollectionRow"
+
+const styles = stylex.create({
+	listChild: {
+		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
+		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
+		borderColor: palette.slate[100],
+	},
+	root: { display: "flex", flexDirection: "column", gap: px[16] },
+	toolbar: { display: "flex", justifyContent: "flex-end" },
+	sort: { minWidth: px[144] },
+	list: {
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[200],
+	},
+})
 
 const PAGE_LIMIT = 20
 
@@ -65,14 +86,14 @@ export function EntityCollectionsTab(props: {
 	})
 
 	return (
-		<div class="flex flex-col gap-4">
-			<div class="flex justify-end">
+		<div {...stylex.attrs(styles.root)}>
+			<div {...stylex.attrs(styles.toolbar)}>
 				<ToolbarSelect
 					options={sortOptions()}
 					value={sortBy()}
 					placeholder={t`Sort`}
 					ariaLabel={t`Sort collections`}
-					class="min-w-36"
+					styles={styles.sort}
 					onChange={setSortBy}
 				/>
 			</div>
@@ -82,9 +103,14 @@ export function EntityCollectionsTab(props: {
 				}
 			>
 				<Match when={collections().length > 0}>
-					<ul class="divide-y divide-slate-100 border-y border-slate-200">
+					<ul {...stylex.attrs(styles.list)}>
 						<For each={collections()}>
-							{(collection) => <FollowedCollectionRow item={collection} />}
+							{(collection) => (
+								<FollowedCollectionRow
+									item={collection}
+									styles={styles.listChild}
+								/>
+							)}
 						</For>
 					</ul>
 					<div>

@@ -1,17 +1,90 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQueryClient } from "@tanstack/solid-query"
 import type { QueryClient, UseMutationResult } from "@tanstack/solid-query"
-import { notFound, useNavigate } from "@tanstack/solid-router"
+import { Link, notFound, useNavigate } from "@tanstack/solid-router"
 import type { CorrectionMutation } from "@thc/query"
 import { createSignal, Show } from "solid-js"
 import type { ParentProps } from "solid-js"
 import * as v from "valibot"
 
-import { Card } from "~/component/atomic/Card"
-import { Link } from "~/component/atomic/Link"
-import { Button, ButtonClass_new } from "~/component/atomic/button"
+import { Button, buttonStyles } from "~/component/atomic/button"
 import { pendingCorrectionOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import type { PendingCorrectionData } from "~/hey-api/types.gen"
+import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
+import { surfaceStyles } from "~/style/primitives"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
+const styles = stylex.create({
+	loading: {
+		display: "flex",
+		minHeight: px[384],
+		alignItems: "center",
+		justifyContent: "center",
+		paddingTop: px[32],
+		paddingRight: px[32],
+		paddingBottom: px[32],
+		paddingLeft: px[32],
+	},
+	card: {
+		width: "100%",
+		maxWidth: px[448],
+		overflow: "hidden",
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingTop: 0,
+		paddingRight: 0,
+		paddingBottom: 0,
+		paddingLeft: 0,
+		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+	},
+	header: {
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		borderColor: palette.slate[300],
+		paddingLeft: px[16],
+		paddingRight: px[16],
+		paddingTop: px[12],
+		paddingBottom: px[12],
+	},
+	title: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		fontWeight: 500,
+		letterSpacing: ".05em",
+		color: palette.slate[600],
+		textTransform: "uppercase",
+	},
+	body: {
+		paddingLeft: px[16],
+		paddingRight: px[16],
+		paddingTop: px[16],
+		paddingBottom: px[16],
+	},
+	description: {
+		fontSize: fontSizes.sm,
+		lineHeight: "1.5rem",
+		color: colors.textSecondary,
+	},
+	actions: {
+		marginTop: px[16],
+		display: "flex",
+		flexWrap: "wrap",
+		justifyContent: "flex-end",
+		gap: px[8],
+	},
+})
 
 export type PendingCorrectionEntityType =
 	PendingCorrectionData["path"]["entity_type"]
@@ -263,7 +336,7 @@ export function PendingCorrectionBoundary(
 			fallback={props.children}
 		>
 			{(correctionId) => (
-				<div class="flex min-h-96 items-center justify-center p-8">
+				<div {...stylex.attrs(styles.loading)}>
 					<PendingCorrectionNoticePanel
 						correctionId={correctionId()}
 						onBack={onBack}
@@ -280,34 +353,42 @@ export function PendingCorrectionNoticePanel(
 	const { t } = useLingui()
 
 	return (
-		<Card class="w-full max-w-md overflow-hidden border border-slate-300 p-0 shadow-xs">
-			<div class="flex items-center justify-between border-b border-slate-300 bg-slate-50 px-4 py-3">
-				<span class="text-xs font-medium tracking-wider text-slate-600 uppercase">
+		<div {...stylex.attrs(surfaceStyles.card, styles.card)}>
+			<div {...stylex.attrs(styles.header)}>
+				<span {...stylex.attrs(styles.title)}>
 					{t`Pending correction exists`}
 				</span>
 			</div>
-			<div class="px-4 py-4">
-				<p class="text-sm leading-6 text-secondary">
+			<div {...stylex.attrs(styles.body)}>
+				<p {...stylex.attrs(styles.description)}>
 					{t`This entity already has a pending correction. You can review that correction or go back.`}
 				</p>
-				<div class="mt-4 flex flex-wrap justify-end gap-2">
+				<div {...stylex.attrs(styles.actions)}>
 					<Button
-						variant="Secondary"
-						size="Sm"
 						onClick={props.onBack}
+						appearance="soft"
+						tone="gray"
+						size="sm"
 					>
 						{t`Back`}
 					</Button>
 					<Link
 						to="/correction/$id"
 						params={{ id: props.correctionId.toString() }}
-						underline={false}
-						class={ButtonClass_new({ variant: "Primary", size: "Sm" })}
+						class={
+							stylex.attrs(
+								link.base,
+								buttonStyles.base,
+								buttonStyles.solid,
+								buttonStyles.gray,
+								buttonStyles.sm,
+							).class
+						}
 					>
 						{t`View correction`}
 					</Link>
 				</div>
 			</div>
-		</Card>
+		</div>
 	)
 }

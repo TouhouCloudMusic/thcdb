@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useInfiniteQuery, useMutation } from "@tanstack/solid-query"
 import type {
 	InfiniteData,
@@ -26,10 +27,135 @@ import {
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { useCurrentUser } from "~/state/user"
+import { palette } from "~/style/color/palette.stylex"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import { getNextPageParam } from "~/utils/query"
 
 import { CollectionFormDialog } from "./CollectionFormDialog"
 import { CollectionLoadMore } from "./CollectionLoadMore"
+
+const styles = stylex.create({
+	fieldGroup: { display: "flex", flexDirection: "column", gap: px[4] },
+	collectionLabel: {
+		marginBottom: px[4],
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: px[12],
+	},
+	fieldLabel: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: palette.slate[700],
+	},
+	createCollection: {
+		display: "inline-flex",
+		alignItems: "center",
+		gap: px[4],
+		paddingLeft: px[8],
+		paddingRight: px[8],
+	},
+	plusIcon: { width: px[16], height: px[16] },
+	collectionSelect: {
+		borderRadius: radius.md,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingLeft: px[8],
+		paddingRight: px[8],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		outlineStyle: { default: null, ":focus": "none" },
+		backgroundColor: { default: null, ":disabled": palette.slate[100] },
+		color: { default: null, ":disabled": palette.slate[500] },
+		width: "100%",
+		boxShadow: { default: null, ":focus": "0 0 0 1px currentColor" },
+	},
+	emptyCollections: {
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+		color: palette.slate[500],
+	},
+	collectionsError: { fontSize: fontSizes.xs, lineHeight: lineHeights.xs },
+	descriptionLabel: {
+		marginBottom: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 500,
+		color: palette.slate[700],
+	},
+	descriptionInput: {
+		borderRadius: radius.md,
+		borderTopWidth: "1px",
+		borderTopStyle: "solid",
+		borderRightWidth: "1px",
+		borderRightStyle: "solid",
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderLeftWidth: "1px",
+		borderLeftStyle: "solid",
+		borderColor: palette.slate[300],
+		paddingLeft: px[8],
+		paddingRight: px[8],
+		paddingTop: px[8],
+		paddingBottom: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		outlineStyle: { default: null, ":focus": "none" },
+		backgroundColor: { default: null, ":disabled": palette.slate[100] },
+		color: { default: null, ":disabled": palette.slate[500] },
+		height: px[96],
+		resize: "none",
+		boxShadow: { default: null, ":focus": "0 0 0 1px currentColor" },
+	},
+	dialog: {
+		display: "flex",
+		width: "100%",
+		maxWidth: px[448],
+		flexDirection: "column",
+		borderRadius: radius.md,
+		backgroundColor: palette.white,
+		paddingTop: px[24],
+		paddingRight: px[24],
+		paddingBottom: px[24],
+		paddingLeft: px[24],
+		boxShadow:
+			"0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+	},
+	title: {
+		marginBottom: px[8],
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		color: colors.textPrimary,
+	},
+	form: { display: "flex", flexDirection: "column", gap: px[16] },
+	submitError: { fontSize: fontSizes.sm, lineHeight: lineHeights.sm },
+	actions: {
+		display: "grid",
+		width: { default: "100%", "@media (min-width: 40rem)": px[224] },
+		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		gap: px[12],
+		alignSelf: "flex-end",
+	},
+	dialogAction: { paddingLeft: px[8], paddingRight: px[8] },
+})
 
 type Props = {
 	open: boolean
@@ -42,9 +168,6 @@ type FormState = {
 	selectedCollectionId: number | undefined
 	description: string
 }
-
-const FIELD_CLASS =
-	"rounded-md border border-slate-300 px-2 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 disabled:bg-slate-100 disabled:text-slate-500"
 
 type UserCollectionsQueryResult = UseInfiniteQueryResult<
 	InfiniteData<UserCollectionsResponse>,
@@ -76,23 +199,23 @@ function CollectionField(props: CollectionFieldProps) {
 	}
 
 	return (
-		<div class="flex flex-col gap-1">
-			<div class="mb-1 flex items-center justify-between gap-3">
+		<div {...stylex.attrs(styles.fieldGroup)}>
+			<div {...stylex.attrs(styles.collectionLabel)}>
 				<label
 					for={selectId}
-					class="text-sm font-medium text-slate-700"
+					{...stylex.attrs(styles.fieldLabel)}
 				>
 					{t`Collection`}
 				</label>
 				<Button
 					type="button"
-					variant="SecondaryV2"
-					size="Sm"
-					color="Slate"
-					class="inline-flex items-center gap-1 px-2"
+					appearance="outline"
+					tone="slate"
+					size="sm"
+					styles={styles.createCollection}
 					onClick={props.onCreateCollection}
 				>
-					<PlusIcon class="size-4" />
+					<PlusIcon {...stylex.attrs(styles.plusIcon)} />
 					<div>{t`New collection`}</div>
 				</Button>
 			</div>
@@ -105,7 +228,7 @@ function CollectionField(props: CollectionFieldProps) {
 						value === "" ? undefined : Number(value),
 					)
 				}}
-				class={`${FIELD_CLASS} w-full`}
+				{...stylex.attrs(styles.collectionSelect)}
 				disabled={!canSelectCollection()}
 				aria-busy={isInitialCollectionsLoading()}
 				required
@@ -127,10 +250,14 @@ function CollectionField(props: CollectionFieldProps) {
 					props.collectionsQuery.isSuccess && props.collections().length === 0
 				}
 			>
-				<p class="text-xs text-slate-500">{t`No collections yet.`}</p>
+				<p
+					{...stylex.attrs(styles.emptyCollections)}
+				>{t`No collections yet.`}</p>
 			</Show>
 			<Show when={props.collectionsQuery.isError}>
-				<p class="text-xs text-red-500">{t`Failed to load collections.`}</p>
+				<p
+					{...stylex.attrs(styles.collectionsError)}
+				>{t`Failed to load collections.`}</p>
 			</Show>
 			<CollectionLoadMore
 				when={
@@ -138,7 +265,7 @@ function CollectionField(props: CollectionFieldProps) {
 					|| props.collectionsQuery.isFetchingNextPage
 				}
 				isLoading={props.collectionsQuery.isFetchingNextPage}
-				variant="Secondary"
+				appearance="soft"
 				onLoadMore={() => {
 					void props.collectionsQuery.fetchNextPage()
 				}}
@@ -156,10 +283,10 @@ function NoteField(props: NoteFieldProps) {
 	const { t } = useLingui()
 	const noteId = createUniqueId()
 	return (
-		<div class="flex flex-col gap-1">
+		<div {...stylex.attrs(styles.fieldGroup)}>
 			<label
 				for={noteId}
-				class="mb-1 text-sm font-medium text-slate-700"
+				{...stylex.attrs(styles.descriptionLabel)}
 			>
 				{t`Note (optional)`}
 			</label>
@@ -168,7 +295,7 @@ function NoteField(props: NoteFieldProps) {
 				aria-label={t`Note (optional)`}
 				value={props.description}
 				onInput={(e) => props.onDescriptionInput(e.currentTarget.value)}
-				class={`${FIELD_CLASS} h-24 resize-none`}
+				{...stylex.attrs(styles.descriptionInput)}
 				maxLength={1000}
 			></textarea>
 		</div>
@@ -287,14 +414,14 @@ export function AddToCollectionDialog(props: Props) {
 			>
 				<Dialog.Portal>
 					<Dialog.Overlay data-blur />
-					<Dialog.Content class="flex w-full max-w-md flex-col rounded-md bg-white p-6 shadow-xl">
-						<Dialog.Title class="mb-2 text-xl font-light tracking-tight text-primary">
+					<Dialog.Content styles={styles.dialog}>
+						<Dialog.Title styles={styles.title}>
 							{t`Add to Collection`}
 						</Dialog.Title>
 
 						<form
 							onSubmit={handleSubmit}
-							class="flex flex-col gap-4"
+							{...stylex.attrs(styles.form)}
 						>
 							<CollectionField
 								collectionsQuery={collectionsQuery}
@@ -310,18 +437,19 @@ export function AddToCollectionDialog(props: Props) {
 							/>
 
 							<Show when={mutation.error}>
-								<div class="text-sm text-red-500">
+								<div {...stylex.attrs(styles.submitError)}>
 									{mutation.error?.message
 										?? t`An error occurred. Please try again.`}
 								</div>
 							</Show>
 
-							<div class="grid w-full grid-cols-2 gap-3 self-end sm:w-56">
+							<div {...stylex.attrs(styles.actions)}>
 								<Button
 									type="button"
-									variant="Secondary"
-									size="Md"
-									class="px-2"
+									appearance="soft"
+									tone="gray"
+									size="md"
+									styles={styles.dialogAction}
 									onClick={() => props.onOpenChange(false)}
 									disabled={mutation.isPending}
 								>
@@ -329,9 +457,10 @@ export function AddToCollectionDialog(props: Props) {
 								</Button>
 								<Button
 									type="submit"
-									variant="Primary"
-									size="Md"
-									class="px-2"
+									appearance="solid"
+									tone="gray"
+									size="md"
+									styles={styles.dialogAction}
 									disabled={
 										mutation.isPending
 										|| formStore.selectedCollectionId === undefined
@@ -341,7 +470,11 @@ export function AddToCollectionDialog(props: Props) {
 								</Button>
 							</div>
 						</form>
-						<Dialog.CloseButton />
+						<Dialog.CloseButton
+							as={Button}
+							appearance="ghost"
+							tone="gray"
+						/>
 					</Dialog.Content>
 				</Dialog.Portal>
 			</Dialog.Root>

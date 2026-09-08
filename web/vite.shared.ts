@@ -1,10 +1,13 @@
 import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin"
 import babel from "@rolldown/plugin-babel"
-import tailwindcss from "@tailwindcss/vite"
+import stylex from "@stylexjs/unplugin/vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import type { PluginOption } from "vite"
 import solidPlugin from "vite-plugin-solid"
+
+const stylexPlugin: (...args: Parameters<typeof stylex>) => PluginOption =
+	stylex
 
 function compactPlugins(
 	plugins: (PluginOption | false | null | undefined)[],
@@ -20,8 +23,8 @@ export function createSharedPlugins(): PluginOption[] {
 		babel({
 			presets: [linguiTransformerBabelPreset()],
 		}),
+		stylexPlugin({ aliases: { "~/*": ["/ROOT/src/*"] } }),
 		solidPlugin(),
-		tailwindcss(),
 	])
 }
 

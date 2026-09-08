@@ -1,10 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Divider } from "~/component/atomic/Divider"
 import { Select } from "~/component/atomic/form/select"
 import { Intersperse } from "~/component/data/Intersperse"
 import {
@@ -16,9 +16,59 @@ import {
 import { TAG_TYPES } from "~/domain/tag/constants"
 import type { TagListItem } from "~/hey-api"
 import { exploreTagOptions } from "~/hey-api/@tanstack/solid-query.gen"
+import { palette } from "~/style/color/palette.stylex"
+import { dividerStyles } from "~/style/primitives"
+import {
+	radius,
+	colors,
+	lineHeights,
+	fontSizes,
+	px,
+} from "~/style/tokens.stylex"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import { TagItem } from "~/view/tag/TagItem"
+
+import { animationStyles } from "../../style/animations.stylex"
+
+const styles = stylex.create({
+	filters: {
+		display: "flex",
+		flexWrap: "wrap",
+		alignItems: "center",
+		gap: px[16],
+	},
+	filter: { display: "flex", alignItems: "center", gap: px[8] },
+	filterLabel: {
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: palette.slate[500],
+	},
+	list: {
+		display: "flex",
+		flexDirection: "column",
+		gap: px[8],
+		padding: px[16],
+	},
+	pagination: {
+		display: "flex",
+		justifyContent: "center",
+		paddingBlock: px[24],
+	},
+	skeletonTitle: {
+		marginBottom: px[8],
+		height: px[20],
+		width: "calc(1/3 * 100%)",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[200],
+	},
+	skeletonDescription: {
+		height: px[16],
+		width: "calc(2/3 * 100%)",
+		borderRadius: radius.sm,
+		backgroundColor: colors.backgroundSecondary,
+	},
+})
 
 const route = getRouteApi("/tag/explore")
 
@@ -44,9 +94,9 @@ function TagExploreFilterBar(props: TagExploreFilterBarProps) {
 
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
-			<div class="flex flex-wrap items-center gap-4">
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">{t`Type`}</span>
+			<div {...stylex.attrs(styles.filters)}>
+				<div {...stylex.attrs(styles.filter)}>
+					<span {...stylex.attrs(styles.filterLabel)}>{t`Type`}</span>
 					<Select.Root<"" | TagListItem["type"]>
 						options={["", ...TAG_TYPES]}
 						value={props.tagTypeValue}
@@ -146,10 +196,10 @@ export function TagExplore() {
 						/>
 					}
 				>
-					<div class="flex flex-col gap-2 p-4">
+					<div {...stylex.attrs(styles.list)}>
 						<Intersperse
 							of={tags()}
-							with={<Divider horizontal />}
+							with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 						>
 							{(tag) => <TagItem tag={tag} />}
 						</Intersperse>
@@ -158,7 +208,7 @@ export function TagExplore() {
 			</Show>
 
 			<Show when={totalPages() > 1}>
-				<div class="flex justify-center py-6">
+				<div {...stylex.attrs(styles.pagination)}>
 					<Pagination
 						current={search().page}
 						total={totalPages()}
@@ -172,19 +222,19 @@ export function TagExplore() {
 
 function TagItemSkeleton() {
 	return (
-		<div class="animate-pulse">
-			<div class="mb-2 h-5 w-1/3 rounded bg-slate-200"></div>
-			<div class="h-4 w-2/3 rounded bg-secondary"></div>
+		<div {...stylex.attrs(animationStyles.pulse)}>
+			<div {...stylex.attrs(styles.skeletonTitle)}></div>
+			<div {...stylex.attrs(styles.skeletonDescription)}></div>
 		</div>
 	)
 }
 
 function TagListSkeleton(props: { limit: number }) {
 	return (
-		<div class="flex flex-col gap-2 p-4">
+		<div {...stylex.attrs(styles.list)}>
 			<Intersperse
 				of={Array.from({ length: props.limit })}
-				with={<Divider horizontal />}
+				with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 			>
 				{() => <TagItemSkeleton />}
 			</Intersperse>

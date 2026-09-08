@@ -1,4 +1,3 @@
+@import "./reset.css";
 @import "./font.css";
-@import "./color/color.css";
 @import "./shadow/shadow.css";
-@import "./animation/animation.css";

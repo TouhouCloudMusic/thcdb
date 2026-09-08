@@ -1,5 +1,6 @@
 import { Form, createForm, getAllErrors, getInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import * as stylex from "@stylexjs/stylex"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Song } from "@thc/api"
 import type { JSX } from "solid-js"
@@ -9,6 +10,8 @@ import { FormActionBar } from "~/component/form"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewSongCorrection } from "~/domain/song"
 import { PageLayout } from "~/layout/PageLayout"
+import { palette } from "~/style/color/palette.stylex"
+import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { SongArtistsField } from "./comp/SongArtistsField"
@@ -20,13 +23,76 @@ import { SongTitleField } from "./comp/SongTitleField"
 import { useSongFormInitialValues } from "./hook/useFormInitialValues"
 import { useSongFormSubmission } from "./hook/useFormSubmission"
 
+const styles = stylex.create({
+	fieldSpacing: {
+		marginBlockEnd: { default: null, ":not(:last-child)": px[32] },
+	},
+	page: {
+		display: "grid",
+		gridTemplateRows: "auto 1fr auto",
+	},
+	pageHeader: {
+		borderBottomWidth: 1,
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+		padding: px[32],
+	},
+	headerContent: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[16],
+	},
+	pageTitle: {
+		fontSize: fontSizes["2xl"],
+		lineHeight: lineHeights["2xl"],
+		fontWeight: 300,
+	},
+	fields: {
+		display: "grid",
+		gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+		alignContent: "flex-start",
+		columnGap: px[8],
+		paddingInline: px[32],
+		paddingTop: px[32],
+	},
+	titleField: {
+		gridColumn: "span 2 / span 2",
+		gridRowStart: "1",
+	},
+	artistsField: {
+		gridColumn: "span 2 / span 2",
+		gridRowStart: "2",
+	},
+	languagesField: {
+		gridColumn: "span 2 / span 2",
+		gridRowStart: "3",
+	},
+	localizedTitlesField: {
+		gridColumn: "span 2 / span 2",
+		gridRowStart: "4",
+	},
+	creditsField: {
+		gridColumn: "span 2 / span 2",
+		gridRowStart: "5",
+	},
+	linksField: {
+		gridColumn: "span 2 / span 2",
+		gridRowStart: "6",
+	},
+	relationsField: {
+		gridColumn: "span 3 / span 3",
+		gridRow: "span 5 / span 5",
+		gridRowStart: "2",
+	},
+})
+
 type Props =
 	| { type: "new" }
 	| { type: "edit"; song: Song; pendingCorrectionId?: number }
 
 export function EditSongPage(props: Props): JSX.Element {
 	return (
-		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
+		<PageLayout styles={[styles.page]}>
 			<PageHeader type={props.type} />
 			<FormContent {...props} />
 		</PageLayout>
@@ -36,9 +102,9 @@ export function EditSongPage(props: Props): JSX.Element {
 function PageHeader(props: { type: Props["type"] }) {
 	const { t } = useLingui()
 	return (
-		<div class="border-b-1 border-slate-300 p-8">
-			<div class="flex items-center gap-4">
-				<h1 class="text-2xl font-light">
+		<div {...stylex.attrs(styles.pageHeader)}>
+			<div {...stylex.attrs(styles.headerContent)}>
+				<h1 {...stylex.attrs(styles.pageTitle)}>
 					<Show
 						when={props.type === "new"}
 						fallback={<>{t`Edit Song`}</>}
@@ -90,10 +156,10 @@ function FormContent(props: Props) {
 				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
 				onSubmit={(out, _) => handleSubmit(out)}
 			>
-				<div class="grid grid-cols-5 content-start space-y-8 gap-x-2 px-8 pt-8">
+				<div {...stylex.attrs(styles.fields)}>
 					<SongTitleField
 						of={form}
-						class="col-span-2 row-start-1"
+						styles={[styles.titleField, styles.fieldSpacing]}
 					/>
 
 					<SongArtistsField
@@ -101,7 +167,7 @@ function FormContent(props: Props) {
 						initArtists={
 							props.type === "edit" ? (props.song.artists ?? []) : []
 						}
-						class="col-span-2 row-start-2"
+						styles={[styles.artistsField, styles.fieldSpacing]}
 					/>
 
 					<SongLanguagesField
@@ -109,7 +175,7 @@ function FormContent(props: Props) {
 						initLanguages={
 							props.type === "edit" ? (props.song.languages ?? []) : []
 						}
-						class="col-span-2 row-start-3"
+						styles={[styles.languagesField, styles.fieldSpacing]}
 					/>
 
 					<SongLocalizedTitlesField
@@ -117,7 +183,7 @@ function FormContent(props: Props) {
 						initLocalizedTitles={
 							props.type === "edit" ? (props.song.localized_titles ?? []) : []
 						}
-						class="col-span-2 row-start-4"
+						styles={[styles.localizedTitlesField, styles.fieldSpacing]}
 					/>
 
 					<SongCreditsField
@@ -125,12 +191,12 @@ function FormContent(props: Props) {
 						initCredits={
 							props.type === "edit" ? (props.song.credits ?? []) : []
 						}
-						class="col-span-2 row-start-5"
+						styles={[styles.creditsField, styles.fieldSpacing]}
 					/>
 
 					<ExternalLinksField
 						of={form}
-						class="col-span-2 row-start-6"
+						styles={[styles.linksField, styles.fieldSpacing]}
 					/>
 
 					<SongRelationsField
@@ -139,7 +205,7 @@ function FormContent(props: Props) {
 						initRelations={
 							props.type === "edit" ? (props.song.relations ?? []) : []
 						}
-						class="col-span-3 row-start-2 row-span-5"
+						styles={[styles.relationsField, styles.fieldSpacing]}
 					/>
 				</div>
 				<FormActionBar

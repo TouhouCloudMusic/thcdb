@@ -1,14 +1,24 @@
 // 标题字段
 import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { twMerge } from "tailwind-merge"
+import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 
-import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
+import { formStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
 
 import type { ReleaseFormStore } from "./types"
 
-export function TitleField(props: { of: ReleaseFormStore; class?: string }) {
+const styles = stylex.create({
+	field: { display: "flex", flexDirection: "column" },
+	input: { marginRight: px[8] },
+})
+
+export function TitleField(props: {
+	of: ReleaseFormStore
+	styles?: StyleXStyles
+}) {
 	const { t } = useLingui()
 	return (
 		<Field
@@ -16,11 +26,11 @@ export function TitleField(props: { of: ReleaseFormStore; class?: string }) {
 			path={["data", "title"]}
 		>
 			{(field) => (
-				<InputField.Root class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>{t`Title`}</FormComp.Label>
+				<InputField.Root styles={[styles.field, props.styles]}>
+					<label {...stylex.attrs(formStyles.label)}>{t`Title`}</label>
 					<InputField.Input
 						{...field.props}
-						class="mr-2"
+						styles={styles.input}
 						placeholder={t`Title`}
 						value={field.input ?? undefined}
 					/>
