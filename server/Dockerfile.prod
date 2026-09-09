@@ -26,7 +26,6 @@ COPY --from=planner /app/recipe.json recipe.json
 
 RUN --mount=type=cache,id=server_cargo_registry,target=/usr/local/cargo/registry \
   --mount=type=cache,id=server_cargo_git,target=/usr/local/cargo/git \
-  --mount=type=cache,id=server_target_release,target=/app/target \
   cargo chef cook --release --recipe-path recipe.json --features release
 
 COPY . ./
@@ -35,7 +34,6 @@ RUN rm -f rust-toolchain.toml rust-toolchain
 
 RUN --mount=type=cache,id=server_cargo_registry,target=/usr/local/cargo/registry \
   --mount=type=cache,id=server_cargo_git,target=/usr/local/cargo/git \
-  --mount=type=cache,id=server_target_release,target=/app/target \
   cargo build --release --features release \
   && install -Dm755 /app/target/release/thcdb-rs /out/thcdb-rs
 

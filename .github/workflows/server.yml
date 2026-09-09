@@ -19,6 +19,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   # Disable incremental compilation
   CARGO_INCREMENTAL: 0
@@ -26,7 +30,8 @@ env:
   CARGO_TERM_COLOR: always
   RUSTC_WRAPPER: "sccache"
   SCCACHE_GHA_ENABLED: "true"
-  RUSTFLAGS: "-W warnings"
+  CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: clang
+  RUSTFLAGS: "-W warnings -Zshare-generics=y -Clink-arg=-fuse-ld=mold"
 
 jobs:
   rust:
@@ -39,6 +44,9 @@ jobs:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
         with:
           persist-credentials: false
+
+      - name: Install mold
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y mold
 
       - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
@@ -56,19 +64,12 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --quiet
 
-      - name: Build test
-        run: cargo test --workspace --no-run
-
-      - name: Run test
-        run: cargo test --workspace --quiet
-
   integration-test:
     name: Integration Test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
-    needs: rust
     env:
       TEST_DATABASE_URL: postgres://testuser:testpass@127.0.0.1:55432/testdb
       TEST_REDIS_URL: redis://127.0.0.1:56379
@@ -101,6 +102,9 @@ jobs:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
         with:
           persist-credentials: false
+
+      - name: Install mold
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y mold
 
       - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 

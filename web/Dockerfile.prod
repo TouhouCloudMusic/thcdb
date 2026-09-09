@@ -6,13 +6,16 @@ ARG DEBIAN_VERSION=bookworm
 FROM node:${NODE_VERSION}-${DEBIAN_VERSION}-slim AS builder
 WORKDIR /app
 
-COPY . ./
+COPY .npmrc pnpm-lock.yaml pnpm-workspace.yaml ./
 
 ENV CI=true
 
-RUN corepack enable \
-  && corepack prepare pnpm@11.1.2 --activate \
-  && pnpm install --frozen-lockfile \
+RUN npm install --global --no-audit --no-fund pnpm@11.1.2 \
+  && pnpm fetch
+
+COPY . ./
+
+RUN pnpm install --offline --frozen-lockfile \
   && pnpm build
 
 FROM nginx:1.29-alpine AS runtime
