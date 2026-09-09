@@ -1603,6 +1603,14 @@ msgstr "Pending correction exists"
 msgid "Play track"
 msgstr "Play track"
 
+#: src/view/Homepage/component/ArtistsCard.tsx
+msgid "Popular Artists"
+msgstr "Popular Artists"
+
+#: src/view/Homepage/index.tsx
+msgid "Popular Releases"
+msgstr "Popular Releases"
+
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "Positive:"
