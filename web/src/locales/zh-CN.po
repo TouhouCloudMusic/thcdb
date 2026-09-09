@@ -388,7 +388,7 @@ msgstr "收藏"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Collection actions"
-msgstr ""
+msgstr "收藏操作"
 
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Collection created"
@@ -590,7 +590,7 @@ msgstr "当前目标图片"
 
 #: src/view/Homepage/component/HomeStats.tsx
 msgid "Database statistics"
-msgstr ""
+msgstr "数据库统计信息"
 
 #: src/view/event/Info/index.tsx
 msgid "Date"
@@ -842,7 +842,7 @@ msgstr "加载项目失败。"
 
 #: src/view/notification/InboxPage.tsx
 msgid "Failed to load more notifications."
-msgstr ""
+msgstr "加载更多通知失败。"
 
 #: src/view/notification/InboxPage.tsx
 msgid "Failed to load notifications."
@@ -1036,7 +1036,7 @@ msgstr "图片队列"
 
 #: src/view/image_queue/detail.tsx
 msgid "Image queue navigation"
-msgstr ""
+msgstr "图片队列导航"
 
 #: src/view/notification/InboxPage.tsx
 msgid "Inbox"
@@ -1331,7 +1331,7 @@ msgstr "下一张光盘"
 
 #: src/view/image_queue/detail.tsx
 msgid "Next image queue entry"
-msgstr ""
+msgstr "下一个图片队列条目"
 
 #: src/component/Pagination.tsx
 msgid "Next page"
@@ -1545,11 +1545,11 @@ msgstr "打开图片队列"
 
 #: src/component/Header/index.tsx
 msgid "Open navigation menu"
-msgstr ""
+msgstr "打开导航菜单"
 
 #: src/component/Header/index.tsx
 msgid "Open user menu"
-msgstr ""
+msgstr "打开用户菜单"
 
 #: src/component/__legacy/chart/index.tsx
 msgid "OR"
@@ -1603,13 +1603,21 @@ msgstr "存在待处理更正"
 msgid "Play track"
 msgstr "播放曲目"
 
+#: src/view/Homepage/component/ArtistsCard.tsx
+msgid "Popular Artists"
+msgstr "热门艺术家"
+
+#: src/view/Homepage/index.tsx
+msgid "Popular Releases"
+msgstr "热门发行"
+
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "正向："
 
 #: src/view/image_queue/detail.tsx
 msgid "Previous"
-msgstr ""
+msgstr "上一项"
 
 #: src/view/correction/Detail.tsx
 msgid "Previous approved baseline"
@@ -1621,7 +1629,7 @@ msgstr "上一张光盘"
 
 #: src/view/image_queue/detail.tsx
 msgid "Previous image queue entry"
-msgstr ""
+msgstr "上一个图片队列条目"
 
 #: src/component/Pagination.tsx
 msgid "Previous page"
@@ -2188,7 +2196,7 @@ msgstr "文本别名"
 
 #: src/view/notification/NotificationCard.tsx
 msgid "The {imageTypeText} change to {target} was {actionText}."
-msgstr ""
+msgstr "{target} 的{imageTypeText}更改已被{actionText}。"
 
 #: src/view/NotFound.tsx
 msgid "The page you are looking for does not exist."
@@ -2403,7 +2411,7 @@ msgstr "上传中…"
 
 #: src/component/form/ExternalLinksField.tsx
 msgid "URL"
-msgstr ""
+msgstr "网址"
 
 #: src/view/admin/users.tsx
 msgid "User"
