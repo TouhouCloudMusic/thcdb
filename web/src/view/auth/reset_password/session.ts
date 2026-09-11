@@ -141,7 +141,6 @@ export function hasResetPasswordSuccess() {
 }
 
 export function markResetPasswordSuccess() {
-	clearResetPasswordSession()
 	clearResetPasswordEmail()
 	setResetPasswordSuccess(true)
 }
