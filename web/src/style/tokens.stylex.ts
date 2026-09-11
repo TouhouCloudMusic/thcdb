@@ -1,16 +1,16 @@
 import * as stylex from "@stylexjs/stylex"
 
-import { slate } from "./color/palette.stylex"
+import { palette } from "./color/palette.stylex"
 
 export const colors = stylex.defineVars({
-	textPrimary: slate[900],
-	textSecondary: slate[700],
-	textTertiary: slate[600],
+	textPrimary: palette.slate[900],
+	textSecondary: palette.slate[700],
+	textTertiary: palette.slate[600],
 	backgroundPrimary: "white",
-	backgroundSecondary: slate[100],
+	backgroundSecondary: palette.slate[100],
 	backgroundTertiary: "white",
-	border: slate[400],
-	icon: slate[500],
+	border: palette.slate[400],
+	icon: palette.slate[500],
 })
 
 export const fonts = stylex.defineConsts({
