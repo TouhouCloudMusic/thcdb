@@ -7,6 +7,7 @@ import {
 	transformerMetaHighlight,
 	transformerMetaWordHighlight,
 } from "@shikijs/transformers"
+import DOMPurify from "dompurify"
 import { Marked } from "marked"
 import markedFootnote from "marked-footnote"
 import markedShiki from "marked-shiki"
@@ -15,7 +16,7 @@ import type { LanguageInput } from "shiki"
 import { createResource, createRoot } from "solid-js"
 
 type Markdown = {
-	render(text: string): Promise<string>
+	render(text: string): Promise<DocumentFragment>
 }
 
 // import Markdownit from "markdown-it"
@@ -118,7 +119,9 @@ async function createMarked(): Promise<Markdown> {
 
 	return {
 		async render(text: string) {
-			return marked.parse(text)
+			return DOMPurify.sanitize(await marked.parse(text), {
+				RETURN_DOM_FRAGMENT: true,
+			})
 		},
 	}
 }
