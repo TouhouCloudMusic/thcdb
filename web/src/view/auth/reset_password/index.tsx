@@ -2,7 +2,7 @@ import { Field, Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Navigate, useNavigate } from "@tanstack/solid-router"
-import { onCleanup, onMount } from "solid-js"
+import { onCleanup, onMount, Show } from "solid-js"
 import type * as v from "valibot"
 
 import { Button } from "~/component/atomic/button"
@@ -14,6 +14,7 @@ import { PasswordField } from "../component/PasswordField"
 import { authStyles } from "../styles"
 import { requestResetPassword } from "./request"
 import { resetPasswordByKey } from "./reset_password_by_key"
+import type { ResetPasswordSession } from "./session"
 import {
 	clearResetPasswordSession,
 	clearResetPasswordSuccess,
@@ -35,13 +36,13 @@ function formatMinuteCount(minutes: number) {
 	return `${minutes} minute${minutes === 1 ? "" : "s"}`
 }
 
-export function ResetPasswordPage() {
-	const resetSession = getResetPasswordSession()
-	if (resetSession === undefined) {
-		markResetPasswordSessionInvalid()
-		return <Navigate to="/auth/forgot-password" />
-	}
+function InvalidResetPasswordSession() {
+	onMount(markResetPasswordSessionInvalid)
 
+	return <Navigate to="/auth/forgot-password" />
+}
+
+function ResetPasswordForm(props: { resetSession: ResetPasswordSession }) {
 	const { t } = useLingui()
 	const nav = useNavigate()
 	const uiStore = createResetPasswordUiStore()
@@ -71,7 +72,7 @@ export function ResetPasswordPage() {
 	onCleanup(clearExpiryTimer)
 
 	onMount(() => {
-		const remainingMs = resetSession.expiresAtMs - Date.now()
+		const remainingMs = props.resetSession.expiresAtMs - Date.now()
 
 		if (remainingMs <= 0) {
 			void redirectToForgotPassword()
@@ -105,7 +106,7 @@ export function ResetPasswordPage() {
 				<h1 {...stylex.attrs(authStyles.title)}>{t`Set a new password`}</h1>
 				<p
 					{...stylex.attrs(authStyles.description)}
-				>{t`This is valid for ${formatMinuteCount(resetSession.keyExpiresMinutes)}.`}</p>
+				>{t`This is valid for ${formatMinuteCount(props.resetSession.keyExpiresMinutes)}.`}</p>
 			</header>
 			<Form
 				of={form}
@@ -154,5 +155,17 @@ export function ResetPasswordPage() {
 				</Button>
 			</Form>
 		</>
+	)
+}
+
+export function ResetPasswordPage() {
+	return (
+		<Show
+			keyed
+			when={getResetPasswordSession()}
+			fallback={<InvalidResetPasswordSession />}
+		>
+			{(resetSession) => <ResetPasswordForm resetSession={resetSession} />}
+		</Show>
 	)
 }

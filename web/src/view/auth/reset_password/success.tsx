@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Link, Navigate } from "@tanstack/solid-router"
-import { onMount } from "solid-js"
+import { onMount, Show } from "solid-js"
 
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
@@ -28,11 +28,7 @@ const styles = stylex.create({
 	},
 })
 
-export function ResetPasswordSuccessPage() {
-	if (!hasResetPasswordSuccess()) {
-		return <Navigate to="/auth/forgot-password" />
-	}
-
+function ResetPasswordSuccessContent() {
 	const { t } = useLingui()
 
 	onMount(clearResetPasswordSession)
@@ -63,5 +59,16 @@ export function ResetPasswordSuccessPage() {
 				</div>
 			</div>
 		</>
+	)
+}
+
+export function ResetPasswordSuccessPage() {
+	return (
+		<Show
+			when={hasResetPasswordSuccess()}
+			fallback={<Navigate to="/auth/forgot-password" />}
+		>
+			<ResetPasswordSuccessContent />
+		</Show>
 	)
 }
