@@ -26,4 +26,6 @@ COPY . ./
 
 RUN rm -f rust-toolchain.toml rust-toolchain
 
+RUN mkdir -p /app/public/image
+
 CMD ["cargo", "run"]
