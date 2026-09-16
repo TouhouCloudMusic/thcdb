@@ -12,14 +12,15 @@ use sea_orm::{EntityTrait, TransactionTrait};
 async fn correction_moderation_notifies_authors_instead_of_subscribers()
 -> Result<()> {
     let conn = test_connection().await;
+    let tx = conn.begin().await?;
     let actor = MockUser::with_label("moderation_recipient_actor")
-        .insert(&conn)
+        .insert(&tx)
         .await?;
     let author = MockUser::with_label("moderation_recipient_author")
-        .insert(&conn)
+        .insert(&tx)
         .await?;
     let subscriber = MockUser::with_label("moderation_recipient_subscriber")
-        .insert(&conn)
+        .insert(&tx)
         .await?;
     let correction = correction::Entity::insert(correction::ActiveModel {
         id: NotSet,
@@ -30,7 +31,7 @@ async fn correction_moderation_notifies_authors_instead_of_subscribers()
         created_at: NotSet,
         handled_at: NotSet,
     })
-    .exec_with_returning(&conn)
+    .exec_with_returning(&tx)
     .await?;
 
     correction_user::Entity::insert(correction_user::ActiveModel {
@@ -38,7 +39,7 @@ async fn correction_moderation_notifies_authors_instead_of_subscribers()
         user_id: Set(author.id),
         user_type: Set(CorrectionUserType::Author),
     })
-    .exec(&conn)
+    .exec(&tx)
     .await?;
     correction_subscription::Entity::insert(
         correction_subscription::ActiveModel {
@@ -46,10 +47,9 @@ async fn correction_moderation_notifies_authors_instead_of_subscribers()
             correction_id: Set(correction.id),
         },
     )
-    .exec(&conn)
+    .exec(&tx)
     .await?;
 
-    let tx = conn.begin().await?;
     let recipients = correction_notification::create_moderated(
         &tx,
         actor.id,
