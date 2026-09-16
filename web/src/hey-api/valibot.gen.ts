@@ -3974,8 +3974,7 @@ export const vImageSummary = v.object({
 		),
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
-	filename: v.string(),
-	directory: v.string(),
+	url: v.string(),
 	uploaded_at: v.pipe(v.string(), v.isoTimestamp()),
 	uploaded_by: vUserSummary,
 })

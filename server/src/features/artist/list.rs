@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use domain::image::Image;
 use domain::shared::Location;
-use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::{ArtistImageType, ArtistType};
 use entity::{artist, artist_image, image};
 use sea_orm::{
@@ -59,9 +57,7 @@ pub(crate) async fn load_items(
     let profile_images = artist_image::Entity::find()
         .select_only()
         .column(artist_image::Column::ArtistId)
-        .column(image::Column::Directory)
-        .column(image::Column::Filename)
-        .column(image::Column::Backend)
+        .column(image::Column::ObjectKey)
         .join(JoinType::InnerJoin, artist_image::Relation::Image.def())
         .filter(
             artist_image::Column::ArtistId
@@ -69,16 +65,14 @@ pub(crate) async fn load_items(
         )
         .filter(artist_image::Column::Type.eq(ArtistImageType::Profile))
         .order_by_desc(image::Column::UploadedAt)
-        .into_tuple::<(i32, String, String, StorageBackend)>()
+        .into_tuple::<(i32, String)>()
         .all(db)
         .await
         .db_operation("load artist list profile images")?;
 
     let mut profile_image_urls = HashMap::new();
-    for (artist_id, directory, filename, backend) in profile_images {
-        profile_image_urls.entry(artist_id).or_insert_with(|| {
-            Image::format_url(backend, &directory, &filename)
-        });
+    for (artist_id, object_key) in profile_images {
+        profile_image_urls.entry(artist_id).or_insert(object_key);
     }
 
     Ok(artists

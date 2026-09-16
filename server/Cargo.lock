@@ -2497,7 +2497,7 @@ dependencies = [
  "hyper",
  "libc",
  "pin-project-lite",
- "socket2 0.5.10",
+ "socket2 0.6.3",
  "tokio",
  "tower-service",
  "tracing",
@@ -5166,7 +5166,7 @@ version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1c97747dbf44bb1ca44a561ece23508e99cb592e862f22222dcf42f51d1e451"
 dependencies = [
- "heck 0.4.1",
+ "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.118",
@@ -5967,19 +5967,11 @@ dependencies = [
 name = "thcdb-infra-storage"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "async-stream",
+ "futures-util",
  "log",
- "tokio",
-]
-
-[[package]]
-name = "thcdb-infra-storage-worker"
-version = "0.1.0"
-dependencies = [
- "apalis",
- "log",
- "serde",
- "thcdb-infra-storage",
- "thcdb-infra-worker",
+ "tempfile",
  "tokio",
 ]
 
@@ -6079,6 +6071,7 @@ dependencies = [
  "snafu",
  "sorted-vec",
  "strum 0.27.2",
+ "tempfile",
  "thcdb-constants",
  "thcdb-domain",
  "thcdb-feature-account-notification",
@@ -6102,7 +6095,6 @@ dependencies = [
  "thcdb-infra-email",
  "thcdb-infra-error",
  "thcdb-infra-storage",
- "thcdb-infra-storage-worker",
  "thcdb-infra-testing",
  "thcdb-infra-worker",
  "tokio",
@@ -7440,9 +7432,9 @@ dependencies = [
 
 [[package]]
 name = "xxhash-rust"
-version = "0.8.15"
+version = "0.8.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdd20c5420375476fbd4394763288da7eb0cc0b8c11deed431a91562af7335d3"
+checksum = "aee1b19627c7c60102ab80d3a9cbe18de90bfe03bfa6c3715447681f0e8c8af6"
 
 [[package]]
 name = "y4m"

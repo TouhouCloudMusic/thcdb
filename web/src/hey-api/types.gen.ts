@@ -918,8 +918,7 @@ export type ImageQueueType = "artist" | "release"
 
 export type ImageSummary = {
 	id: number
-	filename: string
-	directory: string
+	url: string
 	uploaded_at: string
 	uploaded_by: UserSummary
 }
@@ -1857,11 +1856,11 @@ export type UserProfile = {
 	id: number
 	name: string
 	/**
-	 * Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
+	 * Avatar object key.
 	 */
 	avatar_url?: string | null
 	/**
-	 * Banner url with sub directory, eg. ab/cd/abcd..xyz.jpg
+	 * Banner object key.
 	 */
 	banner_url?: string | null
 	last_login: string

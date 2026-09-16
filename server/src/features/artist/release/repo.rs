@@ -1,4 +1,3 @@
-use domain::image::Image;
 use domain::shared::{Cursor, CursorResponse, DateWithPrecision};
 use entity::artist::{self};
 use entity::enums::ReleaseImageType;
@@ -214,7 +213,7 @@ async fn find_artist_releases(
         .await
         .db_operation("load artist release cover images")?
         .into_iter()
-        .map(|x| x.into_iter().next().map(Image::from).map(|x| x.url()))
+        .map(|x| x.into_iter().next().map(|image| image.object_key))
         .collect_vec();
 
     let items = izip!(releases, release_artist, cover_urls)

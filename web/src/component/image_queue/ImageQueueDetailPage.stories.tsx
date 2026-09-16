@@ -40,8 +40,7 @@ const STORY_ENTRIES = [
 		},
 		image: {
 			id: 805,
-			filename: "/img/logo.png",
-			directory: "",
+			url: "/img/logo.png",
 			uploaded_at: "2026-03-16T09:15:00.000Z",
 			uploaded_by: {
 				id: 119,
@@ -75,8 +74,7 @@ const STORY_ENTRIES = [
 		revertedBy: STORY_REVIEWER,
 		image: {
 			id: 804,
-			filename: "/img/logo.png",
-			directory: "",
+			url: "/img/logo.png",
 			uploaded_at: "2026-03-14T02:10:00.000Z",
 			uploaded_by: {
 				id: 120,
@@ -106,8 +104,7 @@ const STORY_ENTRIES = [
 		},
 		image: {
 			id: 803,
-			filename: "/img/logo.png",
-			directory: "",
+			url: "/img/logo.png",
 			uploaded_at: "2026-03-15T12:20:00.000Z",
 			uploaded_by: {
 				id: 118,
@@ -139,8 +136,7 @@ const STORY_ENTRIES = [
 		handledBy: STORY_REVIEWER,
 		image: {
 			id: 802,
-			filename: "/avatar.png",
-			directory: "",
+			url: "/avatar.png",
 			uploaded_at: "2026-03-13T17:00:00.000Z",
 			uploaded_by: {
 				id: 116,

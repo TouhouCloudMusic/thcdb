@@ -1,23 +1,11 @@
 use std::io;
-use std::path::PathBuf;
 use std::range::RangeInclusive;
 
-use base64::Engine;
-use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use bon::Builder;
 use bytesize::ByteSize;
-use domain::image::Image;
-use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
-use infra_db::SeaOrmTxRepo;
-use libfp::FunctorExt;
-use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{
-    ColumnTrait, EntityTrait, IntoActiveModel, IntoActiveValue, QueryFilter,
-};
-use xxhash_rust::xxh3::xxh3_128;
 
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 
 #[derive(Debug, derive_more::Display, derive_more::Error)]
@@ -61,7 +49,7 @@ impl From<InvalidRatio> for ImageInputError {
 #[derive(
     Debug, derive_more::Display, derive_more::Error, derive_more::From,
 )]
-pub enum Error {
+pub enum CreateError {
     #[display("{_0}")]
     #[from]
     InvalidInput(#[error(source)] ImageInputError),
@@ -73,7 +61,7 @@ pub enum Error {
     Internal(#[error(source)] InternalError),
 }
 
-impl From<ImageError> for Error {
+impl From<ImageError> for CreateError {
     fn from(source: ImageError) -> Self {
         match source {
             ImageError::Decoding(_)
@@ -317,13 +305,13 @@ impl Parser {
             .ok_or(InvalidRatio::new(ratio, expected))
     }
 
-    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, Error> {
+    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, CreateError> {
         self.validate_file_size(ByteSize(
             bytes.len().try_into().expect("image size should fit u64"),
         ))
         .map_err(ImageInputError::from)?;
 
-        let reader = ImageReader::new(io::Cursor::new(bytes))
+        let mut reader = ImageReader::new(io::Cursor::new(bytes))
             .with_guessed_format()
             .map_err(InternalError::new)?;
 
@@ -336,6 +324,11 @@ impl Parser {
         self.validate_format(format)
             .map_err(ImageInputError::from)?;
 
+        let mut limits = image::Limits::default();
+        limits.max_image_width = Some(32_768);
+        limits.max_image_height = Some(32_768);
+        limits.max_alloc = Some(256 * 1024 * 1024);
+        reader.limits(limits);
         let image = reader.decode()?;
         let (width, height) = image.dimensions();
 
@@ -358,162 +351,9 @@ impl Parser {
             })
         } else {
             Ok(ParsedImage {
-                bytes: image.into_bytes(),
+                bytes: bytes.to_vec(),
                 extension: format.extensions_str().first().unwrap(),
             })
         }
     }
-}
-
-#[derive(Builder, Clone, Debug)]
-pub struct NewImage {
-    pub directory: String,
-    pub uploaded_by: i32,
-    pub backend: StorageBackend,
-    pub bytes: Vec<u8>,
-
-    file_hash: String,
-    extension: &'static str,
-}
-
-impl NewImage {
-    pub fn from_parsed(
-        parsed: ParsedImage,
-        uploaded_by: i32,
-        backend: StorageBackend,
-    ) -> Self {
-        let ParsedImage {
-            extension, bytes, ..
-        } = parsed;
-        let xxhash = xxh3_128(&bytes);
-
-        let file_hash = BASE64_URL_SAFE_NO_PAD.encode(xxhash.to_be_bytes());
-
-        let sub_dir = PathBuf::from(&file_hash[0..2]).join(&file_hash[2..4]);
-
-        Self {
-            file_hash,
-            extension,
-            directory: sub_dir.to_str().unwrap().to_string(),
-            uploaded_by,
-            backend,
-            bytes,
-        }
-    }
-
-    pub fn full_path(&self) -> PathBuf {
-        PathBuf::from_iter([&self.directory, &self.file_hash])
-            .with_extension(self.extension)
-    }
-
-    pub fn filename(&self) -> String {
-        format!("{}.{}", self.file_hash, self.extension)
-    }
-}
-
-impl IntoActiveModel<entity::image::ActiveModel> for &NewImage {
-    fn into_active_model(self) -> entity::image::ActiveModel {
-        entity::image::ActiveModel {
-            id: NotSet,
-            filename: self.filename().into_active_value(),
-            directory: self.directory.clone().into_active_value(),
-            uploaded_by: self.uploaded_by.into_active_value(),
-            uploaded_at: NotSet,
-            backend: Set(self.backend),
-        }
-    }
-}
-
-pub trait AsyncFileStorage: Send + Sync {
-    type File;
-
-    async fn create(
-        &self,
-        image: NewImage,
-    ) -> Result<Self::File, InternalError>;
-
-    async fn remove(&self, image: Image) -> Result<(), InternalError>;
-}
-
-pub struct CreateImageMeta {
-    pub uploaded_by: i32,
-}
-
-#[derive(Clone, bon::Builder)]
-pub struct Service<S> {
-    tx: SeaOrmTxRepo,
-    storage: S,
-}
-
-impl<S> Service<S> {
-    pub const fn new(tx: SeaOrmTxRepo, storage: S) -> Self {
-        Self { tx, storage }
-    }
-}
-
-impl<Storage> Service<Storage>
-where
-    Storage: AsyncFileStorage,
-{
-    pub async fn create(
-        &self,
-        bytes: &[u8],
-        parser: &Parser,
-        meta: CreateImageMeta,
-    ) -> Result<Image, Error> {
-        let parsed = parser.parse(bytes)?;
-        let new_image =
-            NewImage::from_parsed(parsed, meta.uploaded_by, StorageBackend::Fs);
-
-        let image = if let Some(image) =
-            find_by_filename(&self.tx, &new_image).await?
-        {
-            image
-        } else {
-            let image = create(&self.tx, &new_image).await?;
-            self.storage.create(new_image).await?;
-            image
-        };
-
-        Ok(image)
-    }
-
-    async fn delete(&self, image: Image) -> Result<(), Error> {
-        delete(&self.tx, image.id).await?;
-        self.storage.remove(image).await?;
-
-        Ok(())
-    }
-}
-
-async fn find_by_filename(
-    tx: &SeaOrmTxRepo,
-    new_image: &NewImage,
-) -> Result<Option<Image>, DatabaseError> {
-    entity::image::Entity::find()
-        .filter(entity::image::Column::Filename.eq(new_image.filename()))
-        .one(tx.conn())
-        .await
-        .db_operation("find image by filename")
-        .map(FunctorExt::fmap_into)
-}
-
-async fn create(
-    tx: &SeaOrmTxRepo,
-    new_image: &NewImage,
-) -> Result<Image, DatabaseError> {
-    entity::image::Entity::insert(new_image.into_active_model())
-        .exec_with_returning(tx.conn())
-        .await
-        .db_operation("create image")
-        .fmap_into()
-}
-
-async fn delete(tx: &SeaOrmTxRepo, id: i32) -> Result<(), DatabaseError> {
-    entity::image::Entity::delete_many()
-        .filter(entity::image::Column::Id.eq(id))
-        .exec(tx.conn())
-        .await
-        .db_operation("delete image")
-        .map(|_| ())
 }

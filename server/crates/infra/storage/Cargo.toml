@@ -12,5 +12,11 @@ name = "infra_storage"
 path = "src/lib.rs"
 
 [dependencies]
-log             = { workspace = true, features = [ "kv" ] }
-tokio.workspace = true
+async-stream.workspace = true
+futures-util           = "0.3"
+log                    = { workspace = true, features = [ "kv" ] }
+tempfile               = "3.27.0"
+tokio.workspace        = true
+
+[dev-dependencies]
+anyhow.workspace = true

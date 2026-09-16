@@ -30,7 +30,6 @@ members = [
     "crates/infra/error",
     "crates/infra/testing",
     "crates/infra/storage",
-    "crates/infra/storage/worker",
     "crates/infra/worker",
     "crates/libfp",
     "crates/macros",
@@ -52,7 +51,6 @@ infra_email                  = { package = "thcdb-infra-email", path = "crates/i
 infra_error                  = { package = "thcdb-infra-error", path = "crates/infra/error" }
 infra_testing                = { package = "thcdb-infra-testing", path = "crates/infra/testing" }
 infra_storage                = { package = "thcdb-infra-storage", path = "crates/infra/storage" }
-infra_storage_worker         = { package = "thcdb-infra-storage-worker", path = "crates/infra/storage/worker" }
 infra_worker                 = { package = "thcdb-infra-worker", path = "crates/infra/worker" }
 libfp                        = { path = "crates/libfp" }
 macros                       = { path = "crates/macros" }
@@ -242,7 +240,6 @@ infra_db.workspace                     = true
 infra_email.workspace                  = true
 infra_error.workspace                  = true
 infra_storage.workspace                = true
-infra_storage_worker.workspace         = true
 infra_worker.workspace                 = true
 macros.workspace                       = true
 migration.workspace                    = true
@@ -350,16 +347,15 @@ utoipa-scalar = { version = "0.3", features = [
     "axum",
 ] }
 vecmap-rs = "0.2.3"
-xxhash-rust = { version = "0.8", features = [
-    "std",
-    "xxh3",
-] }
 zxcvbn = "3.1"
+xxhash-rust = { version = "0.8.18", features = [ "xxh3" ] }
+
 [patch.crates-io]
 apalis-core  = { git = "https://github.com/Huliiiiii/apalis.git", rev = "5866341937123ab1e1eee57aeeef23fd8fc10119" }
 apalis-redis = { git = "https://github.com/Huliiiiii/apalis.git", rev = "5866341937123ab1e1eee57aeeef23fd8fc10119" }
 
 [dev-dependencies]
+tempfile                = "3.27.0"
 anyhow.workspace        = true
 fake                    = { version = "5.1.0", features = [ "derive" ] }
 infra_testing.workspace = true

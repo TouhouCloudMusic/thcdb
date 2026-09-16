@@ -96,7 +96,7 @@ impl From<comment_repo::CommentRecord> for Comment {
         } = value;
         let state = CommentState::from(state);
         let content = (state == CommentState::Active).then_some(content);
-        let avatar_url = avatar.map(|avatar| avatar.url());
+        let avatar_url = avatar.map(|avatar| avatar.object_key);
 
         Self {
             id,

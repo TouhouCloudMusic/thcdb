@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use domain::image::Image;
 use domain::shared::{LocalizedName, Location};
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{
@@ -254,12 +253,10 @@ pub(super) async fn find_many_impl(
                 })
                 .collect();
 
-            let profile_image = image
+            let profile_image_url = image
                 .iter()
                 .find(|(image_type, _)| *image_type == ArtistImageType::Profile)
-                .map(|(_, image)| Image::from(image.clone()));
-            let profile_image_url =
-                profile_image.as_ref().map(domain::image::Image::url);
+                .map(|(_, image)| image.object_key.clone());
 
             Artist {
                 id: artist.id,

@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use domain::image::Image;
 use domain::shared::{Language, SimpleArtist};
-use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::song::Column::{Id, Title};
 use entity::{
@@ -313,17 +311,11 @@ async fn load_release_cover_art_urls(
     }
 
     let cover_art_urls_map = load_release_cover_art_urls_query(release_ids)
-        .into_tuple::<(i32, String, String, StorageBackend)>()
+        .into_tuple::<(i32, String)>()
         .all(db)
         .await
         .db_operation("load release cover art image rows")?
         .into_iter()
-        .map(|(release_id, directory, filename, backend)| {
-            (
-                release_id,
-                Image::format_url(backend, &directory, &filename),
-            )
-        })
         .collect::<HashMap<i32, String>>();
 
     Ok(cover_art_urls_map)
@@ -335,9 +327,7 @@ fn load_release_cover_art_urls_query(
     release_image::Entity::find()
         .select_only()
         .column(release_image::Column::ReleaseId)
-        .column(image::Column::Directory)
-        .column(image::Column::Filename)
-        .column(image::Column::Backend)
+        .column(image::Column::ObjectKey)
         .join(JoinType::InnerJoin, release_image::Relation::Image.def())
         .filter(
             release_image::Column::ReleaseId.is_in(release_ids.iter().copied()),
@@ -606,7 +596,7 @@ mod tests {
         let query = load_release_cover_art_urls_query(&[1, 2, 3, 3]);
         assert_eq!(
             query.build(sea_orm::DatabaseBackend::Postgres).to_string(),
-            r#"SELECT "release_image"."release_id", "image"."directory", "image"."filename", CAST("image"."backend" AS "text") FROM "release_image" INNER JOIN "image" ON "release_image"."image_id" = "image"."id" WHERE "release_image"."release_id" IN (1, 2, 3, 3) AND "release_image"."type" = (CAST('Cover' AS "release_image_type"))"#,
+            r#"SELECT "release_image"."release_id", "image"."object_key" FROM "release_image" INNER JOIN "image" ON "release_image"."image_id" = "image"."id" WHERE "release_image"."release_id" IN (1, 2, 3, 3) AND "release_image"."type" = (CAST('Cover' AS "release_image_type"))"#,
         );
     }
 
