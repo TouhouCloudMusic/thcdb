@@ -58,8 +58,7 @@ impl PendingImageQueueItem {
 #[derive(Serialize, ToSchema)]
 pub(crate) struct ImageSummary {
     id: i32,
-    filename: String,
-    directory: String,
+    url: String,
     uploaded_at: chrono::DateTime<chrono::FixedOffset>,
     uploaded_by: UserSummary,
 }
@@ -68,8 +67,7 @@ impl ImageSummary {
     pub(crate) fn new(
         entity::image::Model {
             id,
-            filename,
-            directory,
+            object_key,
             uploaded_at,
             ..
         }: entity::image::Model,
@@ -77,8 +75,7 @@ impl ImageSummary {
     ) -> Self {
         Self {
             id,
-            filename,
-            directory,
+            url: object_key,
             uploaded_at,
             uploaded_by,
         }

@@ -6,7 +6,6 @@ use crate::features::image_upload::{CreateImageMeta, Parser};
 use crate::features::user::User;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::storage::GenericFileStorage;
-use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 
 mod parser {
@@ -65,27 +64,27 @@ pub struct Service {
 pub enum Error {
     #[display("{_0}")]
     #[from]
-    Image(#[error(source)] image_upload::Error),
+    Image(#[error(source)] image_upload::CreateError),
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
-    #[display("{_0}")]
-    #[from]
-    Internal(#[error(source)] InternalError),
 }
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Error::Image(source) => match source {
-                image_upload::Error::InvalidInput(source) => {
+                image_upload::CreateError::InvalidInput(source) => {
                     AppError::bad_request(source.to_string()).into_response()
                 }
-                image_upload::Error::Database(source) => source.into_response(),
-                image_upload::Error::Internal(source) => source.into_response(),
+                image_upload::CreateError::Database(source) => {
+                    source.into_response()
+                }
+                image_upload::CreateError::Internal(source) => {
+                    source.into_response()
+                }
             },
             Error::Database(source) => source.into_response(),
-            Error::Internal(source) => source.into_response(),
         }
     }
 }
@@ -162,14 +161,7 @@ where
         .await?;
 
     let image_field_ref = get_field_fn(&mut user);
-    let prev_id = *image_field_ref;
-    let new_id = Some(new_image.id);
-
-    if prev_id == new_id {
-        return Ok(user);
-    }
-
-    *image_field_ref = new_id;
+    *image_field_ref = Some(new_image.id);
 
     drop(image_service);
 

@@ -3,7 +3,7 @@ use auth_worker::password_reset_email::{
 };
 use infra_db::SeaOrmRepository;
 use infra_email::Mailer;
-use infra_storage_worker::{RemoveFileQueue, queue as remove_file_queue};
+use infra_storage::FsStorage;
 use lettre::message::Mailbox;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
@@ -14,6 +14,7 @@ use super::config::{Config, EmailSecurity};
 use super::database::{get_connection, init_database};
 use super::redis::Pool;
 use crate::features::user_event::UserEventSender;
+use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -27,13 +28,18 @@ pub struct AppState {
 
     pub password_reset_email_queue: Queue,
 
-    pub remove_file_queue: RemoveFileQueue,
-
     pub(crate) user_events: UserEventSender,
+
+    pub(crate) image_storage: FsStorage,
 }
 
 impl AppState {
     pub async fn init(config: &Config) -> Result<Self, Whatever> {
+        let image_storage = FsStorage::new(FS_IMAGE_BASE_PATH.to_path_buf());
+        let image_storage = image_storage.with_whatever_context(|err| {
+            format!("Failed to initialize image storage: {err}")
+        })?;
+
         let conn = get_connection(&config.database_url).await;
         init_database(&conn).await;
 
@@ -47,13 +53,6 @@ impl AppState {
                         "Failed to initialize password reset queue: {err}"
                     ))
                 })?;
-
-        let remove_file_queue =
-            remove_file_queue(&config.redis_url).await.map_err(|err| {
-                Whatever::without_source(format!(
-                    "Failed to initialize remove file queue: {err}"
-                ))
-            })?;
 
         let smtp_conf = &config.email;
 
@@ -104,8 +103,8 @@ impl AppState {
             mailer: Mailer::new(transport, from),
             sea_orm_repo: SeaOrmRepository::new(conn.clone()),
             password_reset_email_queue,
-            remove_file_queue,
             user_events,
+            image_storage,
         })
     }
 }

@@ -3,6 +3,9 @@ mod model;
 mod repo;
 mod service;
 
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
+
 use axum::response::IntoResponse;
 pub use http::router;
 pub(crate) use model::ImageQueueAction;

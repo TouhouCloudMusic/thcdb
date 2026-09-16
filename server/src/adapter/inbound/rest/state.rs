@@ -4,9 +4,8 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 pub(crate) use infra_db::SeaOrmRepository;
 
-use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 use crate::infra::state::AppState;
-use crate::infra::storage::{GenericFileStorage, GenericFileStorageConfig};
+use crate::infra::storage::GenericFileStorage;
 
 #[derive(Clone)]
 pub struct ArcAppState(Arc<AppState>);
@@ -27,10 +26,7 @@ impl ArcAppState {
 
 impl From<&ArcAppState> for GenericFileStorage {
     fn from(input: &ArcAppState) -> Self {
-        Self::new(GenericFileStorageConfig {
-            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
-            remove_file_queue: input.remove_file_queue.clone(),
-        })
+        Self::new(input.image_storage.clone())
     }
 }
 

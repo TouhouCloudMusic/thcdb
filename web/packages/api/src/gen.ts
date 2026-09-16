@@ -2544,13 +2544,12 @@ export type components = {
         /** @enum {string} */
         ImageQueueType: "artist" | "release";
         ImageSummary: {
-            directory: string;
-            filename: string;
             /** Format: int32 */
             id: number;
             /** Format: date-time */
             uploaded_at: string;
             uploaded_by: components["schemas"]["UserSummary"];
+            url: string;
         };
         InitDiscography: {
             album: components["schemas"]["CursorResponse_Discography"];
@@ -3470,9 +3469,9 @@ export type components = {
             name: string;
         };
         UserProfile: {
-            /** @description Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg */
+            /** @description Avatar object key. */
             avatar_url?: string | null;
-            /** @description Banner url with sub directory, eg. ab/cd/abcd..xyz.jpg */
+            /** @description Banner object key. */
             banner_url?: string | null;
             bio?: string | null;
             /** Format: int32 */

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, FixedOffset};
-use domain::image::Image as DomainImage;
 use domain::shared::{DateWithPrecision, PageResponse, SimpleArtist};
 use entity::enums::EntityType;
 use entity::sea_orm_active_enums::{ArtistImageType, ReleaseImageType};
@@ -47,8 +46,7 @@ struct UserCollectionSummaryRow {
     is_public: bool,
     owner_id: i32,
     owner_name: String,
-    owner_avatar_url_dir: Option<String>,
-    owner_avatar_url_filename: Option<String>,
+    owner_avatar_url: Option<String>,
     item_count: i64,
     follower_count: i64,
     is_following: Option<bool>,
@@ -67,25 +65,12 @@ struct CollectionIdRow {
 
 impl From<UserCollectionSummaryRow> for UserCollection {
     fn from(row: UserCollectionSummaryRow) -> Self {
-        let avatar_url = if let Some(dir) = row.owner_avatar_url_dir
-            && let Some(filename) = row.owner_avatar_url_filename
-        {
-            Some(
-                std::path::PathBuf::from(dir)
-                    .join(filename)
-                    .to_string_lossy()
-                    .to_string(),
-            )
-        } else {
-            None
-        };
-
         Self {
             id: row.id,
             owner: UserCollectionOwner {
                 id: row.owner_id,
                 name: row.owner_name,
-                avatar_url,
+                avatar_url: row.owner_avatar_url,
             },
             name: row.name,
             description: row.description,
@@ -441,12 +426,8 @@ fn select_user_collection_summary_fields(
             Alias::new("owner_name"),
         )
         .expr_as(
-            Expr::col((avatar_alias.clone(), image_entity::Column::Directory)),
-            Alias::new("owner_avatar_url_dir"),
-        )
-        .expr_as(
-            Expr::col((avatar_alias, image_entity::Column::Filename)),
-            Alias::new("owner_avatar_url_filename"),
+            Expr::col((avatar_alias, image_entity::Column::ObjectKey)),
+            Alias::new("owner_avatar_url"),
         )
         .expr_as(
             Expr::col((
@@ -563,9 +544,7 @@ fn group_user_collection_summary(
         .into(),
         Expr::col((user_entity::Entity, user_entity::Column::Id)).into(),
         Expr::col((user_entity::Entity, user_entity::Column::Name)).into(),
-        Expr::col((avatar_alias.clone(), image_entity::Column::Directory))
-            .into(),
-        Expr::col((avatar_alias, image_entity::Column::Filename)).into(),
+        Expr::col((avatar_alias, image_entity::Column::ObjectKey)).into(),
     ]);
 }
 
@@ -1125,13 +1104,9 @@ async fn load_artist_summaries(
     let mut image_map: HashMap<i32, String> = HashMap::new();
     for (ai, img) in profile_images {
         if let Some(img) = img {
-            image_map.entry(ai.artist_id).or_insert_with(|| {
-                DomainImage::format_url(
-                    img.backend,
-                    &img.directory,
-                    &img.filename,
-                )
-            });
+            image_map
+                .entry(ai.artist_id)
+                .or_insert_with(|| img.object_key.clone());
         }
     }
 
@@ -1189,13 +1164,9 @@ async fn load_release_summaries(
     let mut cover_map: HashMap<i32, String> = HashMap::new();
     for (ri, img) in cover_images {
         if let Some(img) = img {
-            cover_map.entry(ri.release_id).or_insert_with(|| {
-                DomainImage::format_url(
-                    img.backend,
-                    &img.directory,
-                    &img.filename,
-                )
-            });
+            cover_map
+                .entry(ri.release_id)
+                .or_insert_with(|| img.object_key.clone());
         }
     }
 
@@ -1294,13 +1265,9 @@ async fn load_song_summaries(
     let mut release_cover_map: HashMap<i32, String> = HashMap::new();
     for (ri, img) in cover_images {
         if let Some(img) = img {
-            release_cover_map.entry(ri.release_id).or_insert_with(|| {
-                DomainImage::format_url(
-                    img.backend,
-                    &img.directory,
-                    &img.filename,
-                )
-            });
+            release_cover_map
+                .entry(ri.release_id)
+                .or_insert_with(|| img.object_key.clone());
         }
     }
 

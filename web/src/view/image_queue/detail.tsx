@@ -399,14 +399,6 @@ function formatDateTime(value: string | null | undefined) {
 	return DATE_TIME.format(date)
 }
 
-function imagePath(detail: ImageQueueDetail) {
-	const image = detail.image
-	if (!image) return
-	const dir = image.directory.replaceAll(/\/+$/gu, "")
-	if (!dir) return image.filename
-	return `${dir}/${image.filename}`
-}
-
 function getTargetMeta(detail: ImageQueueDetail) {
 	if (detail.artist) {
 		return {
@@ -570,7 +562,7 @@ export function ImageQueueDetailPage(props: Props) {
 export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 	const { t } = useLingui()
 	const queuedImageSrc = () => {
-		const queuedPath = imagePath(props.detail)
+		const queuedPath = props.detail.image?.url
 		return queuedPath ? imgUrl(queuedPath) : undefined
 	}
 	const tone = () => statusTone(props.detail.status)
