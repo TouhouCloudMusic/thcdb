@@ -92,7 +92,7 @@ function SongInfoRelationItem(props: SongInfoRelationItemProps) {
 		<li {...stylex.attrs(styles.relation)}>
 			<div {...stylex.attrs(styles.heading)}>
 				<Link
-					class={stylex.attrs(link.base, link.text).class}
+					class={stylex.attrs(link.base, link.withUnderline).class}
 					to="/song/$id"
 					params={{ id: relation().songId }}
 				>
@@ -108,7 +108,9 @@ function SongInfoRelationItem(props: SongInfoRelationItemProps) {
 						<Link
 							to="/artist/$id"
 							params={{ id: artist().id }}
-							class={stylex.attrs(link.base, link.text, styles.artist).class}
+							class={
+								stylex.attrs(link.base, link.withUnderline, styles.artist).class
+							}
 						>
 							{artist().name}
 						</Link>

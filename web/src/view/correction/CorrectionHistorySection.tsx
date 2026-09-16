@@ -159,7 +159,10 @@ function CorrectionHistoryItemEntry(props: CorrectionHistoryItemProps) {
 								params={{
 									username: props.item.author.name,
 								}}
-								class={stylex.attrs(link.base, link.text, styles.author).class}
+								class={
+									stylex.attrs(link.base, link.withUnderline, styles.author)
+										.class
+								}
 							>
 								{props.item.author.name}
 							</Link>,

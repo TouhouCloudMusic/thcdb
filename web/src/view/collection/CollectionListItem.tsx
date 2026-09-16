@@ -46,7 +46,7 @@ export function CollectionListItem(props: { collection: UserCollection }) {
 			<Link
 				to="/collection/$id"
 				params={{ id: props.collection.id.toString() }}
-				class={stylex.attrs(link.base, link.text, styles.name).class}
+				class={stylex.attrs(link.base, link.withUnderline, styles.name).class}
 			>
 				{props.collection.name}
 			</Link>
@@ -55,7 +55,9 @@ export function CollectionListItem(props: { collection: UserCollection }) {
 				<Link
 					to="/profile/$username"
 					params={{ username: props.collection.owner.name }}
-					class={stylex.attrs(link.base, link.text, styles.owner).class}
+					class={
+						stylex.attrs(link.base, link.withUnderline, styles.owner).class
+					}
 				>
 					{props.collection.owner.name}
 				</Link>

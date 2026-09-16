@@ -133,7 +133,7 @@ export function ArtistCard(props: ArtistCardProps) {
 					to="/artist/$id"
 					params={artistHrefParams()}
 					title={props.artist.name}
-					class={stylex.attrs(link.base, link.text, styles.name).class}
+					class={stylex.attrs(link.base, link.withUnderline, styles.name).class}
 				>
 					{props.artist.name}
 				</Link>

@@ -1,7 +1,7 @@
 use derive_more::Display;
 use domain::shared::{
     Cursor, DateWithPrecision, EntityIdent, HttpUrl, LocalizedName, Location,
-    NewLocalizedName,
+    NewLocalizedName, SimpleArtist,
 };
 use entity::enums::{EntityType, ReleaseType};
 pub use entity::sea_orm_active_enums::ArtistType;
@@ -53,7 +53,7 @@ pub struct Artist {
 )]
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct Membership {
-    pub artist_id: i32,
+    pub artist: SimpleArtist,
     pub roles: Vec<CreditRoleRef>,
     pub tenure: Vec<Tenure>,
 }

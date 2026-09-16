@@ -28,7 +28,6 @@ const styles = stylex.create({
 	catalogs: { display: "flex", flexWrap: "wrap", alignItems: "baseline" },
 	catalogSeparator: { whiteSpace: "pre" },
 	catalog: { borderRadius: radius.sm },
-	links: { display: "contents" },
 })
 
 export function ReleaseInfoDetails() {
@@ -85,11 +84,10 @@ export function ReleaseInfoDetails() {
 				</ul>
 			</Show>
 
-			<ExternalLinks
-				links={ctx.release.links}
-				styles={styles.links}
-				labelStyles={styles.detailLabel}
-			/>
+			<Show when={ctx.release.links?.length}>
+				<ExternalLinks.Label />
+				<ExternalLinks.Body links={ctx.release.links} />
+			</Show>
 		</div>
 	)
 }

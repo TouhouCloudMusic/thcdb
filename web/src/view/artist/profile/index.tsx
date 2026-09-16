@@ -16,42 +16,53 @@ import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
-import { radius, px } from "~/style/tokens.stylex"
+import { px, radius } from "~/style/tokens.stylex"
 import type { InfiniteQuery } from "~/type/query"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
-import { entityDetailStyles } from "~/view/entity/detailStyles"
+import { EntityTags } from "~/view/entity_tags/EntityTags"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
 
 const styles = stylex.create({
 	page: {
-		padding: "clamp(1rem,4vw,2rem)",
+		display: "grid",
+		width: `round(down, 100%, ${px[32]})`,
+		borderInlineWidth: 0,
+		gridTemplateColumns: `repeat(auto-fill,${px[32]})`,
+		gridTemplateRows: `${px[32]} auto ${px[32]}`,
+		alignContent: "start",
 	},
 	content: {
-		display: "flex",
-		flexDirection: "column",
-		gap: px[32],
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		gridColumn: "2 / -2",
+		gridRow: "2",
+		alignContent: "start",
 	},
 	overview: {
-		display: "flex",
-		flexWrap: "wrap",
-		alignItems: "flex-start",
-		justifyContent: "center",
-		gap: px[24],
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		gridTemplateRows: {
+			default: `auto ${px[32]} auto`,
+			"@container (min-width: 40rem)": "auto",
+		},
+		gridColumn: "1 / -1",
+		alignItems: "start",
 	},
 	portrait: {
+		gridColumn: {
+			default: "1 / -1",
+			"@container (min-width: 40rem)": "span 8 / span 8",
+		},
+		gridRow: "1",
 		aspectRatio: "1 / 1",
-		width: "100%",
+		width: `min(100%,${px[256]})`,
 		overflow: "hidden",
 		borderRadius: radius.sm,
 		backgroundColor: palette.slate[100],
-		maxWidth: {
-			default: null,
-			"@media (min-width: 40rem)": px[256],
-		},
 	},
 	imagePlaceholder: {
 		width: "100%",
@@ -63,12 +74,46 @@ const styles = stylex.create({
 		height: "100%",
 	},
 	details: {
-		display: "flex",
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		rowGap: px[16],
+		gridColumn: {
+			default: "1 / -1",
+			"@container (min-width: 40rem)": "10 / -1",
+		},
+		gridRow: {
+			default: "3",
+			"@container (min-width: 40rem)": "1",
+		},
 		minWidth: 0,
-		flex: "1",
-		flexBasis: px[288],
-		flexDirection: "column",
-		gap: px[16],
+	},
+	actions: {
+		gridColumn: "1 / -1",
+		display: "flex",
+		flexWrap: "wrap",
+		gap: px[8],
+	},
+	action: {
+		height: px[32],
+		paddingBlock: 0,
+	},
+	tags: {
+		gridColumn: "1 / -1",
+		width: "fit-content",
+		minWidth: `min(${px[384]}, 100%)`,
+		maxWidth: "100%",
+		justifySelf: "start",
+		overflowWrap: "anywhere",
+	},
+	section: {
+		gridColumn: "1 / -1",
+		paddingBlockStart: px[32],
+		minWidth: 0,
+	},
+	releaseSection: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		paddingBlockStart: px[16],
 	},
 })
 
@@ -142,10 +187,16 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 							</div>
 							<div {...stylex.attrs(styles.details)}>
 								<ArtistInfo />
-								<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
+								<EntityTags
+									styles={styles.tags}
+									entityType="artist"
+									entityId={props.artist.id}
+								/>
+								<div {...stylex.attrs(styles.actions)}>
 									<AddToUserCollectionButton
 										entityType="Artist"
 										entityId={props.artist.id}
+										styles={styles.action}
 									/>
 									<Link
 										to="/artist/$id/image-upload"
@@ -157,6 +208,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 												buttonStyles.outline,
 												buttonStyles.gray,
 												buttonStyles.sm,
+												styles.action,
 											).class
 										}
 									>
@@ -165,12 +217,16 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 								</div>
 							</div>
 						</div>
-						<ArtistReleaseInfo />
-						<EntityCorrectionMetadataSection
-							entityType="artist"
-							entityId={props.artist.id}
-							correctionHistory={props.correctionHistory}
-						/>
+						<div {...stylex.attrs(styles.section, styles.releaseSection)}>
+							<ArtistReleaseInfo />
+						</div>
+						<div {...stylex.attrs(styles.section)}>
+							<EntityCorrectionMetadataSection
+								entityType="artist"
+								entityId={props.artist.id}
+								correctionHistory={props.correctionHistory}
+							/>
+						</div>
 					</div>
 				</ArtistContext.Provider>
 			</Suspense>

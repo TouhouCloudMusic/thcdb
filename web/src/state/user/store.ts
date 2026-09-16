@@ -101,7 +101,6 @@ export function createUserStore() {
 
 			if (currentUser === null) {
 				replaceLoadedSession({ status: "anonymous" })
-				void resetSessionQueries()
 				return false
 			}
 
@@ -112,7 +111,6 @@ export function createUserStore() {
 
 			console.error("Failed to load the current user")
 			replaceLoadedSession({ status: "anonymous" })
-			void resetSessionQueries()
 			return false
 		}
 	}

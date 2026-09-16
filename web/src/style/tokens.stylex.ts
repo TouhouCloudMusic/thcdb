@@ -66,7 +66,7 @@ export const px = stylex.defineConsts({
 	1024: "64rem",
 	1280: "80rem",
 	1536: "96rem",
-})
+} as const)
 
 export const radius = stylex.defineConsts({
 	xs: "0.125rem",
@@ -85,7 +85,7 @@ export const fontSizes = stylex.defineConsts({
 	"2xl": "1.5rem",
 	"3xl": "1.875rem",
 	"4xl": "2.25rem",
-})
+} as const)
 
 export const lineHeights = stylex.defineVars({
 	xs: "calc(1 / 0.75)",

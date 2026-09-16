@@ -71,14 +71,14 @@ export function EntityCorrectionListPage(props: EntityCorrectionListPageProps) {
 					<h1 {...stylex.attrs(styles.title)}>{props.entityName}</h1>
 					<div {...stylex.attrs(styles.actions)}>
 						<Link
-							class={stylex.attrs(link.base, link.text).class}
+							class={stylex.attrs(link.base, link.withUnderline).class}
 							to={detailRoute()}
 							params={{ id: props.entityId.toString() }}
 						>
 							Back to {entityLabel()}
 						</Link>
 						<Link
-							class={stylex.attrs(link.base, link.text).class}
+							class={stylex.attrs(link.base, link.withUnderline).class}
 							to={editRoute()}
 							params={{ id: props.entityId.toString() }}
 						>

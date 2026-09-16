@@ -367,7 +367,9 @@ function UserQueueRow(props: { item: UserImageQueueItem }) {
 				<Link
 					to="/image-queue/$id"
 					params={{ id: props.item.id.toString() }}
-					class={stylex.attrs(link.base, link.text, styles.queueLink).class}
+					class={
+						stylex.attrs(link.base, link.withUnderline, styles.queueLink).class
+					}
 				>
 					{props.item.id}
 				</Link>

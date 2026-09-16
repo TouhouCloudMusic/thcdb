@@ -191,7 +191,10 @@ function VerifyEmailForm(props: { session: VerificationSession }) {
 					{t`Already have an account?`}{" "}
 					<Link
 						to="/auth/sign-in"
-						class={stylex.attrs(link.base, link.text, styles.signinLink).class}
+						class={
+							stylex.attrs(link.base, link.withUnderline, styles.signinLink)
+								.class
+						}
 					>
 						{t`Sign in`}
 					</Link>

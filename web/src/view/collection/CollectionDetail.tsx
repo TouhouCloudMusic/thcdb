@@ -350,7 +350,9 @@ function CollectionMetadata(props: { collection: UserCollection }) {
 				<Link
 					to="/profile/$username"
 					params={{ username: props.collection.owner.name }}
-					class={stylex.attrs(link.base, link.text, styles.ownerLink).class}
+					class={
+						stylex.attrs(link.base, link.withUnderline, styles.ownerLink).class
+					}
 				>
 					{props.collection.owner.name}
 				</Link>

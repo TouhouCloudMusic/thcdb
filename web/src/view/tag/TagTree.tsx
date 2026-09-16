@@ -382,7 +382,9 @@ function TagTreeItem(props: TagTreeItemProps) {
 						ref={setLinkRef}
 						to="/tag/$id"
 						params={{ id: props.node.id.toString() }}
-						class={stylex.attrs(link.base, link.text, styles.nodeLink).class}
+						class={
+							stylex.attrs(link.base, link.withUnderline, styles.nodeLink).class
+						}
 						tabIndex={-1}
 					>
 						{props.node.name}

@@ -70,7 +70,7 @@ function RouteComponent() {
 							</h1>
 							<p {...stylex.attrs(styles.subtitle, styles.headerChild)}>
 								<Link
-									class={stylex.attrs(link.base, link.text).class}
+									class={stylex.attrs(link.base, link.withUnderline).class}
 									to="/song/$id"
 									params={{ id: lyrics().song_id.toString() }}
 								>

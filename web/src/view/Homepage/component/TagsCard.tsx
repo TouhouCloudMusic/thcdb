@@ -109,7 +109,9 @@ function TagsList(props: { tags: TagListItem[] }) {
 							<Link
 								to="/tag/$id"
 								params={{ id: tag.id.toString() }}
-								class={stylex.attrs(link.base, link.text, styles.name).class}
+								class={
+									stylex.attrs(link.base, link.withUnderline, styles.name).class
+								}
 							>
 								{tag.name}
 							</Link>

@@ -227,7 +227,7 @@ function TagInfoTabs() {
 			<Show when={hasDesc()}>
 				<Tab.Content
 					value="Description"
-					styles={styles.tabContent}
+					{...stylex.attrs(styles.tabContent)}
 				>
 					<TagInfoDescription />
 				</Tab.Content>
@@ -235,20 +235,20 @@ function TagInfoTabs() {
 			<Show when={hasRelations()}>
 				<Tab.Content
 					value="Relations"
-					styles={styles.tabContent}
+					{...stylex.attrs(styles.tabContent)}
 				>
 					<TagInfoRelations />
 				</Tab.Content>
 			</Show>
 			<Tab.Content
 				value="Comments"
-				styles={styles.tabContent}
+				{...stylex.attrs(styles.tabContent)}
 			>
 				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				styles={styles.tabContent}
+				{...stylex.attrs(styles.tabContent)}
 			>
 				<EntityCollectionsTab
 					entityType="tag"
@@ -279,7 +279,7 @@ function TagInfoRelations() {
 					<li {...stylex.attrs(styles.relation)}>
 						<div {...stylex.attrs(styles.field)}>
 							<Link
-								class={stylex.attrs(link.base, link.text).class}
+								class={stylex.attrs(link.base, link.withUnderline).class}
 								to="/tag/$id"
 								params={{ id: rel.tag.id.toString() }}
 							>

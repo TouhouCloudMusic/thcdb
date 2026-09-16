@@ -57,7 +57,7 @@ export function useArtistFormInitialValues(props: Props): NewArtistCorrection {
 					current_location: props.artist.current_location,
 					memberships:
 						props.artist.memberships?.map((m) => ({
-							artist_id: m.artist_id,
+							artist_id: m.artist.id,
 							roles: m.roles?.map((r) => r.id) ?? [],
 							tenure: m.tenure ?? [],
 						})) ?? [],

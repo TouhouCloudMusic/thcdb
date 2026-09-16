@@ -17,10 +17,9 @@ import { animationStyles } from "../../../style/animations.stylex"
 const styles = stylex.create({
 	listSkeleton: {
 		display: "grid",
-		gridTemplateColumns: "3lh minmax(0,1fr)",
+		gridTemplateColumns: `${px[64]} minmax(0,1fr)`,
 		alignItems: "flex-start",
-		gap: px[12],
-		lineHeight: "1.5rem",
+		gap: px[16],
 	},
 	skeletonCover: {
 		aspectRatio: "1 / 1",
@@ -28,7 +27,6 @@ const styles = stylex.create({
 		backgroundColor: colors.backgroundSecondary,
 	},
 	skeletonTitle: {
-		marginBottom: px[8],
 		height: px[20],
 		width: "66.66666666666666%",
 		borderRadius: radius.sm,
@@ -37,6 +35,17 @@ const styles = stylex.create({
 	skeletonArtist: {
 		height: px[16],
 		width: "50%",
+		borderRadius: radius.sm,
+		backgroundColor: palette.slate[100],
+	},
+	skeletonDetails: {
+		display: "grid",
+		gridTemplateRows: `${px[20]} ${px[16]} ${px[16]}`,
+		rowGap: px[6],
+	},
+	skeletonMeta: {
+		height: px[16],
+		width: "58.333333333333336%",
 		borderRadius: radius.sm,
 		backgroundColor: palette.slate[100],
 	},
@@ -90,9 +99,10 @@ function ReleaseItemSkeleton() {
 	return (
 		<div {...stylex.attrs(styles.listSkeleton, animationStyles.pulse)}>
 			<div {...stylex.attrs(styles.skeletonCover)}></div>
-			<div>
+			<div {...stylex.attrs(styles.skeletonDetails)}>
 				<div {...stylex.attrs(styles.skeletonTitle)}></div>
 				<div {...stylex.attrs(styles.skeletonArtist)}></div>
+				<div {...stylex.attrs(styles.skeletonMeta)}></div>
 			</div>
 		</div>
 	)

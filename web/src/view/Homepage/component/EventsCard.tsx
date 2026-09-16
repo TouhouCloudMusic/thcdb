@@ -4,6 +4,7 @@ import { Link } from "@tanstack/solid-router"
 import type { Event } from "@thc/api"
 import { For, Show } from "solid-js"
 
+import { formatEventLocation } from "~/domain/event"
 import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
 import { surfaceStyles } from "~/style/primitives"
@@ -17,7 +18,7 @@ import {
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { EVENTS_LIMIT } from "~/view/Homepage/constants"
-import { displayEventDate, formatEventLocation } from "~/view/Homepage/utils"
+import { displayEventDate } from "~/view/Homepage/utils"
 
 import { animationNames } from "../../../style/animations.stylex"
 
@@ -119,7 +120,7 @@ function EventRow(props: { event: Event }) {
 				<Link
 					to="/event/$id"
 					params={{ id: props.event.id.toString() }}
-					class={stylex.attrs(link.base, link.text, styles.name).class}
+					class={stylex.attrs(link.base, link.withUnderline, styles.name).class}
 				>
 					{props.event.name}
 				</Link>
@@ -128,7 +129,7 @@ function EventRow(props: { event: Event }) {
 				</Show>
 			</div>
 			<div {...stylex.attrs(styles.location)}>
-				{formatEventLocation(props.event) ?? t`Unknown location`}
+				{formatEventLocation(props.event.location) ?? t`Unknown location`}
 			</div>
 		</li>
 	)

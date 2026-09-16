@@ -110,7 +110,12 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 						<div {...stylex.attrs(styles.details)}>
 							<SongInfoTitleAndCreditName />
 							<SongInfoLanguages />
-							<ExternalLinks links={props.song.links} />
+							<Show when={props.song.links?.length}>
+								<div>
+									<ExternalLinks.Label />
+									<ExternalLinks.Body links={props.song.links} />
+								</div>
+							</Show>
 							<EntityTags
 								entityType="song"
 								entityId={props.song.id}
@@ -226,13 +231,13 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 			</Show>
 			<Tab.Content
 				value="Comments"
-				styles={[styles.tabContent]}
+				{...stylex.attrs(styles.tabContent)}
 			>
 				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				styles={[styles.tabContent]}
+				{...stylex.attrs(styles.tabContent)}
 			>
 				<EntityCollectionsTab
 					entityType="song"

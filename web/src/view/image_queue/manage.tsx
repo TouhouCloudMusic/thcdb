@@ -519,7 +519,9 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 				to="/image-queue/$id"
 				params={{ id: props.item.id.toString() }}
 				aria-label={ariaLabel()}
-				class={stylex.attrs(link.base, link.text, styles.rowLink).class}
+				class={
+					stylex.attrs(link.base, link.withUnderline, styles.rowLink).class
+				}
 			/>
 
 			<div {...stylex.attrs(styles.rowContent)}>
@@ -537,7 +539,10 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 					<Link
 						to="/profile/$username/image-queue"
 						params={{ username: props.item.created_by.name }}
-						class={stylex.attrs(link.base, link.text, styles.entityLink).class}
+						class={
+							stylex.attrs(link.base, link.withUnderline, styles.entityLink)
+								.class
+						}
 					>
 						{props.item.created_by.name}
 					</Link>

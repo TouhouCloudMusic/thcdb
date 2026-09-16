@@ -90,8 +90,11 @@ export function SignInPage() {
 								<Link
 									to="/auth/forgot-password"
 									class={
-										stylex.attrs(link.base, link.text, styles.forgotPassword)
-											.class
+										stylex.attrs(
+											link.base,
+											link.withUnderline,
+											styles.forgotPassword,
+										).class
 									}
 								>{t`Forgot password?`}</Link>
 							</div>
@@ -123,7 +126,9 @@ export function SignInPage() {
 				{t`Don't have an account?`}{" "}
 				<Link
 					to="/auth/sign-up"
-					class={stylex.attrs(link.base, link.text, styles.signupLink).class}
+					class={
+						stylex.attrs(link.base, link.withUnderline, styles.signupLink).class
+					}
 				>{t`Sign Up`}</Link>
 			</p>
 		</>

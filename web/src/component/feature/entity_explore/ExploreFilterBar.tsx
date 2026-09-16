@@ -1,4 +1,5 @@
 import * as stylex from "@stylexjs/stylex"
+import type { StyleXStyles } from "@stylexjs/stylex"
 import type { JSX, ParentProps } from "solid-js"
 import { children, Show } from "solid-js"
 
@@ -40,13 +41,14 @@ const styles = stylex.create({
 
 type ExploreFilterBarProps = ParentProps<{
 	actions?: JSX.Element
+	styles?: StyleXStyles
 }>
 
 export function ExploreFilterBar(props: ExploreFilterBarProps) {
 	const actions = children(() => props.actions)
 
 	return (
-		<div {...stylex.attrs(styles.root)}>
+		<div {...stylex.attrs(styles.root, props.styles)}>
 			<div {...stylex.attrs(styles.layout)}>
 				<div {...stylex.attrs(styles.filters)}>{props.children}</div>
 

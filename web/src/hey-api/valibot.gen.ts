@@ -3134,15 +3134,7 @@ export const vTenure = v.object({
 })
 
 export const vMembership = v.object({
-	artist_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
+	artist: vSimpleArtist,
 	roles: v.optional(v.array(vCreditRoleRef)),
 	tenure: v.optional(v.array(vTenure)),
 })

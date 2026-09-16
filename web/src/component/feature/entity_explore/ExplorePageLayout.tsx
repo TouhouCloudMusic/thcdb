@@ -63,7 +63,9 @@ export function ExplorePageLayout(props: ExplorePageLayoutProps) {
 					{(action) => (
 						<Link
 							to={action().to}
-							class={stylex.attrs(link.base, link.text, styles.action).class}
+							class={
+								stylex.attrs(link.base, link.withUnderline, styles.action).class
+							}
 						>
 							{action().label}
 						</Link>

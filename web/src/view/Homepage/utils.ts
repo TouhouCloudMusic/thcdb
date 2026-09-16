@@ -34,12 +34,3 @@ export const displayEventDate = (event: Event) => {
 	if (!end || start === end) return start
 	return `${start} - ${end}`
 }
-
-export const formatEventLocation = (event: Event) => {
-	const location = event.location
-	if (!location) return
-	const parts = [location.city, location.province, location.country].filter(
-		Boolean,
-	)
-	return parts.join(", ")
-}

@@ -374,7 +374,10 @@ function EditProfileHeader(props: { isBioDirty: boolean }) {
 
 				<Link
 					to="/profile"
-					class={stylex.attrs(link.base, link.text, styles.profileLink).class}
+					class={
+						stylex.attrs(link.base, link.withUnderline, styles.profileLink)
+							.class
+					}
 				>
 					Back to profile
 				</Link>

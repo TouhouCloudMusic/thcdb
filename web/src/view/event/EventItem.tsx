@@ -3,6 +3,7 @@ import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
+import { formatEventLocation } from "~/domain/event"
 import { DateWithPrecision } from "~/domain/shared"
 import type { EventListItem } from "~/hey-api"
 import { link } from "~/style/link"
@@ -48,23 +49,14 @@ export function EventItem(props: { event: EventListItem }) {
 		if (start && end && start !== end) return `${start} - ${end}`
 		return start ?? end
 	}
-	const location = () => {
-		const value = [
-			props.event.location.city,
-			props.event.location.province,
-			props.event.location.country,
-		]
-			.filter(Boolean)
-			.join(", ")
-		return value.length > 0 ? value : undefined
-	}
+	const location = () => formatEventLocation(props.event.location)
 
 	return (
 		<div>
 			<Link
 				to="/event/$id"
 				params={{ id: props.event.id.toString() }}
-				class={stylex.attrs(link.base, link.text, styles.name).class}
+				class={stylex.attrs(link.base, link.withUnderline, styles.name).class}
 			>
 				{props.event.name}
 			</Link>

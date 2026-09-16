@@ -7,10 +7,26 @@ import { Show, splitProps } from "solid-js"
 import { colors } from "../style/tokens.stylex"
 
 const styles = stylex.create({
-	fallback: { backgroundColor: colors.backgroundSecondary },
-	link: {
+	root: {
+		position: "relative",
+		aspectRatio: "1 / 1",
+		overflow: "hidden",
 		backgroundColor: colors.backgroundSecondary,
+	},
+	link: {
 		color: colors.textPrimary,
+		textDecorationLine: "none",
+		boxShadow: {
+			default: null,
+			":focus-visible": "0 0 0 2px currentColor",
+		},
+	},
+	image: {
+		position: "absolute",
+		inset: 0,
+		width: "100%",
+		height: "100%",
+		objectFit: "cover",
 	},
 })
 
@@ -27,17 +43,17 @@ export function Thumbnail(
 	return (
 		<Show
 			when={local.src}
-			fallback={<div {...stylex.attrs(styles.fallback, local.styles)}></div>}
+			fallback={<div {...stylex.attrs(styles.root, local.styles)}></div>}
 		>
 			{(src) => (
 				<Link
 					{...linkProps}
-					{...stylex.attrs(styles.link, local.styles)}
+					{...stylex.attrs(styles.root, styles.link, local.styles)}
 				>
 					<img
 						src={src()}
 						alt=""
-						{...stylex.attrs(local.imageStyles)}
+						{...stylex.attrs(styles.image, local.imageStyles)}
 						loading="lazy"
 					/>
 				</Link>

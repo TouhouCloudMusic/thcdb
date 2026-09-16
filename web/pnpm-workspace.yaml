@@ -26,3 +26,5 @@ minimumReleaseAgeExclude:
 packages:
   - "packages/*"
   - "."
+patchedDependencies:
+  "@kobalte/core@0.13.11": patches/@kobalte__core@0.13.11.patch
