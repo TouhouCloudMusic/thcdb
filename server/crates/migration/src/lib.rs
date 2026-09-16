@@ -74,6 +74,7 @@ migrations![
     m20260822_000000_rename_notification_user_columns,
     m20260828_000000_add_missing_entity_links,
     m20260907_000000_add_collection_item_added_at,
+    m20260908_000000_share_image_objects,
 ];
 
 macro_rules! migration {

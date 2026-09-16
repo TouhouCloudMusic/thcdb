@@ -13,10 +13,6 @@ pub async fn run(state: &AppState) -> io::Result<()> {
         Monitor::new(),
         state.clone(),
     );
-    let monitor = infra_storage_worker::register_workers(
-        monitor,
-        state.remove_file_queue.clone(),
-    );
     let monitor = auth_worker::register_workers(
         monitor,
         state.sea_orm_repo.clone(),

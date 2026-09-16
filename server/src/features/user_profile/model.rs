@@ -14,10 +14,10 @@ pub struct UserProfile {
     pub id: i32,
     pub name: String,
 
-    /// Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
+    /// Avatar object key.
     pub avatar_url: Option<String>,
 
-    /// Banner url with sub directory, eg. ab/cd/abcd..xyz.jpg
+    /// Banner object key.
     pub banner_url: Option<String>,
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,

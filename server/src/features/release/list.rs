@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use domain::image::Image;
 use domain::shared::{DateWithPrecision, SimpleArtist};
-use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::{
     DatePrecision, ReleaseImageType, ReleaseType,
 };
@@ -165,9 +163,7 @@ pub(crate) async fn load_cover_art_urls(
     let image_rows = release_image::Entity::find()
         .select_only()
         .column(release_image::Column::ReleaseId)
-        .column(image::Column::Directory)
-        .column(image::Column::Filename)
-        .column(image::Column::Backend)
+        .column(image::Column::ObjectKey)
         .join(JoinType::InnerJoin, release_image::Relation::Image.def())
         .filter(
             release_image::Column::ReleaseId.is_in(release_ids.iter().copied()),
@@ -175,16 +171,14 @@ pub(crate) async fn load_cover_art_urls(
         .filter(release_image::Column::Type.eq(ReleaseImageType::Cover))
         .order_by_desc(image::Column::UploadedAt)
         .order_by_desc(image::Column::Id)
-        .into_tuple::<(i32, String, String, StorageBackend)>()
+        .into_tuple::<(i32, String)>()
         .all(db)
         .await
         .db_operation("load release list cover art")?;
 
     let mut cover_art_urls = HashMap::new();
-    for (release_id, directory, filename, backend) in image_rows {
-        cover_art_urls.entry(release_id).or_insert_with(|| {
-            Image::format_url(backend, &directory, &filename)
-        });
+    for (release_id, object_key) in image_rows {
+        cover_art_urls.entry(release_id).or_insert(object_key);
     }
 
     Ok(cover_art_urls)

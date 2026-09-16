@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use auth_core::permission::Permission;
 use entity::enums::{CorrectionStatus, CorrectionType, CorrectionUserType};
 use entity::relation::UserRelationExt;
@@ -20,7 +18,6 @@ use crate::features::user::User;
 use crate::features::user_profile::{UserProfile, UserProfileStats};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
-#[expect(clippy::too_many_lines)]
 pub(crate) async fn find_by_name(
     repo: &SeaOrmRepository,
     name: &str,
@@ -37,10 +34,8 @@ pub(crate) async fn find_by_name(
         pub name: String,
         pub last_login: chrono::DateTime<chrono::FixedOffset>,
         pub bio: Option<String>,
-        pub avatar_url_dir: Option<String>,
-        pub avatar_url_filename: Option<String>,
-        pub banner_url_dir: Option<String>,
-        pub banner_url_file: Option<String>,
+        pub avatar_url: Option<String>,
+        pub banner_url: Option<String>,
     }
 
     impl sea_orm::IntoIdentity for UserProfileRawFieldName {
@@ -70,20 +65,12 @@ pub(crate) async fn find_by_name(
         .column(user::Column::LastLogin)
         .column(user::Column::Bio)
         .column_as(
-            Expr::col((avatar_alias.clone(), image::Column::Directory)),
-            UserProfileRawFieldName::AvatarUrlDir,
+            Expr::col((avatar_alias.clone(), image::Column::ObjectKey)),
+            UserProfileRawFieldName::AvatarUrl,
         )
         .column_as(
-            Expr::col((avatar_alias.clone(), image::Column::Filename)),
-            UserProfileRawFieldName::AvatarUrlFilename,
-        )
-        .column_as(
-            Expr::col((banner_alias.clone(), image::Column::Directory)),
-            UserProfileRawFieldName::BannerUrlDir,
-        )
-        .column_as(
-            Expr::col((banner_alias.clone(), image::Column::Filename)),
-            UserProfileRawFieldName::BannerUrlFile,
+            Expr::col((banner_alias.clone(), image::Column::ObjectKey)),
+            UserProfileRawFieldName::BannerUrl,
         )
         .into_model::<UserProfileRaw>()
         .one(&repo.conn)
@@ -106,38 +93,12 @@ pub(crate) async fn find_by_name(
         .await
         .db_operation("find user profile stats")?;
 
-    let avatar_url = if let Some(dir) = profile.avatar_url_dir
-        && let Some(filename) = profile.avatar_url_filename
-    {
-        Some(
-            PathBuf::from(dir)
-                .join(filename)
-                .to_string_lossy()
-                .to_string(),
-        )
-    } else {
-        None
-    };
-
-    let banner_url = if let Some(dir) = profile.banner_url_dir
-        && let Some(filename) = profile.banner_url_file
-    {
-        Some(
-            PathBuf::from(dir)
-                .join(filename)
-                .to_string_lossy()
-                .to_string(),
-        )
-    } else {
-        None
-    };
-
     Ok(Some(UserProfile {
         id: profile.id,
         name: profile.name,
         last_login: profile.last_login,
-        avatar_url,
-        banner_url,
+        avatar_url: profile.avatar_url,
+        banner_url: profile.banner_url,
         roles: user_roles
             .into_iter()
             .map(UserRole::try_from)

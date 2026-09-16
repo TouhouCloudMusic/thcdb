@@ -25,7 +25,7 @@ use crate::features::image_upload;
 use crate::features::image_upload::{CreateImageMeta, ParseOption, Parser};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::storage::GenericFileStorage;
-use crate::shared::error::{EntityNotFound, InternalError};
+use crate::shared::error::EntityNotFound;
 use crate::shared::http::api_response::AppError;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
@@ -55,13 +55,10 @@ pub struct Service {
 pub enum Error {
     #[display("{_0}")]
     #[from]
-    Image(#[error(source)] image_upload::Error),
+    Image(#[error(source)] image_upload::CreateError),
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
-    #[display("{_0}")]
-    #[from]
-    Internal(#[error(source)] InternalError),
     #[display("{_0}")]
     #[from]
     NotFound(#[error(source)] EntityNotFound),
@@ -71,14 +68,17 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Error::Image(source) => match source {
-                image_upload::Error::InvalidInput(source) => {
+                image_upload::CreateError::InvalidInput(source) => {
                     AppError::bad_request(source.to_string()).into_response()
                 }
-                image_upload::Error::Database(source) => source.into_response(),
-                image_upload::Error::Internal(source) => source.into_response(),
+                image_upload::CreateError::Database(source) => {
+                    source.into_response()
+                }
+                image_upload::CreateError::Internal(source) => {
+                    source.into_response()
+                }
             },
             Error::Database(source) => source.into_response(),
-            Error::Internal(source) => source.into_response(),
             Error::NotFound(source) => source.into_response(),
         }
     }

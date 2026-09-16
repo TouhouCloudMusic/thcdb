@@ -276,7 +276,6 @@ pub async fn reject(
 
     let mut active = model.into_active_model();
     active.status = Set(ImageQueueStatus::Rejected);
-    active.image_id = Set(None);
     active.handled_at = Set(Some(now));
     active.handled_by = Set(Some(user_id));
     active

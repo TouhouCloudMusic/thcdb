@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use domain::credit_role::CreditRoleRef;
-use domain::image::Image;
 use domain::shared::{
     DateWithPrecision, LocalizedTitle, SimpleEvent, SimpleLabel,
 };
@@ -66,8 +65,7 @@ pub(super) fn conv_to_domain_model(
         events: conv_events(&related.events[index]),
         cover_art_url: related.cover_arts[index]
             .clone()
-            .map(Image::from)
-            .map(|image| image.url()),
+            .map(|image| image.object_key),
     }
 }
 
