@@ -8,6 +8,7 @@ pub mod credit_role;
 pub mod enum_table;
 pub mod event;
 pub mod home;
+pub(crate) mod image_gc;
 pub mod image_metadata;
 pub(crate) mod image_queue;
 pub(crate) mod image_upload;
