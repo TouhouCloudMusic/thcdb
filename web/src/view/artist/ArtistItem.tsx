@@ -26,22 +26,7 @@ const styles = stylex.create({
 		lineHeight: "1.5rem",
 	},
 	thumbnail: {
-		position: "relative",
-		aspectRatio: "1 / 1",
-		overflow: "hidden",
 		borderRadius: radius.full,
-		textDecorationLine: "none",
-		boxShadow: {
-			default: null,
-			":focus-visible": "0 0 0 2px currentcolor",
-		},
-	},
-	image: {
-		position: "absolute",
-		inset: 0,
-		width: "100%",
-		height: "100%",
-		objectFit: "cover",
 	},
 	summary: {
 		display: "flex",
@@ -93,7 +78,6 @@ export function ArtistItem(props: { artist: ArtistListItem }) {
 				params={{ id: props.artist.id.toString() }}
 				aria-label={props.artist.name}
 				styles={[styles.thumbnail]}
-				imageStyles={[styles.image]}
 			/>
 
 			<div {...stylex.attrs(styles.summary)}>
@@ -101,7 +85,9 @@ export function ArtistItem(props: { artist: ArtistListItem }) {
 					<Link
 						to="/artist/$id"
 						params={{ id: props.artist.id.toString() }}
-						class={stylex.attrs(link.base, link.text, styles.name).class}
+						class={
+							stylex.attrs(link.base, link.withUnderline, styles.name).class
+						}
 					>
 						{props.artist.name}
 					</Link>

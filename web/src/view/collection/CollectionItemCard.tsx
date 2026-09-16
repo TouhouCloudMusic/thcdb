@@ -278,7 +278,7 @@ function ArtistCard(props: { id: number; summary: ArtistSummary }) {
 			class={
 				stylex.attrs(
 					link.base,
-					link.text,
+					link.withUnderline,
 					stylex.defaultMarker(),
 					styles.entityLink,
 				).class
@@ -317,7 +317,7 @@ function ReleaseCard(props: { id: number; summary: ReleaseSummary }) {
 			class={
 				stylex.attrs(
 					link.base,
-					link.text,
+					link.withUnderline,
 					stylex.defaultMarker(),
 					styles.entityLink,
 				).class
@@ -365,7 +365,7 @@ function SongCard(props: { id: number; summary: SongSummary }) {
 			class={
 				stylex.attrs(
 					link.base,
-					link.text,
+					link.withUnderline,
 					stylex.defaultMarker(),
 					styles.entityLink,
 				).class
@@ -403,7 +403,7 @@ function TagCard(props: { id: number; summary: TagSummary }) {
 			class={
 				stylex.attrs(
 					link.base,
-					link.text,
+					link.withUnderline,
 					stylex.defaultMarker(),
 					styles.textEntityLink,
 				).class
@@ -429,7 +429,7 @@ function EventCard(props: { id: number; summary: EventSummary }) {
 			class={
 				stylex.attrs(
 					link.base,
-					link.text,
+					link.withUnderline,
 					stylex.defaultMarker(),
 					styles.textEntityLink,
 				).class
@@ -459,7 +459,7 @@ function LabelCard(props: { id: number; summary: LabelSummary }) {
 			class={
 				stylex.attrs(
 					link.base,
-					link.text,
+					link.withUnderline,
 					stylex.defaultMarker(),
 					styles.textEntityLink,
 				).class

@@ -6,11 +6,17 @@ import { ExternalLinks } from "./ExternalLinks"
 
 const meta = {
 	title: "Component/Data/ExternalLinks",
-	component: ExternalLinks,
+	component: ExternalLinks.Body,
+	render: (props) => (
+		<>
+			<ExternalLinks.Label />
+			<ExternalLinks.Body {...props} />
+		</>
+	),
 	parameters: {
 		layout: StoryLayout.Padded,
 	},
-} satisfies Meta<typeof ExternalLinks>
+} satisfies Meta<typeof ExternalLinks.Body>
 
 export default meta
 

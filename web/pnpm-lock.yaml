@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@kobalte/core@0.13.11': 14bac5d3b2b733a503c9f381ca9fe890baeedf0e006586149a5c3f7d52f7f93c
+
 importers:
 
   .:
@@ -13,7 +16,7 @@ importers:
         version: 0.9.5(solid-js@1.9.12)(typescript@5.9.3)(valibot@1.4.2(typescript@5.9.3))
       '@kobalte/core':
         specifier: ^0.13.11
-        version: 0.13.11(solid-js@1.9.12)
+        version: 0.13.11(patch_hash=14bac5d3b2b733a503c9f381ca9fe890baeedf0e006586149a5c3f7d52f7f93c)(solid-js@1.9.12)
       '@lingui/core':
         specifier: 6.6.0
         version: 6.6.0(@babel/core@7.29.0)(@babel/types@7.29.0)(babel-plugin-macros@3.1.0)
@@ -5609,7 +5612,7 @@ snapshots:
 
   '@jsdevtools/ono@7.1.3': {}
 
-  '@kobalte/core@0.13.11(solid-js@1.9.12)':
+  '@kobalte/core@0.13.11(patch_hash=14bac5d3b2b733a503c9f381ca9fe890baeedf0e006586149a5c3f7d52f7f93c)(solid-js@1.9.12)':
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@internationalized/date': 3.10.1

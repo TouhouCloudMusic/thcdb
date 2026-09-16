@@ -67,8 +67,11 @@ export function EmptyExplorePlaceholder(props: Props) {
 										<Link
 											to={action().to}
 											class={
-												stylex.attrs(link.base, link.text, styles.inlineAction)
-													.class
+												stylex.attrs(
+													link.base,
+													link.withUnderline,
+													styles.inlineAction,
+												).class
 											}
 										>
 											create
@@ -88,7 +91,10 @@ export function EmptyExplorePlaceholder(props: Props) {
 						<Show when={props.description && action().label}>
 							<Link
 								to={action().to}
-								class={stylex.attrs(link.base, link.text, styles.action).class}
+								class={
+									stylex.attrs(link.base, link.withUnderline, styles.action)
+										.class
+								}
 							>
 								{action().label}
 							</Link>

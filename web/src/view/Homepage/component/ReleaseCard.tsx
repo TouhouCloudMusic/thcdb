@@ -244,9 +244,9 @@ export function ReleaseCard(props: ReleaseCardProps) {
 			<div {...stylex.attrs(styles.content)}>
 				<div {...stylex.attrs(styles.header)}>
 					<Link
+						{...stylex.attrs(link.base, link.withUnderline, styles.title)}
 						to="/release/$id"
 						params={{ id: props.release.id.toString() }}
-						class={stylex.attrs(link.base, link.text, styles.title).class}
 					>
 						{props.release.title}
 					</Link>
@@ -270,8 +270,11 @@ export function ReleaseCard(props: ReleaseCardProps) {
 											params={{ id: artist.id.toString() }}
 											title={artist.name}
 											class={
-												stylex.attrs(link.base, link.text, styles.artistLink)
-													.class
+												stylex.attrs(
+													link.base,
+													link.withUnderline,
+													styles.artistLink,
+												).class
 											}
 										>
 											{artist.name}

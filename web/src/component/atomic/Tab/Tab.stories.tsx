@@ -49,7 +49,7 @@ function EntityDetailTabs() {
 
 	return (
 		<Tab.Root
-			styles={styles.root}
+			{...stylex.attrs(styles.root)}
 			value={activeTab()}
 			onChange={setActiveTab}
 		>

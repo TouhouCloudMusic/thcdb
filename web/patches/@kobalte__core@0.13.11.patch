@@ -1,0 +1,81 @@
+diff --git a/dist/chunk/4XGMYOCT.js b/dist/chunk/4XGMYOCT.js
+index 91b8b266c385a1795286b0bc49253c67389d7dff..7eb64c2456af3e3498053a61d1abffb40bddae59 100644
+--- a/dist/chunk/4XGMYOCT.js
++++ b/dist/chunk/4XGMYOCT.js
+@@ -136,19 +136,14 @@ function TabsIndicator(props) {
+       computeStyle();
+     });
+   });
+-  createEffect(on([context.selectedTab, context.orientation, direction], () => {
++  createEffect(on([context.selectedTab, context.orientation, direction, () => context.listState().collection()], () => {
+     computeStyle();
+   }, {
+     defer: true
+   }));
+   const [resizing, setResizing] = createSignal(false);
+   let timeout = null;
+-  let prevTarget = null;
+-  createResizeObserver(context.selectedTab, (_, t) => {
+-    if (prevTarget !== t) {
+-      prevTarget = t;
+-      return;
+-    }
++  createResizeObserver(() => [...context.listState().collection()].map((item) => item.rawValue.ref()), () => {
+     setResizing(true);
+     if (timeout)
+       clearTimeout(timeout);
+diff --git a/dist/chunk/ZABX5HRE.jsx b/dist/chunk/ZABX5HRE.jsx
+index 0d295ad548605fd85c324b1ff74aae123341b0a3..50601eeb352f78ff5ec16691e14c6d28e5696a97 100644
+--- a/dist/chunk/ZABX5HRE.jsx
++++ b/dist/chunk/ZABX5HRE.jsx
+@@ -167,7 +167,7 @@ function TabsIndicator(props) {
+   });
+   createEffect2(
+     on2(
+-      [context.selectedTab, context.orientation, direction],
++      [context.selectedTab, context.orientation, direction, () => context.listState().collection()],
+       () => {
+         computeStyle();
+       },
+@@ -176,12 +176,7 @@ function TabsIndicator(props) {
+   );
+   const [resizing, setResizing] = createSignal2(false);
+   let timeout = null;
+-  let prevTarget = null;
+-  createResizeObserver(context.selectedTab, (_, t) => {
+-    if (prevTarget !== t) {
+-      prevTarget = t;
+-      return;
+-    }
++  createResizeObserver(() => [...context.listState().collection()].map((item) => item.rawValue.ref()), () => {
+     setResizing(true);
+     if (timeout)
+       clearTimeout(timeout);
+diff --git a/src/tabs/tabs-indicator.tsx b/src/tabs/tabs-indicator.tsx
+index f7fc714539efd59b01dd6e2da5ec7f162b53c84f..3e3d462c92646d974c0474bafdf73098999fddc0 100644
+--- a/src/tabs/tabs-indicator.tsx
++++ b/src/tabs/tabs-indicator.tsx
+@@ -107,7 +107,7 @@ export function TabsIndicator<T extends ValidComponent = "div">(
+ 	// Compute style normally for subsequent runs.
+ 	createEffect(
+ 		on(
+-			[context.selectedTab, context.orientation, direction],
++			[context.selectedTab, context.orientation, direction, () => context.listState().collection()],
+ 			() => {
+ 				computeStyle();
+ 			},
+@@ -118,13 +118,7 @@ export function TabsIndicator<T extends ValidComponent = "div">(
+ 	const [resizing, setResizing] = createSignal(false);
+ 
+ 	let timeout: NodeJS.Timeout | null = null;
+-	let prevTarget: any = null;
+-	createResizeObserver(context.selectedTab, (_, t) => {
+-		if (prevTarget !== t) {
+-			prevTarget = t;
+-			return;
+-		}
+-
++	createResizeObserver(() => [...context.listState().collection()].map((item) => item.rawValue.ref()), () => {
+ 		setResizing(true);
+ 
+ 		if (timeout) clearTimeout(timeout);

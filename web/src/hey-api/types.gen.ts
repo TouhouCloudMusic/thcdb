@@ -987,7 +987,7 @@ export type MarkUnreadRequest = {
 }
 
 export type Membership = {
-	artist_id: number
+	artist: SimpleArtist
 	roles?: Array<CreditRoleRef>
 	tenure?: Array<Tenure>
 }

@@ -22,8 +22,9 @@ export const surfaceStyles = stylex.create({
 export const dividerStyles = stylex.create({
 	horizontal: {
 		display: "block",
-		backgroundColor: palette.slate[300],
-		height: "0.5px",
+		borderBlockStartWidth: "1px",
+		borderBlockStartStyle: "solid",
+		borderBlockStartColor: palette.slate[300],
 		width: "100%",
 	},
 	vertical: {

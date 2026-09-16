@@ -33,7 +33,10 @@ const locationArb = fc.record({
 })
 
 const membershipArb = fc.record({
-	artist_id: fc.integer({ min: 1 }),
+	artist: fc.record({
+		id: fc.integer({ min: 1 }),
+		name: fc.string(),
+	}),
 	roles: opt(
 		fc.array(fc.record({ id: fc.integer({ min: 1 }), name: fc.string() })),
 	),

@@ -2582,8 +2582,7 @@ export type components = {
             from_seq: string;
         };
         Membership: {
-            /** Format: int32 */
-            artist_id: number;
+            artist: components["schemas"]["SimpleArtist"];
             roles?: components["schemas"]["CreditRoleRef"][];
             tenure?: components["schemas"]["Tenure"][];
         };

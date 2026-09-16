@@ -96,7 +96,7 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 			<Show when={hasTracks()}>
 				<Tab.Content
 					value="Tracks"
-					styles={styles.tabPanel}
+					{...stylex.attrs(styles.tabPanel)}
 				>
 					<ReleaseInfoTracks
 						discs={props.release.discs}
@@ -107,20 +107,20 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 			<Show when={hasCredits()}>
 				<Tab.Content
 					value="Credits"
-					styles={styles.tabPanel}
+					{...stylex.attrs(styles.tabPanel)}
 				>
 					<ReleaseInfoCredits credits={props.release.credits} />
 				</Tab.Content>
 			</Show>
 			<Tab.Content
 				value="Comments"
-				styles={styles.tabPanel}
+				{...stylex.attrs(styles.tabPanel)}
 			>
 				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				styles={styles.tabPanel}
+				{...stylex.attrs(styles.tabPanel)}
 			>
 				<EntityCollectionsTab
 					entityType="release"

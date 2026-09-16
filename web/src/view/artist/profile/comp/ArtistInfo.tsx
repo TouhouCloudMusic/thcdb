@@ -1,68 +1,80 @@
 /* @refresh skip */
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
-import { createMemo, For, Show } from "solid-js"
+import { createMemo, Show } from "solid-js"
 
 import { ExternalLinks } from "~/component/data/ExternalLinks"
+import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
-import { palette } from "~/style/color/palette.stylex"
-import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import { link } from "~/style/link"
+import { infoStyles } from "~/style/primitives"
+import { fontSizes, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
-import { EntityTags } from "~/view/entity_tags/EntityTags"
+import { ArtistTypeLabel } from "~/view/artist/ArtistTypeLabel"
 
 import { ArtistContext } from ".."
 
 const styles = stylex.create({
-	column: {
-		display: "flex",
-		flexDirection: "column",
+	root: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		gridColumn: "1 / -1",
+		alignItems: "start",
 	},
 	name: {
+		gridColumn: "1 / -1",
+		paddingBlockEnd: px[8],
 		overflowWrap: "break-word",
 		fontSize: fontSizes.xl,
-		lineHeight: lineHeights.xl,
+		lineHeight: px[24],
 		fontWeight: 600,
 	},
-	details: {
-		display: "flex",
-		flexDirection: "column",
-		gap: px[8],
-		marginTop: px[16],
+	fields: {
+		display: "grid",
+		gridTemplateColumns: "subgrid",
+		gridColumn: "1 / -1",
+		rowGap: px[12],
 	},
-	links: { overflowWrap: "anywhere" },
-	aliases: {
-		display: "flex",
-		flexWrap: "wrap",
-		gap: px[4],
+	infoCell: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr)",
+		gridTemplateRows: `${px[20]} minmax(${px[24]},auto)`,
+		gridColumn: "1 / -1",
+		alignItems: "start",
+		minWidth: 0,
+		lineHeight: px[24],
 	},
-	date: {
-		color: palette.slate[900],
+	infoValue: {
+		display: "grid",
+		gridTemplateColumns: "auto auto",
+		justifyContent: "start",
+		columnGap: px[32],
 	},
-	subtitle: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textSecondary,
+	inlineList: {
+		overflowWrap: "anywhere",
+		whiteSpace: "pre-wrap",
 	},
-	description: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textTertiary,
-	},
+	inlineListItem: { display: "inline" },
 })
 
 export function ArtistInfo() {
 	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
+
 	return (
-		<div {...stylex.attrs(styles.column)}>
+		<div {...stylex.attrs(styles.root)}>
 			<h1 {...stylex.attrs(styles.name)}>{context.artist.name}</h1>
-			<div {...stylex.attrs(styles.details)}>
+			<div {...stylex.attrs(styles.fields)}>
+				<div {...stylex.attrs(styles.infoCell)}>
+					<span {...stylex.attrs(infoStyles.label)}>{t`Type`}</span>
+					<div {...stylex.attrs(infoStyles.detail)}>
+						<ArtistTypeLabel value={context.artist.artist_type} />
+					</div>
+				</div>
+				<StartInfo />
 				<Show when={context.artist.artist_type !== "Unknown"}>
-					<DateInfo
-						value={context.artist.start_date}
-						label={context.artist.artist_type == "Solo" ? t`Born` : t`Formed`}
-					/>
 					<DateInfo
 						value={context.artist.end_date}
 						label={
@@ -70,20 +82,69 @@ export function ArtistInfo() {
 						}
 					/>
 				</Show>
-				<Location location={context.artist.start_location} />
-				<Location location={context.artist.current_location} />
+				<Location
+					location={context.artist.current_location}
+					label={t`Current location`}
+				/>
 				<Aliases />
 				<Membership />
-				<ExternalLinks
-					links={context.artist.links}
-					linkStyles={styles.links}
-				/>
-				<EntityTags
-					entityType="artist"
-					entityId={context.artist.id}
-				/>
+				<Show when={context.artist.links?.length}>
+					<div {...stylex.attrs(styles.infoCell)}>
+						<ExternalLinks.Label />
+						<ExternalLinks.Body links={context.artist.links} />
+					</div>
+				</Show>
 			</div>
 		</div>
+	)
+}
+
+function StartInfo() {
+	const { t } = useLingui()
+	const context = assertContext(ArtistContext)
+
+	const startLocation = () => {
+		const value = context.artist.start_location
+		return value?.country ? value : undefined
+	}
+
+	const date = createMemo(() => {
+		if (
+			context.artist.artist_type === "Unknown"
+			|| !context.artist.start_date
+		) {
+			return
+		}
+
+		return DateWithPrecision.display(context.artist.start_date)
+	})
+
+	const label = () => {
+		switch (context.artist.artist_type) {
+			case "Solo": {
+				return t`Born`
+			}
+			case "Multiple": {
+				return t`Formed`
+			}
+			case "Unknown": {
+				return t`Origin`
+			}
+		}
+	}
+
+	return (
+		<Show when={date() || startLocation()}>
+			<div {...stylex.attrs(styles.infoCell)}>
+				<span {...stylex.attrs(infoStyles.label)}>{label()}</span>
+				<div {...stylex.attrs(styles.infoValue, infoStyles.detail)}>
+					<Show when={date()}>{(value) => <span>{value()}</span>}</Show>
+					<Show when={startLocation()}>
+						{(value) => <LocationValue location={value()} />}
+					</Show>
+				</div>
+			</div>
+		</Show>
 	)
 }
 
@@ -93,24 +154,24 @@ function Aliases() {
 	const aliases = createMemo(() => getInfoAliases(context.artist))
 	return (
 		<Show when={aliases().length > 0}>
-			<div>
-				<span {...stylex.attrs(styles.description)}>{t`Aliases`}</span>
-				<ul {...stylex.attrs(styles.aliases)}>
-					<For each={aliases()}>
-						{(alias, index) => (
-							<>
-								<li>
-									<Show
-										when={alias.id}
-										fallback={alias.name}
-									>
-										{alias.id}
-									</Show>
-									<Show when={aliases().length - 1 > index()}>{", "}</Show>
-								</li>
-							</>
+			<div {...stylex.attrs(styles.infoCell)}>
+				<span {...stylex.attrs(infoStyles.label)}>{t`Aliases`}</span>
+				<ul {...stylex.attrs(styles.inlineList, infoStyles.detail)}>
+					<Intersperse
+						of={aliases()}
+						with=", "
+					>
+						{(alias) => (
+							<li {...stylex.attrs(styles.inlineListItem)}>
+								<Show
+									when={alias.id}
+									fallback={alias.name}
+								>
+									{alias.id}
+								</Show>
+							</li>
 						)}
-					</For>
+					</Intersperse>
 				</ul>
 			</div>
 		</Show>
@@ -127,9 +188,9 @@ function DateInfo(props: { value?: Artist["start_date"]; label: string }) {
 	})
 	return (
 		<Show when={props.value}>
-			<div {...stylex.attrs(styles.column)}>
-				<span {...stylex.attrs(styles.description)}>{props.label}</span>
-				<span {...stylex.attrs(styles.date)}>{parsedDate()}</span>
+			<div {...stylex.attrs(styles.infoCell)}>
+				<span {...stylex.attrs(infoStyles.label)}>{props.label}</span>
+				<div {...stylex.attrs(infoStyles.detail)}>{parsedDate()}</div>
 			</div>
 		</Show>
 	)
@@ -152,27 +213,63 @@ function Membership() {
 				&& context.artist.memberships?.length
 			}
 		>
-			<div>
-				<span {...stylex.attrs(styles.subtitle)}>{label()}</span>
-				<ul>
-					<For each={context.artist.memberships}>
-						{(membership) => <li>{membership.artist_id}</li>}
-					</For>
+			<div {...stylex.attrs(styles.infoCell)}>
+				<span {...stylex.attrs(infoStyles.label)}>{label()}</span>
+				<ul {...stylex.attrs(styles.inlineList)}>
+					<Intersperse
+						of={context.artist.memberships}
+						with=", "
+					>
+						{(membership) => (
+							<li {...stylex.attrs(styles.inlineListItem)}>
+								<Link
+									to="/artist/$id"
+									params={{ id: membership.artist.id.toString() }}
+									{...stylex.attrs(link.base, link.withUnderline)}
+								>
+									{membership.artist.name}
+								</Link>
+							</li>
+						)}
+					</Intersperse>
 				</ul>
 			</div>
 		</Show>
 	)
 }
 
-function Location(props: { location?: Artist["start_location"] }) {
+function Location(props: {
+	location?: Artist["start_location"]
+	label: string
+}) {
+	const displayedLocation = () => {
+		const value = props.location
+		return value?.country ? value : undefined
+	}
+
 	return (
-		<Show when={props.location?.country}>
-			<div>
-				{props.location!.country}
-				{props.location!.province && <>, {props.location!.province}</>}
-				{props.location!.city && <>, {props.location!.city}</>}
-			</div>
+		<Show when={displayedLocation()}>
+			{(value) => (
+				<div {...stylex.attrs(styles.infoCell)}>
+					<span {...stylex.attrs(infoStyles.label)}>{props.label}</span>
+					<div {...stylex.attrs(infoStyles.detail)}>
+						<LocationValue location={value()} />
+					</div>
+				</div>
+			)}
 		</Show>
+	)
+}
+
+type ArtistLocation = NonNullable<Artist["start_location"]>
+
+function LocationValue(props: { location: ArtistLocation }) {
+	return (
+		<span>
+			{props.location.country}
+			{props.location.province && <>, {props.location.province}</>}
+			{props.location.city && <>, {props.location.city}</>}
+		</span>
 	)
 }
 

@@ -50,7 +50,7 @@ function TrackItem(props: { track: ReleaseTrack }) {
 			<span {...stylex.attrs(styles.number)}>{props.track.track_number}</span>
 			<div>
 				<Link
-					class={stylex.attrs(link.base, link.text).class}
+					class={stylex.attrs(link.base, link.withUnderline).class}
 					to="/song/$id"
 					params={{ id: props.track.song.id.toString() }}
 				>

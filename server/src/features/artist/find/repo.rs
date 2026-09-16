@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use domain::image::Image;
-use domain::shared::{LocalizedName, Location};
+use domain::shared::{LocalizedName, Location, SimpleArtist};
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{
     artist, artist_alias, artist_image, artist_link, artist_localized_name,
@@ -143,11 +143,29 @@ pub(super) async fn find_many_impl(
     let artist_memberships = artist_membership::Entity::find()
         .filter(any![
             artist_membership::Column::MemberId.is_in(ids.iter().copied()),
-            artist_membership::Column::GroupId.is_in(ids),
+            artist_membership::Column::GroupId.is_in(ids.iter().copied()),
         ])
         .all(db)
         .await
         .db_operation("load artist memberships")?;
+
+    let membership_artists_by_id = artist::Entity::find()
+        .filter(
+            artist::Column::Id.is_in(
+                artist_memberships
+                    .iter()
+                    .flat_map(|membership| {
+                        [membership.group_id, membership.member_id]
+                    })
+                    .unique(),
+            ),
+        )
+        .all(db)
+        .await
+        .db_operation("load membership artists")?
+        .into_iter()
+        .map(|artist| (artist.id, SimpleArtist::from(artist)))
+        .collect::<HashMap<_, _>>();
 
     let roles = artist_memberships
         .load_many_to_many(
@@ -241,7 +259,7 @@ pub(super) async fn find_many_impl(
                         .collect_vec();
 
                     Membership {
-                        artist_id,
+                        artist: membership_artists_by_id[&artist_id].clone(),
                         roles: role
                             .iter()
                             .map(|x| CreditRoleRef {

@@ -6,16 +6,19 @@ import { Suspense } from "solid-js"
 
 import { Intersperse } from "~/component/data/Intersperse"
 import { link } from "~/style/link"
-import { colors, lineHeights, fontSizes } from "~/style/tokens.stylex"
+import { infoStyles } from "~/style/primitives"
+import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 const styles = stylex.create({
 	root: {
 		display: "flex",
 		flexWrap: "wrap",
+		minHeight: px[32],
+		alignItems: "center",
 		fontSize: fontSizes.sm,
 		lineHeight: lineHeights.sm,
 	},
-	heading: { fontWeight: 500, color: colors.textTertiary, whiteSpace: "pre" },
+	heading: { whiteSpace: "pre" },
 	contributors: { color: colors.textPrimary, overflowWrap: "break-word" },
 	separator: { whiteSpace: "pre" },
 })
@@ -34,7 +37,9 @@ export function EntityContributors(props: EntityContributorsProps) {
 	const { t } = useLingui()
 	return (
 		<div {...stylex.attrs(props.styles ?? styles.root)}>
-			<div {...stylex.attrs(styles.heading)}>{t`Contributors:`} </div>
+			<div {...stylex.attrs(styles.heading, infoStyles.label)}>
+				{t`Contributors:`}{" "}
+			</div>
 			<p {...stylex.attrs(styles.contributors)}>
 				<Suspense fallback={<>{t`Loading contributors...`}</>}>
 					<Intersperse
@@ -43,7 +48,7 @@ export function EntityContributors(props: EntityContributorsProps) {
 					>
 						{(contributor) => (
 							<Link
-								class={stylex.attrs(link.base, link.text).class}
+								class={stylex.attrs(link.base, link.withUnderline).class}
 								to="/profile/$username"
 								params={{ username: contributor.name }}
 							>

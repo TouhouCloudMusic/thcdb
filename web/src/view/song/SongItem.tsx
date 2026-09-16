@@ -23,22 +23,7 @@ const styles = stylex.create({
 		lineHeight: "1.5rem",
 	},
 	thumbnail: {
-		position: "relative",
-		aspectRatio: "1 / 1",
-		overflow: "hidden",
 		borderRadius: radius.xs,
-		textDecorationLine: "none",
-		boxShadow: {
-			default: null,
-			":focus-visible": "0 0 0 2px currentcolor",
-		},
-	},
-	image: {
-		position: "absolute",
-		inset: 0,
-		width: "100%",
-		height: "100%",
-		objectFit: "cover",
 	},
 	title: {
 		overflowWrap: "break-word",
@@ -74,14 +59,15 @@ export function SongItem(props: { song: SongListItem }) {
 				params={{ id: props.song.id.toString() }}
 				aria-label={props.song.title}
 				styles={[styles.thumbnail]}
-				imageStyles={[styles.image]}
 			/>
 
 			<div>
 				<Link
 					to="/song/$id"
 					params={{ id: props.song.id.toString() }}
-					class={stylex.attrs(link.base, link.text, styles.title).class}
+					class={
+						stylex.attrs(link.base, link.withUnderline, styles.title).class
+					}
 				>
 					{props.song.title}
 				</Link>
@@ -95,8 +81,11 @@ export function SongItem(props: { song: SongListItem }) {
 										to="/release/$id"
 										params={{ id: release.id.toString() }}
 										class={
-											stylex.attrs(link.base, link.text, styles.metadataLink)
-												.class
+											stylex.attrs(
+												link.base,
+												link.withUnderline,
+												styles.metadataLink,
+											).class
 										}
 									>
 										{release.title}
@@ -119,8 +108,11 @@ export function SongItem(props: { song: SongListItem }) {
 										to="/artist/$id"
 										params={{ id: artist.id.toString() }}
 										class={
-											stylex.attrs(link.base, link.text, styles.metadataLink)
-												.class
+											stylex.attrs(
+												link.base,
+												link.withUnderline,
+												styles.metadataLink,
+											).class
 										}
 									>
 										{artist.name}

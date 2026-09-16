@@ -21,6 +21,7 @@ import {
 import { useCurrentUser } from "~/state/user"
 import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
+import { infoStyles } from "~/style/primitives"
 import {
 	radius,
 	colors,
@@ -57,11 +58,6 @@ const styles = stylex.create({
 		gridTemplateColumns: "auto minmax(0,1fr) auto",
 		alignItems: "center",
 		columnGap: px[16],
-	},
-	heading: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textTertiary,
 	},
 	status: {
 		fontSize: fontSizes.xs,
@@ -326,7 +322,7 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 
 	return (
 		<div {...stylex.attrs(styles.root, props.styles)}>
-			<div {...stylex.attrs(styles.heading)}>{t`Tags`}</div>
+			<div {...stylex.attrs(infoStyles.label)}>{t`Tags`}</div>
 			<Switch>
 				<Match when={props.isLoading}>
 					<div>
@@ -348,7 +344,7 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 								>
 									{(tag) => (
 										<Link
-											class={stylex.attrs(link.base, link.text).class}
+											class={stylex.attrs(link.base, link.withUnderline).class}
 											to="/tag/$id"
 											params={{ id: tag.id.toString() }}
 										>
@@ -377,8 +373,11 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 											to="/tag/$id"
 											params={{ id: tag.id.toString() }}
 											class={
-												stylex.attrs(link.base, link.text, styles.secondaryTags)
-													.class
+												stylex.attrs(
+													link.base,
+													link.withUnderline,
+													styles.secondaryTags,
+												).class
 											}
 										>
 											{tag.name}
@@ -492,7 +491,7 @@ function EntityTagRow(props: EntityTagRowProps) {
 					class={
 						stylex.attrs(
 							link.base,
-							link.text,
+							link.withUnderline,
 							styles.tagSummaryChild,
 							styles.tagName,
 						).class

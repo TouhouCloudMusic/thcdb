@@ -593,7 +593,7 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 							<>
 								Update request for{" "}
 								<Link
-									class={stylex.attrs(link.base, link.text).class}
+									class={stylex.attrs(link.base, link.withUnderline).class}
 									to={target().to}
 									params={{ id: target().id.toString() }}
 								>
@@ -636,7 +636,11 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 								to="/profile/$username/image-queue"
 								params={{ username: props.detail.created_by.name }}
 								class={
-									stylex.attrs(link.base, link.text, styles.metadataLink).class
+									stylex.attrs(
+										link.base,
+										link.withUnderline,
+										styles.metadataLink,
+									).class
 								}
 							>
 								{props.detail.created_by.name}
@@ -655,8 +659,11 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 											to="/profile/$username/image-queue"
 											params={{ username: user().name }}
 											class={
-												stylex.attrs(link.base, link.text, styles.metadataLink)
-													.class
+												stylex.attrs(
+													link.base,
+													link.withUnderline,
+													styles.metadataLink,
+												).class
 											}
 										>
 											{user().name}
@@ -678,8 +685,11 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 											to="/profile/$username/image-queue"
 											params={{ username: user().name }}
 											class={
-												stylex.attrs(link.base, link.text, styles.metadataLink)
-													.class
+												stylex.attrs(
+													link.base,
+													link.withUnderline,
+													styles.metadataLink,
+												).class
 											}
 										>
 											{user().name}

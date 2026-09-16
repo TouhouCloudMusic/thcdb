@@ -118,8 +118,8 @@ export function ArtistFormMembership(props: {
 	const membership = createMembershipStore(
 		untrack(() =>
 			(props.initMemberships ?? []).map((m) => ({
-				id: m.artist_id,
-				name: `#${m.artist_id}`,
+				id: m.artist.id,
+				name: m.artist.name,
 				roles: m.roles ?? [],
 			})),
 		),

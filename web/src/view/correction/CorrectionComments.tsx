@@ -140,7 +140,7 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 					signedOutFallback={
 						<p {...stylex.attrs(styles.signedOut)}>
 							<Link
-								class={stylex.attrs(link.base, link.text).class}
+								class={stylex.attrs(link.base, link.withUnderline).class}
 								to="/auth/sign-in"
 							>{t`Sign in`}</Link>{" "}
 							{t`to comment`}

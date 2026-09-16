@@ -915,8 +915,12 @@ function PinCard(props: { item: PinItem }) {
 			to={props.item.to.to}
 			params={props.item.to.params}
 			class={
-				stylex.attrs(link.base, link.text, stylex.defaultMarker(), styles.pin)
-					.class
+				stylex.attrs(
+					link.base,
+					link.withUnderline,
+					stylex.defaultMarker(),
+					styles.pin,
+				).class
 			}
 		>
 			<Show when={props.item.coverUrl}>
@@ -983,7 +987,7 @@ function CollectionsAndActivitySection(props: {
 				defaultValue={props.defaultValue}
 				value={props.tab?.value}
 				onChange={props.tab === undefined ? undefined : onTabChange}
-				styles={styles.tabs}
+				{...stylex.attrs(styles.tabs)}
 			>
 				<Tab.List styles={[Tab.containerStyles, profileStyles.tabs]}>
 					<For each={PROFILE_TAB_ITEMS}>
@@ -1088,7 +1092,10 @@ function ActivityEntity(props: { item: ActivityItem }) {
 				<Link
 					to={l().to}
 					params={l().params}
-					class={stylex.attrs(link.base, link.text, styles.activityLink).class}
+					class={
+						stylex.attrs(link.base, link.withUnderline, styles.activityLink)
+							.class
+					}
 				>
 					{props.item.entity}
 				</Link>

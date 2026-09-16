@@ -1,11 +1,13 @@
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
+import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
 
 import { Thumbnail } from "~/component/Thumbnail"
 import { DateWithPrecision } from "~/domain/shared"
 import type { ReleaseListItem } from "~/hey-api"
+import { textStyles } from "~/style"
 import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
 import {
@@ -18,33 +20,78 @@ import {
 import { imgUrl } from "~/utils/adapter/static_file"
 
 const styles = stylex.create({
-	thumbnailImage: {
-		position: "absolute",
-		inset: 0,
-		width: "100%",
-		height: "100%",
-		objectFit: "cover",
-	},
-	metadataSpacing: {
-		marginBlockStart: 0,
-		marginBlockEnd: { default: null, ":not(:last-child)": px[4] },
-	},
 	artists: {
-		overflowWrap: "break-word",
 		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 		color: colors.textTertiary,
 	},
 	artistLink: { color: colors.textSecondary, textDecorationLine: "none" },
-	metadata: {
+})
+
+function ReleaseArtists(props: {
+	release: ReleaseListItem
+	styles?: StyleXStyles
+}) {
+	return (
+		<Show when={props.release.artists.length > 0}>
+			<div {...stylex.attrs(styles.artists, textStyles.ellipsis, props.styles)}>
+				<ReleaseArtistLinks release={props.release} />
+			</div>
+		</Show>
+	)
+}
+
+function ReleaseArtistLinks(props: { release: ReleaseListItem }) {
+	return (
+		<For each={props.release.artists}>
+			{(artist, index) => (
+				<>
+					<Link
+						to="/artist/$id"
+						params={{ id: artist.id.toString() }}
+						class={stylex.attrs(link.base, styles.artistLink).class}
+					>
+						{artist.name}
+					</Link>
+					<Show when={index() < props.release.artists.length - 1}>{", "}</Show>
+				</>
+			)}
+		</For>
+	)
+}
+
+const metaStyles = stylex.create({
+	root: {
 		display: "flex",
-		flexWrap: "wrap",
+		fontSize: fontSizes.sm,
+		color: colors.textTertiary,
+	},
+})
+
+function ReleaseMeta(props: {
+	release: ReleaseListItem
+	styles?: StyleXStyles
+}) {
+	const releaseDate = () =>
+		DateWithPrecision.display(props.release.release_date)
+
+	return (
+		<div {...stylex.attrs(metaStyles.root, props.styles)}>
+			<span>{props.release.release_type}</span>
+			<Show when={releaseDate()}>{(date) => <span>{date()}</span>}</Show>
+			<Show when={props.release.catalog_numbers.length > 0}>
+				<span>#{props.release.catalog_numbers.join(" / #")}</span>
+			</Show>
+		</div>
+	)
+}
+
+const gridStyles = stylex.create({
+	meta: {
+		flexWrap: "nowrap",
 		alignItems: "baseline",
 		columnGap: px[12],
 		rowGap: px[4],
-		fontSize: fontSizes.sm,
 		lineHeight: lineHeights.sm,
-		color: colors.textTertiary,
 	},
 	coverLink: {
 		display: "block",
@@ -59,89 +106,21 @@ const styles = stylex.create({
 		},
 	},
 	coverImage: { width: "100%", height: "100%", objectFit: "cover" },
-	gridDetails: { marginTop: px[8] },
-	gridTitle: {
+	details: {
+		display: "grid",
+		alignContent: "start",
+		rowGap: px[4],
+		marginBlockStart: px[8],
+		minWidth: 0,
+	},
+	title: {
 		display: "block",
 		overflowWrap: "break-word",
 		fontSize: fontSizes.sm,
 		lineHeight: lineHeights.sm,
 		textDecorationLine: "none",
 	},
-	listItem: {
-		display: "grid",
-		gridTemplateColumns: "3lh minmax(0,1fr)",
-		alignItems: "flex-start",
-		gap: px[12],
-		lineHeight: "1.5rem",
-	},
-	thumbnail: {
-		position: "relative",
-		aspectRatio: "1 / 1",
-		overflow: "hidden",
-		borderRadius: radius.sm,
-		textDecorationLine: "none",
-		boxShadow: { default: null, ":focus-visible": "0 0 0 2px currentColor" },
-	},
-	listDetails: {
-		display: "flex",
-		flexDirection: "column",
-		gap: px[4],
-	},
-	listTitle: {
-		overflowWrap: "break-word",
-		fontSize: fontSizes.base,
-		lineHeight: 1.5,
-		textDecorationLine: "none",
-	},
 })
-
-function ReleaseArtists(props: {
-	release: ReleaseListItem
-	styles?: StyleXStyles
-}) {
-	return (
-		<Show when={props.release.artists.length > 0}>
-			<div {...stylex.attrs(styles.artists, props.styles)}>
-				<For each={props.release.artists}>
-					{(artist, index) => (
-						<>
-							<Link
-								to="/artist/$id"
-								params={{ id: artist.id.toString() }}
-								class={
-									stylex.attrs(link.base, link.text, styles.artistLink).class
-								}
-							>
-								{artist.name}
-							</Link>
-							<Show when={index() < props.release.artists.length - 1}>
-								{", "}
-							</Show>
-						</>
-					)}
-				</For>
-			</div>
-		</Show>
-	)
-}
-
-function ReleaseMeta(props: {
-	release: ReleaseListItem
-	styles?: StyleXStyles
-}) {
-	const releaseDate = () =>
-		DateWithPrecision.display(props.release.release_date)
-
-	return (
-		<div {...stylex.attrs(styles.metadata, props.styles)}>
-			<span>{props.release.release_type}</span>
-			<Show when={releaseDate()}>{(date) => <span>{date()}</span>}</Show>
-			<Show when={props.release.catalog_numbers.length > 0}>
-				<span>#{props.release.catalog_numbers.join(" / #")}</span>
-			</Show>
-		</div>
-	)
-}
 
 export function ReleaseGridItem(props: { release: ReleaseListItem }) {
 	const coverUrl = () => imgUrl(props.release.cover_art_url)
@@ -151,7 +130,7 @@ export function ReleaseGridItem(props: { release: ReleaseListItem }) {
 			<Link
 				to="/release/$id"
 				params={{ id: props.release.id.toString() }}
-				{...stylex.attrs(styles.coverLink)}
+				{...stylex.attrs(gridStyles.coverLink)}
 				aria-label={props.release.title}
 			>
 				<Show when={coverUrl()}>
@@ -159,63 +138,106 @@ export function ReleaseGridItem(props: { release: ReleaseListItem }) {
 						<img
 							src={src()}
 							alt=""
-							{...stylex.attrs(styles.coverImage)}
+							{...stylex.attrs(gridStyles.coverImage)}
 							loading="lazy"
 						/>
 					)}
 				</Show>
 			</Link>
 
-			<div {...stylex.attrs(styles.gridDetails)}>
+			<div {...stylex.attrs(gridStyles.details)}>
 				<Link
 					to="/release/$id"
 					params={{ id: props.release.id.toString() }}
 					class={
-						stylex.attrs(
-							link.base,
-							link.text,
-							styles.metadataSpacing,
-							styles.gridTitle,
-						).class
+						stylex.attrs(link.base, link.withUnderline, gridStyles.title).class
 					}
 				>
 					{props.release.title}
 				</Link>
-				<ReleaseArtists
-					styles={styles.metadataSpacing}
-					release={props.release}
-				/>
+				<ReleaseArtists release={props.release} />
 				<ReleaseMeta
-					styles={styles.metadataSpacing}
 					release={props.release}
+					styles={gridStyles.meta}
 				/>
 			</div>
 		</div>
 	)
 }
 
-export function ReleaseItem(props: { release: ReleaseListItem }) {
+const listStyles = stylex.create({
+	thumbnail: {
+		borderRadius: radius.sm,
+	},
+	item: {
+		display: "grid",
+		gridTemplateColumns: `${px[64]} minmax(0,1fr)`,
+		alignItems: "flex-start",
+		columnGap: px[16],
+	},
+	details: {
+		display: "grid",
+		gridTemplateRows: `repeat(3, ${px[14]})`,
+		alignContent: "space-between",
+		height: "100%",
+	},
+	titleContainer: {
+		display: "flex",
+		alignItems: "center",
+		lineHeight: 1,
+	},
+	artists: {
+		lineHeight: 1,
+	},
+	meta: {
+		columnGap: px[4],
+		lineHeight: 1,
+	},
+})
+
+export function ReleaseItem(props: {
+	release: ReleaseListItem
+	metadata?: JSX.Element
+	styles?: StyleXStyles
+}) {
 	return (
-		<div {...stylex.attrs(styles.listItem)}>
+		<div {...stylex.attrs(listStyles.item, props.styles)}>
 			<Thumbnail
 				src={imgUrl(props.release.cover_art_url)}
 				to="/release/$id"
 				params={{ id: props.release.id.toString() }}
 				aria-label={props.release.title}
-				styles={styles.thumbnail}
-				imageStyles={styles.thumbnailImage}
+				styles={listStyles.thumbnail}
 			/>
 
-			<div {...stylex.attrs(styles.listDetails)}>
-				<Link
-					to="/release/$id"
-					params={{ id: props.release.id.toString() }}
-					class={stylex.attrs(link.base, link.text, styles.listTitle).class}
+			<div {...stylex.attrs(listStyles.details)}>
+				{/* the extra container prevents the text from being clipped vertically */}
+				<div {...stylex.attrs(listStyles.titleContainer)}>
+					<Link
+						to="/release/$id"
+						params={{ id: props.release.id.toString() }}
+						{...stylex.attrs(link.base, textStyles.ellipsis)}
+					>
+						{props.release.title}
+					</Link>
+				</div>
+				<ReleaseArtists
+					release={props.release}
+					styles={listStyles.artists}
+				/>
+				<Show
+					when={props.metadata !== undefined}
+					fallback={
+						<ReleaseMeta
+							release={props.release}
+							styles={listStyles.meta}
+						/>
+					}
 				>
-					{props.release.title}
-				</Link>
-				<ReleaseArtists release={props.release} />
-				<ReleaseMeta release={props.release} />
+					<div {...stylex.attrs(metaStyles.root, listStyles.meta)}>
+						{props.metadata}
+					</div>
+				</Show>
 			</div>
 		</div>
 	)

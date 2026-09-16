@@ -303,7 +303,7 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 					<Trans>
 						Correction of {entityTypeText()}{" "}
 						<Link
-							class={stylex.attrs(link.base, link.text).class}
+							class={stylex.attrs(link.base, link.withUnderline).class}
 							to={entityRoute()}
 							params={{ id: props.correction.entity_id.toString() }}
 						>
@@ -333,7 +333,7 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 						class={
 							stylex.attrs(
 								link.base,
-								link.text,
+								link.withUnderline,
 								styles.fieldChild,
 								styles.author,
 							).class

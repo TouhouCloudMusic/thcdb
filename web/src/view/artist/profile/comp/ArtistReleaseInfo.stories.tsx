@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { createMockArtist } from "~/mock/artist"
 import { palette } from "~/style/color/palette.stylex"
+import { px } from "~/style/tokens.stylex"
 import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
@@ -18,7 +19,10 @@ async function noop() {
 
 const styles = stylex.create({
 	story: {
-		width: "100%",
+		display: "grid",
+		gridTemplateColumns: `repeat(auto-fill, ${px[32]})`,
+		boxSizing: "content-box",
+		width: `round(down, calc(100% - 2px), ${px[32]})`,
 		maxWidth: "960px",
 		borderWidth: 1,
 		borderStyle: "solid",

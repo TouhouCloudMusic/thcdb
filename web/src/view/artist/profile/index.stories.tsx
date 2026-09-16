@@ -10,7 +10,6 @@ import {
 	YABBA_RAGGA_TOHO_3_COVER_URL,
 } from "~/storybook/fixtures"
 import { palette } from "~/style/color/palette.stylex"
-import { px } from "~/style/tokens.stylex"
 import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
@@ -20,7 +19,6 @@ const styles = stylex.create({
 	story: {
 		minHeight: "900px",
 		backgroundColor: palette.slate[100],
-		padding: px[24],
 	},
 })
 
@@ -35,12 +33,12 @@ const ARTIST: Artist = {
 	text_aliases: ["ローリング・コンタクト", "Rolling Contact Records"],
 	memberships: [
 		{
-			artist_id: 41,
+			artist: { id: 41, name: "Amane" },
 			roles: [{ id: 1, name: "Arrangement" }],
 			tenure: [{ join_year: 2008, leave_year: null }],
 		},
 		{
-			artist_id: 42,
+			artist: { id: 42, name: "MASSAMAN" },
 			roles: [{ id: 2, name: "Production" }],
 			tenure: [{ join_year: 2012, leave_year: null }],
 		},

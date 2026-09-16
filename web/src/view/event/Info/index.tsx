@@ -6,8 +6,10 @@ import { createSignal, Show, Suspense } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { Intersperse } from "~/component/data/Intersperse"
+import { formatEventLocation } from "~/domain/event"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
+import { infoStyles } from "~/style/primitives"
 import { colors, fontSizes, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
@@ -44,17 +46,12 @@ const styles = stylex.create({
 		columnGap: px[16],
 		rowGap: px[8],
 	},
-	muted: { color: colors.textTertiary },
 	dateSeparator: { whiteSpace: "pre", color: colors.textTertiary },
 	alternativeNames: {
 		display: "flex",
 		flexWrap: "wrap",
-		gap: px[2],
 		whiteSpace: "pre",
 	},
-	separator: { whiteSpace: "pre" },
-	primary: { color: colors.textPrimary },
-	links: { display: "contents" },
 	tabTrigger: { paddingBlock: px[12] },
 	tabContent: { padding: px[16] },
 	descriptionContainer: { padding: px[8] },
@@ -113,6 +110,7 @@ function EventInfoHeader() {
 
 	const alternativeNames = () => ctx.event.alternative_names ?? []
 	const hasAlternativeNames = () => alternativeNames().length > 0
+	const location = () => formatEventLocation(ctx.event.location)
 	return (
 		<>
 			<header>
@@ -122,7 +120,7 @@ function EventInfoHeader() {
 				</p>
 			</header>
 			<div {...stylex.attrs(styles.metadata)}>
-				<span {...stylex.attrs(styles.muted)}>{t`Date`}</span>
+				<span {...stylex.attrs(infoStyles.label)}>{t`Date`}</span>
 
 				<Show
 					when={ctx.event.start_date}
@@ -136,22 +134,28 @@ function EventInfoHeader() {
 						</Show>
 					</div>
 				</Show>
+				<span {...stylex.attrs(infoStyles.label)}>{t`Location`}</span>
+				<Show
+					when={location()}
+					fallback={<span>{t`N/A`}</span>}
+				>
+					{(value) => <span>{value()}</span>}
+				</Show>
 				<Show when={hasAlternativeNames()}>
-					<span {...stylex.attrs(styles.muted)}>{t`AKAs`}</span>
-					<ul {...stylex.attrs(styles.alternativeNames)}>
+					<span {...stylex.attrs(infoStyles.label)}>{t`AKAs`}</span>
+					<ul {...stylex.attrs(styles.alternativeNames, infoStyles.detail)}>
 						<Intersperse
 							of={alternativeNames()}
-							with={<span {...stylex.attrs(styles.separator)}>, </span>}
+							with={<span>, </span>}
 						>
-							{(alt) => <li {...stylex.attrs(styles.primary)}>{alt.name}</li>}
+							{(alt) => <li>{alt.name}</li>}
 						</Intersperse>
 					</ul>
 				</Show>
-				<ExternalLinks
-					links={ctx.event.links}
-					styles={styles.links}
-					labelStyles={styles.muted}
-				/>
+				<Show when={ctx.event.links?.length}>
+					<ExternalLinks.Label />
+					<ExternalLinks.Body links={ctx.event.links} />
+				</Show>
 			</div>
 		</>
 	)
@@ -200,20 +204,20 @@ function EventInfoTabs() {
 			<Show when={hasDescription()}>
 				<Tab.Content
 					value="Description"
-					styles={styles.tabContent}
+					{...stylex.attrs(styles.tabContent)}
 				>
 					<EventInfoDescription />
 				</Tab.Content>
 			</Show>
 			<Tab.Content
 				value="Comments"
-				styles={styles.tabContent}
+				{...stylex.attrs(styles.tabContent)}
 			>
 				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				styles={styles.tabContent}
+				{...stylex.attrs(styles.tabContent)}
 			>
 				<EntityCollectionsTab
 					entityType="event"

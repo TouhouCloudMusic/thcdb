@@ -64,7 +64,7 @@ export function TagItem(props: { tag: TagListItem }) {
 				<Link
 					to="/tag/$id"
 					params={{ id: props.tag.id.toString() }}
-					class={stylex.attrs(link.base, link.text, styles.name).class}
+					class={stylex.attrs(link.base, link.withUnderline, styles.name).class}
 				>
 					{props.tag.name}
 				</Link>
@@ -81,8 +81,11 @@ export function TagItem(props: { tag: TagListItem }) {
 											to="/tag/$id"
 											params={{ id: parent.id.toString() }}
 											class={
-												stylex.attrs(link.base, link.text, styles.parentLink)
-													.class
+												stylex.attrs(
+													link.base,
+													link.withUnderline,
+													styles.parentLink,
+												).class
 											}
 										>
 											{parent.name}

@@ -58,7 +58,6 @@ const styles = stylex.create({
 		gap: px[2],
 		whiteSpace: "pre",
 	},
-	links: { display: "contents" },
 	tabTrigger: { paddingBlock: px[12] },
 	tabPanel: { padding: px[16] },
 })
@@ -155,11 +154,10 @@ function LabelInfoDetails() {
 					</Intersperse>
 				</ul>
 			</Show>
-			<ExternalLinks
-				links={ctx.label.links}
-				styles={styles.links}
-				labelStyles={styles.detailLabel}
-			/>
+			<Show when={ctx.label.links.length}>
+				<ExternalLinks.Label />
+				<ExternalLinks.Body links={ctx.label.links} />
+			</Show>
 		</div>
 	)
 }
@@ -196,13 +194,13 @@ function LabelInfoComments() {
 			</Tab.ScrollArea>
 			<Tab.Content
 				value="Comments"
-				styles={styles.tabPanel}
+				{...stylex.attrs(styles.tabPanel)}
 			>
 				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				styles={styles.tabPanel}
+				{...stylex.attrs(styles.tabPanel)}
 			>
 				<EntityCollectionsTab
 					entityType="label"

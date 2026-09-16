@@ -11,7 +11,7 @@ export const link = stylex.create({
 		transitionDuration: "150ms",
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
-	text: {
+	withUnderline: {
 		textDecorationLine: {
 			default: null,
 			":hover": { default: null, "@media (hover: hover)": "underline" },

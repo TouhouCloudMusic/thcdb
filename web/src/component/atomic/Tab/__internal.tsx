@@ -10,9 +10,7 @@ import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
 import { createHorizontalFocusScroll } from "~/utils/solid/createHorizontalFocusScroll"
 import { createScrollEdges } from "~/utils/solid/createScrollEdges"
 
-export type RootProps = PolymorphicProps<"div", K_Tab.TabsRootProps<"div">> & {
-	styles?: StyleXStyles
-}
+export { Root, Content } from "@kobalte/core/tabs"
 
 const styles = stylex.create({
 	container: {
@@ -93,17 +91,7 @@ export const containerStyles = styles.container
 
 type IndicatorPosition = "bottom" | "top" | "left" | "right"
 
-export function Root(props: RootProps) {
-	const [local, others] = splitProps(props, ["styles"])
-	return (
-		<K_Tab.Root
-			{...others}
-			{...stylex.attrs(local.styles)}
-		/>
-	)
-}
-
-export function ScrollArea(props: ParentProps) {
+export function ScrollArea(props: ParentProps<{ styles?: StyleXStyles }>) {
 	let viewport!: HTMLDivElement
 	let content!: HTMLDivElement
 	const focusedTabScroll = createHorizontalFocusScroll(() => viewport)
@@ -113,7 +101,7 @@ export function ScrollArea(props: ParentProps) {
 	)
 
 	return (
-		<div {...stylex.attrs(styles.area)}>
+		<div {...stylex.attrs(styles.area, props.styles)}>
 			<div
 				ref={(element) => {
 					viewport = element
@@ -193,20 +181,6 @@ export function Trigger(
 					&& styles.horizontalChild,
 				local.styles,
 			)}
-		/>
-	)
-}
-
-export function Content(
-	props: PolymorphicProps<"div", K_Tab.TabsContentProps<"div">> & {
-		styles?: StyleXStyles
-	},
-) {
-	const [local, others] = splitProps(props, ["styles"])
-	return (
-		<K_Tab.Content
-			{...others}
-			{...stylex.attrs(local.styles)}
 		/>
 	)
 }

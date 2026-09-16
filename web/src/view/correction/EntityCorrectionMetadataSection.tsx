@@ -18,9 +18,8 @@ import type { EntityDetailType } from "./entityMap"
 
 const styles = stylex.create({
 	root: {
-		display: "flex",
-		flexDirection: "column",
-		gap: px[8],
+		display: "grid",
+		gridAutoRows: `minmax(${px[32]}, auto)`,
 		paddingTop: 0,
 		paddingRight: 0,
 		paddingBottom: 0,
@@ -31,6 +30,10 @@ const styles = stylex.create({
 		flexWrap: "wrap",
 		alignItems: "center",
 		gap: px[4],
+	},
+	action: {
+		height: px[32],
+		paddingBlock: 0,
 	},
 })
 
@@ -99,14 +102,14 @@ export function EntityCorrectionMetadataSection(
 				<Link
 					to={correctionsRoute()}
 					params={{ id: props.entityId.toString() }}
-					class={stylex.attrs(link.base, linkStyles).class}
+					class={stylex.attrs(link.base, linkStyles, styles.action).class}
 				>
 					<Trans>Corrections · {correctionHistory().length}</Trans>
 				</Link>
 				<Link
 					to={editRoute()}
 					params={{ id: props.entityId.toString() }}
-					class={stylex.attrs(link.base, linkStyles).class}
+					class={stylex.attrs(link.base, linkStyles, styles.action).class}
 				>
 					{t`Update ${entityLabel()}`}
 				</Link>

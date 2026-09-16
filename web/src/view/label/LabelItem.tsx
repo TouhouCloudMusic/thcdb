@@ -35,7 +35,7 @@ export function LabelItem(props: { label: LabelListItem }) {
 			<Link
 				to="/label/$id"
 				params={{ id: props.label.id.toString() }}
-				class={stylex.attrs(link.base, link.text, styles.name).class}
+				class={stylex.attrs(link.base, link.withUnderline, styles.name).class}
 			>
 				{props.label.name}
 			</Link>
@@ -56,7 +56,11 @@ export function LabelItem(props: { label: LabelListItem }) {
 								to="/artist/$id"
 								params={{ id: founder.id.toString() }}
 								class={
-									stylex.attrs(link.base, link.text, styles.releaseLink).class
+									stylex.attrs(
+										link.base,
+										link.withUnderline,
+										styles.releaseLink,
+									).class
 								}
 							>
 								{founder.name}

@@ -372,7 +372,11 @@ function CommentItem(props: CommentItemProps) {
 											to="/profile/$username"
 											params={{ username: props.comment.author.name }}
 											class={
-												stylex.attrs(link.base, link.text, styles.author).class
+												stylex.attrs(
+													link.base,
+													link.withUnderline,
+													styles.author,
+												).class
 											}
 										>
 											{props.comment.author.name}
