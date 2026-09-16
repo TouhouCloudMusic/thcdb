@@ -26,6 +26,12 @@ pub async fn run(state: &AppState) -> io::Result<()> {
         APP_CONFIG.notification.retention_days,
     );
 
+    let monitor = crate::features::image_gc::register_workers(
+        monitor,
+        state.sea_orm_repo.clone(),
+        state.image_storage.clone(),
+    );
+
     let (terminal_event_sender, mut terminal_events) =
         tokio::sync::mpsc::unbounded_channel();
     let monitor = monitor
