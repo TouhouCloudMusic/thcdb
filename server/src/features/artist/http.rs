@@ -8,7 +8,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::model::NewArtist;
-use super::{find, release, service};
+use super::{credits, find, release, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::artist_image::{self, ArtistProfileImageInput};
@@ -38,6 +38,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 
     OpenApiRouter::new()
         .merge(find::router())
+        .merge(credits::router())
         .merge(release::router())
         .merge(private)
 }

@@ -1,3 +1,4 @@
+mod credits;
 mod http;
 pub(crate) mod list;
 pub(crate) mod model;

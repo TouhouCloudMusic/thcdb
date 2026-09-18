@@ -1,7 +1,6 @@
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
-import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
 
 import { Thumbnail } from "~/component/Thumbnail"
@@ -19,6 +18,10 @@ import {
 } from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 
+type ReleaseItemData = Omit<ReleaseListItem, "catalog_numbers"> & {
+	catalog_numbers?: ReleaseListItem["catalog_numbers"]
+}
+
 const styles = stylex.create({
 	artists: {
 		fontSize: fontSizes.sm,
@@ -28,7 +31,7 @@ const styles = stylex.create({
 })
 
 function ReleaseArtists(props: {
-	release: ReleaseListItem
+	release: ReleaseItemData
 	styles?: StyleXStyles
 }) {
 	return (
@@ -40,7 +43,7 @@ function ReleaseArtists(props: {
 	)
 }
 
-function ReleaseArtistLinks(props: { release: ReleaseListItem }) {
+function ReleaseArtistLinks(props: { release: ReleaseItemData }) {
 	return (
 		<For each={props.release.artists}>
 			{(artist, index) => (
@@ -68,7 +71,7 @@ const metaStyles = stylex.create({
 })
 
 function ReleaseMeta(props: {
-	release: ReleaseListItem
+	release: ReleaseItemData
 	styles?: StyleXStyles
 }) {
 	const releaseDate = () =>
@@ -78,8 +81,8 @@ function ReleaseMeta(props: {
 		<div {...stylex.attrs(metaStyles.root, props.styles)}>
 			<span>{props.release.release_type}</span>
 			<Show when={releaseDate()}>{(date) => <span>{date()}</span>}</Show>
-			<Show when={props.release.catalog_numbers.length > 0}>
-				<span>#{props.release.catalog_numbers.join(" / #")}</span>
+			<Show when={props.release.catalog_numbers?.length}>
+				<span>#{props.release.catalog_numbers?.join(" / #")}</span>
 			</Show>
 		</div>
 	)
@@ -196,8 +199,7 @@ const listStyles = stylex.create({
 })
 
 export function ReleaseItem(props: {
-	release: ReleaseListItem
-	metadata?: JSX.Element
+	release: ReleaseItemData
 	styles?: StyleXStyles
 }) {
 	return (
@@ -225,19 +227,10 @@ export function ReleaseItem(props: {
 					release={props.release}
 					styles={listStyles.artists}
 				/>
-				<Show
-					when={props.metadata !== undefined}
-					fallback={
-						<ReleaseMeta
-							release={props.release}
-							styles={listStyles.meta}
-						/>
-					}
-				>
-					<div {...stylex.attrs(metaStyles.root, listStyles.meta)}>
-						{props.metadata}
-					</div>
-				</Show>
+				<ReleaseMeta
+					release={props.release}
+					styles={listStyles.meta}
+				/>
 			</div>
 		</div>
 	)

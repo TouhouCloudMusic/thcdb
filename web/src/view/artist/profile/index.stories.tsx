@@ -1,7 +1,8 @@
 import * as stylex from "@stylexjs/stylex"
-import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
+import type { Artist, Discography, ReleaseType } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import type { Credit } from "~/hey-api"
 import { MOCK_CORRECTION_HISTORY } from "~/mock/correction"
 import { withEntityDetailStoryState } from "~/storybook/entityDetail"
 import {
@@ -14,6 +15,10 @@ import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { ArtistProfilePage } from "."
+import {
+	ARTIST_CREDITS_STORY_DATA,
+	createArtistCreditsStoryModel,
+} from "./credits.storybook"
 
 const styles = stylex.create({
 	story: {
@@ -134,19 +139,20 @@ const APPEARANCES: Discography[] = [
 	},
 ]
 
-const CREDITS: ArtistCredit[] = [
+const CREDITS: Credit[] = [
 	{
-		release_id: 301,
+		release_id: 901,
 		title: "TOHOHUM",
 		release_type: "Album",
 		release_date: { precision: "Year", value: "2008-01-01" },
 		artist: [{ id: 52, name: "石鹸屋" }],
 		roles: [
-			{ id: 1, name: "Arrangement" },
-			{ id: 3, name: "Mixing" },
+			{ id: 7, name: "Arrangement" },
+			{ id: 8, name: "Mixing" },
 		],
 		cover_url: TOHOHUM_COVER_URL,
 	},
+	...ARTIST_CREDITS_STORY_DATA.release,
 ]
 
 async function noop() {
@@ -163,6 +169,10 @@ function createInfiniteQuery<T>(data: T[]): InfiniteQuery<T> {
 }
 
 function StoryRoot() {
+	const credits = createArtistCreditsStoryModel(() => ({
+		release: CREDITS,
+		song: ARTIST_CREDITS_STORY_DATA.song,
+	}))
 	return (
 		<div {...stylex.attrs(styles.story)}>
 			<ArtistProfilePage
@@ -175,7 +185,7 @@ function StoryRoot() {
 					next: noop,
 					isLoading: false,
 				}}
-				credits={createInfiniteQuery(CREDITS)}
+				credits={credits}
 			/>
 		</div>
 	)

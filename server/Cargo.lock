@@ -5671,6 +5671,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-feature-artist-repo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "entity",
+ "itertools 0.14.0",
+ "libfp",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "thcdb-domain",
+ "thcdb-infra-db",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
 name = "thcdb-feature-auth-core"
 version = "0.1.0"
 dependencies = [
@@ -6082,6 +6101,7 @@ dependencies = [
  "thcdb-constants",
  "thcdb-domain",
  "thcdb-feature-account-notification",
+ "thcdb-feature-artist-repo",
  "thcdb-feature-auth-core",
  "thcdb-feature-auth-worker",
  "thcdb-feature-comment-notification",

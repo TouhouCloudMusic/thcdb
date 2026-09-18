@@ -71,14 +71,6 @@ export async function findAppearances(options: Opt<"find_artist_appearances">) {
 	return adaptApiResult(res)
 }
 
-export async function getCredits(options: Opt<"get_artist_credits">) {
-	const res = await FetchClient.GET("/artist/{id}/credits", {
-		params: options,
-	})
-
-	return adaptApiResult(res)
-}
-
 export async function findDiscographiesByType(
 	options: Opt<"find_artist_discographies_by_type">,
 ) {

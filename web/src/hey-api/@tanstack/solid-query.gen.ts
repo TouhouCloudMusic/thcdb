@@ -995,7 +995,8 @@ export const getArtistCreditsInfiniteOptions = (
 		GetArtistCreditsError,
 		InfiniteData<GetArtistCreditsResponse>,
 		QueryKey<Options<GetArtistCreditsData>>,
-		| number
+		| string
+		| null
 		| Pick<
 				QueryKey<Options<GetArtistCreditsData>>[0],
 				"body" | "headers" | "path" | "query"

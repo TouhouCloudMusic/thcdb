@@ -1,19 +1,17 @@
 use derive_more::Display;
+use domain::credit_role::CreditRoleRef;
 use domain::shared::{
-    Cursor, DateWithPrecision, EntityIdent, HttpUrl, LocalizedName, Location,
+    DateWithPrecision, EntityIdent, HttpUrl, LocalizedName, Location,
     NewLocalizedName, SimpleArtist,
 };
-use entity::enums::{EntityType, ReleaseType};
+use entity::enums::EntityType;
 pub use entity::sea_orm_active_enums::ArtistType;
 use macros::cmp_chain;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::features::correction::CorrectionEntity;
-use crate::features::credit_role::CreditRoleRef;
 use crate::shared::error::ValidationError;
-
-pub type Appearance = Discography;
 
 #[serde_with::apply(
     Vec      => #[serde(skip_serializing_if = "Vec::is_empty")],
@@ -141,49 +139,6 @@ pub struct NewMembership {
     pub artist_id: i32,
     pub roles: Vec<i32>,
     pub tenure: Vec<Tenure>,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct Credit {
-    pub release_id: i32,
-    pub title: String,
-    pub artist: Vec<ArtistReleaseArtist>,
-    pub cover_url: Option<String>,
-    pub release_date: Option<DateWithPrecision>,
-    pub release_type: ReleaseType,
-    pub roles: Vec<CreditRoleRef>,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct Discography {
-    pub release_id: i32,
-    pub title: String,
-    pub cover_url: Option<String>,
-    pub artist: Vec<ArtistReleaseArtist>,
-    pub release_date: Option<DateWithPrecision>,
-    pub release_type: ReleaseType,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct ArtistReleaseArtist {
-    pub id: i32,
-    pub name: String,
-}
-
-pub struct AppearanceQuery {
-    pub artist_id: i32,
-    pub pagination: Cursor,
-}
-
-pub struct CreditQuery {
-    pub artist_id: i32,
-    pub pagination: Cursor,
-}
-
-pub struct DiscographyQuery {
-    pub artist_id: i32,
-    pub release_type: ReleaseType,
-    pub pagination: Cursor,
 }
 
 fn validate_artist_type_and_membership(

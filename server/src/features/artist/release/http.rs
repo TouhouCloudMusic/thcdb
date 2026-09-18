@@ -1,3 +1,6 @@
+use artist_repo::model::{
+    Appearance, AppearanceQuery, Discography, DiscographyQuery,
+};
 use axum::extract::{Path, Query, State};
 use domain::shared::{Cursor, CursorResponse};
 use entity::enums::ReleaseType;
@@ -8,10 +11,6 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::artist::model::{
-    Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
-    DiscographyQuery,
-};
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::Data;
 
@@ -23,7 +22,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
             r.routes(routes!(find_artist_discographies_init))
                 .routes(routes!(find_artist_discographies_by_type))
                 .routes(routes!(find_artist_appearances))
-                .routes(routes!(get_artist_credits))
         })
         .finish()
 }
@@ -31,7 +29,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data!(
     DataPaginatedDiscography, CursorResponse<Discography>
     DataPaginatedAppearance, CursorResponse<Appearance>
-    DataPaginatedCredit, CursorResponse<Credit>
 );
 
 #[derive(Deserialize, IntoParams)]
@@ -68,48 +65,10 @@ async fn find_artist_appearances(
     Path(id): Path<i32>,
     Query(dto): Query<AppearanceQueryDto>,
 ) -> Result<Data<CursorResponse<Appearance>>, DatabaseError> {
-    super::repo::appearance(&repo, dto.into_query(id))
+    artist_repo::releases::appearance(&repo, dto.into_query(id))
         .await
         .map(Data::from)
-}
-
-#[derive(Deserialize, IntoParams, ToSchema)]
-struct CreditQueryDto {
-    cursor: i32,
-    limit: u8,
-}
-
-impl CreditQueryDto {
-    const fn into_query(self, artist_id: i32) -> CreditQuery {
-        CreditQuery {
-            artist_id,
-            pagination: Cursor {
-                at: self.cursor,
-                limit: self.limit,
-            },
-        }
-    }
-}
-
-#[utoipa::path(
-    get,
-    tag = TAG,
-    path = "/artist/{id}/credits",
-    params(
-        CreditQueryDto
-    ),
-    responses(
-        (status = 200, body = DataPaginatedCredit),
-    ),
-)]
-async fn get_artist_credits(
-    State(repo): State<state::SeaOrmRepository>,
-    Path(id): Path<i32>,
-    Query(dto): Query<CreditQueryDto>,
-) -> Result<Data<CursorResponse<Credit>>, DatabaseError> {
-    super::repo::credit(&repo, dto.into_query(id))
-        .await
-        .map(Data::from)
+        .map_err(DatabaseError::from)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -148,9 +107,10 @@ async fn find_artist_discographies_by_type(
     Path(id): Path<i32>,
     Query(dto): Query<DiscographyQueryDto>,
 ) -> Result<Data<CursorResponse<Discography>>, DatabaseError> {
-    super::repo::discography(&repo, dto.into_query(id))
+    artist_repo::releases::discography(&repo, dto.into_query(id))
         .await
         .map(Data::from)
+        .map_err(DatabaseError::from)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -206,15 +166,30 @@ async fn find_artist_discographies_init(
     Query(dto): Query<InitDiscographyQueryDto>,
 ) -> Result<Data<InitDiscography>, DatabaseError> {
     let (album, ep, compilation, single, demo, other) = tokio::try_join!(
-        super::repo::discography(&repo, dto.to_query(id, ReleaseType::Album)),
-        super::repo::discography(&repo, dto.to_query(id, ReleaseType::Ep)),
-        super::repo::discography(
+        artist_repo::releases::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Album)
+        ),
+        artist_repo::releases::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Ep)
+        ),
+        artist_repo::releases::discography(
             &repo,
             dto.to_query(id, ReleaseType::Compilation),
         ),
-        super::repo::discography(&repo, dto.to_query(id, ReleaseType::Single)),
-        super::repo::discography(&repo, dto.to_query(id, ReleaseType::Demo)),
-        super::repo::discography(&repo, dto.to_query(id, ReleaseType::Other)),
+        artist_repo::releases::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Single)
+        ),
+        artist_repo::releases::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Demo)
+        ),
+        artist_repo::releases::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Other)
+        ),
     )?;
 
     Ok(Data::new(InitDiscography {

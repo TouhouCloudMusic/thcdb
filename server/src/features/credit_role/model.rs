@@ -9,14 +9,6 @@ use crate::features::correction::CorrectionEntity;
 
 #[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
 #[mapper(from(DbCreditRole))]
-#[cfg_attr(test, derive(PartialEq, Eq))]
-pub struct CreditRoleRef {
-    pub id: i32,
-    pub name: String,
-}
-
-#[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
-#[mapper(from(DbCreditRole))]
 pub struct CreditRoleSummary {
     pub id: i32,
     pub name: String,

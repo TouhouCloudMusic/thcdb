@@ -5,6 +5,7 @@ members = [
     "crates/constants",
     "crates/domain",
     "crates/entity",
+    "crates/features/artist/repo",
     "crates/features/user/core",
     "crates/features/visit/core",
     "crates/features/popularity/core",
@@ -40,6 +41,7 @@ members = [
 ]
 
 [workspace.dependencies]
+artist_repo                  = { package = "thcdb-feature-artist-repo", path = "crates/features/artist/repo" }
 visit_core                   = { package = "thcdb-feature-visit-core", path = "crates/features/visit/core" }
 popularity_core              = { package = "thcdb-feature-popularity-core", path = "crates/features/popularity/core" }
 futures-util                 = "0.3"
@@ -228,6 +230,7 @@ version = "0.1.0"
 workspace = true
 
 [dependencies]
+artist_repo.workspace                  = true
 visit_core.workspace                   = true
 popularity_core.workspace              = true
 user_core.workspace                    = true
@@ -397,4 +400,4 @@ panic           = "abort"
 release = [
     "mimalloc",
 ]
-integration-test = [  ]
+integration-test = [ "artist_repo/integration-test" ]

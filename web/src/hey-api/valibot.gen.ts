@@ -15,6 +15,10 @@ export const vAlternativeName = v.object({
 	name: v.string(),
 })
 
+export const vArtistCreditScope = v.picklist(["all", "release", "song"])
+
+export const vArtistCreditSort = v.picklist(["newest", "oldest"])
+
 export const vArtistImageType = v.picklist(["Profile"])
 
 export const vArtistImageQueueTarget = v.object({
@@ -414,6 +418,61 @@ export const vDeleteVoteBody = v.object({
 		),
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
+})
+
+export const vDisc = v.object({
+	index: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.nullish(v.string()),
+})
+
+export const vArtistSongCreditRelease = v.object({
+	release_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
+	release_date: v.nullish(vDateWithPrecision),
+	track_number: v.nullish(v.string()),
+	disc: v.nullish(vDisc),
+})
+
+export const vArtistSongCredit = v.object({
+	song_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
+	roles: v.array(vCreditRoleRef),
+	primary_release_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	releases: v.array(vArtistSongCreditRelease),
 })
 
 export const vEditableUserRole = v.picklist(["Moderator"])
@@ -1690,43 +1749,28 @@ export const vReleaseType = v.picklist([
 	"Other",
 ])
 
-export const vCursorResponseCredit = v.object({
-	items: v.array(
-		v.object({
-			release_id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			title: v.string(),
-			artist: v.array(vArtistReleaseArtist),
-			cover_url: v.nullish(v.string()),
-			release_date: v.nullish(vDateWithPrecision),
-			release_type: vReleaseType,
-			roles: v.array(vCreditRoleRef),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+export const vCredit = v.object({
+	release_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
 		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
+	title: v.string(),
+	artist: v.array(vArtistReleaseArtist),
+	cover_url: v.nullish(v.string()),
+	release_date: v.nullish(vDateWithPrecision),
+	release_type: vReleaseType,
+	roles: v.array(vCreditRoleRef),
+})
+
+export const vArtistCredits = v.object({
+	release: v.array(vCredit),
+	song: v.array(vArtistSongCredit),
+	next_cursor: v.nullish(v.string()),
 })
 
 export const vCursorResponseDiscography = v.object({
@@ -1767,14 +1811,14 @@ export const vCursorResponseDiscography = v.object({
 	),
 })
 
+export const vDataArtistCredits = v.object({
+	status: v.string(),
+	data: vArtistCredits,
+})
+
 export const vDataPaginatedAppearance = v.object({
 	status: v.string(),
 	data: vCursorResponseDiscography,
-})
-
-export const vDataPaginatedCredit = v.object({
-	status: v.string(),
-	data: vCursorResponseCredit,
 })
 
 export const vDataPaginatedDiscography = v.object({
@@ -4372,24 +4416,27 @@ export const vGetArtistCreditsPath = v.object({
 })
 
 export const vGetArtistCreditsQuery = v.object({
-	cursor: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
+	cursor: v.nullish(v.string()),
+	scope: v.optional(vArtistCreditScope),
+	sort: v.optional(vArtistCreditSort),
+	role_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
 		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
-	limit: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
+	limit: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(255)),
 })
 
-export const vGetArtistCreditsResponse = vDataPaginatedCredit
+export const vGetArtistCreditsResponse = vDataArtistCredits
 
 export const vFindArtistDiscographiesByTypePath = v.object({
 	id: v.pipe(

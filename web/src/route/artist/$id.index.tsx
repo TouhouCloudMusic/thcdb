@@ -5,16 +5,22 @@ import { ArtistApi } from "@thc/api"
 import { ArtistQueryOption, CorrectionQueryOption } from "@thc/query"
 import { ObjExt } from "@thc/toolkit/data"
 import { Either, Option as O } from "effect"
-import { Show } from "solid-js"
+import { createMemo, createSignal, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 
 import { RELEASE_TYPES } from "~/domain/release"
 import { EntityId_fromStr } from "~/domain/shared"
+import type { ArtistCreditScope, ArtistCreditSort } from "~/hey-api"
+import {
+	findManyCreditRolesSummaryOptions,
+	getArtistCreditsInfiniteOptions,
+} from "~/hey-api/@tanstack/solid-query.gen"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { createEntityVisit } from "~/state/visit"
 import { ArtistProfilePage } from "~/view/artist/profile"
 
 const DISCOGRAPHY_PAGE_LIMIT = 10
+const CREDIT_PAGE_LIMIT = 10
 
 const INIT_DISCOGRAPHY_KEYS = {
 	Album: "album",
@@ -62,7 +68,39 @@ function RouteComponent() {
 		ArtistQueryOption.appearances(artistId()),
 	)
 
-	const credits = useInfiniteQuery(() => ArtistQueryOption.credits(artistId()))
+	const [creditScope, setCreditScope] = createSignal<ArtistCreditScope>("all")
+	const [creditRoleId, setCreditRoleId] = createSignal<number>()
+	const [creditSort, setCreditSort] = createSignal<ArtistCreditSort>("newest")
+	const creditRoles = useQuery(() =>
+		findManyCreditRolesSummaryOptions({ query: { keyword: "" } }),
+	)
+	const credits = useInfiniteQuery(() => {
+		const request = {
+			path: { id: artistId() },
+			query: {
+				scope: creditScope(),
+				role_id: creditRoleId(),
+				sort: creditSort(),
+				limit: CREDIT_PAGE_LIMIT,
+			},
+		}
+		const options = getArtistCreditsInfiniteOptions(request)
+		options.initialPageParam = request
+		options.getNextPageParam = (last) => {
+			const cursor = last.data.next_cursor
+			if (cursor == null) return undefined
+
+			return cursor
+		}
+		return options
+	})
+	const creditData = createMemo(() => {
+		if (credits.isPending) return { release: [], song: [] }
+		return {
+			release: credits.data?.pages.flatMap((page) => page.data.release) ?? [],
+			song: credits.data?.pages.flatMap((page) => page.data.song) ?? [],
+		}
+	})
 
 	// Discographies
 
@@ -158,16 +196,52 @@ function RouteComponent() {
 					}}
 					credits={{
 						get data() {
-							return credits.data?.pages.flatMap((p) => p.items) ?? []
+							return creditData()
+						},
+						get scope() {
+							return creditScope()
+						},
+						get roleId() {
+							return creditRoleId()
+						},
+						get sort() {
+							return creditSort()
+						},
+						get roles() {
+							return creditRoles.isPending ? [] : (creditRoles.data?.data ?? [])
+						},
+						get hasCredits() {
+							return (
+								creditScope() !== "all"
+								|| creditRoleId() !== undefined
+								|| credits.isPending
+								|| credits.isError
+								|| creditData().release.length > 0
+								|| creditData().song.length > 0
+							)
 						},
 						get hasNext() {
 							return credits.hasNextPage
 						},
-						async next() {
-							await credits.fetchNextPage()
+						get isFetchingNextPage() {
+							return credits.isFetchingNextPage
+						},
+						get hasError() {
+							return credits.isError || creditRoles.isError
+						},
+						onScopeChange: setCreditScope,
+						onRoleChange: setCreditRoleId,
+						onSortChange: setCreditSort,
+						next() {
+							void credits.fetchNextPage()
+						},
+						retry() {
+							if (creditRoles.isError) void creditRoles.refetch()
+							if (credits.isFetchNextPageError) void credits.fetchNextPage()
+							else if (credits.isError) void credits.refetch()
 						},
 						get isLoading() {
-							return credits.isLoading
+							return credits.isPending
 						},
 					}}
 					discographies={{
