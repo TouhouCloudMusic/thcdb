@@ -42,6 +42,16 @@ export type ArtistCommonFilter = {
 	exclusion?: Array<number>
 }
 
+export type ArtistCreditScope = "all" | "release" | "song"
+
+export type ArtistCreditSort = "newest" | "oldest"
+
+export type ArtistCredits = {
+	release: Array<Credit>
+	song: Array<ArtistSongCredit>
+	next_cursor?: string | null
+}
+
 export type ArtistImageQueueTarget = {
 	artist_id: number
 	type: ArtistImageType
@@ -64,6 +74,22 @@ export type ArtistProfileImageFormData = {
 export type ArtistReleaseArtist = {
 	id: number
 	name: string
+}
+
+export type ArtistSongCredit = {
+	song_id: number
+	title: string
+	roles: Array<CreditRoleRef>
+	primary_release_id?: number | null
+	releases: Array<ArtistSongCreditRelease>
+}
+
+export type ArtistSongCreditRelease = {
+	release_id: number
+	title: string
+	release_date?: null | DateWithPrecision
+	track_number?: string | null
+	disc?: null | Disc
 }
 
 export type ArtistSummary = {
@@ -214,6 +240,16 @@ export type CreateUserCollectionItemRequest = {
 	description?: string | null
 }
 
+export type Credit = {
+	release_id: number
+	title: string
+	artist: Array<ArtistReleaseArtist>
+	cover_url?: string | null
+	release_date?: null | DateWithPrecision
+	release_type: ReleaseType
+	roles: Array<CreditRoleRef>
+}
+
 export type CreditRole = {
 	id: number
 	name: string
@@ -235,19 +271,6 @@ export type CreditRoleSummary = {
 export type CurrentImageMetadata = {
 	uploaded_at: string
 	uploaded_by: UserSummary
-}
-
-export type CursorResponseCredit = {
-	items: Array<{
-		release_id: number
-		title: string
-		artist: Array<ArtistReleaseArtist>
-		cover_url?: string | null
-		release_date?: null | DateWithPrecision
-		release_type: ReleaseType
-		roles: Array<CreditRoleRef>
-	}>
-	next_cursor?: number | null
 }
 
 export type CursorResponseDiscography = {
@@ -387,6 +410,11 @@ export type CursorResponseUserImageQueueItem = {
 	next_cursor?: number | null
 }
 
+export type DataArtistCredits = {
+	status: string
+	data: ArtistCredits
+}
+
 export type DataComment = {
 	status: string
 	data: Comment
@@ -520,11 +548,6 @@ export type DataPageUserSummary = {
 export type DataPaginatedAppearance = {
 	status: string
 	data: CursorResponseDiscography
-}
-
-export type DataPaginatedCredit = {
-	status: string
-	data: CursorResponseCredit
 }
 
 export type DataPaginatedDiscography = {
@@ -762,6 +785,11 @@ export type DateWithPrecision = {
 
 export type DeleteVoteBody = {
 	tag_id: number
+}
+
+export type Disc = {
+	index: number
+	name?: string | null
 }
 
 export type EditableUserRole = "Moderator"
@@ -2207,7 +2235,10 @@ export type GetArtistCreditsData = {
 		id: number
 	}
 	query: {
-		cursor: number
+		cursor?: string | null
+		scope?: ArtistCreditScope
+		sort?: ArtistCreditSort
+		role_id?: number | null
 		limit: number
 	}
 	url: "/artist/{id}/credits"
@@ -2228,7 +2259,7 @@ export type GetArtistCreditsError =
 	GetArtistCreditsErrors[keyof GetArtistCreditsErrors]
 
 export type GetArtistCreditsResponses = {
-	200: DataPaginatedCredit
+	200: DataArtistCredits
 }
 
 export type GetArtistCreditsResponse =

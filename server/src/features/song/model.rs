@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
 
 use derive_more::Display;
+use domain::credit_role::CreditRoleRef;
 use domain::shared::{
     EntityIdent, HttpUrl, Language, NewLocalizedName, SimpleArtist,
 };
@@ -11,7 +12,6 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::features::correction::CorrectionEntity;
-use crate::features::credit_role::CreditRoleRef;
 use crate::features::song_lyrics::model::SongLyrics;
 
 #[serde_with::apply(

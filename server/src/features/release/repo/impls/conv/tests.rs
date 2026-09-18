@@ -234,7 +234,7 @@ fn test_conv_credits() {
                 id: 1,
                 name: "Artist 1".to_string(),
             },
-            role: crate::features::credit_role::CreditRoleRef {
+            role: domain::credit_role::CreditRoleRef {
                 id: 1,
                 name: "Role 1".to_string(),
             },
@@ -245,7 +245,7 @@ fn test_conv_credits() {
                 id: 2,
                 name: "Artist 2".to_string(),
             },
-            role: crate::features::credit_role::CreditRoleRef {
+            role: domain::credit_role::CreditRoleRef {
                 id: 2,
                 name: "Role 2".to_string(),
             },

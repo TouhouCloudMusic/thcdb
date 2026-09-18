@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use domain::credit_role::CreditRoleRef;
 use domain::image::Image;
 use domain::shared::{Language, SimpleArtist};
 use entity::enums::StorageBackend;
@@ -24,7 +25,6 @@ use sea_query::{ExprTrait, Func};
 use tokio::try_join;
 
 use super::filter::SongFilter;
-use crate::features::credit_role::CreditRoleRef;
 use crate::features::song::list::{self, SongListItem};
 use crate::features::song::model::{
     LocalizedTitle, Song, SongCredit, SongRef, SongRelation, SongRelationType,

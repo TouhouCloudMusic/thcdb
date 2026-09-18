@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use domain::credit_role::CreditRoleRef;
 use domain::image::Image;
 use domain::shared::{LocalizedName, Location, SimpleArtist};
 use entity::sea_orm_active_enums::ArtistImageType;
@@ -20,7 +21,6 @@ use sea_query::{ExprTrait, Func, SimpleExpr, any};
 use super::{CommonFilter, FindManyFilter};
 use crate::features::artist::list::{self, ArtistListItem};
 use crate::features::artist::model::{Artist, Membership, Tenure};
-use crate::features::credit_role::CreditRoleRef;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
 

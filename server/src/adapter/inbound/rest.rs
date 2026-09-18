@@ -171,6 +171,8 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     // https://github.com/juhaku/utoipa/issues/1165
     components(schemas(
         features::artist::list::ArtistListItem,
+        artist_repo::model::ArtistCreditScope,
+        artist_repo::model::ArtistCreditSort,
         features::event::list::EventListItem,
         features::label::list::LabelListItem,
         features::release::list::ReleaseListItem,
@@ -209,6 +211,8 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
 #[openapi(
     components(schemas(
         features::artist::list::ArtistListItem,
+        artist_repo::model::ArtistCreditScope,
+        artist_repo::model::ArtistCreditSort,
         features::event::list::EventListItem,
         features::label::list::LabelListItem,
         features::release::list::ReleaseListItem,

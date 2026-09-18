@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use domain::credit_role::CreditRoleRef;
 use domain::image::Image;
 use domain::shared::{
     DateWithPrecision, LocalizedTitle, SimpleEvent, SimpleLabel,
@@ -7,7 +8,6 @@ use domain::shared::{
 use entity::release;
 
 use super::RelatedEntities;
-use crate::features::credit_role::CreditRoleRef;
 use crate::features::release::model::{
     CatalogNumber, Release, ReleaseArtist, ReleaseCredit, ReleaseDisc,
     ReleaseTrack,

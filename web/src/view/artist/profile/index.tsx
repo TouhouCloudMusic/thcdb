@@ -4,7 +4,6 @@ import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
 import type {
 	Artist,
-	ArtistCredit,
 	CorrectionHistoryItem,
 	Discography,
 	ReleaseType,
@@ -23,6 +22,7 @@ import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollection
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
 
+import type { ArtistCreditsModel } from "./comp/ArtistCredits"
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
 
@@ -126,7 +126,7 @@ export type ArtistContext = {
 		next(type: ReleaseType): Promise<void>
 		isLoading: boolean
 	}
-	credits: InfiniteQuery<ArtistCredit>
+	credits: ArtistCreditsModel
 }
 
 export const ArtistContext = createContext<ArtistContext>()
@@ -141,7 +141,7 @@ export type ArtistProfilePageProps = {
 		next(type: ReleaseType): Promise<void>
 		isLoading: boolean
 	}
-	credits: InfiniteQuery<ArtistCredit>
+	credits: ArtistCreditsModel
 }
 
 export function ArtistProfilePage(props: ArtistProfilePageProps) {

@@ -5,6 +5,7 @@
 )]
 
 pub mod constant;
+pub mod credit_role;
 pub mod email;
 pub mod image;
 pub mod markdown;

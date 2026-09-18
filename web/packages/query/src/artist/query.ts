@@ -61,27 +61,6 @@ export function appearances(id: number) {
 	})
 }
 
-export function credits(id: number) {
-	return infiniteQueryOptions({
-		queryKey: ["artist::credits", id],
-		queryFn: async (context) => {
-			const result = await ArtistApi.getCredits({
-				path: { id },
-				query: { cursor: context.pageParam, limit: 10 },
-			})
-			return Either.match(result, {
-				onRight: (data) => data,
-				onLeft: (error) => {
-					throw error
-				},
-			})
-		},
-		initialPageParam: 0,
-		getNextPageParam: (last) => last.next_cursor,
-		throwOnError: true,
-	})
-}
-
 // export function discography(id: number, releaseType: ReleaseType) {
 // 	return infiniteQueryOptions({
 // 		queryKey: ["artist::discographies", id, releaseType],

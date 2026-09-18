@@ -205,6 +205,10 @@ msgstr "All"
 msgid "All categories"
 msgstr "All categories"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "All roles"
+msgstr "All roles"
+
 #: src/view/user/Profile.tsx
 msgid "Alphabetical"
 msgstr "Alphabetical"
@@ -213,6 +217,10 @@ msgstr "Alphabetical"
 #: src/view/auth/verify_email/index.tsx
 msgid "Already have an account?"
 msgstr "Already have an account?"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Also on"
+msgstr "Also on"
 
 #: src/view/event/edit/comp/EventAlternativeNamesField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
@@ -475,6 +483,10 @@ msgstr "Correction rejected"
 msgid "Corrections · {0}"
 msgstr "Corrections · {0}"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Could not load credits"
+msgstr "Could not load credits"
+
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
 msgstr "Country / Region"
@@ -558,6 +570,10 @@ msgstr "Created time"
 #: src/view/correction/Detail.tsx
 msgid "Credit role"
 msgstr "Credit role"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Credit type"
+msgstr "Credit type"
 
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
@@ -1321,6 +1337,10 @@ msgstr "New collection"
 msgid "New password"
 msgstr "New password"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Newest first"
+msgstr "Newest first"
+
 #: src/view/image_queue/detail.tsx
 msgid "Next"
 msgstr "Next"
@@ -1448,6 +1468,10 @@ msgstr "No labels found"
 msgid "No labels found."
 msgstr "No labels found."
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "No matching credits"
+msgstr "No matching credits"
+
 #: src/view/image_queue/manage.tsx
 #: src/view/image_queue/user.tsx
 msgid "No more entries"
@@ -1530,6 +1554,10 @@ msgstr "Notifications"
 #: src/component/toast/index.tsx
 msgid "Notifications ({hotkey})"
 msgstr "Notifications ({hotkey})"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Oldest first"
+msgstr "Oldest first"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 msgid "On Tracks"
@@ -2068,6 +2096,10 @@ msgstr "Song lyrics"
 msgid "Songs"
 msgstr "Songs"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Songs without a release"
+msgstr "Songs without a release"
+
 #: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort"
@@ -2082,6 +2114,10 @@ msgstr "Sort by"
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "Sort collections"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Sort credits"
+msgstr "Sort credits"
 
 #: src/view/user/Profile.tsx
 msgid "Sort: Alphabetical"
@@ -2363,6 +2399,10 @@ msgstr "Unread"
 #: src/view/notification/NotificationCard.tsx
 msgid "Unsave"
 msgstr "Unsave"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Unspecified role"
+msgstr "Unspecified role"
 
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx

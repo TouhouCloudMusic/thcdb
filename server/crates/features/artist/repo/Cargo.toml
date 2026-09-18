@@ -1,0 +1,32 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-artist-repo"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "artist_repo"
+path = "src/lib.rs"
+
+[features]
+integration-test = [  ]
+
+[dependencies]
+chrono.workspace    = true
+domain.workspace    = true
+entity.workspace    = true
+infra_db.workspace  = true
+itertools.workspace = true
+libfp.workspace     = true
+sea-orm.workspace   = true
+sea-query.workspace = true
+serde.workspace     = true
+tokio.workspace     = true
+utoipa.workspace    = true
+
+[dev-dependencies]
+anyhow.workspace        = true
+infra_testing.workspace = true

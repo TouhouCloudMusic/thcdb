@@ -1680,6 +1680,15 @@ export type components = {
             artist_type?: components["schemas"]["ArtistType"][];
             exclusion?: number[];
         };
+        ArtistCredits: {
+            next_cursor?: string | null;
+            release: components["schemas"]["Credit"][];
+            song: components["schemas"]["ArtistSongCredit"][];
+        };
+        /** @enum {string} */
+        ArtistCreditScope: "all" | "release" | "song";
+        /** @enum {string} */
+        ArtistCreditSort: "newest" | "oldest";
         ArtistImageQueueTarget: {
             /** Format: int32 */
             artist_id: number;
@@ -1703,6 +1712,23 @@ export type components = {
             /** Format: int32 */
             id: number;
             name: string;
+        };
+        ArtistSongCredit: {
+            /** Format: int32 */
+            primary_release_id?: number | null;
+            releases: components["schemas"]["ArtistSongCreditRelease"][];
+            roles: components["schemas"]["CreditRoleRef"][];
+            /** Format: int32 */
+            song_id: number;
+            title: string;
+        };
+        ArtistSongCreditRelease: {
+            disc?: null | components["schemas"]["Disc"];
+            release_date?: null | components["schemas"]["DateWithPrecision"];
+            /** Format: int32 */
+            release_id: number;
+            title: string;
+            track_number?: string | null;
         };
         ArtistSummary: {
             artist_type: components["schemas"]["ArtistType"];
@@ -1864,6 +1890,16 @@ export type components = {
             entity_id: number;
             entity_type: components["schemas"]["UserCollectionItemEntityType"];
         };
+        Credit: {
+            artist: components["schemas"]["ArtistReleaseArtist"][];
+            cover_url?: string | null;
+            release_date?: null | components["schemas"]["DateWithPrecision"];
+            /** Format: int32 */
+            release_id: number;
+            release_type: components["schemas"]["ReleaseType"];
+            roles: components["schemas"]["CreditRoleRef"][];
+            title: string;
+        };
         CreditRole: {
             description: string;
             /** Format: int32 */
@@ -1886,20 +1922,6 @@ export type components = {
             /** Format: date-time */
             uploaded_at: string;
             uploaded_by: components["schemas"]["UserSummary"];
-        };
-        CursorResponse_Credit: {
-            items: {
-                artist: components["schemas"]["ArtistReleaseArtist"][];
-                cover_url?: string | null;
-                release_date?: null | components["schemas"]["DateWithPrecision"];
-                /** Format: int32 */
-                release_id: number;
-                release_type: components["schemas"]["ReleaseType"];
-                roles: components["schemas"]["CreditRoleRef"][];
-                title: string;
-            }[];
-            /** Format: int32 */
-            next_cursor?: number | null;
         };
         CursorResponse_Discography: {
             items: {
@@ -2131,6 +2153,10 @@ export type components = {
             /** @enum {string} */
             status: "Ok";
         };
+        DataArtistCredits: {
+            data: components["schemas"]["ArtistCredits"];
+            status: string;
+        };
         DataComment: {
             data: components["schemas"]["Comment"];
             status: string;
@@ -2237,10 +2263,6 @@ export type components = {
         };
         DataPaginatedAppearance: {
             data: components["schemas"]["CursorResponse_Discography"];
-            status: string;
-        };
-        DataPaginatedCredit: {
-            data: components["schemas"]["CursorResponse_Credit"];
             status: string;
         };
         DataPaginatedDiscography: {
@@ -2386,6 +2408,11 @@ export type components = {
         DeleteVoteBody: {
             /** Format: int32 */
             tag_id: number;
+        };
+        Disc: {
+            /** Format: int32 */
+            index: number;
+            name?: string | null;
         };
         /** @enum {string} */
         EditableUserRole: "Moderator";
@@ -3507,11 +3534,16 @@ export type components = {
 export type AlternativeName = components['schemas']['AlternativeName'];
 export type Artist = components['schemas']['Artist'];
 export type ArtistCommonFilter = components['schemas']['ArtistCommonFilter'];
+export type ArtistCredits = components['schemas']['ArtistCredits'];
+export type ArtistCreditScope = components['schemas']['ArtistCreditScope'];
+export type ArtistCreditSort = components['schemas']['ArtistCreditSort'];
 export type ArtistImageQueueTarget = components['schemas']['ArtistImageQueueTarget'];
 export type ArtistImageType = components['schemas']['ArtistImageType'];
 export type ArtistListItem = components['schemas']['ArtistListItem'];
 export type ArtistProfileImageFormData = components['schemas']['ArtistProfileImageFormData'];
 export type ArtistReleaseArtist = components['schemas']['ArtistReleaseArtist'];
+export type ArtistSongCredit = components['schemas']['ArtistSongCredit'];
+export type ArtistSongCreditRelease = components['schemas']['ArtistSongCreditRelease'];
 export type ArtistSummary = components['schemas']['ArtistSummary'];
 export type ArtistType = components['schemas']['ArtistType'];
 export type AuthCredential = components['schemas']['AuthCredential'];
@@ -3536,11 +3568,11 @@ export type CorrectionSubmitResult = components['schemas']['CorrectionSubmitResu
 export type CorrectionType = components['schemas']['CorrectionType'];
 export type CreateEntityCommentRequest = components['schemas']['CreateEntityCommentRequest'];
 export type CreateUserCollectionItemRequest = components['schemas']['CreateUserCollectionItemRequest'];
+export type Credit = components['schemas']['Credit'];
 export type CreditRole = components['schemas']['CreditRole'];
 export type CreditRoleRef = components['schemas']['CreditRoleRef'];
 export type CreditRoleSummary = components['schemas']['CreditRoleSummary'];
 export type CurrentImageMetadata = components['schemas']['CurrentImageMetadata'];
-export type CursorResponseCredit = components['schemas']['CursorResponse_Credit'];
 export type CursorResponseDiscography = components['schemas']['CursorResponse_Discography'];
 export type CursorResponsePendingImageQueueItem = components['schemas']['CursorResponse_PendingImageQueueItem'];
 export type CursorResponseSearchResultArtistListItem = components['schemas']['CursorResponse_SearchResult_ArtistListItem'];
@@ -3558,6 +3590,7 @@ export type DataOptionCurrentImageMetadata = components['schemas']['Data_Option_
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
 export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_CorrectionHistoryItem'];
 export type DataVecCorrectionRevisionSummary = components['schemas']['Data_Vec_CorrectionRevisionSummary'];
+export type DataArtistCredits = components['schemas']['DataArtistCredits'];
 export type DataComment = components['schemas']['DataComment'];
 export type DataCommentPage = components['schemas']['DataCommentPage'];
 export type DataCorrectionDetail = components['schemas']['DataCorrectionDetail'];
@@ -3585,7 +3618,6 @@ export type DataPageUserCollection = components['schemas']['DataPageUserCollecti
 export type DataPageUserCollectionItemDetail = components['schemas']['DataPageUserCollectionItemDetail'];
 export type DataPageUserSummary = components['schemas']['DataPageUserSummary'];
 export type DataPaginatedAppearance = components['schemas']['DataPaginatedAppearance'];
-export type DataPaginatedCredit = components['schemas']['DataPaginatedCredit'];
 export type DataPaginatedDiscography = components['schemas']['DataPaginatedDiscography'];
 export type DataPaginatedPendingImageQueueItem = components['schemas']['DataPaginatedPendingImageQueueItem'];
 export type DataPaginatedTagAggregate = components['schemas']['DataPaginatedTagAggregate'];
@@ -3622,6 +3654,7 @@ export type DataVerifyResetCodeResponse = components['schemas']['DataVerifyReset
 export type DatePrecision = components['schemas']['DatePrecision'];
 export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
+export type Disc = components['schemas']['Disc'];
 export type EditableUserRole = components['schemas']['EditableUserRole'];
 export type EntityCommentTarget = components['schemas']['EntityCommentTarget'];
 export type EntityIdent = components['schemas']['EntityIdent'];
@@ -4578,8 +4611,11 @@ export interface operations {
     get_artist_credits: {
         parameters: {
             query: {
-                cursor: number;
+                cursor?: string | null;
                 limit: number;
+                role_id?: number | null;
+                scope?: components["schemas"]["ArtistCreditScope"];
+                sort?: components["schemas"]["ArtistCreditSort"];
             };
             header?: never;
             path: {
@@ -4594,7 +4630,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedCredit"];
+                    "application/json": components["schemas"]["DataArtistCredits"];
                 };
             };
             /** @description Too Many Requests */

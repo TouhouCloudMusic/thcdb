@@ -1,7 +1,9 @@
 import * as stylex from "@stylexjs/stylex"
-import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
+import type { Artist, Discography, ReleaseType } from "@thc/api"
+import { createSignal } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import type { ArtistSongCredit, Credit } from "~/hey-api"
 import { createMockArtist } from "~/mock/artist"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
@@ -11,6 +13,10 @@ import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
 
 import { ArtistContext } from ".."
+import {
+	ARTIST_CREDITS_STORY_DATA,
+	createArtistCreditsStoryModel,
+} from "../credits.storybook"
 import { ArtistReleaseInfoView } from "./ArtistReleaseInfo"
 
 async function noop() {
@@ -106,26 +112,21 @@ const APPEARANCE_ITEMS: Discography[] = [
 	},
 ]
 
-const CREDIT_ITEMS: ArtistCredit[] = [
-	{
-		release_id: 301,
-		title: "Borderline Archive",
-		release_type: "Single",
-		release_date: { precision: "Year", value: "2022-01-01" },
-		artist: [{ id: 55, name: "CYTOKINE" }],
-		roles: [{ id: 1, name: "Arrangement" }],
-		cover_url: null,
-	},
-]
-
 type StoryRootProps = {
 	artist: Artist
 	discographies: Record<ReleaseType, Discography[]>
 	appearances: Discography[]
-	credits: ArtistCredit[]
+	credits: Credit[]
+	songCredits: ArtistSongCredit[]
+	initialTab: string
 }
 
 function StoryRoot(props: StoryRootProps) {
+	const [activeTab, setActiveTab] = createSignal(props.initialTab)
+	const credits = createArtistCreditsStoryModel(() => ({
+		release: props.credits,
+		song: props.songCredits,
+	}))
 	const contextValue = {
 		get artist() {
 			return props.artist
@@ -134,7 +135,7 @@ function StoryRoot(props: StoryRootProps) {
 			return createInfiniteQuery(props.appearances)
 		},
 		get credits() {
-			return createInfiniteQuery(props.credits)
+			return credits
 		},
 		discographies: {
 			get data() {
@@ -152,9 +153,9 @@ function StoryRoot(props: StoryRootProps) {
 		<div {...stylex.attrs(styles.story)}>
 			<ArtistContext.Provider value={contextValue}>
 				<ArtistReleaseInfoView
-					activeTab="Discography"
+					activeTab={activeTab()}
 					comments={createMockEntityComments()}
-					onActiveTabChange={() => undefined}
+					onActiveTabChange={setActiveTab}
 				/>
 			</ArtistContext.Provider>
 		</div>
@@ -168,11 +169,14 @@ const meta = {
 	parameters: {
 		layout: StoryLayout.Padded,
 	},
+	args: { initialTab: "Discography", songCredits: [] },
 	argTypes: {
 		artist: { control: false },
 		discographies: { control: false },
 		appearances: { control: false },
 		credits: { control: false },
+		songCredits: { control: false },
+		initialTab: { control: "select", options: ["Discography", "Credit"] },
 	},
 } satisfies Meta<typeof StoryRoot>
 
@@ -203,7 +207,8 @@ export const WithAllTabs: Story = {
 			Single: [createDiscographyItem(107, "Moonlit Signal", "Single")],
 		}),
 		appearances: APPEARANCE_ITEMS,
-		credits: CREDIT_ITEMS,
+		credits: ARTIST_CREDITS_STORY_DATA.release,
+		songCredits: ARTIST_CREDITS_STORY_DATA.song,
 	},
 }
 

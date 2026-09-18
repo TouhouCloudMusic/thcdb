@@ -205,6 +205,10 @@ msgstr "全部"
 msgid "All categories"
 msgstr "全部分类"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "All roles"
+msgstr "全部角色"
+
 #: src/view/user/Profile.tsx
 msgid "Alphabetical"
 msgstr "字母顺序"
@@ -213,6 +217,10 @@ msgstr "字母顺序"
 #: src/view/auth/verify_email/index.tsx
 msgid "Already have an account?"
 msgstr "已经有账号了？"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Also on"
+msgstr "也收录于"
 
 #: src/view/event/edit/comp/EventAlternativeNamesField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
@@ -475,6 +483,10 @@ msgstr "更正已拒绝"
 msgid "Corrections · {0}"
 msgstr "编辑历史 · {0}"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Could not load credits"
+msgstr "参与作品加载失败"
+
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
 msgstr "国家 / 地区"
@@ -557,7 +569,11 @@ msgstr "创建时间"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 msgid "Credit role"
-msgstr "署名职能"
+msgstr "角色"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Credit type"
+msgstr "作品范围"
 
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
@@ -565,7 +581,7 @@ msgstr "署名职能"
 #: src/view/song/edit/comp/SongCreditsField.tsx
 #: src/view/song/Info/index.tsx
 msgid "Credits"
-msgstr "署名"
+msgstr "制作信息"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Crop failed."
@@ -1321,6 +1337,10 @@ msgstr "新建收藏"
 msgid "New password"
 msgstr "新密码"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Newest first"
+msgstr "发行时间由近到远"
+
 #: src/view/image_queue/detail.tsx
 msgid "Next"
 msgstr "下一页"
@@ -1448,6 +1468,10 @@ msgstr "未找到厂牌。"
 msgid "No labels found."
 msgstr "未找到标签。"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "No matching credits"
+msgstr "没有符合条件的参与作品"
+
 #: src/view/image_queue/manage.tsx
 #: src/view/image_queue/user.tsx
 msgid "No more entries"
@@ -1530,6 +1554,10 @@ msgstr "通知"
 #: src/component/toast/index.tsx
 msgid "Notifications ({hotkey})"
 msgstr "通知（{hotkey}）"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Oldest first"
+msgstr "发行时间由远到近"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 msgid "On Tracks"
@@ -1894,7 +1922,7 @@ msgstr "搜索收藏"
 
 #: src/view/artist/edit/comp/Membership/role.tsx
 msgid "Search credit role"
-msgstr "搜索署名职能"
+msgstr "搜索角色"
 
 #: src/component/form/SearchDialog/EventSearchDialog.tsx
 msgid "Search Event"
@@ -2068,6 +2096,10 @@ msgstr "歌词"
 msgid "Songs"
 msgstr "歌曲"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Songs without a release"
+msgstr "未关联发行作品的歌曲"
+
 #: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort"
@@ -2082,6 +2114,10 @@ msgstr "排序方式"
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "排序收藏"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Sort credits"
+msgstr "参与作品排序"
 
 #: src/view/user/Profile.tsx
 msgid "Sort: Alphabetical"
@@ -2363,6 +2399,10 @@ msgstr "未读"
 #: src/view/notification/NotificationCard.tsx
 msgid "Unsave"
 msgstr "取消保存"
+
+#: src/view/artist/profile/comp/ArtistCredits.tsx
+msgid "Unspecified role"
+msgstr "未注明角色"
 
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx

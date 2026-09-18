@@ -3,14 +3,13 @@ import { msg } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
-import type { ArtistCredit, Discography, ReleaseType } from "@thc/api"
+import type { Discography, ReleaseType } from "@thc/api"
 import type { JSX } from "solid-js"
 import { createMemo, createSignal, For, Show, Suspense } from "solid-js"
 
 import { Tab } from "~/component/atomic/Tab"
 import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release"
-import { DateWithPrecision } from "~/domain/shared"
 import type { ReleaseListItem } from "~/hey-api"
 import { palette } from "~/style/color/palette.stylex"
 import { radius, colors, px } from "~/style/tokens.stylex"
@@ -23,6 +22,7 @@ import { useEntityComments } from "~/view/comment/useEntityComments"
 import { ReleaseItem } from "~/view/release/ReleaseItems"
 
 import { ArtistContext } from ".."
+import { ArtistCredits } from "./ArtistCredits"
 
 // TODO: Add links after other pages are completed
 
@@ -148,11 +148,7 @@ export function ArtistReleaseInfo() {
 		<Suspense fallback={<div>{t`Loading...`}</div>}>
 			<Show
 				when={
-					!(
-						context.discographies.isLoading
-						|| context.appearances.isLoading
-						|| context.credits.isLoading
-					)
+					!(context.discographies.isLoading || context.appearances.isLoading)
 				}
 				fallback={<div>{t`Loading...`}</div>}
 			>
@@ -193,7 +189,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 					return context.appearances.data.length > 0
 				}
 				case "Credit": {
-					return context.credits.data.length > 0
+					return context.credits.hasCredits
 				}
 				case "Comments": {
 					return true
@@ -264,15 +260,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 				value="Credit"
 				{...stylex.attrs(styles.grid, styles.releasePanel)}
 			>
-				<ArtistReleaseList
-					data={context.credits.data}
-					hasNext={context.credits.hasNext}
-					next={() => {
-						void context.credits.next()
-					}}
-				>
-					{(itemProps) => <CreditItem {...itemProps} />}
-				</ArtistReleaseList>
+				<ArtistCredits model={context.credits} />
 			</Tab.Content>
 			<Tab.Content
 				value="Comments"
@@ -366,7 +354,7 @@ function DiscographyTab() {
 	)
 }
 
-function ArtistReleaseList<T extends Discography | ArtistCredit>(props: {
+function ArtistReleaseList<T extends Discography>(props: {
 	data?: T[] | undefined
 	hasNext: boolean
 	next: () => void
@@ -404,34 +392,7 @@ function DiscographyItem(props: { item: Discography }) {
 	)
 }
 
-function CreditItem(props: { item: ArtistCredit }) {
-	return (
-		<li {...stylex.attrs(styles.releaseItem)}>
-			<ReleaseItem
-				release={toReleaseListItem(props.item)}
-				metadata={
-					<>
-						<span>{props.item.release_type}</span>
-						<Show when={props.item.release_date}>
-							{(releaseDate) => (
-								<span>{DateWithPrecision.display(releaseDate())}</span>
-							)}
-						</Show>
-						<Show when={props.item.roles.length > 0}>
-							<span>
-								{props.item.roles.map((role) => role.name).join(", ")}
-							</span>
-						</Show>
-					</>
-				}
-			/>
-		</li>
-	)
-}
-
-function toReleaseListItem(
-	release: Discography | ArtistCredit,
-): ReleaseListItem {
+function toReleaseListItem(release: Discography): ReleaseListItem {
 	return {
 		id: release.release_id,
 		title: release.title,

@@ -1,3 +1,4 @@
+use domain::credit_role::CreditRoleRef;
 use domain::shared::{
     DateWithPrecision, HttpUrl, LocalizedTitle, NewLocalizedTitle, SimpleEvent,
     SimpleLabel,
@@ -8,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::features::correction::CorrectionEntity;
-use crate::features::credit_role::CreditRoleRef;
 use crate::features::song::model::SongRef;
 
 #[derive(Clone, Validate, Deserialize, ToSchema)]
