@@ -1071,6 +1071,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/public/image/{object_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_image"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/release": {
         parameters: {
             query?: never;
@@ -3420,6 +3436,8 @@ export type components = {
             /** Format: int32 */
             leave_year?: number | null;
         };
+        /** @enum {integer} */
+        ThumbnailSize: 6 | 7 | 8 | 9 | 10 | 11;
         UnreadCount: {
             /** Format: int32 */
             count: number;
@@ -3782,6 +3800,7 @@ export type TagRelationType = components['schemas']['TagRelationType'];
 export type TagSummary = components['schemas']['TagSummary'];
 export type TagType = components['schemas']['TagType'];
 export type Tenure = components['schemas']['Tenure'];
+export type ThumbnailSize = components['schemas']['ThumbnailSize'];
 export type UnreadCount = components['schemas']['UnreadCount'];
 export type UploadAvatar = components['schemas']['UploadAvatar'];
 export type UploadProfileBanner = components['schemas']['UploadProfileBanner'];
@@ -7653,6 +7672,73 @@ export interface operations {
             };
         };
     };
+    get_image: {
+        parameters: {
+            query?: {
+                /** @description The maximum edge is 2^size pixels. */
+                size?: components["schemas"]["ThumbnailSize"];
+                v?: number;
+            };
+            header?: never;
+            path: {
+                object_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Original image or WebP thumbnail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Image has not changed */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid size or image version */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Image not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     find_release_by_keyword: {
         parameters: {
             query: {
@@ -9842,6 +9928,7 @@ export enum ApiPaths {
     follow_user = "/profile/{name}/follow",
     unfollow_user = "/profile/{name}/follow",
     profile_image_queue_with_name = "/profile/{name}/image-queue",
+    get_image = "/public/image/{object_key}",
     find_release_by_keyword = "/release",
     create_release = "/release",
     explore_release = "/release/explore",

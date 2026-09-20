@@ -201,7 +201,7 @@ export function ReleaseCard(props: ReleaseCardProps) {
 	const { t } = useLingui()
 	const artists = () => props.release.artists.slice(0, 3)
 	const releaseDate = () => displayReleaseDate(props.release.release_date)
-	const coverUrl = () => imgUrl(props.release.cover_art_url)
+	const coverUrl = () => imgUrl(props.release.cover_art_url, 9)
 
 	return (
 		<div

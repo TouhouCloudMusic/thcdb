@@ -3321,6 +3321,8 @@ export const vNewCorrectionNewArtist = v.object({
 	type: vCorrectionType,
 })
 
+export const vThumbnailSize = v.picklist([6, 7, 8, 9, 10, 11])
+
 export const vUnreadCount = v.object({
 	count: v.pipe(
 		v.number(),
@@ -5270,6 +5272,25 @@ export const vProfileImageQueueWithNameQuery = v.object({
 
 export const vProfileImageQueueWithNameResponse =
 	vDataPaginatedUserImageQueueItem
+
+export const vGetImagePath = v.object({
+	object_key: v.string(),
+})
+
+export const vGetImageQuery = v.object({
+	size: v.optional(vThumbnailSize),
+	v: v.optional(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(0),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
 
 export const vFindReleaseByKeywordQuery = v.object({
 	keyword: v.string(),

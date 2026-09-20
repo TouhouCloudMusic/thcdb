@@ -5,7 +5,6 @@ import { For } from "solid-js"
 import { Image } from "~/component/image"
 import { palette } from "~/style/color/palette.stylex"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
-import { imgUrl } from "~/utils/adapter/static_file"
 
 const styles = stylex.create({
 	release: { display: "flex", flexDirection: "column", gap: px[8] },
@@ -59,8 +58,9 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 				<div {...stylex.attrs(styles.release)}>
 					<div {...stylex.attrs(styles.cover)}>
 						<Image.Root>
-							<Image.Img
-								src={imgUrl(release.cover_art_url)}
+							<Image.Thumbnail
+								url={release.cover_art_url}
+								size={9}
 								alt={release.title}
 								styles={styles.image}
 							/>

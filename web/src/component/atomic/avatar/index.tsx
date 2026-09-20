@@ -3,6 +3,7 @@ import type { StyleXStyles } from "@stylexjs/stylex"
 import type { JSX } from "solid-js"
 import { createSignal, Match, splitProps, Suspense, Switch } from "solid-js"
 
+import type { ThumbnailSize } from "~/hey-api"
 import { palette } from "~/style/color/palette.stylex"
 import { radius, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
@@ -62,6 +63,7 @@ export type Props = Omit<
 	styles?: StyleXStyles
 	fallbackStyles?: StyleXStyles
 	user?: AvatarUser | undefined
+	thumbnailSize?: ThumbnailSize
 }
 
 export function Avatar(props: Props) {
@@ -72,9 +74,11 @@ export function Avatar(props: Props) {
 		"styles",
 		"fallbackStyles",
 		"user",
+		"thumbnailSize",
 	])
 
-	const imageSrc = () => imgUrl(props.user?.avatar_url)
+	const imageSrc = () =>
+		imgUrl(props.user?.avatar_url, props.thumbnailSize ?? 6)
 	const validSrc = () => {
 		const src = imageSrc()
 		if (!src) return

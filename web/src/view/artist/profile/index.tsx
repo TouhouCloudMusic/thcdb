@@ -17,7 +17,6 @@ import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
 import { px, radius } from "~/style/tokens.stylex"
 import type { InfiniteQuery } from "~/type/query"
-import { imgUrl } from "~/utils/adapter/static_file"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
@@ -146,7 +145,6 @@ export type ArtistProfilePageProps = {
 
 export function ArtistProfilePage(props: ArtistProfilePageProps) {
 	const { t } = useLingui()
-	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 	const contextValue: ArtistContext = {
 		get artist() {
 			return props.artist
@@ -179,8 +177,9 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 											)
 										}
 									</Image.Fallback>
-									<Image.Img
-										src={profileImageUrl()}
+									<Image.Thumbnail
+										url={props.artist.profile_image_url}
+										size={9}
 										styles={[styles.image]}
 									/>
 								</Image.Root>

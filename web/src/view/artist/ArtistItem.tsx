@@ -73,7 +73,7 @@ export function ArtistItem(props: { artist: ArtistListItem }) {
 	return (
 		<div {...stylex.attrs(styles.resultRow)}>
 			<Thumbnail
-				src={imgUrl(props.artist.profile_image_url)}
+				src={imgUrl(props.artist.profile_image_url, 8)}
 				to="/artist/$id"
 				params={{ id: props.artist.id.toString() }}
 				aria-label={props.artist.name}

@@ -201,8 +201,8 @@ function PreviewBox(props: PreviewBoxProps) {
 						</Show>
 					)}
 				</Image.Fallback>
-				<Image.Img
-					src={props.src}
+				<Image.Original
+					url={props.src}
 					alt={props.alt}
 					styles={styles.previewImage}
 				/>

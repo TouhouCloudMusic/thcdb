@@ -182,6 +182,9 @@ import type {
 	GetHomeData,
 	GetHomeErrors,
 	GetHomeResponses,
+	GetImageData,
+	GetImageErrors,
+	GetImageResponses,
 	GetReleaseCoverArtMetadataData,
 	GetReleaseCoverArtMetadataErrors,
 	GetReleaseCoverArtMetadataResponses,
@@ -1583,6 +1586,15 @@ export const profileImageQueueWithName = <ThrowOnError extends boolean = false>(
 		ProfileImageQueueWithNameErrors,
 		ThrowOnError
 	>({ url: "/profile/{name}/image-queue", ...options })
+
+export const getImage = <ThrowOnError extends boolean = false>(
+	options: Options<GetImageData, ThrowOnError>,
+): RequestResult<GetImageResponses, GetImageErrors, ThrowOnError> =>
+	(options.client ?? client).get<
+		GetImageResponses,
+		GetImageErrors,
+		ThrowOnError
+	>({ url: "/public/image/{object_key}", ...options })
 
 export const findReleaseByKeyword = <ThrowOnError extends boolean = false>(
 	options: Options<FindReleaseByKeywordData, ThrowOnError>,

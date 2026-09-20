@@ -4,6 +4,7 @@ use std::time::SystemTime;
 
 use async_stream::try_stream;
 use futures_util::Stream;
+use tokio::io::AsyncReadExt;
 
 #[derive(Clone)]
 pub struct FsStorage {
@@ -84,6 +85,32 @@ impl FsStorage {
         })
         .await
         .map_err(std::io::Error::other)?
+    }
+
+    pub async fn read(
+        &self,
+        path: impl AsRef<Path>,
+    ) -> Result<Vec<u8>, std::io::Error> {
+        let mut file = self.open(path).await?;
+        let mut bytes = Vec::new();
+        file.read_to_end(&mut bytes).await?;
+        Ok(bytes)
+    }
+
+    pub async fn open(
+        &self,
+        path: impl AsRef<Path>,
+    ) -> Result<tokio::fs::File, std::io::Error> {
+        let full_path = self.base_path.join(path.as_ref());
+        let metadata = tokio::fs::symlink_metadata(&full_path).await?;
+        if !metadata.file_type().is_file() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "stored object is not a regular file",
+            ));
+        }
+
+        tokio::fs::File::open(full_path).await
     }
 
     fn atomic_write(

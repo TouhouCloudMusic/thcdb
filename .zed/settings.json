@@ -1,5 +1,14 @@
 {
     "terminal": {
         "detect_venv": "off"
+    },
+    "lsp": {
+        "rust-analyzer": {
+            "initialization_options": {
+                "cargo": {
+                    "extraArgs": ["--profile", "ra"]
+                }
+            }
+        }
     }
 }

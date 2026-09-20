@@ -66,6 +66,7 @@ import {
 	getCorrectionDiff,
 	getCorrectionRevisions,
 	getHome,
+	getImage,
 	getReleaseCoverArtMetadata,
 	getTags,
 	healthCheck,
@@ -311,6 +312,8 @@ import type {
 	GetHomeData,
 	GetHomeError,
 	GetHomeResponse,
+	GetImageData,
+	GetImageError,
 	GetReleaseCoverArtMetadataData,
 	GetReleaseCoverArtMetadataError,
 	GetReleaseCoverArtMetadataResponse,
@@ -3128,6 +3131,28 @@ export const profileImageQueueWithNameInfiniteOptions = (
 	)
 	return opts as Omit<typeof opts, "initialData">
 }
+
+export const getImageQueryKey = (options: Options<GetImageData>) =>
+	createQueryKey("getImage", options, false, ["Image"])
+
+export const getImageOptions = (options: Options<GetImageData>) =>
+	queryOptions<
+		unknown,
+		GetImageError,
+		unknown,
+		ReturnType<typeof getImageQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await getImage({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: getImageQueryKey(options),
+	})
 
 export const findReleaseByKeywordQueryKey = (
 	options: Options<FindReleaseByKeywordData>,

@@ -13,6 +13,7 @@ use snafu::{FromString, ResultExt, Whatever};
 use super::config::{Config, EmailSecurity};
 use super::database::{get_connection, init_database};
 use super::redis::Pool;
+use crate::features::thumbnail::ThumbnailCache;
 use crate::features::user_event::UserEventSender;
 use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 
@@ -31,6 +32,8 @@ pub struct AppState {
     pub(crate) user_events: UserEventSender,
 
     pub(crate) image_storage: FsStorage,
+
+    pub(crate) thumbnail_cache: ThumbnailCache,
 }
 
 impl AppState {
@@ -105,6 +108,7 @@ impl AppState {
             password_reset_email_queue,
             user_events,
             image_storage,
+            thumbnail_cache: ThumbnailCache::default(),
         })
     }
 }

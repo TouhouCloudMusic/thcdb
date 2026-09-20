@@ -101,7 +101,7 @@ type ArtistCardProps = {
 }
 
 export function ArtistCard(props: ArtistCardProps) {
-	const avatarUrl = () => imgUrl(props.artist.profile_image_url)
+	const avatarUrl = () => imgUrl(props.artist.profile_image_url, 9)
 	const initials = () => props.artist.name.trim().slice(0, 1).toUpperCase()
 	const artistHrefParams = () => ({ id: props.artist.id.toString() })
 	const country = () => props.artist.current_location.country
