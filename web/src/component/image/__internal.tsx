@@ -12,7 +12,9 @@ import {
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
 
+import type { ThumbnailSize } from "~/hey-api"
 import { palette } from "~/style/color/palette.stylex"
+import { imgUrl } from "~/utils/adapter/static_file"
 import { callHandlerUnion } from "~/utils/dom/event"
 
 export const enum State {
@@ -67,7 +69,7 @@ export function Root(props: RootProps) {
 	)
 }
 
-export type ImgProps = Omit<ComponentProps<"img">, "class"> & {
+type ImgProps = Omit<ComponentProps<"img">, "class"> & {
 	styles?: StyleXStyles
 }
 
@@ -89,7 +91,7 @@ const styles = stylex.create({
 	},
 	previewImage: { maxHeight: "90%", maxWidth: "90%", objectFit: "contain" },
 })
-export function Img(props: ImgProps) {
+function Img(props: ImgProps) {
 	const context = useContext(ImageContext)!
 
 	createEffect(() => {
@@ -120,6 +122,35 @@ export function Img(props: ImgProps) {
 				alt={props.alt ?? ""}
 			/>
 		</Show>
+	)
+}
+
+type OriginalProps = Omit<ImgProps, "src"> & {
+	url: string | URL | null | undefined
+}
+
+export function Original(props: OriginalProps) {
+	const [local, imageProps] = splitProps(props, ["url"])
+	return (
+		<Img
+			{...imageProps}
+			src={imgUrl(local.url)}
+		/>
+	)
+}
+
+type ThumbnailProps = Omit<ImgProps, "src"> & {
+	url: string | URL | null | undefined
+	size: ThumbnailSize
+}
+
+export function Thumbnail(props: ThumbnailProps) {
+	const [local, imageProps] = splitProps(props, ["url", "size"])
+	return (
+		<Img
+			{...imageProps}
+			src={imgUrl(local.url, local.size)}
+		/>
 	)
 }
 

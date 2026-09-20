@@ -23,6 +23,7 @@ pub mod song;
 pub mod song_lyrics;
 pub mod tag;
 mod tag_vote;
+pub(crate) mod thumbnail;
 pub mod user;
 pub mod user_collection;
 pub(crate) mod user_event;
@@ -55,6 +56,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(song_lyrics::router())
         .merge(tag::router())
         .merge(tag_vote::router())
+        .merge(thumbnail::router())
         .merge(user::router())
         .merge(user_collection::router())
         .merge(user_event::router())

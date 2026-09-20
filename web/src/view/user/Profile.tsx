@@ -668,7 +668,7 @@ export function Profile(props: Props) {
 		]
 	})
 
-	const bannerUrl = createMemo(() => imgUrl(props.data.banner_url))
+	const bannerUrl = createMemo(() => imgUrl(props.data.banner_url, 11))
 	const topRole = createMemo<UserRoleEnum | null>(() => {
 		const roles = props.roles ?? []
 		if (roles.length === 0) return null
@@ -705,6 +705,7 @@ export function Profile(props: Props) {
 					<div {...stylex.attrs(styles.avatarPosition)}>
 						<Avatar
 							user={props.data}
+							thumbnailSize={9}
 							styles={styles.avatar}
 						/>
 					</div>

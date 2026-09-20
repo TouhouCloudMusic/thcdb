@@ -126,7 +126,7 @@ const gridStyles = stylex.create({
 })
 
 export function ReleaseGridItem(props: { release: ReleaseListItem }) {
-	const coverUrl = () => imgUrl(props.release.cover_art_url)
+	const coverUrl = () => imgUrl(props.release.cover_art_url, 9)
 
 	return (
 		<div>
@@ -205,7 +205,7 @@ export function ReleaseItem(props: {
 	return (
 		<div {...stylex.attrs(listStyles.item, props.styles)}>
 			<Thumbnail
-				src={imgUrl(props.release.cover_art_url)}
+				src={imgUrl(props.release.cover_art_url, 7)}
 				to="/release/$id"
 				params={{ id: props.release.id.toString() }}
 				aria-label={props.release.title}

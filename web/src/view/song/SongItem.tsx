@@ -54,7 +54,7 @@ export function SongItem(props: { song: SongListItem }) {
 	return (
 		<div {...stylex.attrs(styles.resultRow)}>
 			<Thumbnail
-				src={imgUrl(props.song.cover_art_url)}
+				src={imgUrl(props.song.cover_art_url, 8)}
 				to="/song/$id"
 				params={{ id: props.song.id.toString() }}
 				aria-label={props.song.title}

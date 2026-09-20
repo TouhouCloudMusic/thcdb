@@ -1829,6 +1829,8 @@ export type Tenure = {
 	leave_year?: number | null
 }
 
+export type ThumbnailSize = 6 | 7 | 8 | 9 | 10 | 11
+
 export type UnreadCount = {
 	count: number
 }
@@ -4270,6 +4272,49 @@ export type ProfileImageQueueWithNameResponses = {
 
 export type ProfileImageQueueWithNameResponse =
 	ProfileImageQueueWithNameResponses[keyof ProfileImageQueueWithNameResponses]
+
+export type GetImageData = {
+	body?: never
+	path: {
+		object_key: string
+	}
+	query?: {
+		/**
+		 * The maximum edge is 2^size pixels.
+		 */
+		size?: ThumbnailSize
+		v?: number
+	}
+	url: "/public/image/{object_key}"
+}
+
+export type GetImageErrors = {
+	/**
+	 * Invalid size or image version
+	 */
+	400: unknown
+	/**
+	 * Image not found
+	 */
+	404: unknown
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type GetImageError = GetImageErrors[keyof GetImageErrors]
+
+export type GetImageResponses = {
+	/**
+	 * Original image or WebP thumbnail
+	 */
+	200: unknown
+}
 
 export type FindReleaseByKeywordData = {
 	body?: never

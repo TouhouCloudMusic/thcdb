@@ -4,7 +4,6 @@ import * as stylex from "@stylexjs/stylex"
 import { Image } from "~/component/image"
 import { palette } from "~/style/color/palette.stylex"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
-import { imgUrl } from "~/utils/adapter/static_file"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { ReleaseInfoPageContext } from "../context"
@@ -37,7 +36,6 @@ const styles = stylex.create({
 export function ReleaseInfoCoverImage() {
 	const { t } = useLingui()
 	const ctx = assertContext(ReleaseInfoPageContext)
-	const coverUrl = () => imgUrl(ctx.release.cover_art_url)
 
 	return (
 		<Image.Root>
@@ -53,8 +51,9 @@ export function ReleaseInfoCoverImage() {
 						</div>
 					)}
 				</Image.Fallback>
-				<Image.Img
-					src={coverUrl()}
+				<Image.Thumbnail
+					url={ctx.release.cover_art_url}
+					size={9}
 					alt={ctx.release.title}
 					styles={styles.image}
 				/>

@@ -1,6 +1,5 @@
 #![expect(clippy::needless_for_each)]
 use std::net::SocketAddr;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use axum::http::StatusCode;
@@ -14,14 +13,12 @@ use middleware::append_global_middlewares;
 use state::{ArcAppState, AuthSession};
 use tokio::net::TcpListener;
 use tokio::signal;
-use tower_http::services::ServeDir;
 use utoipa::{OpenApi, PartialSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 use utoipa_scalar::{Scalar, Servable};
 
 use crate::constant::r#gen::{KT_CONSTANTS, TS_CONSTANTS};
-use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::features;
 use crate::features::artist::find::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
@@ -160,6 +157,7 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
 
 #[derive(OpenApi)]
 #[openapi(
+    paths(features::thumbnail::get_image),
     info(
         title = "Touhou Cloud DB",
         description = "TODO",
@@ -184,6 +182,7 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
         features::user_collection::EntityUserCollectionTarget,
         features::image_queue::ImageQueueAction,
         features::image_queue::ImageQueueType,
+        features::thumbnail::ThumbnailSize,
         notification_service::NotificationState,
         notification_core::NotificationCategory,
         entity::sea_orm_active_enums::ImageQueueStatus,
@@ -387,7 +386,6 @@ fn router(state: ArcAppState) -> Router {
     Router::new()
         .route("/", get(home_page))
         .merge(doc_router)
-        .merge(static_dir())
         .merge(constant_files())
         .pipe(|this| append_global_middlewares(this, &state))
         .with_state(state)
@@ -428,15 +426,6 @@ async fn home_page(session: AuthSession) -> impl IntoResponse {
             }
         }
     }
-}
-
-fn static_dir() -> Router<ArcAppState> {
-    let image_path = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
-
-    Router::new().nest_service(
-        &format!("/{}", image_path.to_string_lossy()),
-        ServeDir::new(&image_path),
-    )
 }
 
 fn constant_files<S: Clone + Send + Sync + 'static>() -> Router<S> {
@@ -488,20 +477,8 @@ pub(crate) use data;
 
 #[cfg(test)]
 mod test {
-    use std::path::PathBuf;
-
     use utoipa::Modify;
     use utoipa::openapi::RefOr;
-
-    use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
-
-    #[test]
-    fn static_path() {
-        let image_path = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
-        let gen_path = format!("/{}", image_path.to_string_lossy());
-
-        assert_eq!(gen_path, "/public/image");
-    }
 
     #[test]
     fn default_fallback_added() {

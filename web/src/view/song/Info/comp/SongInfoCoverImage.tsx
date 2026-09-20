@@ -4,7 +4,6 @@ import * as stylex from "@stylexjs/stylex"
 import { Image } from "~/component/image"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
-import { imgUrl } from "~/utils/adapter/static_file"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
@@ -39,7 +38,6 @@ const styles = stylex.create({
 
 export function SongInfoCoverImage() {
 	const context = assertContext(SongInfoPageContext)
-	const coverUrl = () => imgUrl(context.song.releases?.[0]?.cover_art_url)
 	return (
 		<Image.Root>
 			<div {...stylex.attrs(styles.cover)}>
@@ -50,8 +48,9 @@ export function SongInfoCoverImage() {
 						)
 					}
 				</Image.Fallback>
-				<Image.Img
-					src={coverUrl()}
+				<Image.Thumbnail
+					url={context.song.releases?.[0]?.cover_art_url}
+					size={9}
 					styles={[styles.image]}
 				/>
 			</div>

@@ -27,7 +27,6 @@ import {
 	fontSizes,
 	px,
 } from "~/style/tokens.stylex"
-import { imgUrl } from "~/utils/adapter/static_file"
 
 const styles = stylex.create({
 	entityLink: {
@@ -288,8 +287,9 @@ function ArtistCard(props: { id: number; summary: ArtistSummary }) {
 				<Image.Root>
 					<Show when={props.summary.profile_image_url}>
 						{(url) => (
-							<Image.Img
-								src={imgUrl(url())}
+							<Image.Thumbnail
+								url={url()}
+								size={7}
 								styles={styles.img}
 							/>
 						)}
@@ -327,8 +327,9 @@ function ReleaseCard(props: { id: number; summary: ReleaseSummary }) {
 				<Image.Root>
 					<Show when={props.summary.cover_art_url}>
 						{(url) => (
-							<Image.Img
-								src={imgUrl(url())}
+							<Image.Thumbnail
+								url={url()}
+								size={7}
 								styles={styles.img}
 							/>
 						)}
@@ -375,8 +376,9 @@ function SongCard(props: { id: number; summary: SongSummary }) {
 				<Image.Root>
 					<Show when={props.summary.cover_art_url}>
 						{(url) => (
-							<Image.Img
-								src={imgUrl(url())}
+							<Image.Thumbnail
+								url={url()}
+								size={7}
 								styles={styles.img}
 							/>
 						)}

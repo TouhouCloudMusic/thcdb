@@ -892,8 +892,8 @@ function ComparisonImage(props: {
 							</div>
 						)}
 					</Image.Fallback>
-					<Image.Img
-						src={props.src}
+					<Image.Original
+						url={props.src}
 						alt={props.alt}
 						styles={styles.image}
 					/>

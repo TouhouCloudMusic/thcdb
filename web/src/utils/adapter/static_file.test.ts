@@ -12,7 +12,7 @@ describe("static image url adapter", () => {
 	})
 
 	it("passes through absolute urls", () => {
-		expect(imgUrl("https://cdn.example.com/image.png")).toBe(
+		expect(imgUrl("https://cdn.example.com/image.png", 8)).toBe(
 			"https://cdn.example.com/image.png",
 		)
 	})
