@@ -1551,6 +1551,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/tag/{id}/entities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["find_tag_entities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tag/explore": {
         parameters: {
             query?: never;
@@ -2342,6 +2358,10 @@ export type components = {
             data: components["schemas"]["SubscriptionStatus"];
             status: string;
         };
+        DataTagEntitiesPage: {
+            data: components["schemas"]["TagEntitiesPage"];
+            status: string;
+        };
         DataUnreadCount: {
             data: components["schemas"]["UnreadCount"];
             status: string;
@@ -2433,7 +2453,7 @@ export type components = {
         /** @enum {string} */
         EditableUserRole: "Moderator";
         /** @enum {string} */
-        EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "tag" | "correction" | "image-queue";
+        EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "correction" | "image-queue";
         EntityIdent: string;
         EntityMeta: {
             /** Format: int32 */
@@ -3402,6 +3422,19 @@ export type components = {
             score: number;
             user_name: string;
         };
+        TagEntitiesPage: {
+            /** @enum {string} */
+            entity_type: "release";
+            page: components["schemas"]["PageResponse_ReleaseListItem"];
+        } | {
+            /** @enum {string} */
+            entity_type: "song";
+            page: components["schemas"]["PageResponse_SongListItem"];
+        } | {
+            /** @enum {string} */
+            entity_type: "artist";
+            page: components["schemas"]["PageResponse_ArtistListItem"];
+        };
         TagListItem: {
             /** Format: int32 */
             id: number;
@@ -3650,6 +3683,7 @@ export type DataSearchSongPage = components['schemas']['DataSearchSongPage'];
 export type DataSearchTagPage = components['schemas']['DataSearchTagPage'];
 export type DataSignUpResponse = components['schemas']['DataSignUpResponse'];
 export type DataSubscriptionStatus = components['schemas']['DataSubscriptionStatus'];
+export type DataTagEntitiesPage = components['schemas']['DataTagEntitiesPage'];
 export type DataUnreadCount = components['schemas']['DataUnreadCount'];
 export type DataUserCollection = components['schemas']['DataUserCollection'];
 export type DataUserCollectionItem = components['schemas']['DataUserCollectionItem'];
@@ -3793,6 +3827,7 @@ export type SortDirection = components['schemas']['SortDirection'];
 export type SubscriptionStatus = components['schemas']['SubscriptionStatus'];
 export type Tag = components['schemas']['Tag'];
 export type TagAggregateVote = components['schemas']['TagAggregateVote'];
+export type TagEntitiesPage = components['schemas']['TagEntitiesPage'];
 export type TagListItem = components['schemas']['TagListItem'];
 export type TagRef = components['schemas']['TagRef'];
 export type TagRelation = components['schemas']['TagRelation'];
@@ -4111,7 +4146,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                entity_type: "release" | "artist";
+                entity_type: "release" | "artist" | "song";
                 id: number;
             };
             cookie?: never;
@@ -9485,6 +9520,66 @@ export interface operations {
             };
         };
     };
+    find_tag_entities: {
+        parameters: {
+            query: {
+                entity_type: "artist" | "release" | "song";
+                limit?: number;
+                page?: number;
+                sort_by?: "popular" | "release_date";
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataTagEntitiesPage"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     explore_tag: {
         parameters: {
             query?: {
@@ -9968,6 +10063,7 @@ export enum ApiPaths {
     find_tag_by_id = "/tag/{id}",
     upsert_tag_correction = "/tag/{id}",
     update_tag_pending_correction = "/tag/{id}/correction/{correction_id}",
+    find_tag_entities = "/tag/{id}/entities",
     follow_user_collection = "/user-collections/{id}/follow",
     unfollow_user_collection = "/user-collections/{id}/follow",
     stream_user_events = "/user-events/stream",

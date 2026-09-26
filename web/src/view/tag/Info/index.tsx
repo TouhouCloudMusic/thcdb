@@ -1,111 +1,233 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
-import { Link } from "@tanstack/solid-router"
 import type { CorrectionHistoryItem, Tag } from "@thc/api"
-import { createSignal, Show, Suspense } from "solid-js"
+import { createSignal, Match, Suspense, Switch } from "solid-js"
 
-import { Tab } from "~/component/atomic"
-import { Intersperse } from "~/component/data/Intersperse"
+import { Tab } from "~/component/atomic/Tab"
+import { Select, underlineSelectStyles } from "~/component/atomic/form/select"
+import type {
+	EntityUserCollectionSort,
+	ReleaseListItem,
+	SongListItem,
+	UserCollection,
+} from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
+import { copyStyles, textStyles } from "~/style"
 import { palette } from "~/style/color/palette.stylex"
-import { link } from "~/style/link"
-import {
-	radius,
-	colors,
-	lineHeights,
-	fontSizes,
-	px,
-} from "~/style/tokens.stylex"
-import { assertContext } from "~/utils/solid/assertContext"
-import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
-import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
-import { EntityComments } from "~/view/comment/EntityComments"
-import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
-import { useEntityComments } from "~/view/comment/useEntityComments"
+import { listItemStyles } from "~/style/primitives"
+import { px } from "~/style/tokens.stylex"
+import { CollectionListItem } from "~/view/collection/CollectionListItem"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
-import { entityDetailStyles } from "~/view/entity/detailStyles"
+import { ReleaseItem } from "~/view/release/ReleaseItems"
+import { SongItem } from "~/view/song/SongItem"
 
+import { TagInfoOverview } from "./Overview"
 import { TagInfoPageContext } from "./context"
 import type { TagInfoPageContextValue } from "./context"
+import { TagResultsSection } from "./results"
+import type { TagResultsStore } from "./results"
 
-const styles = stylex.create({
-	page: { padding: "clamp(1rem,4vw,2rem)" },
-	pageContent: { display: "flex", flexDirection: "column", rowGap: px[24] },
-	title: {
-		fontSize: fontSizes["3xl"],
-		lineHeight: 1.25,
-		fontWeight: 300,
-		letterSpacing: "-.025em",
-		color: colors.textPrimary,
-		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
-	},
-	shortDescription: {
-		fontSize: fontSizes.base,
-		lineHeight: lineHeights.base,
-		fontWeight: 300,
-		letterSpacing: ".025em",
-		color: colors.textTertiary,
-		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
-	},
-	metadata: {
-		display: "grid",
-		gridTemplateColumns: "auto 1fr",
-		columnGap: px[16],
-		rowGap: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-	},
-	muted: { color: colors.textTertiary },
-	alternativeNames: { display: "flex", flexWrap: "wrap", whiteSpace: "pre" },
-	secondary: { color: colors.textSecondary },
-	tabTrigger: { paddingBlock: px[12] },
-	tabContent: { padding: px[16] },
-	descriptionContainer: { padding: px[8] },
-	description: {
-		fontSize: fontSizes.base,
-		lineHeight: 1.625,
-		fontWeight: 300,
-		whiteSpace: "pre-wrap",
-		color: colors.textSecondary,
-	},
-	relationsList: {
-		overflow: "hidden",
-		borderRadius: radius.md,
-		borderWidth: "1px",
-		borderStyle: "solid",
-		borderColor: palette.slate[300],
-	},
-	relation: {
-		display: "grid",
-		gridTemplateColumns: "1fr auto",
-		alignItems: "center",
-		gap: px[16],
-		padding: px[16],
-		borderBottomWidth: { default: 0, ":not(:last-child)": "1px" },
-		borderTopWidth: 0,
-		borderStyle: "solid",
-		borderColor: palette.slate[300],
-	},
-	field: { display: "flex", flexDirection: "column" },
-	tagType: {
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
-		color: colors.textTertiary,
-	},
-	relationType: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textSecondary,
-	},
-})
+function renderCollection(collection: UserCollection) {
+	return (
+		<CollectionListItem.Root styles={listItemStyles.content}>
+			<CollectionListItem.Name
+				id={collection.id}
+				styles={textStyles.ellipsis}
+			>
+				{collection.name}
+			</CollectionListItem.Name>
+			<CollectionListItem.Metadata>
+				<CollectionListItem.Owner
+					name={collection.owner.name}
+					styles={textStyles.ellipsis}
+				/>
+				<CollectionListItem.ItemCount value={collection.item_count} />
+			</CollectionListItem.Metadata>
+			<CollectionListItem.Description
+				styles={[copyStyles.sm, textStyles.ellipsis]}
+			>
+				{collection.description}
+			</CollectionListItem.Description>
+		</CollectionListItem.Root>
+	)
+}
+
+export type TagCollectionsStore = TagResultsStore<UserCollection> & {
+	sortBy: EntityUserCollectionSort
+	setSortBy: (sort: EntityUserCollectionSort) => void
+}
+
+type SortableTagResultsStore<T> = TagResultsStore<T> & {
+	sortBy: TagEntitySort
+	setSortBy: (sort: TagEntitySort) => void
+}
 
 type Props = {
 	tag: Tag
 	correctionHistory: CorrectionHistoryItem[]
+	releases: SortableTagResultsStore<ReleaseListItem>
+	songs: SortableTagResultsStore<SongListItem>
+	collections: TagCollectionsStore
+}
+
+export type TagEntitySort = "popular" | "release_date"
+
+const pageStyles = stylex.create({
+	page: {
+		"--page-width": px[1280],
+		borderInlineWidth: 0,
+		padding: px[32],
+	},
+	pageContent: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0, 1fr)",
+		columnGap: px[64],
+		rowGap: px[32],
+		alignItems: "start",
+	},
+	fullWidth: {
+		gridColumn: "1 / -1",
+	},
+	referencingEntities: {
+		display: "grid",
+		gridColumn: "1 / -1",
+		gridTemplateColumns: "subgrid",
+		rowGap: px[16],
+	},
+})
+
+const sortStyles = stylex.create({
+	text: {
+		fontWeight: 300,
+	},
+})
+
+const tabsStyles = stylex.create({
+	root: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0, 1fr) auto",
+		columnGap: px[8],
+		alignItems: "stretch",
+		height: px[32],
+		borderBottomWidth: "1px",
+		borderBottomStyle: "solid",
+		borderColor: palette.slate[300],
+	},
+	indicator: {
+		// Because the border is on container instead of the list,
+		// override it to make the indicator appears above the border instead of below.
+		bottom: 0,
+		height: "1px",
+	},
+	content: {
+		paddingTop: px[8],
+		paddingInline: px[8],
+	},
+	// TODO: font design systems
+	trigger: {
+		fontWeight: 300,
+		letterSpacing: "-0.025em",
+		// The default styles of tab use UPPERCASE.
+		textTransform: "none",
+	},
+})
+
+function EntitySortSelect(props: {
+	store: SortableTagResultsStore<ReleaseListItem | SongListItem>
+	label: string
+}) {
+	const { t } = useLingui()
+	return (
+		<Select.Root<TagEntitySort>
+			options={["popular", "release_date"]}
+			optionTextValue={(value) =>
+				value === "popular" ? t`Popular` : t`Release date`
+			}
+			value={props.store.sortBy}
+			onChange={(value) => {
+				if (value !== null) props.store.setSortBy(value)
+			}}
+			placeholder={t`Sort`}
+			itemComponent={(itemProps) => (
+				<Select.Item
+					item={itemProps.item}
+					styles={[underlineSelectStyles.item, sortStyles.text]}
+				>
+					{itemProps.item.rawValue === "popular" ? t`Popular` : t`Release date`}
+				</Select.Item>
+			)}
+		>
+			<Select.Trigger
+				aria-label={props.label}
+				styles={[underlineSelectStyles.trigger, sortStyles.text]}
+			>
+				<Select.Value<TagEntitySort>>
+					{(state) =>
+						state.selectedOption() === "popular"
+							? t`Sort: Popular`
+							: t`Sort: Release date`
+					}
+				</Select.Value>
+				<Select.Icon />
+			</Select.Trigger>
+			<Select.Portal>
+				<Select.Content styles={underlineSelectStyles.content}>
+					<Select.Listbox styles={underlineSelectStyles.listbox} />
+				</Select.Content>
+			</Select.Portal>
+		</Select.Root>
+	)
+}
+
+function CollectionSortSelect(props: { store: TagCollectionsStore }) {
+	const { t } = useLingui()
+	return (
+		<Select.Root<EntityUserCollectionSort>
+			options={["collected_at", "follower_count"]}
+			optionTextValue={(value) =>
+				value === "collected_at" ? t`Collected time` : t`Follow count`
+			}
+			value={props.store.sortBy}
+			onChange={(value) => {
+				if (value !== null) props.store.setSortBy(value)
+			}}
+			placeholder={t`Sort`}
+			itemComponent={(itemProps) => (
+				<Select.Item
+					item={itemProps.item}
+					styles={[underlineSelectStyles.item, sortStyles.text]}
+				>
+					{itemProps.item.rawValue === "collected_at"
+						? t`Collected time`
+						: t`Follow count`}
+				</Select.Item>
+			)}
+		>
+			<Select.Trigger
+				aria-label={t`Sort collections`}
+				styles={[underlineSelectStyles.trigger, sortStyles.text]}
+			>
+				<Select.Value<EntityUserCollectionSort>>
+					{(state) =>
+						state.selectedOption() === "collected_at"
+							? t`Sort: Collected time`
+							: t`Sort: Follow count`
+					}
+				</Select.Value>
+				<Select.Icon />
+			</Select.Trigger>
+			<Select.Portal>
+				<Select.Content styles={underlineSelectStyles.content}>
+					<Select.Listbox styles={underlineSelectStyles.listbox} />
+				</Select.Content>
+			</Select.Portal>
+		</Select.Root>
+	)
 }
 
 export function TagInfoPage(props: Props) {
 	const { t } = useLingui()
+	const [activeTab, setActiveTab] = createSignal("release")
 	const contextValue: TagInfoPageContextValue = {
 		get tag() {
 			return props.tag
@@ -113,184 +235,105 @@ export function TagInfoPage(props: Props) {
 	}
 
 	return (
-		<PageLayout styles={styles.page}>
+		<PageLayout styles={pageStyles.page}>
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<TagInfoPageContext.Provider value={contextValue}>
-					<div {...stylex.attrs(styles.pageContent)}>
-						<TagInfoHeader />
-						<TagInfoDetails />
-						<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
-							<AddToUserCollectionButton
-								entityType="Tag"
+					<div {...stylex.attrs(pageStyles.pageContent)}>
+						<TagInfoOverview />
+						<div {...stylex.attrs(pageStyles.referencingEntities)}>
+							<Tab.Root
+								value={activeTab()}
+								onChange={setActiveTab}
+							>
+								<div {...stylex.attrs(tabsStyles.root)}>
+									<Tab.List>
+										<Tab.Trigger
+											value="release"
+											styles={tabsStyles.trigger}
+										>
+											{t`Releases`}
+										</Tab.Trigger>
+
+										<Tab.Trigger
+											value="song"
+											styles={tabsStyles.trigger}
+										>
+											{t`Songs`}
+										</Tab.Trigger>
+
+										<Tab.Trigger
+											value="collection"
+											styles={tabsStyles.trigger}
+										>
+											{t`Collections`}
+										</Tab.Trigger>
+
+										<Tab.Indicator styles={tabsStyles.indicator} />
+									</Tab.List>
+
+									<Switch>
+										<Match when={activeTab() === "release"}>
+											<EntitySortSelect
+												store={props.releases}
+												label={t`Sort releases`}
+											/>
+										</Match>
+										<Match when={activeTab() === "song"}>
+											<EntitySortSelect
+												store={props.songs}
+												label={t`Sort songs`}
+											/>
+										</Match>
+										<Match when={activeTab() === "collection"}>
+											<CollectionSortSelect store={props.collections} />
+										</Match>
+									</Switch>
+								</div>
+								<Tab.Content
+									value="release"
+									class={stylex.attrs(tabsStyles.content).class}
+								>
+									<TagResultsSection
+										title={t`Releases`}
+										emptyMessage={t`No releases use this tag`}
+										store={props.releases}
+										renderItem={(release) => <ReleaseItem release={release} />}
+									/>
+								</Tab.Content>
+								<Tab.Content
+									value="song"
+									class={stylex.attrs(tabsStyles.content).class}
+								>
+									<TagResultsSection
+										title={t`Songs`}
+										emptyMessage={t`No songs use this tag`}
+										store={props.songs}
+										renderItem={(song) => <SongItem song={song} />}
+									/>
+								</Tab.Content>
+								<Tab.Content
+									value="collection"
+									class={stylex.attrs(tabsStyles.content).class}
+								>
+									<TagResultsSection
+										title={t`Collections`}
+										emptyMessage={t`No collections`}
+										store={props.collections}
+										renderItem={renderCollection}
+									/>
+								</Tab.Content>
+							</Tab.Root>
+						</div>
+						<div {...stylex.attrs(pageStyles.fullWidth)}>
+							<EntityCorrectionMetadataSection
+								entityType="tag"
 								entityId={props.tag.id}
+								correctionHistory={props.correctionHistory}
 							/>
 						</div>
-						<TagInfoTabs />
-						<EntityCorrectionMetadataSection
-							entityType="tag"
-							entityId={props.tag.id}
-							correctionHistory={props.correctionHistory}
-						/>
 					</div>
 				</TagInfoPageContext.Provider>
 			</Suspense>
 		</PageLayout>
-	)
-}
-
-function TagInfoHeader() {
-	const ctx = assertContext(TagInfoPageContext)
-	return (
-		<header>
-			<h1 {...stylex.attrs(styles.title)}>{ctx.tag.name}</h1>
-			<Show when={ctx.tag.short_description}>
-				<p {...stylex.attrs(styles.shortDescription)}>
-					{ctx.tag.short_description}
-				</p>
-			</Show>
-		</header>
-	)
-}
-
-function TagInfoDetails() {
-	const { t } = useLingui()
-	const ctx = assertContext(TagInfoPageContext)
-	return (
-		<div {...stylex.attrs(styles.metadata)}>
-			<div {...stylex.attrs(styles.muted)}>{t`Type`}</div>
-			<div>{ctx.tag.type}</div>
-			<Show when={ctx.tag.alt_names && ctx.tag.alt_names.length > 0}>
-				<span {...stylex.attrs(styles.muted)}>{t`AKAs`}</span>
-				<ul {...stylex.attrs(styles.alternativeNames)}>
-					<Intersperse
-						of={ctx.tag.alt_names}
-						with={<span>, </span>}
-					>
-						{(x) => <li {...stylex.attrs(styles.secondary)}>{x.name}</li>}
-					</Intersperse>
-				</ul>
-			</Show>
-		</div>
-	)
-}
-
-function TagInfoTabs() {
-	const { t } = useLingui()
-	const ctx = assertContext(TagInfoPageContext)
-	const hasDesc = () => Boolean(ctx.tag.description)
-	const hasRelations = () =>
-		Boolean(ctx.tag.relations && ctx.tag.relations.length > 0)
-	const [activeTab, setActiveTab] = createSignal(
-		hasDesc() ? "Description" : hasRelations() ? "Relations" : "Comments",
-	)
-	const comments = useEntityComments(() => ({
-		entityType: "tag",
-		entityId: ctx.tag.id,
-		listEnabled: activeTab() === "Comments",
-	}))
-	return (
-		<Tab.Root
-			value={activeTab()}
-			onChange={setActiveTab}
-		>
-			<Tab.ScrollArea>
-				<Tab.List styles={Tab.containerStyles}>
-					<Show when={hasDesc()}>
-						<Tab.Trigger
-							value="Description"
-							styles={styles.tabTrigger}
-						>
-							{t`Description`}
-						</Tab.Trigger>
-					</Show>
-					<Show when={hasRelations()}>
-						<Tab.Trigger
-							value="Relations"
-							styles={styles.tabTrigger}
-						>
-							{t`Relations`}
-						</Tab.Trigger>
-					</Show>
-					<EntityCommentsTabTrigger
-						count={comments.activeCommentCount()}
-						styles={styles.tabTrigger}
-					/>
-					<Tab.Trigger
-						value="Collections"
-						styles={styles.tabTrigger}
-					>
-						{t`Collections`}
-					</Tab.Trigger>
-					<Tab.Indicator />
-				</Tab.List>
-			</Tab.ScrollArea>
-			<Show when={hasDesc()}>
-				<Tab.Content
-					value="Description"
-					{...stylex.attrs(styles.tabContent)}
-				>
-					<TagInfoDescription />
-				</Tab.Content>
-			</Show>
-			<Show when={hasRelations()}>
-				<Tab.Content
-					value="Relations"
-					{...stylex.attrs(styles.tabContent)}
-				>
-					<TagInfoRelations />
-				</Tab.Content>
-			</Show>
-			<Tab.Content
-				value="Comments"
-				{...stylex.attrs(styles.tabContent)}
-			>
-				<EntityComments model={comments} />
-			</Tab.Content>
-			<Tab.Content
-				value="Collections"
-				{...stylex.attrs(styles.tabContent)}
-			>
-				<EntityCollectionsTab
-					entityType="tag"
-					entityId={ctx.tag.id}
-					enabled={activeTab() === "Collections"}
-				/>
-			</Tab.Content>
-		</Tab.Root>
-	)
-}
-
-function TagInfoDescription() {
-	const ctx = assertContext(TagInfoPageContext)
-	return (
-		<div {...stylex.attrs(styles.descriptionContainer)}>
-			<p {...stylex.attrs(styles.description)}>{ctx.tag.description}</p>
-		</div>
-	)
-}
-
-function TagInfoRelations() {
-	const ctx = assertContext(TagInfoPageContext)
-	const list = () => ctx.tag.relations ?? []
-	return (
-		<div>
-			<ul {...stylex.attrs(styles.relationsList)}>
-				{list().map((rel) => (
-					<li {...stylex.attrs(styles.relation)}>
-						<div {...stylex.attrs(styles.field)}>
-							<Link
-								class={stylex.attrs(link.base, link.withUnderline).class}
-								to="/tag/$id"
-								params={{ id: rel.tag.id.toString() }}
-							>
-								{rel.tag.name}
-							</Link>
-							<span {...stylex.attrs(styles.tagType)}>{rel.tag.type}</span>
-						</div>
-						<span {...stylex.attrs(styles.relationType)}>{rel.type}</span>
-					</li>
-				))}
-			</ul>
-		</div>
 	)
 }

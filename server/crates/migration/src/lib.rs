@@ -75,6 +75,7 @@ migrations![
     m20260828_000000_add_missing_entity_links,
     m20260907_000000_add_collection_item_added_at,
     m20260908_000000_share_image_objects,
+    m20260922_000000_create_entity_popularity,
 ];
 
 macro_rules! migration {

@@ -94,6 +94,8 @@ const styles = stylex.create({
 		alignItems: "center",
 		gap: px[8],
 		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
 	},
 	count: {
 		fontSize: fontSizes.sm,
@@ -108,6 +110,7 @@ const styles = stylex.create({
 		gap: px[8],
 		padding: px[16],
 	},
+	collection: { display: "grid", rowGap: px[4] },
 	loading: {
 		paddingBlock: px[32],
 		textAlign: "center",
@@ -592,7 +595,22 @@ function SearchResults(props: {
 						setSentinelRef={setUserCollectionsSentinelRef}
 						emptyText={t`No collections found.`}
 						renderItem={(collection) => (
-							<CollectionListItem collection={collection} />
+							<CollectionListItem.Root styles={styles.collection}>
+								<div>
+									<CollectionListItem.Name id={collection.id}>
+										{collection.name}
+									</CollectionListItem.Name>
+									<CollectionListItem.Metadata>
+										<CollectionListItem.Owner name={collection.owner.name} />
+										<CollectionListItem.ItemCount
+											value={collection.item_count}
+										/>
+									</CollectionListItem.Metadata>
+								</div>
+								<CollectionListItem.Description>
+									{collection.description}
+								</CollectionListItem.Description>
+							</CollectionListItem.Root>
 						)}
 					/>
 				</Tab.Content>

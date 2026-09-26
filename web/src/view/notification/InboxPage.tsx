@@ -104,6 +104,8 @@ const styles = stylex.create({
 		paddingRight: px[12],
 		paddingTop: px[8],
 		paddingBottom: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
 		fontWeight: 400,
 		letterSpacing: 0,
 		textTransform: "none",

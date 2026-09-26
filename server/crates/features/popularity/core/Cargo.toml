@@ -19,8 +19,6 @@ futures-util.workspace = true
 infra_error.workspace  = true
 sea-orm.workspace      = true
 sea-query.workspace    = true
-serde.workspace        = true
-serde_json.workspace   = true
 tokio.workspace        = true
 visit_core.workspace   = true
 

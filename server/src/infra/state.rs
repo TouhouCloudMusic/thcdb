@@ -48,6 +48,10 @@ impl AppState {
 
         let redis_pool = Pool::init(&config.redis_url).await.inner;
 
+        popularity_core::initialize_scores(&conn, &redis_pool)
+            .await
+            .whatever_context("Failed to initialize popularity scores")?;
+
         let password_reset_email_queue =
             password_reset_email_queue(&config.redis_url)
                 .await

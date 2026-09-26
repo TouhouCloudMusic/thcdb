@@ -14,7 +14,13 @@ import {
 } from "~/style/tokens.stylex"
 
 const styles = stylex.create({
-	trigger: { display: "flex", alignItems: "center", gap: px[8] },
+	trigger: {
+		display: "flex",
+		alignItems: "center",
+		gap: px[8],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
 	label: {
 		borderRadius: radius.full,
 		backgroundColor: palette.slate[100],

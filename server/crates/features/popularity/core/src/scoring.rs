@@ -45,7 +45,7 @@ struct HalfSaturationCounts {
 
 impl HalfSaturationCounts {
     fn from_metrics<'a>(
-        metrics: impl ExactSizeIterator<Item = &'a Metrics>,
+        metrics: impl ExactSizeIterator<Item = &'a Metrics> + Clone,
     ) -> Self {
         const MIN_SAMPLE_SIZE: usize = 20;
         const FALLBACK_VISITOR_HALF_SATURATION: u64 = 100;
@@ -66,26 +66,25 @@ impl HalfSaturationCounts {
             };
         }
 
-        let mut visitors = Vec::with_capacity(metrics.len());
-        let mut collectors = Vec::with_capacity(metrics.len());
-        let mut voters = Vec::with_capacity(metrics.len());
+        let mut counts = Vec::with_capacity(metrics.len());
+        counts.extend(metrics.clone().map(|metrics| metrics.visitors));
+        let visitor =
+            p95_or_fallback(&mut counts, FALLBACK_VISITOR_HALF_SATURATION);
 
-        for metrics in metrics {
-            visitors.push(metrics.visitors);
-            collectors.push(metrics.collector_count);
-            voters.push(metrics.voter_count);
-        }
+        counts.clear();
+        counts.extend(metrics.clone().map(|metrics| metrics.collector_count));
+        let collector =
+            p95_or_fallback(&mut counts, FALLBACK_COLLECTOR_HALF_SATURATION);
+
+        counts.clear();
+        counts.extend(metrics.map(|metrics| metrics.voter_count));
+        let voter =
+            p95_or_fallback(&mut counts, FALLBACK_VOTER_HALF_SATURATION);
 
         Self {
-            visitor: p95_or_fallback(
-                visitors,
-                FALLBACK_VISITOR_HALF_SATURATION,
-            ),
-            collector: p95_or_fallback(
-                collectors,
-                FALLBACK_COLLECTOR_HALF_SATURATION,
-            ),
-            voter: p95_or_fallback(voters, FALLBACK_VOTER_HALF_SATURATION),
+            visitor,
+            collector,
+            voter,
         }
     }
 }
@@ -101,7 +100,7 @@ pub(super) fn score_batch(
         .collect()
 }
 
-fn p95_or_fallback(mut counts: Vec<u64>, fallback: u64) -> u64 {
+fn p95_or_fallback(counts: &mut [u64], fallback: u64) -> u64 {
     // ceil(95 * n / 100) = n - floor(n / 20)
     let rank = counts.len() - counts.len() / 20;
     let (_, count, _) = counts.select_nth_unstable(rank - 1);

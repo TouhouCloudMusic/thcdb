@@ -4,6 +4,7 @@ import { CorrectionQueryOption, SongQueryOption } from "@thc/query"
 
 import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { createEntityVisit } from "~/state/visit"
 import { SongInfoPage } from "~/view/song/Info"
 
 export const Route = createFileRoute("/song/$id")({
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/song/$id")({
 function RouteComponent() {
 	const params = Route.useParams()
 	const songId = () => EntityId_fromStr(params().id)
+	createEntityVisit("song", songId)
 	const query = useQuery(() => SongQueryOption.findById(songId()))
 	const correctionHistoryQuery = useQuery(() =>
 		CorrectionQueryOption.history("song", songId()),

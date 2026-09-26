@@ -7,6 +7,14 @@ use utoipa::{IntoParams, ToSchema};
 
 pub use crate::shared::http::{CorrectionSortField, PageQuery, SortDirection};
 
+#[derive(Clone, Copy, Debug, Default, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum TagEntitySort {
+    #[default]
+    Popular,
+    ReleaseDate,
+}
+
 #[serde_as]
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
 #[schema(as = TagFilter)]

@@ -625,6 +625,11 @@ export type DataSubscriptionStatus = {
 	data: SubscriptionStatus
 }
 
+export type DataTagEntitiesPage = {
+	status: string
+	data: TagEntitiesPage
+}
+
 export type DataUnreadCount = {
 	status: string
 	data: UnreadCount
@@ -800,7 +805,6 @@ export type EntityCommentTarget =
 	| "song"
 	| "label"
 	| "event"
-	| "tag"
 	| "correction"
 	| "image-queue"
 
@@ -1794,6 +1798,20 @@ export type TagAggregateVote = {
 	user_name: string
 	score: number
 }
+
+export type TagEntitiesPage =
+	| {
+			page: PageResponseReleaseListItem
+			entity_type: "release"
+	  }
+	| {
+			page: PageResponseSongListItem
+			entity_type: "song"
+	  }
+	| {
+			page: PageResponseArtistListItem
+			entity_type: "artist"
+	  }
 
 export type TagListItem = {
 	id: number
@@ -5520,6 +5538,45 @@ export type UpdateTagPendingCorrectionResponses = {
 export type UpdateTagPendingCorrectionResponse =
 	UpdateTagPendingCorrectionResponses[keyof UpdateTagPendingCorrectionResponses]
 
+export type FindTagEntitiesData = {
+	body?: never
+	path: {
+		id: number
+	}
+	query: {
+		entity_type: "artist" | "release" | "song"
+		sort_by?: "popular" | "release_date"
+		limit?: number
+		page?: number
+	}
+	url: "/tag/{id}/entities"
+}
+
+export type FindTagEntitiesErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	500: {
+		status: "Err"
+		message: string
+	}
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FindTagEntitiesError =
+	FindTagEntitiesErrors[keyof FindTagEntitiesErrors]
+
+export type FindTagEntitiesResponses = {
+	200: DataTagEntitiesPage
+}
+
+export type FindTagEntitiesResponse =
+	FindTagEntitiesResponses[keyof FindTagEntitiesResponses]
+
 export type UnfollowUserCollectionData = {
 	body?: never
 	path: {
@@ -5949,7 +6006,7 @@ export type GetTagsResponse = GetTagsResponses[keyof GetTagsResponses]
 export type RecordVisitData = {
 	body?: never
 	path: {
-		entity_type: "release" | "artist"
+		entity_type: "release" | "artist" | "song"
 		id: number
 	}
 	query?: never

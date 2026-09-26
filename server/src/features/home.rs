@@ -66,7 +66,7 @@ async fn get_home(
 ) -> Result<Data<Home>, AppError> {
     let db = &state.database;
 
-    let ranking = popularity_core::load_ranking(db, &state.redis_pool())
+    let ranking = popularity_core::load_ranking(db)
         .await
         .map_err(AppError::internal)?;
     let popular = load_popular_items(db, &ranking).await?;

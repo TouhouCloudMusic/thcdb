@@ -1,7 +1,11 @@
 use chrono::{Days, NaiveDate, NaiveTime};
 use fred::prelude::*;
+use itertools::izip;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
 
 #[derive(
     Clone,
@@ -19,6 +23,7 @@ use utoipa::ToSchema;
 pub enum EntityType {
     Release,
     Artist,
+    Song,
 }
 
 impl EntityType {
@@ -26,6 +31,7 @@ impl EntityType {
         match self {
             Self::Release => "release",
             Self::Artist => "artist",
+            Self::Song => "song",
         }
     }
 }
@@ -61,35 +67,65 @@ pub async fn record(
     Ok(())
 }
 
+const COUNT_BATCH_SIZE: usize = 200;
+
+pub struct VisitCount {
+    pub kind: EntityType,
+    pub id: i32,
+    pub visitors: u64,
+}
+
 pub async fn counts(
     redis: &Pool,
-    entity_type: EntityType,
     day: NaiveDate,
-) -> Result<Vec<(i32, u64)>, Error> {
-    let days: Vec<_> = (0..7)
-        .map(|offset| day_key(entity_type, day - Days::new(offset)))
+) -> Result<Vec<VisitCount>, Error> {
+    let kinds = [EntityType::Release, EntityType::Artist, EntityType::Song];
+    let days = kinds.map(|kind| {
+        (0..7)
+            .map(|offset| day_key(kind, day - Days::new(offset)))
+            .collect::<Vec<_>>()
+    });
+    let pipeline = redis.next().pipeline();
+
+    for keys in &days {
+        pipeline
+            .sunion::<(), _>(
+                keys.iter()
+                    .map(|key| format!("{key}:active"))
+                    .collect::<Vec<_>>(),
+            )
+            .await?;
+    }
+
+    let groups: Vec<Vec<i32>> = pipeline.all().await?;
+
+    let entities: Vec<_> = izip!(kinds, &days, groups)
+        .flat_map(|(kind, days, ids)| {
+            ids.into_iter().map(move |id| (kind, id, days))
+        })
         .collect();
-    let ids: Vec<i32> = redis
-        .sunion(
-            days.iter()
-                .map(|key| format!("{key}:active"))
-                .collect::<Vec<_>>(),
-        )
-        .await?;
-    let mut result = Vec::with_capacity(ids.len());
-    for chunk in ids.chunks(200) {
+
+    let mut result = Vec::with_capacity(entities.len());
+
+    for chunk in entities.chunks(COUNT_BATCH_SIZE) {
         let pipeline = redis.next().pipeline();
-        for id in chunk {
+
+        for (_, id, days) in chunk {
             pipeline
                 .pfcount::<(), _>(
                     days.iter()
-                        .map(|key| format!("{key}:{id}"))
+                        .map(|day| format!("{day}:{id}"))
                         .collect::<Vec<_>>(),
                 )
                 .await?;
         }
+
         let counts: Vec<u64> = pipeline.all().await?;
-        result.extend(chunk.iter().copied().zip(counts));
+
+        result.extend(chunk.iter().zip(counts).map(
+            |(&(kind, id, _), visitors)| VisitCount { kind, id, visitors },
+        ));
     }
+
     Ok(result)
 }

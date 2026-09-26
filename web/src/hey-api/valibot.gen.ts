@@ -488,7 +488,6 @@ export const vEntityCommentTarget = v.picklist([
 	"song",
 	"label",
 	"event",
-	"tag",
 	"correction",
 	"image-queue",
 ])
@@ -2792,6 +2791,26 @@ export const vCursorResponseTagAggregate = v.object({
 export const vDataPaginatedTagAggregate = v.object({
 	status: v.string(),
 	data: vCursorResponseTagAggregate,
+})
+
+export const vTagEntitiesPage = v.union([
+	v.object({
+		page: vPageResponseReleaseListItem,
+		entity_type: v.picklist(["release"]),
+	}),
+	v.object({
+		page: vPageResponseSongListItem,
+		entity_type: v.picklist(["song"]),
+	}),
+	v.object({
+		page: vPageResponseArtistListItem,
+		entity_type: v.picklist(["artist"]),
+	}),
+])
+
+export const vDataTagEntitiesPage = v.object({
+	status: v.string(),
+	data: vTagEntitiesPage,
 })
 
 export const vTagRelationType = v.picklist(["Inherit", "Derive"])
@@ -5857,6 +5876,36 @@ export const vUpdateTagPendingCorrectionPath = v.object({
 
 export const vUpdateTagPendingCorrectionResponse = vDataCorrectionSubmitResult
 
+export const vFindTagEntitiesPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vFindTagEntitiesQuery = v.object({
+	entity_type: v.picklist(["artist", "release", "song"]),
+	sort_by: v.optional(v.picklist(["popular", "release_date"])),
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	page: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
+		),
+	),
+})
+
+export const vFindTagEntitiesResponse = vDataTagEntitiesPage
+
 export const vUnfollowUserCollectionPath = v.object({
 	id: v.pipe(
 		v.number(),
@@ -6061,7 +6110,7 @@ export const vGetTagsQuery = v.object({
 export const vGetTagsResponse = vDataPaginatedTagAggregate
 
 export const vRecordVisitPath = v.object({
-	entity_type: v.picklist(["release", "artist"]),
+	entity_type: v.picklist(["release", "artist", "song"]),
 	id: v.pipe(
 		v.number(),
 		v.integer(),

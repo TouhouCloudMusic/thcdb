@@ -58,7 +58,11 @@ const styles = stylex.create({
 		gap: px[2],
 		whiteSpace: "pre",
 	},
-	tabTrigger: { paddingBlock: px[12] },
+	tabTrigger: {
+		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
 	tabPanel: { padding: px[16] },
 })
 

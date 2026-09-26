@@ -56,6 +56,7 @@ import {
 	findSongLyricsById,
 	findTagById,
 	findTagByKeyword,
+	findTagEntities,
 	followedUserCollections,
 	followUser,
 	followUserCollection,
@@ -282,6 +283,9 @@ import type {
 	FindTagByKeywordData,
 	FindTagByKeywordError,
 	FindTagByKeywordResponse,
+	FindTagEntitiesData,
+	FindTagEntitiesError,
+	FindTagEntitiesResponse,
 	FollowedUserCollectionsData,
 	FollowedUserCollectionsError,
 	FollowedUserCollectionsResponse,
@@ -4504,6 +4508,78 @@ export const updateTagPendingCorrectionMutation = (
 		},
 	}
 	return mutationOptions
+}
+
+export const findTagEntitiesQueryKey = (
+	options: Options<FindTagEntitiesData>,
+) => createQueryKey("findTagEntities", options, false, ["Tag"])
+
+export const findTagEntitiesOptions = (options: Options<FindTagEntitiesData>) =>
+	queryOptions<
+		FindTagEntitiesResponse,
+		FindTagEntitiesError,
+		FindTagEntitiesResponse,
+		ReturnType<typeof findTagEntitiesQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await findTagEntities({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: findTagEntitiesQueryKey(options),
+	})
+
+export const findTagEntitiesInfiniteQueryKey = (
+	options: Options<FindTagEntitiesData>,
+): QueryKey<Options<FindTagEntitiesData>> =>
+	createQueryKey("findTagEntities", options, true, ["Tag"])
+
+export const findTagEntitiesInfiniteOptions = (
+	options: Options<FindTagEntitiesData>,
+) => {
+	const opts = infiniteQueryOptions<
+		FindTagEntitiesResponse,
+		FindTagEntitiesError,
+		InfiniteData<FindTagEntitiesResponse>,
+		QueryKey<Options<FindTagEntitiesData>>,
+		| number
+		| Pick<
+				QueryKey<Options<FindTagEntitiesData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<FindTagEntitiesData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									page: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await findTagEntities({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: findTagEntitiesInfiniteQueryKey(options),
+		},
+	)
+	return opts as Omit<typeof opts, "initialData">
 }
 
 export const unfollowUserCollectionMutation = (

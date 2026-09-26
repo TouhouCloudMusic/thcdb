@@ -17,7 +17,6 @@ pub(crate) enum EntityCommentTarget {
     Song,
     Label,
     Event,
-    Tag,
     Correction,
     ImageQueue,
 }
@@ -30,7 +29,6 @@ impl From<EntityCommentTarget> for CommentTargetKind {
             EntityCommentTarget::Song => Self::Song,
             EntityCommentTarget::Label => Self::Label,
             EntityCommentTarget::Event => Self::Event,
-            EntityCommentTarget::Tag => Self::Tag,
             EntityCommentTarget::Correction => Self::Correction,
             EntityCommentTarget::ImageQueue => Self::ImageQueue,
         }

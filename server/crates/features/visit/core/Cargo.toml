@@ -12,10 +12,11 @@ name = "visit_core"
 path = "src/lib.rs"
 
 [dependencies]
-chrono.workspace = true
-fred.workspace   = true
-serde.workspace  = true
-utoipa.workspace = true
+chrono.workspace    = true
+fred.workspace      = true
+itertools.workspace = true
+serde.workspace     = true
+utoipa.workspace    = true
 
 [dev-dependencies]
 anyhow.workspace        = true

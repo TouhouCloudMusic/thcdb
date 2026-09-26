@@ -4,26 +4,21 @@ import { For, Show } from "solid-js"
 
 import { Thumbnail } from "~/component/Thumbnail"
 import type { SongListItem } from "~/hey-api"
+import { textStyles } from "~/style"
 import { link } from "~/style/link"
-import {
-	radius,
-	colors,
-	lineHeights,
-	fontSizes,
-	px,
-} from "~/style/tokens.stylex"
+import { listItemStyles } from "~/style/primitives"
+import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 const styles = stylex.create({
 	resultRow: {
 		display: "grid",
-		gridTemplateColumns: "3lh minmax(0,1fr)",
+		gridTemplateColumns: `${px[64]} minmax(0,1fr)`,
 		alignItems: "flex-start",
-		gap: px[12],
-		lineHeight: "1.5rem",
+		columnGap: px[16],
 	},
 	thumbnail: {
-		borderRadius: radius.xs,
+		borderRadius: radius.sm,
 	},
 	title: {
 		overflowWrap: "break-word",
@@ -34,13 +29,7 @@ const styles = stylex.create({
 			":hover": { default: null, "@media (hover: hover)": "underline" },
 		},
 	},
-	metadata: {
-		marginTop: px[4],
-		overflowWrap: "break-word",
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textTertiary,
-	},
+
 	metadataLink: {
 		color: colors.textSecondary,
 		textDecorationLine: {
@@ -61,46 +50,24 @@ export function SongItem(props: { song: SongListItem }) {
 				styles={[styles.thumbnail]}
 			/>
 
-			<div>
+			<div {...stylex.attrs(listItemStyles.content)}>
 				<Link
 					to="/song/$id"
 					params={{ id: props.song.id.toString() }}
 					class={
-						stylex.attrs(link.base, link.withUnderline, styles.title).class
+						stylex.attrs(
+							link.base,
+							link.withUnderline,
+							styles.title,
+							textStyles.ellipsis,
+						).class
 					}
 				>
 					{props.song.title}
 				</Link>
 
-				<Show when={props.song.releases.length > 0}>
-					<div {...stylex.attrs(styles.metadata)}>
-						<For each={props.song.releases}>
-							{(release, index) => (
-								<>
-									<Link
-										to="/release/$id"
-										params={{ id: release.id.toString() }}
-										class={
-											stylex.attrs(
-												link.base,
-												link.withUnderline,
-												styles.metadataLink,
-											).class
-										}
-									>
-										{release.title}
-									</Link>
-									<Show when={index() < props.song.releases.length - 1}>
-										{", "}
-									</Show>
-								</>
-							)}
-						</For>
-					</div>
-				</Show>
-
 				<Show when={props.song.artists.length > 0}>
-					<div {...stylex.attrs(styles.metadata)}>
+					<div {...stylex.attrs(listItemStyles.metadata)}>
 						<For each={props.song.artists}>
 							{(artist, index) => (
 								<>
@@ -118,6 +85,33 @@ export function SongItem(props: { song: SongListItem }) {
 										{artist.name}
 									</Link>
 									<Show when={index() < props.song.artists.length - 1}>
+										{", "}
+									</Show>
+								</>
+							)}
+						</For>
+					</div>
+				</Show>
+
+				<Show when={props.song.releases.length > 0}>
+					<div {...stylex.attrs(listItemStyles.metadata)}>
+						<For each={props.song.releases}>
+							{(release, index) => (
+								<>
+									<Link
+										to="/release/$id"
+										params={{ id: release.id.toString() }}
+										class={
+											stylex.attrs(
+												link.base,
+												link.withUnderline,
+												styles.metadataLink,
+											).class
+										}
+									>
+										{release.title}
+									</Link>
+									<Show when={index() < props.song.releases.length - 1}>
 										{", "}
 									</Show>
 								</>
