@@ -4,6 +4,7 @@ mod repo;
 
 use axum::response::{IntoResponse, Response};
 pub use http::router;
+pub(crate) use model::EntityType;
 
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::EntityNotFound;

@@ -10,7 +10,7 @@ import { formatEventLocation } from "~/domain/event"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { infoStyles } from "~/style/primitives"
-import { colors, fontSizes, px } from "~/style/tokens.stylex"
+import { colors, fontSizes, lineHeights, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
@@ -52,7 +52,11 @@ const styles = stylex.create({
 		flexWrap: "wrap",
 		whiteSpace: "pre",
 	},
-	tabTrigger: { paddingBlock: px[12] },
+	tabTrigger: {
+		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
 	tabContent: { padding: px[16] },
 	descriptionContainer: { padding: px[8] },
 	description: {

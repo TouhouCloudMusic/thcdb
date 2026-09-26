@@ -4,7 +4,7 @@ import type { Release } from "@thc/api"
 import { createSignal, Show } from "solid-js"
 
 import { Tab } from "~/component/atomic"
-import { px } from "~/style/tokens.stylex"
+import { fontSizes, lineHeights, px } from "~/style/tokens.stylex"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import type { EntityCommentsModel } from "~/view/comment/EntityComments"
@@ -15,7 +15,11 @@ import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
 import { ReleaseInfoTracks } from "./comp/ReleaseInfoTracks"
 
 const styles = stylex.create({
-	tabTrigger: { paddingBlock: px[12] },
+	tabTrigger: {
+		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
 	tabPanel: { padding: px[16] },
 })
 

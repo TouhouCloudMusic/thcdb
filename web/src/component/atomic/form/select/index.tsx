@@ -6,21 +6,116 @@ import type { ComponentProps, JSX } from "solid-js"
 import { mergeProps, splitProps } from "solid-js"
 
 import { palette } from "~/style/color/palette.stylex"
-import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
+import {
+	radius,
+	colors,
+	fontSizes,
+	lineHeights,
+	px,
+} from "~/style/tokens.stylex"
 
 import { inputStyles } from "../../Input"
+
+export const underlineSelectStyles = stylex.create({
+	trigger: {
+		display: "grid",
+		gridTemplateColumns: `minmax(0, 1fr) ${px[32]}`,
+		alignItems: "center",
+		height: "auto",
+		minHeight: px[32],
+		backgroundColor: {
+			default: colors.backgroundPrimary,
+			":disabled": palette.slate[100],
+		},
+		borderWidth: 0,
+		borderBottomWidth: "1px",
+		borderStyle: "solid",
+		borderRadius: 0,
+		borderColor: {
+			default: palette.slate[400],
+			':is([aria-invalid="true"])': palette.reimu[600],
+			"@media (hover: hover)": {
+				default: null,
+				":is(:not(:disabled):hover)": palette.reimu[500],
+			},
+			":focus-visible": palette.reimu[600],
+			":is([data-expanded])": palette.reimu[600],
+		},
+		paddingBlock: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 400,
+		color: { default: colors.textSecondary, ":disabled": palette.slate[400] },
+		textAlign: "left",
+		outlineWidth: 0,
+		outlineStyle: "none",
+		outlineOffset: 0,
+		transitionProperty: "border-color, color",
+		transitionDuration: "100ms",
+		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+	content: {
+		zIndex: 50,
+		minWidth: px[160],
+		maxHeight: px[256],
+		borderRadius: radius.xs,
+		borderWidth: "1px",
+		borderStyle: "solid",
+		borderColor: palette.slate[200],
+		boxShadow: "none",
+		backgroundColor: colors.backgroundPrimary,
+	},
+	listbox: {
+		padding: px[4],
+		maxHeight: `calc(${px[256]} - ${px[8]})`,
+		overflowY: "auto",
+		outlineStyle: "none",
+	},
+	item: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0, 1fr)",
+		alignItems: "center",
+		borderRadius: 0,
+		minHeight: px[32],
+		paddingInline: px[12],
+		paddingBlock: px[4],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 400,
+		cursor: "default",
+		userSelect: "none",
+		color: {
+			default: colors.textSecondary,
+			":is([data-selected])": colors.textPrimary,
+		},
+		backgroundColor: {
+			default: "transparent",
+			":is([data-highlighted])": palette.slate[100],
+		},
+		outlineStyle: { default: null, ":is([data-highlighted])": "none" },
+		opacity: { default: null, ":is([data-disabled])": 0.5 },
+	},
+})
 
 const styles = stylex.create({
 	trigger: {
 		display: "grid",
-		gridTemplateColumns: "1fr auto",
+		gridTemplateColumns: `minmax(0, 1fr) ${px[32]}`,
 		alignItems: "center",
-		gap: px[8],
-		paddingInline: px[8],
+		height: px[32],
 		textAlign: "left",
 		fontWeight: 300,
 	},
-	value: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+	value: {
+		paddingInlineStart: px[8],
+		overflow: "hidden",
+		textOverflow: "ellipsis",
+		whiteSpace: "nowrap",
+	},
+	icon: {
+		display: "grid",
+		placeItems: "center",
+	},
 	caret: { width: px[16], height: px[16], color: colors.textSecondary },
 	content: {
 		zIndex: 50,
@@ -73,12 +168,7 @@ function Trigger(props: TriggerProps) {
 	return (
 		<K_Select.Trigger
 			{...others}
-			{...stylex.attrs(
-				inputStyles.like,
-				inputStyles.input,
-				styles.trigger,
-				local.styles,
-			)}
+			{...stylex.attrs(inputStyles.like, styles.trigger, local.styles)}
 		/>
 	)
 }
@@ -105,7 +195,7 @@ function Icon(props: IconProps): JSX.Element {
 	return (
 		<K_Select.Icon
 			{...others}
-			{...stylex.attrs(local.styles)}
+			{...stylex.attrs(styles.icon, local.styles)}
 		>
 			<CaretSortIcon {...stylex.attrs(styles.caret)} />
 		</K_Select.Icon>

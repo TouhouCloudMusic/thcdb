@@ -261,6 +261,7 @@ user_collection_notification.workspace = true
 user_profile_notification.workspace    = true
 auth_worker.workspace                  = true
 #
+apalis.workspace = true
 argon2.features = [
     "std",
 ]

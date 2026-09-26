@@ -6,7 +6,7 @@ import { createContext, createSignal, Show } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { PageLayout } from "~/layout/PageLayout"
-import { px } from "~/style/tokens.stylex"
+import { fontSizes, lineHeights, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
@@ -52,6 +52,8 @@ const styles = stylex.create({
 	},
 	tabTrigger: {
 		paddingBlock: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
 	},
 	tabContent: {
 		padding: px[16],

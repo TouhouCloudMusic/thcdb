@@ -1,4 +1,3 @@
-use sea_orm::EntityName;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -11,33 +10,6 @@ pub enum EntityType {
 }
 
 impl EntityType {
-    pub fn vote_table_name(self) -> &'static str {
-        match self {
-            Self::Release => entity::release_tag_vote::Entity.table_name(),
-            Self::Song => entity::song_tag_vote::Entity.table_name(),
-            Self::Artist => entity::artist_tag_vote::Entity.table_name(),
-        }
-    }
-
-    pub fn entity_id_column(self) -> &'static str {
-        use sea_orm::IdenStatic;
-        match self {
-            Self::Release => {
-                entity::release_tag_vote::Column::ReleaseId.as_str()
-            }
-            Self::Song => entity::song_tag_vote::Column::SongId.as_str(),
-            Self::Artist => entity::artist_tag_vote::Column::ArtistId.as_str(),
-        }
-    }
-
-    pub fn entity_table_name(self) -> &'static str {
-        match self {
-            Self::Release => entity::release::Entity.table_name(),
-            Self::Song => entity::song::Entity.table_name(),
-            Self::Artist => entity::artist::Entity.table_name(),
-        }
-    }
-
     pub const fn entity_name(self) -> &'static str {
         match self {
             Self::Release => "Release",

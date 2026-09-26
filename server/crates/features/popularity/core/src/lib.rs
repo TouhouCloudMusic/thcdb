@@ -1,11 +1,17 @@
 use std::collections::BTreeMap;
 
 use chrono::{Days, Utc};
-use fred::prelude::{Expiration, KeysInterface, Pool};
+use entity::{entity_popularity, popularity_snapshot};
+use fred::prelude::Pool;
 use futures_util::TryFutureExt;
 use infra_error::{ContextError, ResultExt};
-use sea_orm::ConnectionTrait;
-use serde::{Deserialize, Serialize};
+use sea_orm::ActiveValue::Set;
+use sea_orm::{
+    ActiveEnum, ConnectionTrait, DatabaseConnection, DeriveActiveEnum,
+    EntityName, EntityTrait, EnumIter, FromQueryResult, QuerySelect,
+    QueryTrait, TransactionTrait,
+};
+use sea_query::{Alias, Expr, OnConflict, Order, Query, UnionType};
 use visit_core::EntityType;
 
 use self::scoring::Metrics;
@@ -13,83 +19,155 @@ use self::scoring::Metrics;
 mod participation;
 mod scoring;
 
-const RANKING_LIMIT: usize = 6;
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
+
+const RANKING_LIMIT: u64 = 6;
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
-enum PopularityEntity {
-    Release(i32),
-    Artist(i32),
+struct PopularityEntity {
+    kind: PopularityEntityKind,
+    id: i32,
 }
 
-#[derive(Clone, Copy)]
-enum PopularityEntityKind {
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Ord,
+    PartialEq,
+    PartialOrd,
+    EnumIter,
+    DeriveActiveEnum,
+)]
+#[sea_orm(rs_type = "String", db_type = "Text")]
+pub enum PopularityEntityKind {
+    #[sea_orm(string_value = "release")]
     Release,
+    #[sea_orm(string_value = "artist")]
     Artist,
+    #[sea_orm(string_value = "song")]
+    Song,
 }
 
-impl PopularityEntity {
-    const fn id(self) -> i32 {
-        match self {
-            Self::Release(id) | Self::Artist(id) => id,
-        }
-    }
-}
-
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Default)]
 pub struct Ranking {
     pub release_ids: Vec<i32>,
     pub artist_ids: Vec<i32>,
+    pub song_ids: Vec<i32>,
 }
 
 pub async fn load_ranking(
     db: &impl ConnectionTrait,
-    redis: &Pool,
 ) -> Result<Ranking, ContextError> {
-    let key = format!("popular:ranking:v1:{}", Utc::now().timestamp() / 3600);
-
-    match redis
-        .get::<Option<String>, _>(key)
-        .await
-        .context("read popularity ranking cache")?
-    {
-        Some(cached) => serde_json::from_str(&cached)
-            .context("decode popularity ranking cache"),
-        None => compute_ranking(db, redis).await,
+    #[derive(FromQueryResult)]
+    struct RankedEntity {
+        entity_type: PopularityEntityKind,
+        entity_id: i32,
     }
+
+    let entity_popularity_columns = || {
+        [
+            entity_popularity::Column::EntityType,
+            entity_popularity::Column::EntityId,
+            entity_popularity::Column::Score,
+        ]
+    };
+    let ranked_alias = Alias::new("ranked");
+
+    let [mut query, artists, songs] = [
+        PopularityEntityKind::Release,
+        PopularityEntityKind::Artist,
+        PopularityEntityKind::Song,
+    ]
+    .map(|kind| {
+        let ranked = Query::select()
+            .columns(entity_popularity_columns())
+            .from(entity_popularity::Entity.table_ref())
+            .and_where(
+                Expr::col(entity_popularity::Column::EntityType)
+                    .eq(kind.to_value()),
+            )
+            .order_by(entity_popularity::Column::Score, Order::Desc)
+            .order_by(entity_popularity::Column::EntityId, Order::Asc)
+            .limit(RANKING_LIMIT)
+            .to_owned();
+
+        Query::select()
+            .columns(entity_popularity_columns())
+            .from_subquery(ranked, ranked_alias.clone())
+            .to_owned()
+    });
+    query
+        .union(UnionType::All, artists)
+        .union(UnionType::All, songs)
+        .order_by(Alias::new("score"), Order::Desc)
+        .order_by(Alias::new("entity_id"), Order::Asc);
+
+    let rows = RankedEntity::find_by_statement(
+        db.get_database_backend().build(&query),
+    )
+    .all(db)
+    .await
+    .context("load popularity ranking")?;
+
+    let mut ranking = Ranking::default();
+
+    for RankedEntity {
+        entity_type,
+        entity_id,
+    } in rows
+    {
+        match entity_type {
+            PopularityEntityKind::Release => {
+                ranking.release_ids.push(entity_id);
+            }
+            PopularityEntityKind::Artist => ranking.artist_ids.push(entity_id),
+            PopularityEntityKind::Song => ranking.song_ids.push(entity_id),
+        }
+    }
+
+    Ok(ranking)
 }
 
-pub async fn compute_ranking(
-    db: &impl ConnectionTrait,
+pub async fn initialize_scores(
+    db: &DatabaseConnection,
     redis: &Pool,
-) -> Result<Ranking, ContextError> {
+) -> Result<(), ContextError> {
+    let query = popularity_snapshot::Entity::find()
+        .select_only()
+        .column(popularity_snapshot::Column::CalculatedAt)
+        .into_query();
+
+    if db
+        .query_one(db.get_database_backend().build(&query))
+        .await
+        .context("load popularity snapshot")?
+        .is_none()
+    {
+        refresh_scores(db, redis).await?;
+    }
+
+    Ok(())
+}
+
+pub async fn refresh_scores(
+    db: &DatabaseConnection,
+    redis: &Pool,
+) -> Result<(), ContextError> {
     let now = Utc::now();
     let day = now.date_naive();
 
-    let (releases, artists, participants) = tokio::try_join!(
-        visit_core::counts(redis, EntityType::Release, day).map_err(|source| {
-            ContextError::new("load release visit counts", source)
-        }),
-        visit_core::counts(redis, EntityType::Artist, day).map_err(|source| {
-            ContextError::new("load artist visit counts", source)
-        }),
+    let (visits, participants) = tokio::try_join!(
+        visit_core::counts(redis, day)
+            .map_err(|source| ContextError::new("load visit counts", source)),
         participation::counts(db, day - Days::new(6), day).map_err(|source| {
             ContextError::new("load popularity participation counts", source)
         }),
     )?;
 
     let mut metrics = BTreeMap::new();
-    for (id, visitors) in releases {
-        metrics
-            .entry(PopularityEntity::Release(id))
-            .or_insert_with(Metrics::default)
-            .visitors = visitors;
-    }
-    for (id, visitors) in artists {
-        metrics
-            .entry(PopularityEntity::Artist(id))
-            .or_insert_with(Metrics::default)
-            .visitors = visitors;
-    }
 
     for (entity, counts) in participants {
         let entry = metrics.entry(entity).or_insert_with(Metrics::default);
@@ -98,40 +176,64 @@ pub async fn compute_ranking(
         entry.voter_count = counts.voter_count;
     }
 
+    for visit in visits {
+        let kind = match visit.kind {
+            EntityType::Release => PopularityEntityKind::Release,
+            EntityType::Artist => PopularityEntityKind::Artist,
+            EntityType::Song => PopularityEntityKind::Song,
+        };
+
+        metrics
+            .entry(PopularityEntity { kind, id: visit.id })
+            .or_insert_with(Metrics::default)
+            .visitors = visit.visitors;
+    }
+
     let mut items = scoring::score_batch(metrics);
     items.retain(|(_, score)| *score > 0.0);
 
-    items.sort_by(|(left_entity, left_score), (right_entity, right_score)| {
-        right_score
-            .total_cmp(left_score)
-            .then_with(|| left_entity.id().cmp(&right_entity.id()))
-    });
+    store_scores(db, &items, now).await
+}
 
-    let mut ranking = Ranking::default();
-    for (entity, _) in items {
-        let ids = match entity {
-            PopularityEntity::Release(_) => &mut ranking.release_ids,
-            PopularityEntity::Artist(_) => &mut ranking.artist_ids,
-        };
+async fn store_scores(
+    db: &DatabaseConnection,
+    items: &[(PopularityEntity, f64)],
+    calculated_at: chrono::DateTime<Utc>,
+) -> Result<(), ContextError> {
+    let tx = db.begin().await.context("begin popularity snapshot")?;
 
-        if ids.len() < RANKING_LIMIT {
-            ids.push(entity.id());
-        }
+    entity_popularity::Entity::delete_many()
+        .exec(&tx)
+        .await
+        .context("clear popularity scores")?;
+
+    for chunk in items.chunks(1000) {
+        let rows = chunk.iter().map(|(entity, score)| {
+            entity_popularity::ActiveModel {
+                entity_type: Set(entity.kind.to_value()),
+                entity_id: Set(entity.id),
+                score: Set(*score),
+            }
+        });
+
+        entity_popularity::Entity::insert_many(rows)
+            .exec_without_returning(&tx)
+            .await
+            .context("store popularity scores")?;
     }
 
-    let cached = serde_json::to_string(&ranking)
-        .context("encode popularity ranking cache")?;
+    popularity_snapshot::Entity::insert(popularity_snapshot::ActiveModel {
+        id: Set(1),
+        calculated_at: Set(calculated_at.into()),
+    })
+    .on_conflict(
+        OnConflict::column(popularity_snapshot::Column::Id)
+            .update_column(popularity_snapshot::Column::CalculatedAt)
+            .to_owned(),
+    )
+    .exec_without_returning(&tx)
+    .await
+    .context("store popularity snapshot")?;
 
-    redis
-        .set::<(), _, _>(
-            format!("popular:ranking:v1:{}", now.timestamp() / 3600),
-            cached,
-            Some(Expiration::EX(3600)),
-            None,
-            false,
-        )
-        .await
-        .context("write popularity ranking cache")?;
-
-    Ok(ranking)
+    tx.commit().await.context("commit popularity snapshot")
 }

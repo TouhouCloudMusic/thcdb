@@ -152,6 +152,9 @@ import type {
 	FindTagByKeywordData,
 	FindTagByKeywordErrors,
 	FindTagByKeywordResponses,
+	FindTagEntitiesData,
+	FindTagEntitiesErrors,
+	FindTagEntitiesResponses,
 	FollowedUserCollectionsData,
 	FollowedUserCollectionsErrors,
 	FollowedUserCollectionsResponses,
@@ -2161,6 +2164,19 @@ export const updateTagPendingCorrection = <
 			...options.headers,
 		},
 	})
+
+export const findTagEntities = <ThrowOnError extends boolean = false>(
+	options: Options<FindTagEntitiesData, ThrowOnError>,
+): RequestResult<
+	FindTagEntitiesResponses,
+	FindTagEntitiesErrors,
+	ThrowOnError
+> =>
+	(options.client ?? client).get<
+		FindTagEntitiesResponses,
+		FindTagEntitiesErrors,
+		ThrowOnError
+	>({ url: "/tag/{id}/entities", ...options })
 
 export const unfollowUserCollection = <ThrowOnError extends boolean = false>(
 	options: Options<UnfollowUserCollectionData, ThrowOnError>,

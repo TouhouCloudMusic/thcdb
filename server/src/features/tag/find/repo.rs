@@ -1,21 +1,206 @@
 use std::collections::{HashMap, HashSet};
 
+use domain::shared::PageResponse;
 use entity::tag::Column::Name;
-use entity::{tag, tag_alternative_name, tag_relation};
+use entity::{
+    artist, artist_tag_vote, entity_popularity, release, release_tag_vote,
+    release_track, song, song_tag_vote, tag, tag_alternative_name,
+    tag_relation,
+};
 use infra_db::SeaOrmRepository;
+use popularity_core::PopularityEntityKind;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
-    QueryOrder,
+    ActiveEnum, ColumnTrait, ConnectionTrait, EntityName, EntityTrait,
+    LoaderTrait, Order, QueryFilter, QueryOrder, QuerySelect, QueryTrait,
 };
 use sea_query::extension::postgres::PgBinOper::{
     Similarity, SimilarityDistance,
 };
-use sea_query::{ExprTrait, Func};
+use sea_query::{
+    Expr, ExprTrait, Func, JoinType, NullOrdering, Query, SimpleExpr,
+};
+use serde::Serialize;
+use utoipa::ToSchema;
 
+use super::filter::TagEntitySort;
+use crate::features::artist::list::{self as artist_list, ArtistListItem};
+use crate::features::release::list::{self as release_list, ReleaseListItem};
+use crate::features::song::list::{self as song_list, SongListItem};
 use crate::features::tag::list::{self, TagListItem};
 use crate::features::tag::model::{AlternativeName, Tag, TagRef, TagRelation};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
+
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
+
+#[derive(Serialize, ToSchema)]
+#[serde(tag = "entity_type", content = "page", rename_all = "snake_case")]
+pub(super) enum TagEntitiesPage {
+    Release(PageResponse<ReleaseListItem>),
+    Song(PageResponse<SongListItem>),
+    Artist(PageResponse<ArtistListItem>),
+}
+
+fn popularity_score(kind: PopularityEntityKind) -> SimpleExpr {
+    let entity_id = match kind {
+        PopularityEntityKind::Release => {
+            Expr::col((release::Entity, release::Column::Id))
+        }
+        PopularityEntityKind::Artist => {
+            Expr::col((artist::Entity, artist::Column::Id))
+        }
+        PopularityEntityKind::Song => {
+            Expr::col((song::Entity, song::Column::Id))
+        }
+    };
+
+    let query = Query::select()
+        .expr(Expr::col(entity_popularity::Column::Score))
+        .from(entity_popularity::Entity.table_ref())
+        .and_where(
+            Expr::col(entity_popularity::Column::EntityType)
+                .eq(kind.to_value()),
+        )
+        .and_where(Expr::col(entity_popularity::Column::EntityId).eq(entity_id))
+        .to_owned();
+
+    SimpleExpr::SubQuery(None, Box::new(query.into_sub_query_statement()))
+}
+
+fn earliest_release_date() -> SimpleExpr {
+    let query = Query::select()
+        .expr(Func::min(Expr::col((
+            release::Entity,
+            release::Column::ReleaseDate,
+        ))))
+        .from(release_track::Entity)
+        .join(
+            JoinType::InnerJoin,
+            release::Entity,
+            Expr::col((
+                release_track::Entity,
+                release_track::Column::ReleaseId,
+            ))
+            .equals((release::Entity, release::Column::Id)),
+        )
+        .and_where(
+            Expr::col((release_track::Entity, release_track::Column::SongId))
+                .equals((song::Entity, song::Column::Id)),
+        )
+        .to_owned();
+
+    SimpleExpr::SubQuery(None, Box::new(query.into_sub_query_statement()))
+}
+
+pub(super) async fn find_artists(
+    repo: &SeaOrmRepository,
+    tag_id: i32,
+    pagination: crate::shared::http::PageQuery,
+) -> Result<PageResponse<ArtistListItem>, DatabaseError> {
+    let entity_ids = artist_tag_vote::Entity::find()
+        .select_only()
+        .column(artist_tag_vote::Column::ArtistId)
+        .filter(artist_tag_vote::Column::TagId.eq(tag_id))
+        .filter(artist_tag_vote::Column::Score.gt(0))
+        .into_query();
+
+    utils::find_many_page(
+        &repo.conn,
+        artist::Entity::find()
+            .filter(artist::Column::Id.in_subquery(entity_ids))
+            .order_by_with_nulls(
+                popularity_score(PopularityEntityKind::Artist),
+                Order::Desc,
+                NullOrdering::Last,
+            ),
+        pagination,
+        artist::Column::Id,
+        |select| artist_list::load(select, &repo.conn),
+    )
+    .await
+    .db_operation("find artists by tag")
+}
+
+pub(super) async fn find_releases(
+    repo: &SeaOrmRepository,
+    tag_id: i32,
+    sort: TagEntitySort,
+    pagination: crate::shared::http::PageQuery,
+) -> Result<PageResponse<ReleaseListItem>, DatabaseError> {
+    let entity_ids = release_tag_vote::Entity::find()
+        .select_only()
+        .column(release_tag_vote::Column::ReleaseId)
+        .filter(release_tag_vote::Column::TagId.eq(tag_id))
+        .filter(release_tag_vote::Column::Score.gt(0))
+        .into_query();
+
+    let select = release::Entity::find()
+        .filter(release::Column::Id.in_subquery(entity_ids));
+
+    let select = match sort {
+        TagEntitySort::Popular => select.order_by_with_nulls(
+            popularity_score(PopularityEntityKind::Release),
+            Order::Desc,
+            NullOrdering::Last,
+        ),
+        TagEntitySort::ReleaseDate => select.order_by_with_nulls(
+            release::Column::ReleaseDate,
+            Order::Desc,
+            NullOrdering::Last,
+        ),
+    };
+
+    utils::find_many_page(
+        &repo.conn,
+        select,
+        pagination,
+        release::Column::Id,
+        |select| release_list::load(select, &repo.conn),
+    )
+    .await
+    .db_operation("find releases by tag")
+}
+
+pub(super) async fn find_songs(
+    repo: &SeaOrmRepository,
+    tag_id: i32,
+    sort: TagEntitySort,
+    pagination: crate::shared::http::PageQuery,
+) -> Result<PageResponse<SongListItem>, DatabaseError> {
+    let entity_ids = song_tag_vote::Entity::find()
+        .select_only()
+        .column(song_tag_vote::Column::SongId)
+        .filter(song_tag_vote::Column::TagId.eq(tag_id))
+        .filter(song_tag_vote::Column::Score.gt(0))
+        .into_query();
+
+    let select =
+        song::Entity::find().filter(song::Column::Id.in_subquery(entity_ids));
+
+    let select = match sort {
+        TagEntitySort::Popular => select.order_by_with_nulls(
+            popularity_score(PopularityEntityKind::Song),
+            Order::Desc,
+            NullOrdering::Last,
+        ),
+        TagEntitySort::ReleaseDate => select.order_by_with_nulls(
+            earliest_release_date(),
+            Order::Desc,
+            NullOrdering::Last,
+        ),
+    };
+
+    utils::find_many_page(
+        &repo.conn,
+        select,
+        pagination,
+        song::Column::Id,
+        |select| song_list::load(select, &repo.conn),
+    )
+    .await
+    .db_operation("find songs by tag")
+}
 
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,

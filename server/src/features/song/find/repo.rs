@@ -14,7 +14,8 @@ use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, JoinType, LoaderTrait,
-    QueryFilter, QueryOrder, QuerySelect, RelationTrait, Select,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, RelationTrait,
+    Select,
 };
 use sea_query::extension::postgres::PgBinOper::{
     Similarity, SimilarityDistance,
@@ -55,6 +56,16 @@ pub(super) async fn find_by_id(
     .await;
 
     result.db_operation("find song by id")
+}
+
+pub(crate) async fn exists(
+    db: &impl sea_orm::ConnectionTrait,
+    id: i32,
+) -> Result<bool, DatabaseError> {
+    song::Entity::find_by_id(id)
+        .exists(db)
+        .await
+        .db_operation("check song existence")
 }
 
 pub(super) async fn find_by_keyword(

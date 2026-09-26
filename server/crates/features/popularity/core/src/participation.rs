@@ -2,6 +2,10 @@ use std::collections::BTreeMap;
 
 use chrono::{DateTime, NaiveDate, Utc};
 use entity::enums::EntityType;
+use entity::{
+    artist_tag_vote, release_tag_vote, song_tag_vote, user_collection,
+    user_collection_item,
+};
 use sea_orm::{ActiveEnum, ConnectionTrait, DbErr, FromQueryResult};
 use sea_query::{Alias, Expr, JoinType, Query, SelectStatement};
 
@@ -24,87 +28,101 @@ enum ParticipationMetric {
     Voters,
 }
 
+impl PopularityEntityKind {
+    fn entity_type(self) -> EntityType {
+        match self {
+            Self::Release => EntityType::Release,
+            Self::Artist => EntityType::Artist,
+            Self::Song => EntityType::Song,
+        }
+    }
+}
+
 fn collector_counts_query(
-    entity_type: EntityType,
+    kind: PopularityEntityKind,
     since: DateTime<Utc>,
     until: DateTime<Utc>,
 ) -> SelectStatement {
-    let item_table = Alias::new("user_collection_item");
-    let item_alias = Alias::new("i");
-    let collection_table = Alias::new("user_collection");
-    let collection_alias = Alias::new("c");
-
-    let id_col = Alias::new("id");
-    let entity_id_col = Alias::new("entity_id");
-    let entity_type_col = Alias::new("entity_type");
-    let user_id_col = Alias::new("user_id");
-    let collection_id_col = Alias::new("user_collection_id");
-    let added_at_col = Alias::new("added_at");
-    let is_public_col = Alias::new("is_public");
-    let count_alias = Alias::new("count");
+    let entity_type = kind.entity_type();
+    let item = || Alias::new("i");
+    let collection = || Alias::new("c");
 
     Query::select()
-        .column((item_alias.clone(), entity_id_col.clone()))
+        .column((item(), user_collection_item::Column::EntityId))
         .expr_as(
-            Expr::col((collection_alias.clone(), user_id_col)).count_distinct(),
-            count_alias,
+            Expr::col((collection(), user_collection::Column::UserId))
+                .count_distinct(),
+            Alias::new("count"),
         )
-        .from_as(item_table, item_alias.clone())
+        .from_as(user_collection_item::Entity, item())
         .join_as(
             JoinType::InnerJoin,
-            collection_table,
-            collection_alias.clone(),
-            Expr::col((item_alias.clone(), collection_id_col))
-                .equals((collection_alias.clone(), id_col)),
+            user_collection::Entity,
+            collection(),
+            Expr::col((item(), user_collection_item::Column::UserCollectionId))
+                .equals((collection(), user_collection::Column::Id)),
         )
         .and_where(
-            Expr::col((item_alias.clone(), entity_type_col))
+            Expr::col((item(), user_collection_item::Column::EntityType))
                 .eq(Expr::val(entity_type.to_value())
                     .as_enum(EntityType::name())),
         )
         .and_where(
-            Expr::col((item_alias.clone(), entity_id_col.clone()))
+            Expr::col((item(), user_collection_item::Column::EntityId))
                 .is_not_null(),
         )
         .and_where(
-            Expr::col((item_alias.clone(), added_at_col.clone())).gte(since),
+            Expr::col((item(), user_collection_item::Column::AddedAt))
+                .gte(since),
         )
-        .and_where(Expr::col((item_alias.clone(), added_at_col)).lt(until))
-        .and_where(Expr::col((collection_alias, is_public_col)).eq(true))
-        .group_by_col((item_alias, entity_id_col))
+        .and_where(
+            Expr::col((item(), user_collection_item::Column::AddedAt))
+                .lt(until),
+        )
+        .and_where(
+            Expr::col((collection(), user_collection::Column::IsPublic))
+                .eq(true),
+        )
+        .group_by_col((item(), user_collection_item::Column::EntityId))
         .to_owned()
 }
 
 fn voter_counts_query(
-    table_name: &str,
-    entity_id_column: &str,
+    kind: PopularityEntityKind,
     since: DateTime<Utc>,
     until: DateTime<Utc>,
 ) -> SelectStatement {
-    let vote_table = Alias::new(table_name);
-    let entity_id_col = Alias::new(entity_id_column);
-    let user_id_col = Alias::new("user_id");
-    let voted_at_col = Alias::new("voted_at");
+    macro_rules! query {
+        ($vote:ident, $entity_id:ident) => {
+            Query::select()
+                .expr_as(
+                    Expr::col(($vote::Entity, $vote::Column::$entity_id)),
+                    Alias::new("entity_id"),
+                )
+                .expr_as(
+                    Expr::col(($vote::Entity, $vote::Column::UserId))
+                        .count_distinct(),
+                    Alias::new("count"),
+                )
+                .from($vote::Entity)
+                .and_where(
+                    Expr::col(($vote::Entity, $vote::Column::VotedAt))
+                        .gte(since),
+                )
+                .and_where(
+                    Expr::col(($vote::Entity, $vote::Column::VotedAt))
+                        .lt(until),
+                )
+                .group_by_col(($vote::Entity, $vote::Column::$entity_id))
+                .to_owned()
+        };
+    }
 
-    let entity_id_alias = Alias::new("entity_id");
-    let count_alias = Alias::new("count");
-
-    Query::select()
-        .expr_as(
-            Expr::col((vote_table.clone(), entity_id_col.clone())),
-            entity_id_alias,
-        )
-        .expr_as(
-            Expr::col((vote_table.clone(), user_id_col)).count_distinct(),
-            count_alias,
-        )
-        .from(vote_table.clone())
-        .and_where(
-            Expr::col((vote_table.clone(), voted_at_col.clone())).gte(since),
-        )
-        .and_where(Expr::col((vote_table.clone(), voted_at_col)).lt(until))
-        .group_by_col((vote_table, entity_id_col))
-        .to_owned()
+    match kind {
+        PopularityEntityKind::Release => query!(release_tag_vote, ReleaseId),
+        PopularityEntityKind::Artist => query!(artist_tag_vote, ArtistId),
+        PopularityEntityKind::Song => query!(song_tag_vote, SongId),
+    }
 }
 
 pub(super) async fn counts(
@@ -124,32 +142,18 @@ pub(super) async fn counts(
     let mut counts: BTreeMap<PopularityEntity, ParticipationCounts> =
         BTreeMap::new();
 
-    for (entity_type, popular_type, vote_table_name, vote_entity_id_column) in [
-        (
-            EntityType::Release,
-            PopularityEntityKind::Release,
-            "release_tag_vote",
-            "release_id",
-        ),
-        (
-            EntityType::Artist,
-            PopularityEntityKind::Artist,
-            "artist_tag_vote",
-            "artist_id",
-        ),
+    for kind in [
+        PopularityEntityKind::Release,
+        PopularityEntityKind::Artist,
+        PopularityEntityKind::Song,
     ] {
         for (query, metric) in [
             (
-                collector_counts_query(entity_type, since, until),
+                collector_counts_query(kind, since, until),
                 ParticipationMetric::Collectors,
             ),
             (
-                voter_counts_query(
-                    vote_table_name,
-                    vote_entity_id_column,
-                    since,
-                    until,
-                ),
+                voter_counts_query(kind, since, until),
                 ParticipationMetric::Voters,
             ),
         ] {
@@ -163,13 +167,9 @@ pub(super) async fn counts(
                 let count = u64::try_from(row.count)
                     .map_err(|error| DbErr::Type(error.to_string()))?;
 
-                let entity = match popular_type {
-                    PopularityEntityKind::Release => {
-                        PopularityEntity::Release(row.entity_id)
-                    }
-                    PopularityEntityKind::Artist => {
-                        PopularityEntity::Artist(row.entity_id)
-                    }
+                let entity = PopularityEntity {
+                    kind,
+                    id: row.entity_id,
                 };
                 let entry = counts.entry(entity).or_default();
 

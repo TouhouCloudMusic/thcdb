@@ -2,9 +2,8 @@ import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
-import { Suspense } from "solid-js"
+import { For, Suspense } from "solid-js"
 
-import { Intersperse } from "~/component/data/Intersperse"
 import { link } from "~/style/link"
 import { infoStyles } from "~/style/primitives"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
@@ -12,15 +11,22 @@ import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 const styles = stylex.create({
 	root: {
 		display: "flex",
-		flexWrap: "wrap",
+		columnGap: px[4],
 		minHeight: px[32],
-		alignItems: "center",
+		alignItems: "baseline",
 		fontSize: fontSizes.sm,
 		lineHeight: lineHeights.sm,
 	},
 	heading: { whiteSpace: "pre" },
-	contributors: { color: colors.textPrimary, overflowWrap: "break-word" },
-	separator: { whiteSpace: "pre" },
+	contributors: {
+		display: "flex",
+		flex: "1 1 auto",
+		flexWrap: "wrap",
+		columnGap: px[4],
+		minWidth: 0,
+		color: colors.textPrimary,
+	},
+	contributor: { whiteSpace: "nowrap" },
 })
 
 export type Contributor = {
@@ -38,24 +44,24 @@ export function EntityContributors(props: EntityContributorsProps) {
 	return (
 		<div {...stylex.attrs(props.styles ?? styles.root)}>
 			<div {...stylex.attrs(styles.heading, infoStyles.label)}>
-				{t`Contributors:`}{" "}
+				{t`Contributors:`}
 			</div>
 			<p {...stylex.attrs(styles.contributors)}>
 				<Suspense fallback={<>{t`Loading contributors...`}</>}>
-					<Intersperse
-						of={props.contributors}
-						with={<span {...stylex.attrs(styles.separator)}>, </span>}
-					>
-						{(contributor) => (
-							<Link
-								class={stylex.attrs(link.base, link.withUnderline).class}
-								to="/profile/$username"
-								params={{ username: contributor.name }}
-							>
-								{contributor.name}
-							</Link>
+					<For each={props.contributors}>
+						{(contributor, index) => (
+							<span {...stylex.attrs(styles.contributor)}>
+								<Link
+									class={stylex.attrs(link.base, link.withUnderline).class}
+									to="/profile/$username"
+									params={{ username: contributor.name }}
+								>
+									{contributor.name}
+								</Link>
+								{index() < props.contributors.length - 1 && ","}
+							</span>
 						)}
-					</Intersperse>
+					</For>
 				</Suspense>
 			</p>
 		</div>

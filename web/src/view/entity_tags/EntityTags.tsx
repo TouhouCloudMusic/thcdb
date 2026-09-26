@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import { useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import type { Tag } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
@@ -12,12 +12,8 @@ import { Button } from "~/component/atomic/button"
 import { Intersperse } from "~/component/data/Intersperse"
 import { Dialog } from "~/component/dialog"
 import { PRIMARY_TAG_RELEVANCE_THRESHOLD } from "~/domain/tag/constants"
-import {
-	deleteVoteMutation,
-	getTagsOptions,
-	getTagsQueryKey,
-	voteTagMutation,
-} from "~/hey-api/@tanstack/solid-query.gen"
+import { getTagsOptions } from "~/hey-api/@tanstack/solid-query.gen"
+import { useDeleteTagVoteMutation, useTagVoteMutation } from "~/state/tag"
 import { useCurrentUser } from "~/state/user"
 import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
@@ -220,7 +216,6 @@ type EntityTagRowProps = {
 
 export function EntityTags(props: EntityTagsProps) {
 	const userCtx = useCurrentUser()
-	const queryClient = useQueryClient()
 	const [pendingKey, setPendingKey] = createSignal<string>()
 	const tagsRequest = createMemo(() => ({
 		path: {
@@ -232,18 +227,12 @@ export function EntityTags(props: EntityTagsProps) {
 		},
 	}))
 	const tagsQuery = useQuery(() => getTagsOptions(tagsRequest()))
-	const voteMutation = useMutation(() => voteTagMutation())
-	const removeMutation = useMutation(() => deleteVoteMutation())
+	const voteMutation = useTagVoteMutation()
+	const removeMutation = useDeleteTagVoteMutation()
 	const tags = createMemo(() =>
 		sortEntityTags((tagsQuery.data?.data ?? { items: [] }).items),
 	)
 	const dataFilter = createMemo(() => createEntityTagFilter(tags()))
-
-	const invalidateTags = async () => {
-		await queryClient.invalidateQueries({
-			queryKey: getTagsQueryKey(tagsRequest()),
-		})
-	}
 
 	const vote = async (tagId: number, score: EntityTagVoteValue) => {
 		setPendingKey(`vote:${tagId}`)
@@ -255,7 +244,6 @@ export function EntityTags(props: EntityTagsProps) {
 					score,
 				},
 			})
-			await invalidateTags()
 		} finally {
 			setPendingKey(undefined)
 		}
@@ -270,7 +258,6 @@ export function EntityTags(props: EntityTagsProps) {
 					tag_id: tagId,
 				},
 			})
-			await invalidateTags()
 		} finally {
 			setPendingKey(undefined)
 		}

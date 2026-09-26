@@ -5976,8 +5976,6 @@ dependencies = [
  "futures-util",
  "sea-orm",
  "sea-query",
- "serde",
- "serde_json",
  "thcdb-feature-visit-core",
  "thcdb-infra-error",
  "thcdb-infra-testing",
@@ -6021,6 +6019,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "fred",
+ "itertools 0.14.0",
  "rand 0.9.4",
  "serde",
  "thcdb-infra-testing",
@@ -6109,6 +6108,7 @@ name = "thcdb-rs"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "apalis",
  "argon2",
  "async-stream",
  "async-trait",

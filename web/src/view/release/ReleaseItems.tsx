@@ -9,6 +9,7 @@ import type { ReleaseListItem } from "~/hey-api"
 import { textStyles } from "~/style"
 import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
+import { listItemStyles } from "~/style/primitives"
 import {
 	radius,
 	colors,
@@ -62,14 +63,6 @@ function ReleaseArtistLinks(props: { release: ReleaseItemData }) {
 	)
 }
 
-const metaStyles = stylex.create({
-	root: {
-		display: "flex",
-		fontSize: fontSizes.sm,
-		color: colors.textTertiary,
-	},
-})
-
 function ReleaseMeta(props: {
 	release: ReleaseItemData
 	styles?: StyleXStyles
@@ -78,7 +71,7 @@ function ReleaseMeta(props: {
 		DateWithPrecision.display(props.release.release_date)
 
 	return (
-		<div {...stylex.attrs(metaStyles.root, props.styles)}>
+		<div {...stylex.attrs(listItemStyles.metadata, props.styles)}>
 			<span>{props.release.release_type}</span>
 			<Show when={releaseDate()}>{(date) => <span>{date()}</span>}</Show>
 			<Show when={props.release.catalog_numbers?.length}>
@@ -90,7 +83,6 @@ function ReleaseMeta(props: {
 
 const gridStyles = stylex.create({
 	meta: {
-		flexWrap: "nowrap",
 		alignItems: "baseline",
 		columnGap: px[12],
 		rowGap: px[4],
@@ -178,23 +170,18 @@ const listStyles = stylex.create({
 		alignItems: "flex-start",
 		columnGap: px[16],
 	},
-	details: {
-		display: "grid",
-		gridTemplateRows: `repeat(3, ${px[14]})`,
-		alignContent: "space-between",
-		height: "100%",
-	},
-	titleContainer: {
-		display: "flex",
-		alignItems: "center",
-		lineHeight: 1,
+	title: {
+		display: "block",
+		fontSize: fontSizes.base,
+		lineHeight: lineHeights.base,
 	},
 	artists: {
-		lineHeight: 1,
+		lineHeight: lineHeights.sm,
 	},
 	meta: {
-		columnGap: px[4],
-		lineHeight: 1,
+		gridRow: "3",
+		columnGap: px[6],
+		lineHeight: lineHeights.sm,
 	},
 })
 
@@ -212,17 +199,14 @@ export function ReleaseItem(props: {
 				styles={listStyles.thumbnail}
 			/>
 
-			<div {...stylex.attrs(listStyles.details)}>
-				{/* the extra container prevents the text from being clipped vertically */}
-				<div {...stylex.attrs(listStyles.titleContainer)}>
-					<Link
-						to="/release/$id"
-						params={{ id: props.release.id.toString() }}
-						{...stylex.attrs(link.base, textStyles.ellipsis)}
-					>
-						{props.release.title}
-					</Link>
-				</div>
+			<div {...stylex.attrs(listItemStyles.content)}>
+				<Link
+					to="/release/$id"
+					params={{ id: props.release.id.toString() }}
+					{...stylex.attrs(link.base, listStyles.title, textStyles.ellipsis)}
+				>
+					{props.release.title}
+				</Link>
 				<ReleaseArtists
 					release={props.release}
 					styles={listStyles.artists}

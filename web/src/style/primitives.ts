@@ -60,3 +60,20 @@ export const infoStyles = stylex.create({
 		color: colors.textPrimary,
 	},
 })
+
+export const listItemStyles = stylex.create({
+	content: {
+		display: "grid",
+		gridTemplateRows: `${px[24]} ${px[20]} ${px[20]}`,
+		minWidth: 0,
+	},
+	metadata: {
+		display: "flex",
+		fontSize: fontSizes.sm,
+		color: colors.textTertiary,
+		flexWrap: "nowrap",
+		whiteSpace: "nowrap",
+		minWidth: 0,
+		overflow: "hidden",
+	},
+})

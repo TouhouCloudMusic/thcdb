@@ -8,7 +8,7 @@ use visit_core::EntityType;
 
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{ArcAppState, AuthSession};
-use crate::features::{artist, release};
+use crate::features::{artist, release, song};
 use crate::shared::http::api_response::AppError;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -46,6 +46,7 @@ async fn record_visit(
         EntityType::Artist => {
             artist::find::repo::exists(&state.database, id).await
         }
+        EntityType::Song => song::find::exists(&state.database, id).await,
     }
     .map_err(AppError::internal)?;
 

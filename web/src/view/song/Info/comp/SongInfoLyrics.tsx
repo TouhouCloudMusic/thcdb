@@ -3,8 +3,7 @@ import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { createSignal } from "solid-js"
 
-import { Select } from "~/component/atomic/form/select"
-import { palette } from "~/style/color/palette.stylex"
+import { Select, underlineSelectStyles } from "~/component/atomic/form/select"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 
@@ -28,29 +27,6 @@ const styles = stylex.create({
 		letterSpacing: "0.1em",
 		color: colors.textSecondary,
 		textTransform: "uppercase",
-	},
-	languageTrigger: {
-		height: "auto",
-		minHeight: px[32],
-		borderWidth: 0,
-		borderStyle: "solid",
-		borderBottomWidth: 1,
-		borderBottomStyle: "solid",
-		borderColor: {
-			default: palette.slate[400],
-			':is([aria-invalid="true"])': palette.reimu[600],
-		},
-		borderRadius: 0,
-		paddingInline: px[4],
-		paddingBlock: px[8],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		letterSpacing: "0.025em",
-		color: { default: colors.textSecondary, ":disabled": palette.slate[400] },
-		outlineStyle: {
-			default: "solid",
-			":focus": "none",
-		},
 	},
 	text: {
 		fontSize: fontSizes.lg,
@@ -89,14 +65,17 @@ export function SongInfoLyrics() {
 						setActiveLang(Number.parseInt(value, 10))
 					}}
 					itemComponent={(props) => (
-						<Select.Item item={props.item}>
+						<Select.Item
+							item={props.item}
+							styles={underlineSelectStyles.item}
+						>
 							{getLangName(props.item.rawValue)}
 						</Select.Item>
 					)}
 				>
 					<Select.Trigger
 						aria-label={t`Language`}
-						styles={[styles.languageTrigger]}
+						styles={underlineSelectStyles.trigger}
 					>
 						<Select.Value<string>>
 							{(state) => getLangName(state.selectedOption())}
@@ -104,8 +83,8 @@ export function SongInfoLyrics() {
 						<Select.Icon />
 					</Select.Trigger>
 					<Select.Portal>
-						<Select.Content>
-							<Select.Listbox />
+						<Select.Content styles={underlineSelectStyles.content}>
+							<Select.Listbox styles={underlineSelectStyles.listbox} />
 						</Select.Content>
 					</Select.Portal>
 				</Select.Root>
