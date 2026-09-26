@@ -1,7 +1,6 @@
 {
 	"name": "@touhouclouddb/web",
 	"type": "module",
-	"packageManager": "pnpm@11.1.2",
 	"scripts": {
 		"start": "vite",
 		"dev": "vite",
