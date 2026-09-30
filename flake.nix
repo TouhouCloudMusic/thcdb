@@ -66,7 +66,7 @@
               pnpm_11
               prek
               sea-orm-cli
-              typescript-go
+              typescript
               ty
               uv
               python
