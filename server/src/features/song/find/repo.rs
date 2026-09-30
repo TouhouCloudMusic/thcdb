@@ -358,7 +358,7 @@ async fn find_many_impl(
             entity::release_track::Entity,
             db,
         ),
-        songs.load_one(song_lyrics::Entity, db),
+        songs.load_many(song_lyrics::Entity, db),
         songs.load_many(song_link::Entity, db),
     )
     .db_operation("load song associations")?;
@@ -454,8 +454,7 @@ async fn find_many_impl(
                 })
                 .collect();
 
-            let lyrics =
-                build_song_lyrics(lyrics.into_iter().collect(), lang_cache);
+            let lyrics = build_song_lyrics(lyrics, lang_cache);
 
             Song {
                 id: song_model.id,
