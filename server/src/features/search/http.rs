@@ -13,7 +13,7 @@ use crate::features::artist::list::ArtistListItem;
 use crate::features::event::list::EventListItem;
 use crate::features::label::list::LabelListItem;
 use crate::features::release::list::ReleaseListItem;
-use crate::features::song::list::SongListItem;
+use crate::features::song::list::SongListing;
 use crate::features::tag::list::TagListItem;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::MessageValidationError as ValidationError;
@@ -157,7 +157,7 @@ fn normalize_limit(limit: Option<u32>) -> u32 {
 pub struct SearchResponse {
     pub artists: CursorResponse<SearchResult<ArtistListItem>>,
     pub releases: CursorResponse<SearchResult<ReleaseListItem>>,
-    pub songs: CursorResponse<SearchResult<SongListItem>>,
+    pub songs: CursorResponse<SearchResult<SongListing>>,
     pub events: CursorResponse<SearchResult<EventListItem>>,
     pub labels: CursorResponse<SearchResult<LabelListItem>>,
     pub tags: CursorResponse<SearchResult<TagListItem>>,
@@ -196,7 +196,7 @@ data! {
     DataSearchResponse, SearchResponse
     DataSearchArtistPage, CursorResponse<SearchResult<ArtistListItem>>
     DataSearchReleasePage, CursorResponse<SearchResult<ReleaseListItem>>
-    DataSearchSongPage, CursorResponse<SearchResult<SongListItem>>
+    DataSearchSongPage, CursorResponse<SearchResult<SongListing>>
     DataSearchEventPage, CursorResponse<SearchResult<EventListItem>>
     DataSearchLabelPage, CursorResponse<SearchResult<LabelListItem>>
     DataSearchTagPage, CursorResponse<SearchResult<TagListItem>>
@@ -340,7 +340,7 @@ async fn search_release(
 async fn search_song(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SearchResult<SongListItem>>>, Error> {
+) -> Result<Data<CursorResponse<SearchResult<SongListing>>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,

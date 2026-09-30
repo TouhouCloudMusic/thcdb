@@ -8,7 +8,7 @@ use utoipa_axum::routes;
 use super::{PageQuery, SongFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::song::list::SongListItem;
+use crate::features::song::list::SongListing;
 use crate::features::song::model::Song;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
@@ -19,6 +19,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
         .with_public(|r| {
             r.routes(routes!(find_song_by_id))
+                .routes(routes!(find_song_pending_correction))
                 .routes(routes!(find_song_by_keyword))
                 .routes(routes!(explore_song))
         })
@@ -28,7 +29,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionSong, Option<Song>
     DataVecSong, Vec<Song>
-    DataPageSong, PageResponse<SongListItem>
+    DataPageSong, PageResponse<SongListing>
 }
 
 #[utoipa::path(
@@ -44,6 +45,25 @@ async fn find_song_by_id(
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Song>>, DatabaseError> {
     super::repo::find_by_id(&repo, id).await.map(Data::from)
+}
+
+#[utoipa::path(
+    get,
+    tag = "Correction",
+    path = "/song/{id}/correction/{correction_id}",
+    params(
+        ("id" = i32, Path, description = "Song id"),
+        ("correction_id" = i32, Path, description = "Pending correction id"),
+    ),
+    responses((status = 200, body = DataOptionSong)),
+)]
+async fn find_song_pending_correction(
+    State(repo): State<state::SeaOrmRepository>,
+    Path((id, correction_id)): Path<(i32, i32)>,
+) -> Result<Data<Option<Song>>, DatabaseError> {
+    super::repo::find_pending_correction(&repo, id, correction_id)
+        .await
+        .map(Data::from)
 }
 
 #[derive(Deserialize, ToSchema, IntoParams)]
@@ -83,7 +103,7 @@ async fn explore_song(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<SongFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<SongListItem>>, DatabaseError> {
+) -> Result<Data<PageResponse<SongListing>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.song.find.http",

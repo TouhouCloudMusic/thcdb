@@ -33,7 +33,9 @@ impl TryFrom<Url> for HttpUrl {
     }
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, ToSchema)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema,
+)]
 pub struct DateWithPrecision {
     pub value: NaiveDate,
     pub precision: DatePrecision,

@@ -494,7 +494,13 @@ async fn snapshot_release(
         .all(db)
         .await?;
 
-    let tracks = discs.load_many(release_track_history::Entity, db).await?;
+    let tracks = discs
+        .load_many(
+            release_track_history::Entity::find()
+                .order_by_asc(release_track_history::Column::Id),
+            db,
+        )
+        .await?;
 
     let track_lengths = tracks.iter().map(Vec::len).collect::<Vec<_>>();
 
@@ -643,14 +649,17 @@ async fn snapshot_song(
 
     let relations = song_relation_history::Entity::find()
         .filter(song_relation_history::Column::HistoryId.eq(history_id))
-        .order_by_asc(song_relation_history::Column::RelatedSongId)
+        .order_by_asc(song_relation_history::Column::SourceId)
+        .order_by_asc(song_relation_history::Column::DerivedId)
+        .order_by_asc(song_relation_history::Column::RelationType)
         .all(db)
         .await?
         .into_iter()
         .map(|model| {
             json!({
-                "related_song_id": model.related_song_id,
-                "relation_type_id": model.relation_type_id,
+                "source_id": model.source_id,
+                "derived_id": model.derived_id,
+                "relation_type": model.relation_type,
                 "description": model.description,
             })
         })

@@ -1439,22 +1439,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/song-relation-types": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["song_relation_types"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/song/{id}": {
         parameters: {
             query?: never;
@@ -1478,7 +1462,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["find_song_pending_correction"];
         put?: never;
         post: operations["update_song_pending_correction"];
         delete?: never;
@@ -2045,7 +2029,7 @@ export type components = {
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        CursorResponse_SearchResult_SongListItem: {
+        CursorResponse_SearchResult_SongListing: {
             items: {
                 item: {
                     artists: components["schemas"]["SimpleArtist"][];
@@ -2274,7 +2258,7 @@ export type components = {
             status: string;
         };
         DataPageSong: {
-            data: components["schemas"]["PageResponse_SongListItem"];
+            data: components["schemas"]["PageResponse_SongListing"];
             status: string;
         };
         DataPageTag: {
@@ -2343,7 +2327,7 @@ export type components = {
             status: string;
         };
         DataSearchSongPage: {
-            data: components["schemas"]["CursorResponse_SearchResult_SongListItem"];
+            data: components["schemas"]["CursorResponse_SearchResult_SongListing"];
             status: string;
         };
         DataSearchTagPage: {
@@ -2416,10 +2400,6 @@ export type components = {
         };
         DataVecSongLyrics: {
             data: components["schemas"]["SongLyrics"][];
-            status: string;
-        };
-        DataVecSongRelationType: {
-            data: components["schemas"]["SongRelationType"][];
             status: string;
         };
         DataVecTag: {
@@ -2876,10 +2856,10 @@ export type components = {
         };
         NewSongRelation: {
             description: string;
+            direction: components["schemas"]["SongRelationDirection"];
             /** Format: int32 */
             related_song_id: number;
-            /** Format: int32 */
-            relation_type_id: number;
+            relation_type: components["schemas"]["SongRelationType"];
         };
         NewTag: {
             alt_names?: string[] | null;
@@ -3090,7 +3070,7 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
-        PageResponse_SongListItem: {
+        PageResponse_SongListing: {
             items: {
                 artists: components["schemas"]["SimpleArtist"][];
                 cover_art_url?: string | null;
@@ -3280,6 +3260,11 @@ export type components = {
             song: components["schemas"]["SongRef"];
             track_number?: string | null;
         };
+        ReleaseTrackPosition: {
+            /** Format: int32 */
+            disc_number: number;
+            track_number?: string | null;
+        };
         /** @enum {string} */
         ReleaseType: "Album" | "Ep" | "Single" | "Compilation" | "Demo" | "Other";
         ReorderUserCollectionItemsRequest: {
@@ -3304,7 +3289,7 @@ export type components = {
             events: components["schemas"]["CursorResponse_SearchResult_EventListItem"];
             labels: components["schemas"]["CursorResponse_SearchResult_LabelListItem"];
             releases: components["schemas"]["CursorResponse_SearchResult_ReleaseListItem"];
-            songs: components["schemas"]["CursorResponse_SearchResult_SongListItem"];
+            songs: components["schemas"]["CursorResponse_SearchResult_SongListing"];
             tags: components["schemas"]["CursorResponse_SearchResult_TagListItem"];
         };
         SetUserRolesRequest: {
@@ -3355,7 +3340,7 @@ export type components = {
             artist: components["schemas"]["SimpleArtist"];
             role?: null | components["schemas"]["CreditRoleRef"];
         };
-        SongListItem: {
+        SongListing: {
             artists: components["schemas"]["SimpleArtist"][];
             cover_art_url?: string | null;
             /** Format: int32 */
@@ -3378,22 +3363,29 @@ export type components = {
             title: string;
         };
         SongRelation: {
-            artist?: null | components["schemas"]["SimpleArtist"];
             description: string;
-            song: components["schemas"]["SongRef"];
+            direction: components["schemas"]["SongRelationDirection"];
+            song: components["schemas"]["SongRelationSummary"];
             type: components["schemas"]["SongRelationType"];
         };
-        SongRelationType: {
+        /** @enum {string} */
+        SongRelationDirection: "Source" | "Derived";
+        SongRelationSummary: {
+            artists: components["schemas"]["SimpleArtist"][];
             /** Format: int32 */
             id: number;
-            name: string;
+            release?: null | components["schemas"]["SongRelease"];
+            title: string;
         };
+        /** @enum {string} */
+        SongRelationType: "Derived" | "Arrangement" | "Cover" | "Remix" | "Live" | "Instrumental" | "Medley";
         SongRelease: {
             cover_art_url?: string | null;
             /** Format: int32 */
             id: number;
+            release_date?: null | components["schemas"]["DateWithPrecision"];
             title: string;
-            track_number?: string | null;
+            track_positions: components["schemas"]["ReleaseTrackPosition"][];
         };
         SongSummary: {
             artists?: components["schemas"]["SimpleArtist"][];
@@ -3429,7 +3421,7 @@ export type components = {
         } | {
             /** @enum {string} */
             entity_type: "song";
-            page: components["schemas"]["PageResponse_SongListItem"];
+            page: components["schemas"]["PageResponse_SongListing"];
         } | {
             /** @enum {string} */
             entity_type: "artist";
@@ -3629,7 +3621,7 @@ export type CursorResponseSearchResultArtistListItem = components['schemas']['Cu
 export type CursorResponseSearchResultEventListItem = components['schemas']['CursorResponse_SearchResult_EventListItem'];
 export type CursorResponseSearchResultLabelListItem = components['schemas']['CursorResponse_SearchResult_LabelListItem'];
 export type CursorResponseSearchResultReleaseListItem = components['schemas']['CursorResponse_SearchResult_ReleaseListItem'];
-export type CursorResponseSearchResultSongListItem = components['schemas']['CursorResponse_SearchResult_SongListItem'];
+export type CursorResponseSearchResultSongListing = components['schemas']['CursorResponse_SearchResult_SongListing'];
 export type CursorResponseSearchResultTagListItem = components['schemas']['CursorResponse_SearchResult_TagListItem'];
 export type CursorResponseTagAggregate = components['schemas']['CursorResponse_TagAggregate'];
 export type CursorResponseUserImageQueueItem = components['schemas']['CursorResponse_UserImageQueueItem'];
@@ -3698,7 +3690,6 @@ export type DataVecLanguage = components['schemas']['DataVecLanguage'];
 export type DataVecRelease = components['schemas']['DataVecRelease'];
 export type DataVecSong = components['schemas']['DataVecSong'];
 export type DataVecSongLyrics = components['schemas']['DataVecSongLyrics'];
-export type DataVecSongRelationType = components['schemas']['DataVecSongRelationType'];
 export type DataVecTag = components['schemas']['DataVecTag'];
 export type DataVecUserRole = components['schemas']['DataVecUserRole'];
 export type DataVerifyResetCodeResponse = components['schemas']['DataVerifyResetCodeResponse'];
@@ -3781,7 +3772,7 @@ export type PageResponseEventListItem = components['schemas']['PageResponse_Even
 export type PageResponseFollowedUserCollection = components['schemas']['PageResponse_FollowedUserCollection'];
 export type PageResponseLabelListItem = components['schemas']['PageResponse_LabelListItem'];
 export type PageResponseReleaseListItem = components['schemas']['PageResponse_ReleaseListItem'];
-export type PageResponseSongListItem = components['schemas']['PageResponse_SongListItem'];
+export type PageResponseSongListing = components['schemas']['PageResponse_SongListing'];
 export type PageResponseTagListItem = components['schemas']['PageResponse_TagListItem'];
 export type PageResponseUserCollection = components['schemas']['PageResponse_UserCollection'];
 export type PageResponseUserCollectionItemDetail = components['schemas']['PageResponse_UserCollectionItemDetail'];
@@ -3801,6 +3792,7 @@ export type ReleaseRef = components['schemas']['ReleaseRef'];
 export type ReleaseSortField = components['schemas']['ReleaseSortField'];
 export type ReleaseSummary = components['schemas']['ReleaseSummary'];
 export type ReleaseTrack = components['schemas']['ReleaseTrack'];
+export type ReleaseTrackPosition = components['schemas']['ReleaseTrackPosition'];
 export type ReleaseType = components['schemas']['ReleaseType'];
 export type ReorderUserCollectionItemsRequest = components['schemas']['ReorderUserCollectionItemsRequest'];
 export type ResendVerificationEmailRequest = components['schemas']['ResendVerificationEmailRequest'];
@@ -3816,10 +3808,12 @@ export type SimpleEvent = components['schemas']['SimpleEvent'];
 export type SimpleLabel = components['schemas']['SimpleLabel'];
 export type Song = components['schemas']['Song'];
 export type SongCredit = components['schemas']['SongCredit'];
-export type SongListItem = components['schemas']['SongListItem'];
+export type SongListing = components['schemas']['SongListing'];
 export type SongLyrics = components['schemas']['SongLyrics'];
 export type SongRef = components['schemas']['SongRef'];
 export type SongRelation = components['schemas']['SongRelation'];
+export type SongRelationDirection = components['schemas']['SongRelationDirection'];
+export type SongRelationSummary = components['schemas']['SongRelationSummary'];
 export type SongRelationType = components['schemas']['SongRelationType'];
 export type SongRelease = components['schemas']['SongRelease'];
 export type SongSummary = components['schemas']['SongSummary'];
@@ -9052,47 +9046,6 @@ export interface operations {
             };
         };
     };
-    song_relation_types: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataVecSongRelationType"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
     find_song_by_id: {
         parameters: {
             query?: never;
@@ -9157,6 +9110,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    find_song_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Song id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataOptionSong"];
                 };
             };
             /** @description Too Many Requests */
@@ -9526,7 +9525,8 @@ export interface operations {
                 entity_type: "artist" | "release" | "song";
                 limit?: number;
                 page?: number;
-                sort_by?: "popular" | "release_date";
+                /** @description Defaults to popular. Release-date sorting is available for releases and songs. */
+                sort_by?: null | ("popular" | "release_date");
             };
             header?: never;
             path: {
@@ -10052,10 +10052,10 @@ export enum ApiPaths {
     find_song_lyrics_by_id = "/song-lyrics/{id}",
     update_song_lyrics = "/song-lyrics/{id}",
     update_song_lyrics_pending_correction = "/song-lyrics/{id}/correction/{correction_id}",
-    song_relation_types = "/song-relation-types",
     explore_song = "/song/explore",
     find_song_by_id = "/song/{id}",
     update_song = "/song/{id}",
+    find_song_pending_correction = "/song/{id}/correction/{correction_id}",
     update_song_pending_correction = "/song/{id}/correction/{correction_id}",
     find_tag_by_keyword = "/tag",
     create_tag = "/tag",

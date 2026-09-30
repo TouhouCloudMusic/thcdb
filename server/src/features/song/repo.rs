@@ -14,10 +14,15 @@ use sea_orm::{
 };
 use sea_query::OnConflict;
 
-use crate::features::song::model::{NewSong, NewSongCredit, NewSongRelation};
+use crate::features::song::model::{
+    NewSong, NewSongCredit, NewSongRelation, SongRelationDirection,
+};
 use crate::infra::database::error::{
     BrokenEntityReference, DatabaseError, DatabaseResultExt,
 };
+
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
 
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
@@ -31,9 +36,10 @@ pub(super) async fn create(
 
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
+    song_id: i32,
     data: &NewSong,
 ) -> Result<i32, DatabaseError> {
-    create_song_history_and_relations(data, repo.conn())
+    create_song_history_and_relations(song_id, data, repo.conn())
         .await
         .map(|song| song.id)
         .db_operation("create song history")
@@ -214,9 +220,9 @@ async fn update_relations(
 ) -> Result<(), DbErr> {
     song_relation::Entity::delete_many()
         .filter(
-            song_relation::Column::FirstId
+            song_relation::Column::SourceId
                 .eq(song_id)
-                .or(song_relation::Column::SecondId.eq(song_id)),
+                .or(song_relation::Column::DerivedId.eq(song_id)),
         )
         .exec(tx)
         .await?;
@@ -230,17 +236,12 @@ async fn update_relations(
         return Ok(());
     }
 
-    let models = relations.iter().map(|relation| {
-        let first_id = song_id.min(relation.related_song_id);
-        let second_id = song_id.max(relation.related_song_id);
-
-        song_relation::ActiveModel {
-            id: NotSet,
-            first_id: Set(first_id),
-            second_id: Set(second_id),
-            relation_type_id: Set(relation.relation_type_id),
-            description: Set(relation.description.clone()),
-        }
+    let models = relations.iter().map(|relation| song_relation::ActiveModel {
+        id: NotSet,
+        source_id: Set(relation.source_id),
+        derived_id: Set(relation.derived_id),
+        relation_type: Set(relation.relation_type),
+        description: Set(relation.description.clone()),
     });
 
     song_relation::Entity::insert_many(models).exec(tx).await?;
@@ -302,6 +303,7 @@ async fn create_song_and_relations(
 }
 
 async fn create_song_history_and_relations(
+    song_id: i32,
     data: &NewSong,
     tx: &DatabaseTransaction,
 ) -> Result<song_history::Model, DbErr> {
@@ -322,7 +324,12 @@ async fn create_song_history_and_relations(
             tx
         ),
         create_link_histories(history.id, data.links.as_deref(), tx),
-        create_relation_histories(history.id, data.relations.as_deref(), tx),
+        create_relation_histories(
+            song_id,
+            history.id,
+            data.relations.as_deref(),
+            tx
+        ),
     )?;
 
     Ok(history)
@@ -559,14 +566,13 @@ async fn create_relations(
     }
 
     let models = relations.iter().map(|relation| {
-        let first_id = song_id.min(relation.related_song_id);
-        let second_id = song_id.max(relation.related_song_id);
+        let (source_id, derived_id) = relation_song_ids(song_id, relation);
 
         song_relation::ActiveModel {
             id: NotSet,
-            first_id: Set(first_id),
-            second_id: Set(second_id),
-            relation_type_id: Set(relation.relation_type_id),
+            source_id: Set(source_id),
+            derived_id: Set(derived_id),
+            relation_type: Set(relation.relation_type),
             description: Set(relation.description.clone()),
         }
     });
@@ -577,6 +583,7 @@ async fn create_relations(
 }
 
 async fn create_relation_histories(
+    song_id: i32,
     history_id: i32,
     relations: Option<&[NewSongRelation]>,
     tx: &DatabaseTransaction,
@@ -589,22 +596,34 @@ async fn create_relation_histories(
         return Ok(());
     }
 
-    let models =
-        relations
-            .iter()
-            .map(|relation| song_relation_history::ActiveModel {
-                id: NotSet,
-                history_id: Set(history_id),
-                related_song_id: Set(relation.related_song_id),
-                relation_type_id: Set(relation.relation_type_id),
-                description: Set(relation.description.clone()),
-            });
+    let models = relations.iter().map(|relation| {
+        let (source_id, derived_id) = relation_song_ids(song_id, relation);
+
+        song_relation_history::ActiveModel {
+            id: NotSet,
+            history_id: Set(history_id),
+            source_id: Set(source_id),
+            derived_id: Set(derived_id),
+            relation_type: Set(relation.relation_type),
+            description: Set(relation.description.clone()),
+        }
+    });
 
     song_relation_history::Entity::insert_many(models)
         .exec(tx)
         .await?;
 
     Ok(())
+}
+
+const fn relation_song_ids(
+    song_id: i32,
+    relation: &NewSongRelation,
+) -> (i32, i32) {
+    match relation.direction {
+        SongRelationDirection::Source => (song_id, relation.related_song_id),
+        SongRelationDirection::Derived => (relation.related_song_id, song_id),
+    }
 }
 
 async fn create_links(

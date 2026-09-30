@@ -3,51 +3,27 @@ import { Link } from "@tanstack/solid-router"
 import { For, Show } from "solid-js"
 
 import { Thumbnail } from "~/component/Thumbnail"
-import type { SongListItem } from "~/hey-api"
+import type { SongListing } from "~/hey-api"
 import { textStyles } from "~/style"
 import { link } from "~/style/link"
 import { listItemStyles } from "~/style/primitives"
-import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
+import { radius, fontSizes, lineHeights } from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 
-const styles = stylex.create({
-	resultRow: {
-		display: "grid",
-		gridTemplateColumns: `${px[64]} minmax(0,1fr)`,
-		alignItems: "flex-start",
-		columnGap: px[16],
-	},
-	thumbnail: {
-		borderRadius: radius.sm,
-	},
-	title: {
-		overflowWrap: "break-word",
-		fontSize: fontSizes.base,
-		lineHeight: 1.5,
-		textDecorationLine: {
-			default: "none",
-			":hover": { default: null, "@media (hover: hover)": "underline" },
-		},
-	},
-
-	metadataLink: {
-		color: colors.textSecondary,
-		textDecorationLine: {
-			default: "none",
-			":hover": { default: null, "@media (hover: hover)": "underline" },
-		},
-	},
+const songItemStyles = stylex.create({
+	thumbnail: { borderRadius: radius.sm },
+	title: { fontSize: fontSizes.base, lineHeight: lineHeights.base },
 })
 
-export function SongItem(props: { song: SongListItem }) {
+export function SongItem(props: { song: SongListing }) {
 	return (
-		<div {...stylex.attrs(styles.resultRow)}>
+		<div {...stylex.attrs(listItemStyles.row)}>
 			<Thumbnail
 				src={imgUrl(props.song.cover_art_url, 8)}
 				to="/song/$id"
 				params={{ id: props.song.id.toString() }}
 				aria-label={props.song.title}
-				styles={[styles.thumbnail]}
+				styles={songItemStyles.thumbnail}
 			/>
 
 			<div {...stylex.attrs(listItemStyles.content)}>
@@ -58,7 +34,7 @@ export function SongItem(props: { song: SongListItem }) {
 						stylex.attrs(
 							link.base,
 							link.withUnderline,
-							styles.title,
+							songItemStyles.title,
 							textStyles.ellipsis,
 						).class
 					}
@@ -78,7 +54,7 @@ export function SongItem(props: { song: SongListItem }) {
 											stylex.attrs(
 												link.base,
 												link.withUnderline,
-												styles.metadataLink,
+												link.secondary,
 											).class
 										}
 									>
@@ -105,7 +81,7 @@ export function SongItem(props: { song: SongListItem }) {
 											stylex.attrs(
 												link.base,
 												link.withUnderline,
-												styles.metadataLink,
+												link.secondary,
 											).class
 										}
 									>

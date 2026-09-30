@@ -20,7 +20,7 @@ use crate::features::artist::list::{ArtistListItem, ArtistRow};
 use crate::features::event::list::{EventListItem, EventRow};
 use crate::features::label::list::{LabelListItem, LabelRow};
 use crate::features::release::list::{ReleaseListItem, ReleaseRow};
-use crate::features::song::list::{SongListItem, SongRow};
+use crate::features::song::list::{SongListing, SongRow};
 use crate::features::tag::list::{TagListItem, TagRow};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
@@ -216,7 +216,7 @@ define_search! {
         alternative: song_localized_title {
             foreign_key: SongId,
         },
-        row: SongRow => SongListItem,
+        row: SongRow => SongListing,
         load_items: crate::features::song::list::load_items,
     }
 }

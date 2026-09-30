@@ -1317,112 +1317,6 @@ export const vNewSongLyrics = v.object({
 	is_main: v.boolean(),
 })
 
-export const vNewSongRelation = v.object({
-	related_song_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	relation_type_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	description: v.string(),
-})
-
-export const vNewCorrectionNewSong = v.object({
-	data: v.object({
-		title: vEntityIdent,
-		artists: v.nullish(
-			v.array(
-				v.pipe(
-					v.number(),
-					v.integer(),
-					v.minValue(
-						-2147483648,
-						"Invalid value: Expected int32 to be >= -2147483648",
-					),
-					v.maxValue(
-						2147483647,
-						"Invalid value: Expected int32 to be <= 2147483647",
-					),
-				),
-			),
-		),
-		credits: v.nullish(v.array(vNewSongCredit)),
-		languages: v.nullish(
-			v.array(
-				v.pipe(
-					v.number(),
-					v.integer(),
-					v.minValue(
-						-2147483648,
-						"Invalid value: Expected int32 to be >= -2147483648",
-					),
-					v.maxValue(
-						2147483647,
-						"Invalid value: Expected int32 to be <= 2147483647",
-					),
-				),
-			),
-		),
-		localized_titles: v.nullish(v.array(vNewLocalizedName)),
-		links: v.nullish(v.array(vHttpUrl)),
-		relations: v.nullish(v.array(vNewSongRelation)),
-	}),
-	description: v.string(),
-	type: vCorrectionType,
-})
-
-export const vNewSong = v.object({
-	title: vEntityIdent,
-	artists: v.nullish(
-		v.array(
-			v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-		),
-	),
-	credits: v.nullish(v.array(vNewSongCredit)),
-	languages: v.nullish(
-		v.array(
-			v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-		),
-	),
-	localized_titles: v.nullish(v.array(vNewLocalizedName)),
-	links: v.nullish(v.array(vHttpUrl)),
-	relations: v.nullish(v.array(vNewSongRelation)),
-})
-
 export const vNewTrack = v.object({
 	song_id: v.pipe(
 		v.number(),
@@ -1738,6 +1632,19 @@ export const vReleaseSortField = v.picklist([
 	"created_at",
 	"updated_at",
 ])
+
+export const vReleaseTrackPosition = v.object({
+	disc_number: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	track_number: v.nullish(v.string()),
+})
 
 export const vReleaseType = v.picklist([
 	"Album",
@@ -2135,7 +2042,7 @@ export const vCursorResponseSearchResultReleaseListItem = v.object({
 	),
 })
 
-export const vCursorResponseSearchResultSongListItem = v.object({
+export const vCursorResponseSearchResultSongListing = v.object({
 	items: v.array(
 		v.object({
 			item: v.object({
@@ -2187,7 +2094,7 @@ export const vDataSearchReleasePage = v.object({
 
 export const vDataSearchSongPage = v.object({
 	status: v.string(),
-	data: vCursorResponseSearchResultSongListItem,
+	data: vCursorResponseSearchResultSongListing,
 })
 
 export const vLabelListItem = v.object({
@@ -2330,7 +2237,7 @@ export const vDataPageRelease = v.object({
 	data: vPageResponseReleaseListItem,
 })
 
-export const vPageResponseSongListItem = v.object({
+export const vPageResponseSongListing = v.object({
 	items: v.array(
 		v.object({
 			id: v.pipe(
@@ -2388,7 +2295,7 @@ export const vPageResponseSongListItem = v.object({
 
 export const vDataPageSong = v.object({
 	status: v.string(),
-	data: vPageResponseSongListItem,
+	data: vPageResponseSongListing,
 })
 
 export const vReleaseListItem = v.object({
@@ -2477,7 +2384,7 @@ export const vSongCredit = v.object({
 	role: v.nullish(vCreditRoleRef),
 })
 
-export const vSongListItem = v.object({
+export const vSongListing = v.object({
 	id: v.pipe(
 		v.number(),
 		v.integer(),
@@ -2615,8 +2522,20 @@ export const vDataVecRelease = v.object({
 	data: v.array(vRelease),
 })
 
-export const vSongRelationType = v.object({
-	id: v.pipe(
+export const vSongRelationDirection = v.picklist(["Source", "Derived"])
+
+export const vSongRelationType = v.picklist([
+	"Derived",
+	"Arrangement",
+	"Cover",
+	"Remix",
+	"Live",
+	"Instrumental",
+	"Medley",
+])
+
+export const vNewSongRelation = v.object({
+	related_song_id: v.pipe(
 		v.number(),
 		v.integer(),
 		v.minValue(
@@ -2625,19 +2544,93 @@ export const vSongRelationType = v.object({
 		),
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
-	name: v.string(),
-})
-
-export const vDataVecSongRelationType = v.object({
-	status: v.string(),
-	data: v.array(vSongRelationType),
-})
-
-export const vSongRelation = v.object({
-	song: vSongRef,
-	artist: v.nullish(vSimpleArtist),
-	type: vSongRelationType,
+	direction: vSongRelationDirection,
+	relation_type: vSongRelationType,
 	description: v.string(),
+})
+
+export const vNewCorrectionNewSong = v.object({
+	data: v.object({
+		title: vEntityIdent,
+		artists: v.nullish(
+			v.array(
+				v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+			),
+		),
+		credits: v.nullish(v.array(vNewSongCredit)),
+		languages: v.nullish(
+			v.array(
+				v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+			),
+		),
+		localized_titles: v.nullish(v.array(vNewLocalizedName)),
+		links: v.nullish(v.array(vHttpUrl)),
+		relations: v.nullish(v.array(vNewSongRelation)),
+	}),
+	description: v.string(),
+	type: vCorrectionType,
+})
+
+export const vNewSong = v.object({
+	title: vEntityIdent,
+	artists: v.nullish(
+		v.array(
+			v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+		),
+	),
+	credits: v.nullish(v.array(vNewSongCredit)),
+	languages: v.nullish(
+		v.array(
+			v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+		),
+	),
+	localized_titles: v.nullish(v.array(vNewLocalizedName)),
+	links: v.nullish(v.array(vHttpUrl)),
+	relations: v.nullish(v.array(vNewSongRelation)),
 })
 
 export const vSongRelease = v.object({
@@ -2651,8 +2644,31 @@ export const vSongRelease = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	title: v.string(),
-	track_number: v.nullish(v.string()),
+	track_positions: v.array(vReleaseTrackPosition),
+	release_date: v.nullish(vDateWithPrecision),
 	cover_art_url: v.nullish(v.string()),
+})
+
+export const vSongRelationSummary = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
+	artists: v.array(vSimpleArtist),
+	release: v.nullish(vSongRelease),
+})
+
+export const vSongRelation = v.object({
+	song: vSongRelationSummary,
+	direction: vSongRelationDirection,
+	type: vSongRelationType,
+	description: v.string(),
 })
 
 export const vSong = v.object({
@@ -2799,7 +2815,7 @@ export const vTagEntitiesPage = v.union([
 		entity_type: v.picklist(["release"]),
 	}),
 	v.object({
-		page: vPageResponseSongListItem,
+		page: vPageResponseSongListing,
 		entity_type: v.picklist(["song"]),
 	}),
 	v.object({
@@ -2975,7 +2991,7 @@ export const vDataPageTag = v.object({
 export const vSearchResponse = v.object({
 	artists: vCursorResponseSearchResultArtistListItem,
 	releases: vCursorResponseSearchResultReleaseListItem,
-	songs: vCursorResponseSearchResultSongListItem,
+	songs: vCursorResponseSearchResultSongListing,
 	events: vCursorResponseSearchResultEventListItem,
 	labels: vCursorResponseSearchResultLabelListItem,
 	tags: vCursorResponseSearchResultTagListItem,
@@ -5701,8 +5717,6 @@ export const vUpdateSongLyricsPendingCorrectionPath = v.object({
 export const vUpdateSongLyricsPendingCorrectionResponse =
 	vDataCorrectionSubmitResult
 
-export const vSongRelationTypesResponse = vDataVecSongRelationType
-
 export const vExploreSongQuery = v.object({
 	language_id: v.nullish(
 		v.array(
@@ -5766,6 +5780,29 @@ export const vUpdateSongPath = v.object({
 })
 
 export const vUpdateSongResponse = vDataCorrectionSubmitResult
+
+export const vFindSongPendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vFindSongPendingCorrectionResponse = vDataOptionSong
 
 export const vUpdateSongPendingCorrectionBody = vNewCorrectionNewSong
 
@@ -5890,7 +5927,9 @@ export const vFindTagEntitiesPath = v.object({
 
 export const vFindTagEntitiesQuery = v.object({
 	entity_type: v.picklist(["artist", "release", "song"]),
-	sort_by: v.optional(v.picklist(["popular", "release_date"])),
+	sort_by: v.nullish(
+		v.union([v.literal("popular"), v.literal("release_date")]),
+	),
 	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),

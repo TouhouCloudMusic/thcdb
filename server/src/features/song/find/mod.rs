@@ -1,5 +1,6 @@
 mod filter;
 mod http;
+mod references;
 mod repo;
 
 pub use filter::{PageQuery, SongFilter};

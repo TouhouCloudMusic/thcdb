@@ -9,7 +9,7 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
-    CorrectionSubmitResult, NewCorrectionDto, SubmissionError,
+    CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::shared::http::api_response::Data;
 
@@ -31,7 +31,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     post,
     tag = TAG,
     path = "/event",
-    request_body = NewCorrectionDto<NewEvent>,
+    request_body = NewCorrectionRequest<NewEvent>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -39,7 +39,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn create_event(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
-    Json(dto): Json<NewCorrectionDto<NewEvent>>,
+    Json(dto): Json<NewCorrectionRequest<NewEvent>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service.create(dto.with_author(user)).await?;
 
@@ -50,7 +50,7 @@ async fn create_event(
     post,
     tag = TAG,
     path = "/event/{id}",
-    request_body = NewCorrectionDto<NewEvent>,
+    request_body = NewCorrectionRequest<NewEvent>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -59,7 +59,7 @@ async fn upsert_event_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path(id): Path<i32>,
-    Json(dto): Json<NewCorrectionDto<NewEvent>>,
+    Json(dto): Json<NewCorrectionRequest<NewEvent>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(
@@ -80,7 +80,7 @@ async fn upsert_event_correction(
         ("id" = i32, Path, description = "Event id"),
         ("correction_id" = i32, Path, description = "Pending correction id"),
     ),
-    request_body = NewCorrectionDto<NewEvent>,
+    request_body = NewCorrectionRequest<NewEvent>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -89,7 +89,7 @@ async fn update_event_pending_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path((id, correction_id)): Path<(i32, i32)>,
-    Json(dto): Json<NewCorrectionDto<NewEvent>>,
+    Json(dto): Json<NewCorrectionRequest<NewEvent>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(

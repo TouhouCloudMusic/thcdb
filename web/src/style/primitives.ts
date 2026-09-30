@@ -62,6 +62,12 @@ export const infoStyles = stylex.create({
 })
 
 export const listItemStyles = stylex.create({
+	row: {
+		display: "grid",
+		gridTemplateColumns: `${px[64]} minmax(0,1fr)`,
+		alignItems: "start",
+		columnGap: px[16],
+	},
 	content: {
 		display: "grid",
 		gridTemplateRows: `${px[24]} ${px[20]} ${px[20]}`,
@@ -70,6 +76,7 @@ export const listItemStyles = stylex.create({
 	metadata: {
 		display: "flex",
 		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
 		color: colors.textTertiary,
 		flexWrap: "nowrap",
 		whiteSpace: "nowrap",

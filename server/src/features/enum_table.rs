@@ -1,9 +1,9 @@
 use axum::extract::State;
 use domain::shared::Language;
-use entity::{language, role, song_relation_type};
+use entity::{language, role};
 use itertools::Itertools;
 use libfp::FunctorExt;
-use sea_orm::{EntityTrait, QueryOrder};
+use sea_orm::EntityTrait;
 use strum::IntoEnumIterator;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -11,7 +11,6 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::auth::{EditableUserRole, UserRoleEnum};
-use crate::features::song::model::SongRelationType;
 use crate::infra::database::error::{
     BrokenEntityReference, DatabaseError, DatabaseResultExt,
 };
@@ -23,14 +22,12 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
             r.routes(routes!(language_list))
                 .routes(routes!(user_roles))
                 .routes(routes!(editable_user_roles))
-                .routes(routes!(song_relation_types))
         })
         .finish()
 }
 
 data! {
     DataVecLanguage, Vec<Language>
-    DataVecSongRelationType, Vec<SongRelationType>
     DataVecUserRole, Vec<UserRoleEnum>
     DataVecEditableUserRole, Vec<EditableUserRole>
 }
@@ -92,25 +89,4 @@ async fn editable_user_roles(
     State(_state): State<ArcAppState>,
 ) -> Data<Vec<EditableUserRole>> {
     EditableUserRole::iter().collect_vec().into()
-}
-
-#[utoipa::path(
-    get,
-    path = "/song-relation-types",
-    responses(
-        (status = 200, body = DataVecSongRelationType),
-    ),
-)]
-async fn song_relation_types(
-    State(state): State<ArcAppState>,
-) -> Result<Data<Vec<SongRelationType>>, DatabaseError> {
-    Ok(song_relation_type::Entity::find()
-        .order_by_asc(song_relation_type::Column::Id)
-        .all(&state.database)
-        .await
-        .db_operation("list song relation types")?
-        .into_iter()
-        .map(Into::into)
-        .collect_vec()
-        .into())
 }

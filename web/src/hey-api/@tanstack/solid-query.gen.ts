@@ -54,6 +54,7 @@ import {
 	findSongById,
 	findSongByKeyword,
 	findSongLyricsById,
+	findSongPendingCorrection,
 	findTagById,
 	findTagByKeyword,
 	findTagEntities,
@@ -107,7 +108,6 @@ import {
 	signIn,
 	signOut,
 	signUp,
-	songRelationTypes,
 	unfollowUser,
 	unfollowUserCollection,
 	unreadCount,
@@ -277,6 +277,9 @@ import type {
 	FindSongLyricsByIdData,
 	FindSongLyricsByIdError,
 	FindSongLyricsByIdResponse,
+	FindSongPendingCorrectionData,
+	FindSongPendingCorrectionError,
+	FindSongPendingCorrectionResponse,
 	FindTagByIdData,
 	FindTagByIdError,
 	FindTagByIdResponse,
@@ -431,9 +434,6 @@ import type {
 	SignUpData,
 	SignUpError,
 	SignUpResponse2,
-	SongRelationTypesData,
-	SongRelationTypesError,
-	SongRelationTypesResponse,
 	UnfollowUserCollectionData,
 	UnfollowUserCollectionError,
 	UnfollowUserCollectionResponse,
@@ -4154,31 +4154,6 @@ export const updateSongLyricsPendingCorrectionMutation = (
 	return mutationOptions
 }
 
-export const songRelationTypesQueryKey = (
-	options?: Options<SongRelationTypesData>,
-) => createQueryKey("songRelationTypes", options)
-
-export const songRelationTypesOptions = (
-	options?: Options<SongRelationTypesData>,
-) =>
-	queryOptions<
-		SongRelationTypesResponse,
-		SongRelationTypesError,
-		SongRelationTypesResponse,
-		ReturnType<typeof songRelationTypesQueryKey>
-	>({
-		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await songRelationTypes({
-				...options,
-				...queryKey[0],
-				signal,
-				throwOnError: true,
-			})
-			return data
-		},
-		queryKey: songRelationTypesQueryKey(options),
-	})
-
 export const exploreSongQueryKey = (options?: Options<ExploreSongData>) =>
 	createQueryKey("exploreSong", options, false, ["Song"])
 
@@ -4295,6 +4270,31 @@ export const updateSongMutation = (
 	}
 	return mutationOptions
 }
+
+export const findSongPendingCorrectionQueryKey = (
+	options: Options<FindSongPendingCorrectionData>,
+) => createQueryKey("findSongPendingCorrection", options, false, ["Correction"])
+
+export const findSongPendingCorrectionOptions = (
+	options: Options<FindSongPendingCorrectionData>,
+) =>
+	queryOptions<
+		FindSongPendingCorrectionResponse,
+		FindSongPendingCorrectionError,
+		FindSongPendingCorrectionResponse,
+		ReturnType<typeof findSongPendingCorrectionQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await findSongPendingCorrection({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: findSongPendingCorrectionQueryKey(options),
+	})
 
 export const updateSongPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateSongPendingCorrectionData>>,

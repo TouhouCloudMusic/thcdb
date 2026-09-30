@@ -5,6 +5,7 @@ use itertools::Itertools;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
+    QueryOrder,
 };
 use vecmap::VecMap;
 
@@ -76,11 +77,13 @@ pub(crate) async fn update_release_track_and_disc(
 
     let disc_histories = release_disc_history::Entity::find()
         .filter(release_disc_history::Column::HistoryId.eq(history_id))
+        .order_by_asc(release_disc_history::Column::Id)
         .all(db)
         .await?;
 
     let track_histories = release_track_history::Entity::find()
         .filter(release_track_history::Column::HistoryId.eq(history_id))
+        .order_by_asc(release_track_history::Column::Id)
         .all(db)
         .await?;
 

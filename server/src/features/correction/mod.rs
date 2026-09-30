@@ -18,5 +18,7 @@ pub use http::router;
 pub use model::{
     Correction, CorrectionDecision, CorrectionDiff, CorrectionDiffEntry,
     CorrectionEntity, CorrectionFilter, CorrectionFilterStatus,
-    CorrectionSubmitResult, NewCorrection, NewCorrectionDto, NewCorrectionMeta,
+    CorrectionSubmitResult, NewCorrection, NewCorrectionMeta,
+    NewCorrectionRequest,
 };
+pub(crate) use repo::find_pending_history_id;

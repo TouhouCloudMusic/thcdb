@@ -15,7 +15,7 @@ import {
 	ExplorePageLayout,
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
-import type { SongListItem } from "~/hey-api"
+import type { SongListing } from "~/hey-api"
 import { exploreSongOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { palette } from "~/style/color/palette.stylex"
 import { dividerStyles } from "~/style/primitives"
@@ -152,7 +152,7 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 }
 
 type SongExploreListProps = {
-	songs: SongListItem[]
+	songs: SongListing[]
 	isLoading: boolean
 	isFetching: boolean
 	limit: number

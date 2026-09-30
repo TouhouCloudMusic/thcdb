@@ -1,117 +1,29 @@
-import {
-	Field,
-	FieldArray,
-	getErrors,
-	insert,
-	remove,
-	setInput,
-} from "@formisch/solid"
+import { Field, getErrors, insert, remove, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import { useQuery } from "@tanstack/solid-query"
-import type { Song, SongRef, SongRelation } from "@thc/api"
+import type {
+	Song,
+	SongRef,
+	SongRelation,
+	SongRelationDirection,
+	SongRelationType,
+} from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 
 import { FormComp, Select } from "~/component/atomic"
+import { inputStyles } from "~/component/atomic/Input"
 import { Button } from "~/component/atomic/button"
 import { FieldArrayFallback } from "~/component/form"
 import { SongSearchDialog } from "~/component/form/SearchDialog"
-import { songRelationTypes } from "~/hey-api"
-import type { SongRelationType as SongRelationTypeLookup } from "~/hey-api"
-import { palette } from "~/style/color/palette.stylex"
-import { formStyles } from "~/style/primitives"
-import {
-	radius,
-	colors,
-	lineHeights,
-	fontSizes,
-	px,
-} from "~/style/tokens.stylex"
+import { vSongRelationType } from "~/hey-api/valibot.gen"
+import { textStyles } from "~/style"
+import { dividerStyles, formStyles } from "~/style/primitives"
+import { colors, px } from "~/style/tokens.stylex"
 
 import type { SongFormStore } from "./types"
-
-const styles = stylex.create({
-	field: {
-		display: "flex",
-		minHeight: px[128],
-		flexDirection: "column",
-	},
-	fieldHeader: {
-		marginBottom: px[16],
-		display: "flex",
-		placeContent: "space-between",
-		alignItems: "center",
-		gap: px[16],
-	},
-	label: {
-		margin: 0,
-	},
-	addButton: {
-		height: "max-content",
-		padding: px[8],
-	},
-	icon: {
-		width: px[16],
-		height: px[16],
-	},
-	entries: {
-		display: "flex",
-		minHeight: px[128],
-		flexDirection: "column",
-		gap: px[8],
-	},
-	entry: {
-		display: "grid",
-		gridTemplateColumns: "minmax(0,1fr) 12rem minmax(0,1fr) auto",
-		columnGap: px[8],
-		rowGap: px[4],
-	},
-	selection: {
-		display: "grid",
-		gridTemplateColumns: "minmax(0,1fr) auto",
-		alignItems: "center",
-		columnGap: px[8],
-	},
-	placeholder: {
-		color: colors.textTertiary,
-	},
-	value: {
-		color: colors.textPrimary,
-	},
-	column: {
-		display: "flex",
-		flexDirection: "column",
-	},
-	control: {
-		width: "100%",
-	},
-	descriptionInput: {
-		height: px[36],
-		width: "100%",
-		borderRadius: radius.md,
-		borderWidth: 1,
-		borderStyle: "solid",
-		borderColor: palette.slate[300],
-		paddingInline: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textPrimary,
-	},
-	removeButton: {
-		aspectRatio: "1 / 1",
-	},
-	removeIcon: {
-		marginInline: "auto",
-	},
-	errors: {
-		gridColumn: "span 4 / span 4",
-		display: "grid",
-		gridTemplateColumns: "subgrid",
-	},
-})
 
 type Props = {
 	of: SongFormStore
@@ -127,45 +39,52 @@ function toSongRef(song: Song): SongRef {
 	}
 }
 
-const EMPTY_RELATION_TYPE_ID = ""
-const SONG_RELATION_TYPES_CACHE_TIME = 86_400_000
+const SONG_RELATION_TYPE_FIELD_OPTIONS = vSongRelationType.options.map(
+	(value) => ({ value, label: value }),
+)
 
-function parseRelationTypeId(value: string | null | undefined) {
-	return value === EMPTY_RELATION_TYPE_ID
-		|| value === undefined
-		|| value === null
-		? undefined
-		: Number.parseInt(value, 10)
-}
+const fieldStyles = stylex.create({
+	root: {
+		containerType: "inline-size",
+		display: "flex",
+		flexDirection: "column",
+	},
+	header: {
+		display: "flex",
+		height: px[32],
+		placeContent: "space-between",
+		alignItems: "center",
+		gap: px[16],
+	},
+	label: {
+		marginBottom: 0,
+	},
+	entries: {
+		display: "flex",
+		minHeight: px[128],
+		flexDirection: "column",
+		marginTop: px[8],
+		gap: px[8],
+	},
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+})
 
 export function SongRelationsField(props: Props) {
 	const { t } = useLingui()
-	const relationTypesQuery = useQuery(() => ({
-		queryKey: ["songRelationTypes"],
-		queryFn: async () => {
-			const response = await songRelationTypes({ throwOnError: true })
-			return response.data.data
-		},
-		staleTime: SONG_RELATION_TYPES_CACHE_TIME,
-		gcTime: SONG_RELATION_TYPES_CACHE_TIME,
-		throwOnError: true,
-	}))
-	const [songRefs, setSongRefs] = createStore<(SongRef | undefined)[]>(
+	const [songRefs, setSongRefs] = createStore<SongRef[]>(
 		untrack(() => props.initRelations?.map((relation) => relation.song) ?? []),
 	)
 
-	const isRelationExists = (candidate: Song, ignoreIndex?: number) => {
-		if (candidate.id === props.currentSongId) return true
-		return songRefs.some((entry, idx) => {
-			if (!entry) return false
-			if (idx === ignoreIndex) return false
-			return entry.id === candidate.id
+	const addRelation = (selected: Song) => {
+		if (selected.id === props.currentSongId) return
+		insert(props.of, {
+			path: ["data", "relations"],
+			initialInput: { related_song_id: selected.id, description: "" },
 		})
-	}
-
-	const addRelation = () => {
-		insert(props.of, { path: ["data", "relations"] })
-		setSongRefs(songRefs.length, undefined)
+		setSongRefs(songRefs.length, toSongRef(selected))
 	}
 
 	const removeRelationAt = (index: number) => {
@@ -174,7 +93,7 @@ export function SongRelationsField(props: Props) {
 	}
 
 	const setSongAt = (index: number, selected: Song) => {
-		if (isRelationExists(selected, index)) return
+		if (selected.id === props.currentSongId) return
 		setSongRefs(index, () => toSongRef(selected))
 		setInput(props.of, {
 			path: ["data", "relations", index, "related_song_id"],
@@ -183,50 +102,37 @@ export function SongRelationsField(props: Props) {
 	}
 
 	return (
-		<div {...stylex.attrs(styles.field, props.styles)}>
-			<div {...stylex.attrs(styles.fieldHeader)}>
+		<div {...stylex.attrs(fieldStyles.root, props.styles)}>
+			<div {...stylex.attrs(fieldStyles.header)}>
 				<label
-					{...stylex.attrs(formStyles.label, styles.label)}
+					{...stylex.attrs(formStyles.label, fieldStyles.label)}
 				>{t`Relations`}</label>
-				<Button
-					onClick={addRelation}
-					appearance="ghost"
-					tone="gray"
-					styles={styles.addButton}
-				>
-					<PlusIcon {...stylex.attrs(styles.icon)} />
-				</Button>
+				<SongSearchDialog
+					onSelect={addRelation}
+					dataFilter={(candidate) => candidate.id !== props.currentSongId}
+					icon={<PlusIcon {...stylex.attrs(fieldStyles.icon)} />}
+				/>
 			</div>
+			<hr {...stylex.attrs(dividerStyles.horizontal)} />
 			<FormComp.ErrorList
 				errors={getErrors(props.of, { path: ["data", "relations"] })}
 			/>
-			<ul {...stylex.attrs(styles.entries)}>
-				<FieldArray
-					of={props.of}
-					path={["data", "relations"]}
+			<ul {...stylex.attrs(fieldStyles.entries)}>
+				<For
+					each={songRefs}
+					fallback={<FieldArrayFallback />}
 				>
-					{(fieldArray) => (
-						<For
-							each={fieldArray.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<RelationRow
-									index={idx()}
-									of={props.of}
-									currentSongId={props.currentSongId}
-									relationTypes={relationTypesQuery.data ?? []}
-									songRef={songRefs[idx()]}
-									songRefs={songRefs}
-									onSelectSong={(selectedSong) =>
-										setSongAt(idx(), selectedSong)
-									}
-									onRemove={() => removeRelationAt(idx())}
-								/>
-							)}
-						</For>
+					{(songRef, idx) => (
+						<RelationRow
+							index={idx()}
+							of={props.of}
+							currentSongId={props.currentSongId}
+							songRef={songRef}
+							onSelectSong={(selectedSong) => setSongAt(idx(), selectedSong)}
+							onRemove={() => removeRelationAt(idx())}
+						/>
 					)}
-				</FieldArray>
+				</For>
 			</ul>
 		</div>
 	)
@@ -236,76 +142,116 @@ type RelationRowProps = {
 	index: number
 	of: SongFormStore
 	currentSongId: number | undefined
-	relationTypes: SongRelationTypeLookup[]
-	songRef: SongRef | undefined
-	songRefs: (SongRef | undefined)[]
+	songRef: SongRef
 	onSelectSong: (song: Song) => void
 	onRemove: () => void
 }
 
+type RelationOption<Value extends string> = { value: Value; label: string }
+
+const rowStyles = stylex.create({
+	root: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: "minmax(0,1fr)",
+			"@container (28rem <= width < 56rem)": "repeat(2, minmax(0,1fr))",
+			"@container (min-width: 56rem)":
+				"minmax(0,1fr) 14rem 12rem minmax(0,1fr)",
+		},
+		gridTemplateAreas: {
+			default: '"song" "direction" "type" "description"',
+			"@container (28rem <= width < 56rem)":
+				'"song song" "direction type" "description description"',
+			"@container (min-width: 56rem)": '"song direction type description"',
+		},
+		gap: px[8],
+	},
+	selection: {
+		gridArea: "song",
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) auto auto",
+		alignItems: "center",
+		columnGap: px[8],
+	},
+	value: {
+		color: colors.textSecondary,
+	},
+	column: {
+		display: "flex",
+		flexDirection: "column",
+	},
+	directionColumn: { gridArea: "direction" },
+	typeColumn: { gridArea: "type" },
+	descriptionColumn: { gridArea: "description" },
+	control: { display: "grid" },
+	removeButton: {
+		padding: px[8],
+	},
+	errors: {
+		gridColumn: "1 / -1",
+		display: "grid",
+		rowGap: px[8],
+	},
+	error: { marginTop: 0 },
+	icon: {
+		width: px[16],
+		height: px[16],
+	},
+})
+
 function RelationRow(props: RelationRowProps) {
 	const { t } = useLingui()
 	const dataFilter = createMemo(() => {
-		const relatedSongIds = new Set<number>()
-		for (const [index, songRef] of props.songRefs.entries()) {
-			if (index !== props.index && songRef) {
-				relatedSongIds.add(songRef.id)
-			}
-		}
 		const currentSongId = props.currentSongId
-
-		return (candidate: Song) =>
-			candidate.id !== currentSongId && !relatedSongIds.has(candidate.id)
+		return (candidate: Song) => candidate.id !== currentSongId
 	})
-	const relationTypeNameById = createMemo(() => {
-		return new Map(
-			props.relationTypes.map((relationType) => [
-				relationType.id.toString(),
-				relationType.name,
-			]),
-		)
-	})
-	const relationTypeOptions = createMemo(() => [
-		EMPTY_RELATION_TYPE_ID,
-		...relationTypeNameById().keys(),
+	const relationDirectionOptions = createMemo<
+		RelationOption<SongRelationDirection>[]
+	>(() => [
+		{ value: "Source", label: t`Source` },
+		{ value: "Derived", label: t`Derived` },
 	])
-	const relationTypeLabel = (value: string) => {
-		const label = relationTypeNameById().get(value) ?? value
-		return label === "" ? t`-- Select relation type --` : label
-	}
-
 	return (
-		<li {...stylex.attrs(styles.entry)}>
-			<div {...stylex.attrs(styles.selection)}>
-				<Show
-					when={props.songRef?.title}
-					fallback={
-						<span {...stylex.attrs(styles.placeholder)}>{t`Select song`}</span>
-					}
-				>
-					{(value) => <span {...stylex.attrs(styles.value)}>{value()}</span>}
-				</Show>
+		<li {...stylex.attrs(rowStyles.root)}>
+			<div {...stylex.attrs(rowStyles.selection)}>
+				<span {...stylex.attrs(textStyles.ellipsis, rowStyles.value)}>
+					{props.songRef.title}
+				</span>
 				<SongSearchDialog
 					onSelect={props.onSelectSong}
 					dataFilter={dataFilter()}
-					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
+					icon={<Pencil1Icon {...stylex.attrs(rowStyles.icon)} />}
 				/>
+				<Button
+					onClick={props.onRemove}
+					appearance="ghost"
+					tone="gray"
+					styles={rowStyles.removeButton}
+				>
+					<Cross1Icon {...stylex.attrs(rowStyles.icon)} />
+				</Button>
 			</div>
 			<Field
 				of={props.of}
-				path={["data", "relations", props.index, "relation_type_id"]}
+				path={["data", "relations", props.index, "direction"]}
 			>
 				{(field) => (
-					<div {...stylex.attrs(styles.column)}>
-						<Select.Root<string>
+					<div {...stylex.attrs(rowStyles.column, rowStyles.directionColumn)}>
+						<Select.Root<RelationOption<SongRelationDirection>>
+							styles={rowStyles.control}
 							name={field.props.name}
-							{...stylex.attrs(styles.control)}
-							value={field.input?.toString() ?? EMPTY_RELATION_TYPE_ID}
-							onChange={(value) => field.onInput(parseRelationTypeId(value))}
-							options={relationTypeOptions()}
+							validationState={field.errors ? "invalid" : "valid"}
+							value={relationDirectionOptions().find(
+								(option) => option.value === field.input,
+							)}
+							placeholder={t`-- Select direction --`}
+							onChange={(option) => field.onInput(option?.value)}
+							options={relationDirectionOptions()}
+							optionValue="value"
+							optionTextValue="label"
 							itemComponent={(itemProps) => (
 								<Select.Item item={itemProps.item}>
-									{relationTypeLabel(itemProps.item.rawValue)}
+									{itemProps.item.rawValue.label}
 								</Select.Item>
 							)}
 						>
@@ -315,9 +261,59 @@ function RelationRow(props: RelationRowProps) {
 								onBlur={field.props.onBlur}
 								onFocus={field.props.onFocus}
 							/>
-							<Select.Trigger styles={[styles.control]}>
-								<Select.Value<string>>
-									{(state) => relationTypeLabel(state.selectedOption())}
+							<Select.Trigger aria-invalid={field.errors ? true : undefined}>
+								<Select.Value<RelationOption<SongRelationDirection>>>
+									{(state) => state.selectedOption().label}
+								</Select.Value>
+								<Select.Icon />
+							</Select.Trigger>
+							<Select.Portal>
+								<Select.Content>
+									<Select.Listbox />
+								</Select.Content>
+							</Select.Portal>
+						</Select.Root>
+						<For each={field.errors}>
+							{(error) => (
+								<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
+							)}
+						</For>
+					</div>
+				)}
+			</Field>
+			<Field
+				of={props.of}
+				path={["data", "relations", props.index, "relation_type"]}
+			>
+				{(field) => (
+					<div {...stylex.attrs(rowStyles.column, rowStyles.typeColumn)}>
+						<Select.Root<RelationOption<SongRelationType>>
+							styles={rowStyles.control}
+							name={field.props.name}
+							validationState={field.errors ? "invalid" : "valid"}
+							value={SONG_RELATION_TYPE_FIELD_OPTIONS.find(
+								(option) => option.value === field.input,
+							)}
+							placeholder={t`-- Select relation type --`}
+							onChange={(option) => field.onInput(option?.value)}
+							options={SONG_RELATION_TYPE_FIELD_OPTIONS}
+							optionValue="value"
+							optionTextValue="label"
+							itemComponent={(itemProps) => (
+								<Select.Item item={itemProps.item}>
+									{itemProps.item.rawValue.label}
+								</Select.Item>
+							)}
+						>
+							<Select.HiddenSelect
+								onChange={field.props.onChange}
+								onInput={field.props.onInput}
+								onBlur={field.props.onBlur}
+								onFocus={field.props.onFocus}
+							/>
+							<Select.Trigger aria-invalid={field.errors ? true : undefined}>
+								<Select.Value<RelationOption<SongRelationType>>>
+									{(state) => state.selectedOption().label}
 								</Select.Value>
 								<Select.Icon />
 							</Select.Trigger>
@@ -340,10 +336,10 @@ function RelationRow(props: RelationRowProps) {
 				path={["data", "relations", props.index, "description"]}
 			>
 				{(field) => (
-					<div {...stylex.attrs(styles.column)}>
+					<div {...stylex.attrs(rowStyles.column, rowStyles.descriptionColumn)}>
 						<input
 							{...field.props}
-							{...stylex.attrs(styles.descriptionInput)}
+							{...stylex.attrs(inputStyles.like, inputStyles.input)}
 							placeholder={t`Description`}
 							value={field.input ?? ""}
 						/>
@@ -355,14 +351,6 @@ function RelationRow(props: RelationRowProps) {
 					</div>
 				)}
 			</Field>
-			<Button
-				onClick={props.onRemove}
-				appearance="ghost"
-				tone="gray"
-				styles={styles.removeButton}
-			>
-				<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
-			</Button>
 			<Field
 				of={props.of}
 				path={["data", "relations", props.index, "related_song_id"]}
@@ -375,9 +363,14 @@ function RelationRow(props: RelationRowProps) {
 							hidden
 							value={field.input ?? undefined}
 						/>
-						<ul {...stylex.attrs(styles.errors)}>
-							<FormComp.ErrorList errors={field.errors} />
-						</ul>
+						<Show when={field.errors}>
+							<ul {...stylex.attrs(rowStyles.errors)}>
+								<FormComp.ErrorList
+									errors={field.errors}
+									styles={rowStyles.error}
+								/>
+							</ul>
+						</Show>
 					</>
 				)}
 			</Field>

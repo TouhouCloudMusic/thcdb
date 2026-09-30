@@ -9,7 +9,7 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
-    CorrectionSubmitResult, NewCorrectionDto, SubmissionError,
+    CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::shared::http::api_response::Data;
 
@@ -31,7 +31,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     post,
     tag = TAG,
     path = "/tag",
-    request_body = NewCorrectionDto<NewTag>,
+    request_body = NewCorrectionRequest<NewTag>,
     responses(
 		(status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -39,7 +39,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn create_tag(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
-    Json(dto): Json<NewCorrectionDto<NewTag>>,
+    Json(dto): Json<NewCorrectionRequest<NewTag>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service.create(dto.with_author(user)).await?;
     Ok(Data::from(result))
@@ -49,7 +49,7 @@ async fn create_tag(
     post,
     tag = TAG,
     path = "/tag/{id}",
-    request_body = NewCorrectionDto<NewTag>,
+    request_body = NewCorrectionRequest<NewTag>,
     responses(
 		(status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -58,7 +58,7 @@ async fn upsert_tag_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path(id): Path<i32>,
-    Json(dto): Json<NewCorrectionDto<NewTag>>,
+    Json(dto): Json<NewCorrectionRequest<NewTag>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(
@@ -79,7 +79,7 @@ async fn upsert_tag_correction(
         ("id" = i32, Path, description = "Tag id"),
         ("correction_id" = i32, Path, description = "Pending correction id"),
     ),
-    request_body = NewCorrectionDto<NewTag>,
+    request_body = NewCorrectionRequest<NewTag>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -88,7 +88,7 @@ async fn update_tag_pending_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path((id, correction_id)): Path<(i32, i32)>,
-    Json(dto): Json<NewCorrectionDto<NewTag>>,
+    Json(dto): Json<NewCorrectionRequest<NewTag>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(

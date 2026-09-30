@@ -9,7 +9,7 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
-    CorrectionSubmitResult, NewCorrectionDto, SubmissionError,
+    CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::shared::http::api_response::Data;
 
@@ -31,7 +31,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     post,
     tag = TAG,
     path = "/credit-role",
-    request_body = NewCorrectionDto<NewCreditRole>,
+    request_body = NewCorrectionRequest<NewCreditRole>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -39,7 +39,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn create_credit_role(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
-    Json(input): Json<NewCorrectionDto<NewCreditRole>>,
+    Json(input): Json<NewCorrectionRequest<NewCreditRole>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service.create(input.with_author(user)).await?;
     Ok(Data::from(result))
@@ -49,7 +49,7 @@ async fn create_credit_role(
     post,
     tag = TAG,
     path = "/credit-role/{id}",
-    request_body = NewCorrectionDto<NewCreditRole>,
+    request_body = NewCorrectionRequest<NewCreditRole>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -58,7 +58,7 @@ async fn upsert_credit_role_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path(id): Path<i32>,
-    Json(dto): Json<NewCorrectionDto<NewCreditRole>>,
+    Json(dto): Json<NewCorrectionRequest<NewCreditRole>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(
@@ -79,7 +79,7 @@ async fn upsert_credit_role_correction(
         ("id" = i32, Path, description = "Credit role id"),
         ("correction_id" = i32, Path, description = "Pending correction id"),
     ),
-    request_body = NewCorrectionDto<NewCreditRole>,
+    request_body = NewCorrectionRequest<NewCreditRole>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -88,7 +88,7 @@ async fn update_credit_role_pending_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path((id, correction_id)): Path<(i32, i32)>,
-    Json(dto): Json<NewCorrectionDto<NewCreditRole>>,
+    Json(dto): Json<NewCorrectionRequest<NewCreditRole>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(

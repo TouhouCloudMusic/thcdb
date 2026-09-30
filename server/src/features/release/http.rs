@@ -13,7 +13,7 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
-    CorrectionSubmitResult, NewCorrectionDto, SubmissionError,
+    CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::features::image_metadata::CurrentImageMetadata;
 use crate::features::release_image::{self, ReleaseCoverArtInput};
@@ -43,7 +43,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     post,
     tag = TAG,
     path = "/release",
-    request_body = NewCorrectionDto<NewRelease>,
+    request_body = NewCorrectionRequest<NewRelease>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -51,7 +51,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn create_release(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
-    Json(dto): Json<NewCorrectionDto<NewRelease>>,
+    Json(dto): Json<NewCorrectionRequest<NewRelease>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service.create(dto.with_author(user)).await?;
 
@@ -62,7 +62,7 @@ async fn create_release(
     post,
     tag = TAG,
     path = "/release/{id}",
-    request_body = NewCorrectionDto<NewRelease>,
+    request_body = NewCorrectionRequest<NewRelease>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -71,7 +71,7 @@ async fn update_release(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path(id): Path<i32>,
-    Json(dto): Json<NewCorrectionDto<NewRelease>>,
+    Json(dto): Json<NewCorrectionRequest<NewRelease>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(
@@ -92,7 +92,7 @@ async fn update_release(
         ("id" = i32, Path, description = "Release id"),
         ("correction_id" = i32, Path, description = "Pending correction id"),
     ),
-    request_body = NewCorrectionDto<NewRelease>,
+    request_body = NewCorrectionRequest<NewRelease>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -101,7 +101,7 @@ async fn update_release_pending_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path((id, correction_id)): Path<(i32, i32)>,
-    Json(dto): Json<NewCorrectionDto<NewRelease>>,
+    Json(dto): Json<NewCorrectionRequest<NewRelease>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(

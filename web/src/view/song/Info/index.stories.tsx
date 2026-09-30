@@ -6,6 +6,7 @@ import { withEntityDetailStoryState } from "~/storybook/entityDetail"
 import {
 	DAYBREAK_COVER_URL,
 	ENGLISH_LANGUAGE,
+	SONG_INFO_RELATIONS,
 	TOHOHUM_COVER_URL,
 	YABBA_RAGGA_TOHO_3_COVER_URL,
 } from "~/storybook/fixtures"
@@ -33,19 +34,19 @@ const FULL_SONG: Song = {
 		{
 			id: 101,
 			title: "Yabba Ragga Toho 3",
-			track_number: "01",
+			track_positions: [{ disc_number: 1, track_number: "01" }],
 			cover_art_url: YABBA_RAGGA_TOHO_3_COVER_URL,
 		},
 		{
 			id: 103,
 			title: "TOHOHUM",
-			track_number: "07",
+			track_positions: [{ disc_number: 1, track_number: "07" }],
 			cover_art_url: TOHOHUM_COVER_URL,
 		},
 		{
 			id: 102,
 			title: "Daybreak",
-			track_number: "12",
+			track_positions: [{ disc_number: 1, track_number: "12" }],
 			cover_art_url: DAYBREAK_COVER_URL,
 		},
 	],
@@ -96,20 +97,7 @@ We keep dancing until dawn`,
 			language: ENGLISH_LANGUAGE,
 		},
 	],
-	relations: [
-		{
-			song: { id: 100, title: "U.N. Owen Was Her?" },
-			artist: { id: 1, name: "ZUN" },
-			type: { id: 1, name: "Original" },
-			description: "Primary melodic source for this arrangement.",
-		},
-		{
-			song: { id: 101, title: "Locked Girl" },
-			artist: { id: 52, name: "Higan Daybreak" },
-			type: { id: 2, name: "Remix" },
-			description: "",
-		},
-	],
+	relations: SONG_INFO_RELATIONS,
 	links: [
 		"https://example.com/songs/42",
 		"https://archive.example.com/tracks/42",

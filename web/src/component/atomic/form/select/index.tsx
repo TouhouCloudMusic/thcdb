@@ -5,6 +5,7 @@ import { CaretSortIcon } from "@thc/icons/radix"
 import type { ComponentProps, JSX } from "solid-js"
 import { mergeProps, splitProps } from "solid-js"
 
+import { textStyles } from "~/style"
 import { palette } from "~/style/color/palette.stylex"
 import {
 	radius,
@@ -18,9 +19,6 @@ import { inputStyles } from "../../Input"
 
 export const underlineSelectStyles = stylex.create({
 	trigger: {
-		display: "grid",
-		gridTemplateColumns: `minmax(0, 1fr) ${px[32]}`,
-		alignItems: "center",
 		height: "auto",
 		minHeight: px[32],
 		backgroundColor: {
@@ -29,7 +27,6 @@ export const underlineSelectStyles = stylex.create({
 		},
 		borderWidth: 0,
 		borderBottomWidth: "1px",
-		borderStyle: "solid",
 		borderRadius: 0,
 		borderColor: {
 			default: palette.slate[400],
@@ -46,29 +43,16 @@ export const underlineSelectStyles = stylex.create({
 		lineHeight: lineHeights.sm,
 		fontWeight: 400,
 		color: { default: colors.textSecondary, ":disabled": palette.slate[400] },
-		textAlign: "left",
-		outlineWidth: 0,
-		outlineStyle: "none",
-		outlineOffset: 0,
 		transitionProperty: "border-color, color",
-		transitionDuration: "100ms",
-		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
 	content: {
-		zIndex: 50,
 		minWidth: px[160],
-		maxHeight: px[256],
 		borderRadius: radius.xs,
-		borderWidth: "1px",
-		borderStyle: "solid",
 		borderColor: palette.slate[200],
 		boxShadow: "none",
 		backgroundColor: colors.backgroundPrimary,
 	},
 	listbox: {
-		padding: px[4],
-		maxHeight: `calc(${px[256]} - ${px[8]})`,
-		overflowY: "auto",
 		outlineStyle: "none",
 	},
 	item: {
@@ -79,11 +63,7 @@ export const underlineSelectStyles = stylex.create({
 		minHeight: px[32],
 		paddingInline: px[12],
 		paddingBlock: px[4],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 		fontWeight: 400,
-		cursor: "default",
-		userSelect: "none",
 		color: {
 			default: colors.textSecondary,
 			":is([data-selected])": colors.textPrimary,
@@ -92,12 +72,11 @@ export const underlineSelectStyles = stylex.create({
 			default: "transparent",
 			":is([data-highlighted])": palette.slate[100],
 		},
-		outlineStyle: { default: null, ":is([data-highlighted])": "none" },
 		opacity: { default: null, ":is([data-disabled])": 0.5 },
 	},
 })
 
-const styles = stylex.create({
+const selectStyles = stylex.create({
 	trigger: {
 		display: "grid",
 		gridTemplateColumns: `minmax(0, 1fr) ${px[32]}`,
@@ -106,35 +85,43 @@ const styles = stylex.create({
 		textAlign: "left",
 		fontWeight: 300,
 	},
+
 	value: {
 		paddingInlineStart: px[8],
-		overflow: "hidden",
-		textOverflow: "ellipsis",
-		whiteSpace: "nowrap",
 	},
+
 	icon: {
 		display: "grid",
 		placeItems: "center",
 	},
 	caret: { width: px[16], height: px[16], color: colors.textSecondary },
+
 	content: {
 		zIndex: 50,
 		maxHeight: px[256],
 		borderRadius: radius.sm,
+		display: "flex",
+		flexDirection: "column",
 		borderWidth: "1px",
 		borderStyle: "solid",
 		borderColor: palette.slate[300],
 		backgroundColor: palette.white,
 		boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
 	},
-	listbox: { padding: px[4] },
+
+	listbox: {
+		minHeight: 0,
+		overflowY: "auto",
+		padding: px[4],
+	},
+
 	item: {
 		cursor: "default",
 		borderRadius: radius.xs,
 		paddingInline: px[8],
 		paddingBlock: px[6],
 		fontSize: fontSizes.sm,
-		lineHeight: "1.25rem",
+		lineHeight: lineHeights.sm,
 		color: palette.slate[900],
 		userSelect: "none",
 		backgroundColor: {
@@ -168,7 +155,7 @@ function Trigger(props: TriggerProps) {
 	return (
 		<K_Select.Trigger
 			{...others}
-			{...stylex.attrs(inputStyles.like, styles.trigger, local.styles)}
+			{...stylex.attrs(inputStyles.like, selectStyles.trigger, local.styles)}
 		/>
 	)
 }
@@ -182,7 +169,7 @@ function Value<Option>(props: ValueProps<Option>) {
 	return (
 		<K_Select.Value
 			{...others}
-			{...stylex.attrs(styles.value, local.styles)}
+			{...stylex.attrs(textStyles.ellipsis, selectStyles.value, local.styles)}
 		/>
 	)
 }
@@ -195,9 +182,9 @@ function Icon(props: IconProps): JSX.Element {
 	return (
 		<K_Select.Icon
 			{...others}
-			{...stylex.attrs(styles.icon, local.styles)}
+			{...stylex.attrs(selectStyles.icon, local.styles)}
 		>
-			<CaretSortIcon {...stylex.attrs(styles.caret)} />
+			<CaretSortIcon {...stylex.attrs(selectStyles.caret)} />
 		</K_Select.Icon>
 	)
 }
@@ -217,7 +204,7 @@ function Content(props: ContentProps): JSX.Element {
 	return (
 		<K_Select.Content
 			{...finalProps}
-			{...stylex.attrs(styles.content, local.styles)}
+			{...stylex.attrs(selectStyles.content, local.styles)}
 		/>
 	)
 }
@@ -231,7 +218,7 @@ function Listbox(props: ListboxProps): JSX.Element {
 	return (
 		<K_Select.Listbox
 			{...others}
-			{...stylex.attrs(styles.listbox, local.styles)}
+			{...stylex.attrs(selectStyles.listbox, local.styles)}
 		/>
 	)
 }
@@ -245,7 +232,7 @@ function Item(props: ItemProps): JSX.Element {
 	return (
 		<K_Select.Item
 			{...others}
-			{...stylex.attrs(styles.item, local.styles)}
+			{...stylex.attrs(selectStyles.item, local.styles)}
 		/>
 	)
 }

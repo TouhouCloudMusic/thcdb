@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 import type {
 	EntityUserCollectionSort,
 	ReleaseListItem,
-	SongListItem,
+	SongListing,
 	UserCollection,
 } from "~/hey-api"
 import { MOCK_CORRECTION_HISTORY } from "~/mock/correction"
@@ -116,7 +116,7 @@ const SONG_ARTISTS = [
 	"COOL&CREATE",
 	"SOUND HOLIC",
 ] as const
-const SONGS: SongListItem[] = [1, 2, 3, 4, 5, 6].map((id) => ({
+const SONGS: SongListing[] = [1, 2, 3, 4, 5, 6].map((id) => ({
 	id,
 	title: SONG_TITLES[id - 1]!,
 	cover_art_url: "/img/cover/release/1.png",
@@ -215,7 +215,7 @@ function StoryRoot(props: { tag: Tag }) {
 	}
 	const [songPage, setSongPage] = createSignal(1)
 	const [songSort, setSongSort] = createSignal<TagEntitySort>("popular")
-	const songs: TagResultsStore<SongListItem> & {
+	const songs: TagResultsStore<SongListing> & {
 		sortBy: TagEntitySort
 		setSortBy: (sort: TagEntitySort) => void
 	} = {

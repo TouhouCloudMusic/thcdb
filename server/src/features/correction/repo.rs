@@ -24,6 +24,41 @@ use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub(super) struct CorrectionApprover(pub User);
 
+pub(crate) async fn find_pending_history_id(
+    db: &impl ConnectionTrait,
+    entity_id: i32,
+    entity_type: EntityType,
+    correction_id: i32,
+) -> Result<Option<i32>, DatabaseError> {
+    let Some(correction) = correction_entity::Entity::find()
+        .filter(correction_entity::Column::Id.eq(correction_id))
+        .filter(correction_entity::Column::EntityId.eq(entity_id))
+        .filter(correction_entity::Column::EntityType.eq(entity_type))
+        .filter(correction_entity::Column::Status.eq(CorrectionStatus::Pending))
+        .one(db)
+        .await
+        .db_operation("find pending correction")?
+    else {
+        return Ok(None);
+    };
+
+    correction_revision::Entity::find()
+        .filter(correction_revision::Column::CorrectionId.eq(correction.id))
+        .order_by_desc(correction_revision::Column::EntityHistoryId)
+        .one(db)
+        .await
+        .db_operation("find latest pending correction revision")?
+        .map(|revision| revision.entity_history_id)
+        .ok_or_else(|| {
+            crate::infra::database::error::BrokenEntityReference {
+                entity: "correction revision",
+                id: correction.id,
+            }
+            .into()
+        })
+        .map(Some)
+}
+
 pub enum CreateResult {
     Created(i32),
     Conflict(i32),
