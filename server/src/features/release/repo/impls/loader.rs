@@ -123,8 +123,16 @@ impl RelatedEntities {
             releases.load_many(entity::release_catalog_number::Entity, db),
             releases.load_many(entity::release_localized_title::Entity, db),
             releases.load_many(entity::release_link::Entity, db),
-            releases.load_many(entity::release_disc::Entity, db),
-            releases.load_many(entity::release_track::Entity, db),
+            releases.load_many(
+                entity::release_disc::Entity::find()
+                    .order_by_asc(entity::release_disc::Column::Id),
+                db
+            ),
+            releases.load_many(
+                entity::release_track::Entity::find()
+                    .order_by_asc(entity::release_track::Column::Id),
+                db
+            ),
             releases.load_many(entity::release_credit::Entity, db),
             releases.load_many_to_many(
                 entity::event::Entity,

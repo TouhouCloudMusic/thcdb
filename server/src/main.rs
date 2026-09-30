@@ -1,4 +1,4 @@
-#![feature(min_specialization, return_type_notation, trait_alias, try_blocks)]
+#![feature(min_specialization, return_type_notation, trait_alias)]
 
 mod adapter;
 mod cli;

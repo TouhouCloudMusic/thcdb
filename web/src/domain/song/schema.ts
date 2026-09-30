@@ -7,6 +7,10 @@ import {
 	NewCorrection,
 	NewLocalizedName,
 } from "~/domain/shared/schema"
+import {
+	vSongRelationDirection,
+	vSongRelationType,
+} from "~/hey-api/valibot.gen"
 
 export const NewSongCredit = v.object({
 	artist_id: v.message(EntityId, "Artist not selected"),
@@ -17,7 +21,11 @@ export type NewSongCredit = v.InferInput<typeof NewSongCredit>
 
 export const NewSongRelation = v.object({
 	related_song_id: v.message(EntityId, "Related song not selected"),
-	relation_type_id: v.message(EntityId, "Relation type not selected"),
+	direction: v.message(
+		vSongRelationDirection,
+		"Relation direction not selected",
+	),
+	relation_type: v.message(vSongRelationType, "Relation type not selected"),
 	description: v.string(),
 })
 
@@ -26,11 +34,14 @@ export type NewSongRelation = v.InferInput<typeof NewSongRelation>
 const SongRelations = v.pipe(
 	v.array(NewSongRelation),
 	v.check((relations) => {
-		const relatedSongIds = new Set(
-			relations.map((relation) => relation.related_song_id),
+		const relationKeys = new Set(
+			relations.map(
+				(relation) =>
+					`${relation.related_song_id}:${relation.direction}:${relation.relation_type}`,
+			),
 		)
-		return relatedSongIds.size === relations.length
-	}, "Duplicate related song"),
+		return relationKeys.size === relations.length
+	}, "Duplicate relation"),
 )
 
 export const NewSong = v.object({

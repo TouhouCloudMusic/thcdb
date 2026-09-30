@@ -3,11 +3,10 @@ use std::collections::BTreeSet;
 use derive_more::Display;
 use domain::credit_role::CreditRoleRef;
 use domain::shared::{
-    EntityIdent, HttpUrl, Language, NewLocalizedName, SimpleArtist,
+    DateWithPrecision, EntityIdent, HttpUrl, Language, LocalizedTitle,
+    NewLocalizedName, SimpleArtist,
 };
-use entity::enums::EntityType;
-use entity::song_relation_type::Model as DbSongRelationType;
-use macros::AutoMapper;
+use entity::enums::{EntityType, SongRelationType};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -39,8 +38,19 @@ pub struct Song {
 pub struct SongRelease {
     pub id: i32,
     pub title: String,
-    pub track_number: Option<String>,
+    pub track_positions: Vec<ReleaseTrackPosition>,
+    pub release_date: Option<DateWithPrecision>,
     pub cover_art_url: Option<String>,
+}
+
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
+#[derive(Clone, Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+pub struct ReleaseTrackPosition {
+    pub disc_number: i32,
+    pub track_number: Option<String>,
 }
 
 #[derive(Clone, Debug, ToSchema, Serialize)]
@@ -48,14 +58,6 @@ pub struct SongRelease {
 pub struct SongRef {
     pub id: i32,
     pub title: String,
-}
-
-#[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
-#[mapper(from(DbSongRelationType))]
-pub struct SongRelationType {
-    pub id: i32,
-    pub name: String,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
@@ -66,20 +68,39 @@ pub struct SongCredit {
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
-pub struct LocalizedTitle {
-    pub language: Language,
+#[cfg_attr(test, derive(PartialEq, Eq))]
+pub struct SongRelationSummary {
+    pub id: i32,
     pub title: String,
+    pub artists: Vec<SimpleArtist>,
+    pub release: Option<SongRelease>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct SongRelation {
-    pub song: SongRef,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub artist: Option<SimpleArtist>,
+    pub song: SongRelationSummary,
+    pub direction: SongRelationDirection,
     #[serde(rename = "type")]
     pub r#type: SongRelationType,
     pub description: String,
+}
+
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Deserialize,
+    Eq,
+    Ord,
+    PartialEq,
+    PartialOrd,
+    Serialize,
+    ToSchema,
+)]
+pub enum SongRelationDirection {
+    Source,
+    Derived,
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -94,17 +115,18 @@ pub struct NewSong {
 }
 
 #[derive(Deserialize, ToSchema)]
+pub struct NewSongRelation {
+    pub related_song_id: i32,
+    pub direction: SongRelationDirection,
+    pub relation_type: SongRelationType,
+    pub description: String,
+}
+
+#[derive(Deserialize, ToSchema)]
 pub struct NewSongCredit {
     pub artist_id: i32,
     #[serde(default)]
     pub role_id: Option<i32>,
-}
-
-#[derive(Deserialize, ToSchema)]
-pub struct NewSongRelation {
-    pub related_song_id: i32,
-    pub relation_type_id: i32,
-    pub description: String,
 }
 
 pub type ValidationError =
@@ -114,8 +136,8 @@ pub type ValidationError =
 pub enum ValidationErrorKind {
     #[display("Song relation cannot target the same song")]
     SelfRelation,
-    #[display("Song relation cannot contain duplicate songs")]
-    DuplicateRelatedSong,
+    #[display("Song relation cannot be duplicated")]
+    DuplicateRelation,
 }
 use ValidationErrorKind::*;
 
@@ -128,14 +150,18 @@ impl NewSong {
             return Ok(());
         };
 
-        let mut related_song_ids = BTreeSet::new();
+        let mut relations_seen = BTreeSet::new();
         for relation in relations {
             if song_id.is_some_and(|id| id == relation.related_song_id) {
                 return Err(SelfRelation.into());
             }
 
-            if !related_song_ids.insert(relation.related_song_id) {
-                return Err(DuplicateRelatedSong.into());
+            if !relations_seen.insert((
+                relation.related_song_id,
+                relation.direction,
+                relation.relation_type,
+            )) {
+                return Err(DuplicateRelation.into());
             }
         }
 
@@ -151,150 +177,118 @@ impl CorrectionEntity for NewSong {
 
 #[cfg(test)]
 mod tests {
-    use std::mem::discriminant;
+    mod validate {
+        use anyhow::{Result, anyhow};
+        use domain::shared::EntityIdent;
 
-    use domain::shared::EntityIdent;
-    use proptest::prelude::*;
+        use super::super::SongRelationDirection::{Derived, Source};
+        use super::super::ValidationErrorKind::*;
+        use super::super::{
+            NewSong, NewSongRelation, SongRelationType, ValidationError,
+        };
 
-    use super::ValidationErrorKind::*;
-    use super::{
-        NewSong, NewSongRelation, ValidationError, ValidationErrorKind,
-    };
-
-    proptest! {
         #[test]
-        fn validate_accepts_missing_relations(song_id in any::<i32>()) {
-            let song = new_song(None);
+        fn accepts_missing_or_empty_relations() -> Result<()> {
+            for relations in [None, Some(vec![])] {
+                let song = new_song(relations)?;
 
-            prop_assert!(song.validate(None).is_ok());
-            prop_assert!(song.validate(Some(song_id)).is_ok());
+                song.validate(None)?;
+                song.validate(Some(10))?;
+            }
+
+            Ok(())
         }
 
         #[test]
-        fn validate_accepts_relations_without_duplicates_when_creating(
-            related_song_ids in prop::collection::btree_set(any::<i32>(), 0..16),
-        ) {
-            let song = new_song(Some(
-                related_song_ids.into_iter().map(new_relation).collect(),
-            ));
+        fn accepts_relations_that_differ_in_song_direction_or_type()
+        -> Result<()> {
+            let relations = [
+                (20, Source, SongRelationType::Derived),
+                (30, Source, SongRelationType::Derived),
+                (20, Derived, SongRelationType::Derived),
+                (20, Source, SongRelationType::Arrangement),
+                (20, Derived, SongRelationType::Arrangement),
+            ]
+            .map(|(related_song_id, direction, relation_type)| {
+                NewSongRelation {
+                    related_song_id,
+                    direction,
+                    relation_type,
+                    description: String::new(),
+                }
+            });
+            let song = new_song(Some(relations.into()))?;
 
-            prop_assert!(song.validate(None).is_ok());
+            song.validate(None)?;
+            song.validate(Some(10))?;
+
+            Ok(())
         }
 
         #[test]
-        fn validate_accepts_relations_without_self_or_duplicates(
-            song_id in any::<i32>(),
-            related_song_ids in prop::collection::btree_set(any::<i32>(), 0..16),
-        ) {
-            let relations = related_song_ids
-                .into_iter()
-                .filter(|related_song_id| *related_song_id != song_id)
-                .map(new_relation)
-                .collect();
-            let song = new_song(Some(relations));
+        fn rejects_self_relations_when_editing() -> Result<()> {
+            for direction in [Source, Derived] {
+                let relations =
+                    [20, 10].map(|related_song_id| NewSongRelation {
+                        related_song_id,
+                        direction,
+                        relation_type: SongRelationType::Cover,
+                        description: String::new(),
+                    });
+                let song = new_song(Some(relations.into()))?;
 
-            prop_assert!(song.validate(Some(song_id)).is_ok());
-        }
-
-        #[test]
-        fn validate_rejects_self_relation(
-            song_id in any::<i32>(),
-            other_related_song_ids in prop::collection::btree_set(any::<i32>(), 0..16),
-        ) {
-            let song = new_song(Some(
-                other_related_song_ids
-                    .into_iter()
-                    .filter(|related_song_id| *related_song_id != song_id)
-                    .chain([song_id])
-                    .map(new_relation)
-                    .collect(),
-            ));
-
-            prop_assert!(has_error_kind(
-                song.validate(Some(song_id)),
-                &SelfRelation,
-            ));
-        }
-
-        #[test]
-        fn validate_rejects_duplicate_related_songs_when_creating(
-            duplicate_related_song_id in any::<i32>(),
-            other_related_song_ids in prop::collection::btree_set(any::<i32>(), 0..16),
-        ) {
-            let song = new_song(Some(
-                other_related_song_ids
-                    .into_iter()
-                    .filter(|related_song_id| {
-                        *related_song_id != duplicate_related_song_id
+                assert!(matches!(
+                    song.validate(Some(10)),
+                    Err(ValidationError {
+                        source: SelfRelation
                     })
-                    .chain([duplicate_related_song_id, duplicate_related_song_id])
-                    .map(new_relation)
-                    .collect(),
-            ));
+                ));
+            }
 
-            prop_assert!(has_error_kind(
-                song.validate(None),
-                &DuplicateRelatedSong,
-            ));
+            Ok(())
         }
 
         #[test]
-        fn validate_rejects_duplicate_related_songs(
-            song_id in any::<i32>(),
-            duplicate_related_song_id in any::<i32>(),
-            other_related_song_ids in prop::collection::btree_set(any::<i32>(), 0..16),
-        ) {
-            prop_assume!(duplicate_related_song_id != song_id);
+        fn rejects_duplicate_relations_even_when_descriptions_differ()
+        -> Result<()> {
+            let relations = [
+                (20, "Original description"),
+                (30, "Another relation"),
+                (20, "Updated description"),
+            ]
+            .map(|(related_song_id, description)| NewSongRelation {
+                related_song_id,
+                direction: Source,
+                relation_type: SongRelationType::Cover,
+                description: description.to_owned(),
+            });
+            let song = new_song(Some(relations.into()))?;
 
-            let song = new_song(Some(
-                other_related_song_ids
-                    .into_iter()
-                    .filter(|related_song_id| {
-                        *related_song_id != song_id
-                            && *related_song_id != duplicate_related_song_id
+            for song_id in [None, Some(10)] {
+                assert!(matches!(
+                    song.validate(song_id),
+                    Err(ValidationError {
+                        source: DuplicateRelation
                     })
-                    .chain([duplicate_related_song_id, duplicate_related_song_id])
-                    .map(new_relation)
-                    .collect(),
-            ));
+                ));
+            }
 
-            prop_assert!(has_error_kind(
-                song.validate(Some(song_id)),
-                &DuplicateRelatedSong,
-            ));
+            Ok(())
         }
-    }
 
-    fn new_song(relations: Option<Vec<NewSongRelation>>) -> NewSong {
-        NewSong {
-            title: EntityIdent::try_new("test song").unwrap_or_else(|_err| {
-                panic!("test fixture title should be valid")
-            }),
-            artists: None,
-            credits: None,
-            languages: None,
-            localized_titles: None,
-            relations,
-            links: None,
+        fn new_song(
+            relations: Option<Vec<NewSongRelation>>,
+        ) -> Result<NewSong> {
+            Ok(NewSong {
+                title: EntityIdent::try_new("test song")
+                    .map_err(|error| anyhow!("{error}"))?,
+                artists: None,
+                credits: None,
+                languages: None,
+                localized_titles: None,
+                relations,
+                links: None,
+            })
         }
-    }
-
-    fn new_relation(related_song_id: i32) -> NewSongRelation {
-        NewSongRelation {
-            related_song_id,
-            relation_type_id: 1,
-            description: "relation".to_string(),
-        }
-    }
-
-    fn has_error_kind(
-        result: Result<(), ValidationError>,
-        expected: &ValidationErrorKind,
-    ) -> bool {
-        matches!(
-            result,
-            Err(ValidationError { source })
-                if discriminant(&source) == discriminant(expected)
-        )
     }
 }

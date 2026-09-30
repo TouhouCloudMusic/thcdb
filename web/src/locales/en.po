@@ -26,6 +26,10 @@ msgid "-- Please Select Type --"
 msgstr "-- Please Select Type --"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "-- Select direction --"
+msgstr "-- Select direction --"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "-- Select relation type --"
 msgstr "-- Select relation type --"
@@ -178,7 +182,7 @@ msgid "After"
 msgstr "After"
 
 #: src/view/event/Info/index.tsx
-#: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/Overview.tsx
 msgid "AKAs"
 msgstr "AKAs"
 
@@ -193,9 +197,11 @@ msgstr "Aliases"
 
 #: src/view/artist/ArtistTypeLabel.tsx
 #: src/view/artist/explore.comp.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/song/explore.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 #: src/view/tag/explore.tsx
 #: src/view/user/Profile.tsx
 msgid "All"
@@ -219,8 +225,8 @@ msgid "Already have an account?"
 msgstr "Already have an account?"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
-msgid "Also on"
-msgstr "Also on"
+#~ msgid "Also on"
+#~ msgstr "Also on"
 
 #: src/view/event/edit/comp/EventAlternativeNamesField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
@@ -326,6 +332,10 @@ msgstr "Back"
 msgid "Back to"
 msgstr "Back to"
 
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "Based on"
+msgstr "Based on"
+
 #: src/view/correction/Detail.tsx
 msgid "Before"
 msgstr "Before"
@@ -381,11 +391,13 @@ msgstr "Checking session…"
 msgid "City"
 msgstr "City"
 
+#: src/view/tag/Info/Relations.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Collapse"
 msgstr "Collapse"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Collected time"
 msgstr "Collected time"
 
@@ -566,6 +578,7 @@ msgid "Created time"
 msgstr "Created time"
 
 #: src/route/credit-role/$id.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 msgid "Credit role"
@@ -641,6 +654,14 @@ msgstr "deleted comment"
 msgid "Demo"
 msgstr "Demo"
 
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Derived"
+msgstr "Derived"
+
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "Derived versions"
+msgstr "Derived versions"
+
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
 msgstr "Descending"
@@ -652,7 +673,6 @@ msgstr "Descending"
 #: src/view/event/Info/index.tsx
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/edit/comp/TagDescription.tsx
-#: src/view/tag/Info/index.tsx
 msgid "Description"
 msgstr "Description"
 
@@ -943,6 +963,7 @@ msgid "Follow"
 msgstr "Follow"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Follow count"
 msgstr "Follow count"
 
@@ -1108,6 +1129,10 @@ msgstr "Join year cannot be the same as previous leave year"
 msgid "Just now"
 msgstr "Just now"
 
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "Kind"
+msgstr "Kind"
+
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
@@ -1134,14 +1159,6 @@ msgstr "Languages"
 msgid "Last page"
 msgstr "Last page"
 
-#: src/view/Homepage/component/ArtistsCard.tsx
-msgid "Latest Artists"
-msgstr "Latest Artists"
-
-#: src/view/Homepage/index.tsx
-msgid "Latest Releases"
-msgstr "Latest Releases"
-
 #: src/view/artist/edit/comp/Membership/tenure.tsx
 msgid "Leave year"
 msgstr "Leave year"
@@ -1154,7 +1171,7 @@ msgstr "Leave year cannot be earlier than join year"
 msgid "Leave year cannot be the same as join year"
 msgstr "Leave year cannot be the same as join year"
 
-#: src/component/data/ExternalLinks.tsx
+#: src/component/data/ExternalLinks/__internal.tsx
 #: src/component/form/ExternalLinksField.tsx
 msgid "Links"
 msgstr "Links"
@@ -1194,6 +1211,7 @@ msgstr "Loading items..."
 
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/CollectionDetail.tsx
@@ -1207,6 +1225,7 @@ msgstr "Loading items..."
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
 #: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/results.tsx
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -1228,6 +1247,7 @@ msgid "Localized Titles"
 msgstr "Localized Titles"
 
 #: src/view/event/edit/comp/EventLocationField.tsx
+#: src/view/event/Info/index.tsx
 msgid "Location"
 msgstr "Location"
 
@@ -1293,7 +1313,6 @@ msgstr "Move item down"
 msgid "Move item up"
 msgstr "Move item up"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/event/Info/index.tsx
 msgid "N/A"
 msgstr "N/A"
@@ -1338,6 +1357,7 @@ msgid "New password"
 msgstr "New password"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 msgid "Newest first"
 msgstr "Newest first"
 
@@ -1386,6 +1406,7 @@ msgid "No changes detected."
 msgstr "No changes detected."
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "No collections"
 msgstr "No collections"
 
@@ -1472,6 +1493,10 @@ msgstr "No labels found."
 msgid "No matching credits"
 msgstr "No matching credits"
 
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "No matching relations"
+msgstr "No matching relations"
+
 #: src/view/image_queue/manage.tsx
 #: src/view/image_queue/user.tsx
 msgid "No more entries"
@@ -1556,6 +1581,7 @@ msgid "Notifications ({hotkey})"
 msgstr "Notifications ({hotkey})"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 msgid "Oldest first"
 msgstr "Oldest first"
 
@@ -1743,13 +1769,15 @@ msgid "REJECTED"
 msgstr "REJECTED"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 #: src/view/song/Info/index.tsx
 #: src/view/tag/edit/comp/TagRelationsField.tsx
-#: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/Relations.tsx
 msgid "Relations"
 msgstr "Relations"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
@@ -1760,6 +1788,8 @@ msgstr "Release"
 
 #: src/view/release/edit/index.tsx
 #: src/view/release/explore/filter.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Release date"
 msgstr "Release date"
 
@@ -1771,9 +1801,11 @@ msgstr "Release Type"
 msgid "Released"
 msgstr "Released"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Releases"
 msgstr "Releases"
 
@@ -1844,6 +1876,7 @@ msgstr "Reset password"
 msgid "restricted collection"
 msgstr "restricted collection"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/collection/CollectionDetail.tsx
 #: src/view/notification/InboxPage.tsx
 msgid "Retry"
@@ -1994,10 +2027,6 @@ msgstr "Select language"
 msgid "Select role"
 msgstr "Select role"
 
-#: src/view/song/edit/comp/SongRelationsField.tsx
-msgid "Select song"
-msgstr "Select song"
-
 #: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "Select tag"
 msgstr "Select tag"
@@ -2090,17 +2119,20 @@ msgstr "Song"
 msgid "Song lyrics"
 msgstr "Song lyrics"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Songs"
 msgstr "Songs"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
-msgid "Songs without a release"
-msgstr "Songs without a release"
+#~ msgid "Songs without a release"
+#~ msgstr "Songs without a release"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort"
 msgstr "Sort"
@@ -2111,6 +2143,7 @@ msgid "Sort by"
 msgstr "Sort by"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "Sort collections"
@@ -2124,6 +2157,7 @@ msgid "Sort: Alphabetical"
 msgstr "Sort: Alphabetical"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Sort: Collected time"
 msgstr "Sort: Collected time"
 
@@ -2132,6 +2166,7 @@ msgid "Sort: Created time"
 msgstr "Sort: Created time"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Sort: Follow count"
 msgstr "Sort: Follow count"
 
@@ -2142,6 +2177,10 @@ msgstr "Sort: Followed time"
 #: src/view/user/Profile.tsx
 msgid "Sort: Item count"
 msgstr "Sort: Item count"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Source"
+msgstr "Source"
 
 #: src/view/artist/edit/comp/Date.tsx
 #: src/view/event/edit/comp/EventDateFields.tsx
@@ -2254,7 +2293,7 @@ msgstr "This collection is empty"
 msgid "This entity already has a pending correction. You can review that correction or go back."
 msgstr "This entity already has a pending correction. You can review that correction or go back."
 
-#. placeholder {0}: formatMinuteCount(resetSession.keyExpiresMinutes)
+#. placeholder {0}: formatMinuteCount(props.resetSession.keyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
 msgid "This is valid for {0}."
 msgstr "This is valid for {0}."
@@ -2339,12 +2378,13 @@ msgid "Try adjusting the filters, or <0>create</0> the first one."
 msgstr "Try adjusting the filters, or <0>create</0> the first one."
 
 #: src/view/artist/explore.comp.tsx
+#: src/view/artist/profile/comp/ArtistInfo.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 #: src/view/tag/explore.tsx
-#: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/Overview.tsx
 #: src/view/user/Profile.tsx
 msgid "Type"
 msgstr "Type"
@@ -2378,6 +2418,10 @@ msgstr "UNKNOWN"
 #: src/view/Homepage/component/ReleaseCard.tsx
 msgid "Unknown artist"
 msgstr "Unknown artist"
+
+#: src/view/song/Info/comp/SongRelationItem.tsx
+msgid "Unknown date"
+msgstr "Unknown date"
 
 #: src/view/admin/users.tsx
 msgid "Unknown error"

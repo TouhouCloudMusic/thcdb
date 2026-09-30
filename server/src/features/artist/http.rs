@@ -14,7 +14,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::artist_image::{self, ArtistProfileImageInput};
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
-    CorrectionSubmitResult, NewCorrectionDto, SubmissionError,
+    CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::features::image_metadata::CurrentImageMetadata;
 use crate::shared::http::api_response::Data;
@@ -47,7 +47,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     post,
     tag = TAG,
     path = "/artist",
-    request_body = NewCorrectionDto<NewArtist>,
+    request_body = NewCorrectionRequest<NewArtist>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -55,7 +55,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn create_artist(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
-    Json(input): Json<NewCorrectionDto<NewArtist>>,
+    Json(input): Json<NewCorrectionRequest<NewArtist>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service.create(input.with_author(user)).await?;
     Ok(Data::from(result))
@@ -65,7 +65,7 @@ async fn create_artist(
     post,
     tag = TAG,
     path = "/artist/{id}",
-    request_body = NewCorrectionDto<NewArtist>,
+    request_body = NewCorrectionRequest<NewArtist>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -74,7 +74,7 @@ async fn upsert_artist_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path(id): Path<i32>,
-    Json(dto): Json<NewCorrectionDto<NewArtist>>,
+    Json(dto): Json<NewCorrectionRequest<NewArtist>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(
@@ -95,7 +95,7 @@ async fn upsert_artist_correction(
         ("id" = i32, Path, description = "Artist id"),
         ("correction_id" = i32, Path, description = "Pending correction id"),
     ),
-    request_body = NewCorrectionDto<NewArtist>,
+    request_body = NewCorrectionRequest<NewArtist>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -104,7 +104,7 @@ async fn update_artist_pending_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path((id, correction_id)): Path<(i32, i32)>,
-    Json(dto): Json<NewCorrectionDto<NewArtist>>,
+    Json(dto): Json<NewCorrectionRequest<NewArtist>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(

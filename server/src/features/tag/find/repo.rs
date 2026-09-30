@@ -25,7 +25,7 @@ use utoipa::ToSchema;
 use super::filter::TagEntitySort;
 use crate::features::artist::list::{self as artist_list, ArtistListItem};
 use crate::features::release::list::{self as release_list, ReleaseListItem};
-use crate::features::song::list::{self as song_list, SongListItem};
+use crate::features::song::list::{self as song_list, SongListing};
 use crate::features::tag::list::{self, TagListItem};
 use crate::features::tag::model::{AlternativeName, Tag, TagRef, TagRelation};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
@@ -38,7 +38,7 @@ mod integration_tests;
 #[serde(tag = "entity_type", content = "page", rename_all = "snake_case")]
 pub(super) enum TagEntitiesPage {
     Release(PageResponse<ReleaseListItem>),
-    Song(PageResponse<SongListItem>),
+    Song(PageResponse<SongListing>),
     Artist(PageResponse<ArtistListItem>),
 }
 
@@ -167,7 +167,7 @@ pub(super) async fn find_songs(
     tag_id: i32,
     sort: TagEntitySort,
     pagination: crate::shared::http::PageQuery,
-) -> Result<PageResponse<SongListItem>, DatabaseError> {
+) -> Result<PageResponse<SongListing>, DatabaseError> {
     let entity_ids = song_tag_vote::Entity::find()
         .select_only()
         .column(song_tag_vote::Column::SongId)

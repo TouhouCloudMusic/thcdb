@@ -43,7 +43,8 @@ export function useSongFormInitialValues(
 					relations:
 						input.song.relations?.map((relation) => ({
 							related_song_id: relation.song.id,
-							relation_type_id: relation.type.id,
+							direction: relation.direction,
+							relation_type: relation.type,
 							description: relation.description,
 						})) ?? [],
 					links: input.song.links ?? [],

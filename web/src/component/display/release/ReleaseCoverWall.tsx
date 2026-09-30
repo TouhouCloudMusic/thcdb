@@ -1,9 +1,11 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
+import { Link } from "@tanstack/solid-router"
 import { For } from "solid-js"
 
 import { Image } from "~/component/image"
 import { palette } from "~/style/color/palette.stylex"
+import { link } from "~/style/link"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 const styles = stylex.create({
@@ -38,6 +40,7 @@ const styles = stylex.create({
 			":hover": { default: null, "@media (hover: hover)": "underline" },
 		},
 	},
+	cardLink: { textDecorationLine: "none" },
 })
 
 export type ReleaseCoverWallProps = {
@@ -55,7 +58,12 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 	return (
 		<For each={props.releases}>
 			{(release) => (
-				<div {...stylex.attrs(styles.release)}>
+				<Link
+					to="/release/$id"
+					params={{ id: release.id.toString() }}
+					aria-label={release.title}
+					class={stylex.attrs(link.base, styles.release, styles.cardLink).class}
+				>
 					<div {...stylex.attrs(styles.cover)}>
 						<Image.Root>
 							<Image.Thumbnail
@@ -79,10 +87,9 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 						</Image.Root>
 					</div>
 					<div {...stylex.attrs(styles.title)}>
-						{/* TODO: Release Link */}
 						<p {...stylex.attrs(styles.titleText)}>{release.title}</p>
 					</div>
-				</div>
+				</Link>
 			)}
 		</For>
 	)

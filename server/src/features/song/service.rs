@@ -47,7 +47,8 @@ impl Service {
 
         let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
         let history_id =
-            super::repo::create_history(&tx_repo, &correction.data).await?;
+            super::repo::create_history(&tx_repo, entity_id, &correction.data)
+                .await?;
 
         let correction_id = correction_service::create(
             &tx_repo,
@@ -86,7 +87,7 @@ impl Service {
             .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         let history_id =
-            super::repo::create_history(&tx_repo, &correction.data).await?;
+            super::repo::create_history(&tx_repo, id, &correction.data).await?;
 
         let result = correction_service::upsert(
             &tx_repo,

@@ -40,8 +40,7 @@ impl LanguageCache {
                     )
                 })
                 .collect();
-            self.inner.set(langs).unwrap();
-            Ok(self.inner.get().unwrap())
+            Ok(self.inner.get_or_init(|| langs))
         }
     }
 }

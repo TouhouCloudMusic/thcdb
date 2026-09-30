@@ -16,19 +16,14 @@ export const inputStyles = stylex.create({
 		borderColor: {
 			default: palette.slate[300],
 			':is([aria-invalid="true"])': palette.reimu[600],
-		},
-		color: { default: null, ":disabled": palette.slate[400] },
-		outlineWidth: 1,
-		outlineStyle: "solid",
-		outlineOffset: -1,
-		outlineColor: {
-			default: "transparent",
 			":focus": palette.reimu[600],
 			"@media (hover: hover)": {
 				default: null,
-				":is(:not(:disabled):hover)": palette.reimu[500],
+				":is(:not(:disabled):not(:focus):hover)": palette.reimu[500],
 			},
 		},
+		color: { default: null, ":disabled": palette.slate[400] },
+		outlineStyle: "none",
 		transitionProperty: "all",
 		transitionDuration: "100ms",
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",

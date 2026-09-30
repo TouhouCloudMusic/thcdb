@@ -2,7 +2,7 @@ import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { Intersperse } from "~/component/data/Intersperse"
-import type { SongListItem } from "~/hey-api"
+import type { SongListing } from "~/hey-api"
 import { dividerStyles } from "~/style/primitives"
 import { colors, px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
@@ -28,7 +28,7 @@ const styles = stylex.create({
 	},
 })
 
-const SONGS: SongListItem[] = [
+const SONGS: SongListing[] = [
 	{
 		id: 33,
 		title: "月まで届け、不死の煙",
@@ -63,7 +63,7 @@ const SONGS: SongListItem[] = [
 ]
 
 type StoryRootProps = {
-	songs: SongListItem[]
+	songs: SongListing[]
 	width: "full" | "narrow"
 }
 

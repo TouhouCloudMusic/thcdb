@@ -5,6 +5,7 @@ use domain::shared::{
     DateWithPrecision, LocalizedTitle, SimpleEvent, SimpleLabel,
 };
 use entity::release;
+use itertools::Itertools;
 
 use super::RelatedEntities;
 use crate::features::release::model::{
@@ -193,6 +194,7 @@ fn conv_tracks(
 fn conv_discs(discs: &[entity::release_disc::Model]) -> Vec<ReleaseDisc> {
     discs
         .iter()
+        .sorted_by_key(|disc| disc.id)
         .map(|disc| ReleaseDisc {
             id: disc.id,
             name: disc.name.clone(),

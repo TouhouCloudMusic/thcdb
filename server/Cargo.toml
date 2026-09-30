@@ -401,4 +401,6 @@ panic           = "abort"
 release = [
     "mimalloc",
 ]
-integration-test = [ "artist_repo/integration-test" ]
+integration-test = [
+    "artist_repo/integration-test",
+]

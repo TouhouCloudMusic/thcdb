@@ -355,7 +355,7 @@ export type CursorResponseSearchResultReleaseListItem = {
 	next_cursor?: number | null
 }
 
-export type CursorResponseSearchResultSongListItem = {
+export type CursorResponseSearchResultSongListing = {
 	items: Array<{
 		item: {
 			id: number
@@ -522,7 +522,7 @@ export type DataPageRelease = {
 
 export type DataPageSong = {
 	status: string
-	data: PageResponseSongListItem
+	data: PageResponseSongListing
 }
 
 export type DataPageTag = {
@@ -607,7 +607,7 @@ export type DataSearchResponse = {
 
 export type DataSearchSongPage = {
 	status: string
-	data: CursorResponseSearchResultSongListItem
+	data: CursorResponseSearchResultSongListing
 }
 
 export type DataSearchTagPage = {
@@ -698,11 +698,6 @@ export type DataVecSong = {
 export type DataVecSongLyrics = {
 	status: string
 	data: Array<SongLyrics>
-}
-
-export type DataVecSongRelationType = {
-	status: string
-	data: Array<SongRelationType>
 }
 
 export type DataVecTag = {
@@ -1273,7 +1268,8 @@ export type NewSongLyrics = {
 
 export type NewSongRelation = {
 	related_song_id: number
-	relation_type_id: number
+	direction: SongRelationDirection
+	relation_type: SongRelationType
 	description: string
 }
 
@@ -1474,7 +1470,7 @@ export type PageResponseReleaseListItem = {
 	total_pages: number
 }
 
-export type PageResponseSongListItem = {
+export type PageResponseSongListing = {
 	items: Array<{
 		id: number
 		title: string
@@ -1646,6 +1642,11 @@ export type ReleaseTrack = {
 	artists?: Array<ReleaseArtist>
 }
 
+export type ReleaseTrackPosition = {
+	disc_number: number
+	track_number?: string | null
+}
+
 export type ReleaseType =
 	| "Album"
 	| "Ep"
@@ -1676,7 +1677,7 @@ export type Score = "Veto" | "Low" | "Medium" | "High"
 export type SearchResponse = {
 	artists: CursorResponseSearchResultArtistListItem
 	releases: CursorResponseSearchResultReleaseListItem
-	songs: CursorResponseSearchResultSongListItem
+	songs: CursorResponseSearchResultSongListing
 	events: CursorResponseSearchResultEventListItem
 	labels: CursorResponseSearchResultLabelListItem
 	tags: CursorResponseSearchResultTagListItem
@@ -1731,7 +1732,7 @@ export type SongCredit = {
 	role?: null | CreditRoleRef
 }
 
-export type SongListItem = {
+export type SongListing = {
 	id: number
 	title: string
 	cover_art_url?: string | null
@@ -1753,21 +1754,35 @@ export type SongRef = {
 }
 
 export type SongRelation = {
-	song: SongRef
-	artist?: null | SimpleArtist
+	song: SongRelationSummary
+	direction: SongRelationDirection
 	type: SongRelationType
 	description: string
 }
 
-export type SongRelationType = {
+export type SongRelationDirection = "Source" | "Derived"
+
+export type SongRelationSummary = {
 	id: number
-	name: string
+	title: string
+	artists: Array<SimpleArtist>
+	release?: null | SongRelease
 }
+
+export type SongRelationType =
+	| "Derived"
+	| "Arrangement"
+	| "Cover"
+	| "Remix"
+	| "Live"
+	| "Instrumental"
+	| "Medley"
 
 export type SongRelease = {
 	id: number
 	title: string
-	track_number?: string | null
+	track_positions: Array<ReleaseTrackPosition>
+	release_date?: null | DateWithPrecision
 	cover_art_url?: string | null
 }
 
@@ -1805,7 +1820,7 @@ export type TagEntitiesPage =
 			entity_type: "release"
 	  }
 	| {
-			page: PageResponseSongListItem
+			page: PageResponseSongListing
 			entity_type: "song"
 	  }
 	| {
@@ -5191,34 +5206,6 @@ export type UpdateSongLyricsPendingCorrectionResponses = {
 export type UpdateSongLyricsPendingCorrectionResponse =
 	UpdateSongLyricsPendingCorrectionResponses[keyof UpdateSongLyricsPendingCorrectionResponses]
 
-export type SongRelationTypesData = {
-	body?: never
-	path?: never
-	query?: never
-	url: "/song-relation-types"
-}
-
-export type SongRelationTypesErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type SongRelationTypesError =
-	SongRelationTypesErrors[keyof SongRelationTypesErrors]
-
-export type SongRelationTypesResponses = {
-	200: DataVecSongRelationType
-}
-
-export type SongRelationTypesResponse =
-	SongRelationTypesResponses[keyof SongRelationTypesResponses]
-
 export type ExploreSongData = {
 	body?: never
 	path?: never
@@ -5312,6 +5299,43 @@ export type UpdateSongResponses = {
 }
 
 export type UpdateSongResponse = UpdateSongResponses[keyof UpdateSongResponses]
+
+export type FindSongPendingCorrectionData = {
+	body?: never
+	path: {
+		/**
+		 * Song id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/song/{id}/correction/{correction_id}"
+}
+
+export type FindSongPendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FindSongPendingCorrectionError =
+	FindSongPendingCorrectionErrors[keyof FindSongPendingCorrectionErrors]
+
+export type FindSongPendingCorrectionResponses = {
+	200: DataOptionSong
+}
+
+export type FindSongPendingCorrectionResponse =
+	FindSongPendingCorrectionResponses[keyof FindSongPendingCorrectionResponses]
 
 export type UpdateSongPendingCorrectionData = {
 	body: NewCorrectionNewSong
@@ -5545,7 +5569,10 @@ export type FindTagEntitiesData = {
 	}
 	query: {
 		entity_type: "artist" | "release" | "song"
-		sort_by?: "popular" | "release_date"
+		/**
+		 * Defaults to popular. Release-date sorting is available for releases and songs.
+		 */
+		sort_by?: null | "popular" | "release_date"
 		limit?: number
 		page?: number
 	}

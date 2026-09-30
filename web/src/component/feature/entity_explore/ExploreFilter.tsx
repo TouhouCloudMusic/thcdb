@@ -51,7 +51,10 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 					</Select.Item>
 				)}
 			>
-				<Select.Trigger styles={styles.trigger}>
+				<Select.Trigger
+					styles={styles.trigger}
+					aria-label={props.label}
+				>
 					<Select.Value<ExploreFilterOption<T>>>
 						{() => selectedOption()?.label ?? ""}
 					</Select.Value>

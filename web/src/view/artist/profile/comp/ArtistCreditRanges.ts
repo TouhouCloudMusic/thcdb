@@ -1,3 +1,4 @@
+import { formatTrackPosition } from "~/domain/release/formatTrackPosition"
 import type {
 	ArtistSongCredit,
 	ArtistSongCreditRelease,
@@ -167,9 +168,7 @@ export function groupCreditRanges(
 }
 
 export function formatCreditRange(range: CreditRange) {
-	const prefix =
-		range.disc == null ? "" : `${range.disc.name ?? range.disc.index}.`
-	const start = `${prefix}${range.start}`
-	const end = `${prefix}${range.end}`
+	const start = formatTrackPosition(range.disc, range.start)
+	const end = formatTrackPosition(range.disc, range.end)
 	return range.start === range.end ? start : `${start}–${end}`
 }

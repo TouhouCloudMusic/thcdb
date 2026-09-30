@@ -124,7 +124,7 @@ pub struct CorrectionDiff {
 #[schema(
     as = NewCorrection
 )]
-pub struct NewCorrectionDto<T>
+pub struct NewCorrectionRequest<T>
 where
     T: CorrectionEntity,
 {
@@ -181,7 +181,7 @@ impl CorrectionSubmitResult {
     }
 }
 
-impl<T> NewCorrectionDto<T>
+impl<T> NewCorrectionRequest<T>
 where
     T: CorrectionEntity,
 {

@@ -41,10 +41,26 @@ describe("song form initialization", () => {
 			],
 			relations: [
 				{
-					song: { id: 2, title: "Border of Life" },
-					artist: { id: 12, name: "ZUN" },
-					type: { id: 2, name: "Arrange" },
+					song: {
+						id: 2,
+						title: "Border of Life",
+						artists: [{ id: 12, name: "ZUN" }],
+						release: null,
+					},
+					direction: "Derived" as const,
+					type: "Arrangement" as const,
 					description: "Shared motif",
+				},
+				{
+					song: {
+						id: 3,
+						title: "Necro Fantasia Remix",
+						artists: [],
+						release: null,
+					},
+					direction: "Source" as const,
+					type: "Remix" as const,
+					description: "",
 				},
 			],
 			links: ["https://example.com/songs/1"],
@@ -72,8 +88,15 @@ describe("song form initialization", () => {
 				relations: [
 					{
 						related_song_id: 2,
-						relation_type_id: 2,
+						direction: "Derived",
+						relation_type: "Arrangement",
 						description: "Shared motif",
+					},
+					{
+						related_song_id: 3,
+						direction: "Source",
+						relation_type: "Remix",
+						description: "",
 					},
 				],
 				links: ["https://example.com/songs/1"],

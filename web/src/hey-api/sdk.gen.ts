@@ -146,6 +146,9 @@ import type {
 	FindSongLyricsByIdData,
 	FindSongLyricsByIdErrors,
 	FindSongLyricsByIdResponses,
+	FindSongPendingCorrectionData,
+	FindSongPendingCorrectionErrors,
+	FindSongPendingCorrectionResponses,
 	FindTagByIdData,
 	FindTagByIdErrors,
 	FindTagByIdResponses,
@@ -302,9 +305,6 @@ import type {
 	SignUpData,
 	SignUpErrors,
 	SignUpResponses,
-	SongRelationTypesData,
-	SongRelationTypesErrors,
-	SongRelationTypesResponses,
 	StreamUserEventsData,
 	StreamUserEventsErrors,
 	StreamUserEventsResponse,
@@ -2002,19 +2002,6 @@ export const updateSongLyricsPendingCorrection = <
 		},
 	})
 
-export const songRelationTypes = <ThrowOnError extends boolean = false>(
-	options?: Options<SongRelationTypesData, ThrowOnError>,
-): RequestResult<
-	SongRelationTypesResponses,
-	SongRelationTypesErrors,
-	ThrowOnError
-> =>
-	(options?.client ?? client).get<
-		SongRelationTypesResponses,
-		SongRelationTypesErrors,
-		ThrowOnError
-	>({ url: "/song-relation-types", ...options })
-
 export const exploreSong = <ThrowOnError extends boolean = false>(
 	options?: Options<ExploreSongData, ThrowOnError>,
 ): RequestResult<ExploreSongResponses, ExploreSongErrors, ThrowOnError> =>
@@ -2049,6 +2036,19 @@ export const updateSong = <ThrowOnError extends boolean = false>(
 			...options.headers,
 		},
 	})
+
+export const findSongPendingCorrection = <ThrowOnError extends boolean = false>(
+	options: Options<FindSongPendingCorrectionData, ThrowOnError>,
+): RequestResult<
+	FindSongPendingCorrectionResponses,
+	FindSongPendingCorrectionErrors,
+	ThrowOnError
+> =>
+	(options.client ?? client).get<
+		FindSongPendingCorrectionResponses,
+		FindSongPendingCorrectionErrors,
+		ThrowOnError
+	>({ url: "/song/{id}/correction/{correction_id}", ...options })
 
 export const updateSongPendingCorrection = <
 	ThrowOnError extends boolean = false,

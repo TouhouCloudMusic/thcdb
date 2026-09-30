@@ -23,12 +23,12 @@ type ReleaseItemData = Omit<ReleaseListItem, "catalog_numbers"> & {
 	catalog_numbers?: ReleaseListItem["catalog_numbers"]
 }
 
-const styles = stylex.create({
-	artists: {
+const artistsStyles = stylex.create({
+	root: {
 		fontSize: fontSizes.sm,
 		color: colors.textTertiary,
 	},
-	artistLink: { color: colors.textSecondary, textDecorationLine: "none" },
+	link: { textDecorationLine: "none" },
 })
 
 function ReleaseArtists(props: {
@@ -37,7 +37,9 @@ function ReleaseArtists(props: {
 }) {
 	return (
 		<Show when={props.release.artists.length > 0}>
-			<div {...stylex.attrs(styles.artists, textStyles.ellipsis, props.styles)}>
+			<div
+				{...stylex.attrs(artistsStyles.root, textStyles.ellipsis, props.styles)}
+			>
 				<ReleaseArtistLinks release={props.release} />
 			</div>
 		</Show>
@@ -52,7 +54,9 @@ function ReleaseArtistLinks(props: { release: ReleaseItemData }) {
 					<Link
 						to="/artist/$id"
 						params={{ id: artist.id.toString() }}
-						class={stylex.attrs(link.base, styles.artistLink).class}
+						class={
+							stylex.attrs(link.base, link.secondary, artistsStyles.link).class
+						}
 					>
 						{artist.name}
 					</Link>
@@ -81,7 +85,7 @@ function ReleaseMeta(props: {
 	)
 }
 
-const gridStyles = stylex.create({
+const releaseGridStyles = stylex.create({
 	meta: {
 		alignItems: "baseline",
 		columnGap: px[12],
@@ -125,7 +129,7 @@ export function ReleaseGridItem(props: { release: ReleaseListItem }) {
 			<Link
 				to="/release/$id"
 				params={{ id: props.release.id.toString() }}
-				{...stylex.attrs(gridStyles.coverLink)}
+				{...stylex.attrs(releaseGridStyles.coverLink)}
 				aria-label={props.release.title}
 			>
 				<Show when={coverUrl()}>
@@ -133,19 +137,20 @@ export function ReleaseGridItem(props: { release: ReleaseListItem }) {
 						<img
 							src={src()}
 							alt=""
-							{...stylex.attrs(gridStyles.coverImage)}
+							{...stylex.attrs(releaseGridStyles.coverImage)}
 							loading="lazy"
 						/>
 					)}
 				</Show>
 			</Link>
 
-			<div {...stylex.attrs(gridStyles.details)}>
+			<div {...stylex.attrs(releaseGridStyles.details)}>
 				<Link
 					to="/release/$id"
 					params={{ id: props.release.id.toString() }}
 					class={
-						stylex.attrs(link.base, link.withUnderline, gridStyles.title).class
+						stylex.attrs(link.base, link.withUnderline, releaseGridStyles.title)
+							.class
 					}
 				>
 					{props.release.title}
@@ -153,23 +158,15 @@ export function ReleaseGridItem(props: { release: ReleaseListItem }) {
 				<ReleaseArtists release={props.release} />
 				<ReleaseMeta
 					release={props.release}
-					styles={gridStyles.meta}
+					styles={releaseGridStyles.meta}
 				/>
 			</div>
 		</div>
 	)
 }
 
-const listStyles = stylex.create({
-	thumbnail: {
-		borderRadius: radius.sm,
-	},
-	item: {
-		display: "grid",
-		gridTemplateColumns: `${px[64]} minmax(0,1fr)`,
-		alignItems: "flex-start",
-		columnGap: px[16],
-	},
+const releaseItemStyles = stylex.create({
+	thumbnail: { borderRadius: radius.sm },
 	title: {
 		display: "block",
 		fontSize: fontSizes.base,
@@ -181,7 +178,6 @@ const listStyles = stylex.create({
 	meta: {
 		gridRow: "3",
 		columnGap: px[6],
-		lineHeight: lineHeights.sm,
 	},
 })
 
@@ -190,30 +186,34 @@ export function ReleaseItem(props: {
 	styles?: StyleXStyles
 }) {
 	return (
-		<div {...stylex.attrs(listStyles.item, props.styles)}>
+		<div {...stylex.attrs(listItemStyles.row, props.styles)}>
 			<Thumbnail
 				src={imgUrl(props.release.cover_art_url, 7)}
 				to="/release/$id"
 				params={{ id: props.release.id.toString() }}
 				aria-label={props.release.title}
-				styles={listStyles.thumbnail}
+				styles={releaseItemStyles.thumbnail}
 			/>
 
 			<div {...stylex.attrs(listItemStyles.content)}>
 				<Link
 					to="/release/$id"
 					params={{ id: props.release.id.toString() }}
-					{...stylex.attrs(link.base, listStyles.title, textStyles.ellipsis)}
+					{...stylex.attrs(
+						link.base,
+						releaseItemStyles.title,
+						textStyles.ellipsis,
+					)}
 				>
 					{props.release.title}
 				</Link>
 				<ReleaseArtists
 					release={props.release}
-					styles={listStyles.artists}
+					styles={releaseItemStyles.artists}
 				/>
 				<ReleaseMeta
 					release={props.release}
-					styles={listStyles.meta}
+					styles={releaseItemStyles.meta}
 				/>
 			</div>
 		</div>

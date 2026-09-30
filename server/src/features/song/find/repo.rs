@@ -1,61 +1,271 @@
 use std::collections::HashMap;
 
-use domain::credit_role::CreditRoleRef;
-use domain::shared::{Language, SimpleArtist};
+use domain::shared::{
+    DatePrecision, DateWithPrecision, Language, SimpleArtist,
+};
+use entity::enums::EntityType;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::song::Column::{Id, Title};
 use entity::{
-    artist, image, release_image, release_track, song, song_artist,
-    song_credit, song_language, song_link, song_localized_title, song_lyrics,
-    song_relation, song_relation_type,
+    artist, image, release, release_disc, release_image, release_track, song,
+    song_artist, song_artist_history, song_credit, song_credit_history,
+    song_history, song_language, song_language_history, song_link,
+    song_link_history, song_localized_title, song_localized_title_history,
+    song_lyrics, song_relation, song_relation_history,
 };
 use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, EntityTrait, JoinType, LoaderTrait,
-    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, RelationTrait,
-    Select,
+    ColumnTrait, ConnectionTrait, EntityTrait, FromQueryResult, JoinType,
+    LoaderTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
+    RelationTrait, Select,
 };
 use sea_query::extension::postgres::PgBinOper::{
     Similarity, SimilarityDistance,
 };
-use sea_query::{ExprTrait, Func};
+use sea_query::{ExprTrait, Func, NullOrdering};
 use tokio::try_join;
 
 use super::filter::SongFilter;
-use crate::features::song::list::{self, SongListItem};
+use super::references::{LanguageReferences, load_artist_credit_references};
+use crate::features::song::list::{self, SongListing};
 use crate::features::song::model::{
-    LocalizedTitle, Song, SongCredit, SongRef, SongRelation, SongRelationType,
-    SongRelease,
+    ReleaseTrackPosition, Song, SongRelation, SongRelationDirection,
+    SongRelationSummary, SongRelease,
 };
 use crate::features::song_lyrics::model::SongLyrics;
 use crate::infra::database::cache::LANGUAGE_CACHE;
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
 use crate::infra::database::utils;
 use crate::shared::http::{CorrectionSortField, SortDirection};
 
-pub(super) async fn find_by_id(
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
+
+pub(in crate::features::song) async fn find_by_id(
     repo: &SeaOrmRepository,
     id: i32,
 ) -> Result<Option<Song>, DatabaseError> {
-    let result: Result<Option<Song>, DatabaseError> = async {
-        let select = song::Entity::find().filter(Id.eq(id));
+    let select = song::Entity::find().filter(Id.eq(id));
+    let Some(mut song) = find_many_impl(select, &repo.conn).await?.pop() else {
+        return Ok(None);
+    };
+    song.relations = load_song_relations(song.id, &repo.conn)
+        .await
+        .db_operation("load song relations")?;
+    Ok(Some(song))
+}
 
-        let mut songs = find_many_impl(select, &repo.conn).await?;
-        let Some(mut song) = songs.pop() else {
-            return Ok(None);
-        };
+pub(super) async fn find_pending_correction(
+    repo: &SeaOrmRepository,
+    id: i32,
+    correction_id: i32,
+) -> Result<Option<Song>, DatabaseError> {
+    let select = song::Entity::find().filter(Id.eq(id));
+    let Some(history_id) =
+        crate::features::correction::find_pending_history_id(
+            &repo.conn,
+            id,
+            EntityType::Song,
+            correction_id,
+        )
+        .await?
+    else {
+        return Ok(None);
+    };
+    let Some(mut song) = find_many_impl(select, &repo.conn).await?.pop() else {
+        return Ok(None);
+    };
+    load_pending_song_snapshot(&mut song, id, history_id, &repo.conn).await?;
+    Ok(Some(song))
+}
 
-        song.relations = load_song_relations(song.id, &repo.conn)
-            .await
-            .db_operation("load song relations")?;
+async fn load_pending_song_snapshot(
+    song: &mut Song,
+    song_id: i32,
+    history_id: i32,
+    db: &impl ConnectionTrait,
+) -> Result<(), DatabaseError> {
+    let history = song_history::Entity::find_by_id(history_id)
+        .one(db)
+        .await
+        .db_operation("find pending song history")?
+        .ok_or(BrokenEntityReference {
+            entity: "song history",
+            id: history_id,
+        })?;
 
-        Ok(Some(song))
+    let SongHistoryAssociations {
+        artists,
+        credits,
+        languages,
+        localized_titles,
+        relations,
+        links,
+    } = load_song_history_associations(history.id, db).await?;
+
+    let mut credit_keys = artists
+        .iter()
+        .map(|artist| (artist.artist_id, None))
+        .collect::<Vec<_>>();
+    credit_keys.extend(
+        credits
+            .iter()
+            .map(|credit| (credit.artist_id, credit.role_id)),
+    );
+    let credit_references = load_artist_credit_references(&credit_keys, db)
+        .await
+        .map_err(DatabaseError::from)?;
+    let lang_cache = LANGUAGE_CACHE
+        .get_or_init(db)
+        .await
+        .db_operation("load language cache")?;
+    let language_references =
+        LanguageReferences::new(lang_cache.values().cloned());
+
+    let snapshot_artists = artists
+        .into_iter()
+        .filter_map(|artist| credit_references.artist(artist.artist_id))
+        .collect();
+    let snapshot_credits = credits
+        .into_iter()
+        .filter_map(|credit| {
+            credit_references.credit(credit.artist_id, credit.role_id)
+        })
+        .collect();
+    let snapshot_languages = languages
+        .into_iter()
+        .filter_map(|language| {
+            language_references.language(language.language_id)
+        })
+        .collect();
+    let snapshot_localized_titles = localized_titles
+        .into_iter()
+        .filter_map(|title| {
+            language_references.localized_title(title.language_id, title.title)
+        })
+        .collect();
+    let snapshot_relations =
+        load_snapshot_relations(song_id, relations, db).await?;
+
+    song.title = history.title;
+    song.artists = snapshot_artists;
+    song.credits = snapshot_credits;
+    song.languages = snapshot_languages;
+    song.localized_titles = snapshot_localized_titles;
+    song.links = links.into_iter().map(|link| link.url).collect();
+    song.relations = snapshot_relations;
+
+    Ok(())
+}
+
+struct SongHistoryAssociations {
+    artists: Vec<song_artist_history::Model>,
+    credits: Vec<song_credit_history::Model>,
+    languages: Vec<song_language_history::Model>,
+    localized_titles: Vec<song_localized_title_history::Model>,
+    relations: Vec<song_relation_history::Model>,
+    links: Vec<song_link_history::Model>,
+}
+
+async fn load_song_history_associations(
+    history_id: i32,
+    db: &impl ConnectionTrait,
+) -> Result<SongHistoryAssociations, DatabaseError> {
+    let (artists, credits, languages, localized_titles, relations, links) =
+        tokio::try_join!(
+            song_artist_history::Entity::find()
+                .filter(song_artist_history::Column::HistoryId.eq(history_id))
+                .order_by_asc(song_artist_history::Column::ArtistId)
+                .all(db),
+            song_credit_history::Entity::find()
+                .filter(song_credit_history::Column::HistoryId.eq(history_id))
+                .order_by_asc(song_credit_history::Column::Id)
+                .all(db),
+            song_language_history::Entity::find()
+                .filter(song_language_history::Column::HistoryId.eq(history_id))
+                .order_by_asc(song_language_history::Column::LanguageId)
+                .all(db),
+            song_localized_title_history::Entity::find()
+                .filter(
+                    song_localized_title_history::Column::HistoryId
+                        .eq(history_id),
+                )
+                .order_by_asc(song_localized_title_history::Column::Id)
+                .all(db),
+            song_relation_history::Entity::find()
+                .filter(song_relation_history::Column::HistoryId.eq(history_id))
+                .order_by_asc(song_relation_history::Column::SourceId)
+                .order_by_asc(song_relation_history::Column::DerivedId)
+                .order_by_asc(song_relation_history::Column::RelationType)
+                .all(db),
+            song_link_history::Entity::find()
+                .filter(song_link_history::Column::HistoryId.eq(history_id))
+                .order_by_asc(song_link_history::Column::Id)
+                .all(db),
+        )
+        .db_operation("load pending song history associations")?;
+
+    Ok(SongHistoryAssociations {
+        artists,
+        credits,
+        languages,
+        localized_titles,
+        relations,
+        links,
+    })
+}
+
+async fn load_snapshot_relations(
+    song_id: i32,
+    relations: Vec<song_relation_history::Model>,
+    db: &impl ConnectionTrait,
+) -> Result<Vec<SongRelation>, DatabaseError> {
+    if relations.is_empty() {
+        return Ok(vec![]);
     }
-    .await;
 
-    result.db_operation("find song by id")
+    let related_song_ids = relations
+        .iter()
+        .filter_map(|relation| {
+            if relation.source_id == song_id {
+                Some(relation.derived_id)
+            } else if relation.derived_id == song_id {
+                Some(relation.source_id)
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    if related_song_ids.is_empty() {
+        return Ok(vec![]);
+    }
+
+    let related_song_map =
+        load_relation_summaries(&related_song_ids, db).await?;
+    Ok(relations
+        .into_iter()
+        .filter_map(|relation| {
+            let (related_song_id, direction) = if relation.source_id == song_id
+            {
+                (relation.derived_id, SongRelationDirection::Source)
+            } else if relation.derived_id == song_id {
+                (relation.source_id, SongRelationDirection::Derived)
+            } else {
+                return None;
+            };
+            let song = related_song_map.get(&related_song_id).cloned()?;
+            Some(SongRelation {
+                song,
+                direction,
+                r#type: relation.relation_type,
+                description: relation.description,
+            })
+        })
+        .collect())
 }
 
 pub(crate) async fn exists(
@@ -93,7 +303,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: SongFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<SongListItem>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<SongListing>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -136,7 +346,6 @@ async fn find_many_impl(
         song_langs_list,
         localized_titles_list,
         song_releases_list,
-        song_release_tracks_list,
         song_lyrics_list,
         song_links_list,
     ) = try_join!(
@@ -149,30 +358,25 @@ async fn find_many_impl(
             entity::release_track::Entity,
             db,
         ),
-        songs.load_many(release_track::Entity, db),
-        songs.load_many(song_lyrics::Entity, db),
+        songs.load_one(song_lyrics::Entity, db),
         songs.load_many(song_link::Entity, db),
     )
     .db_operation("load song associations")?;
 
-    let (song_credits_artist_ids, song_credits_role_ids): (Vec<_>, Vec<_>) =
-        song_credits_list
-            .iter()
-            .flat_map(|credits| {
-                credits.iter().map(|c| (c.artist_id, c.role_id))
-            })
-            .unzip();
-
-    let (song_credits_artist_map, credit_roles_map, lang_cache) = try_join!(
-        load_credit_artists(&song_credits_artist_ids, db),
-        load_credit_roles(&song_credits_role_ids, db),
-        async {
-            LANGUAGE_CACHE
-                .get_or_init(db)
-                .await
-                .db_operation("load language cache")
-        },
-    )?;
+    let credit_keys = song_credits_list
+        .iter()
+        .flatten()
+        .map(|credit| (credit.artist_id, credit.role_id))
+        .collect::<Vec<_>>();
+    let credit_references = load_artist_credit_references(&credit_keys, db)
+        .await
+        .map_err(DatabaseError::from)?;
+    let lang_cache = LANGUAGE_CACHE
+        .get_or_init(db)
+        .await
+        .db_operation("load language cache")?;
+    let language_references =
+        LanguageReferences::new(lang_cache.values().cloned());
 
     let song_release_ids: Vec<_> = song_releases_list
         .iter()
@@ -180,10 +384,11 @@ async fn find_many_impl(
         .unique()
         .collect();
 
-    let release_cover_art_urls =
-        load_release_cover_art_urls(&song_release_ids, db)
-            .await
-            .db_operation("load release cover art urls")?;
+    let song_ids = songs.iter().map(|song| song.id).collect::<Vec<_>>();
+    let (release_cover_art_urls, mut track_positions) = try_join!(
+        load_release_cover_art_urls(&song_release_ids, db),
+        load_release_track_positions(&song_ids, &song_release_ids, db),
+    )?;
 
     Ok(izip!(
         songs,
@@ -192,7 +397,6 @@ async fn find_many_impl(
         song_langs_list,
         localized_titles_list,
         song_releases_list,
-        song_release_tracks_list,
         song_lyrics_list,
         song_links_list,
     )
@@ -204,64 +408,54 @@ async fn find_many_impl(
             song_languages,
             localized_titles,
             song_releases,
-            song_release_tracks,
             lyrics,
             links,
         )| {
             let artists = song_artists.fmap_into();
 
-            let track_number_by_release_id = song_release_tracks
-                .into_iter()
-                .sorted_by_key(|track| track.id)
-                .filter_map(|track| {
-                    track
-                        .track_number
-                        .map(|track_number| (track.release_id, track_number))
-                })
-                .fold(HashMap::new(), |mut map, (release_id, track_number)| {
-                    map.entry(release_id).or_insert(track_number);
-                    map
-                });
-
             let releases = song_releases
                 .into_iter()
+                .unique_by(|release| release.id)
                 .map(|release| SongRelease {
                     id: release.id,
                     title: release.title,
-                    track_number: track_number_by_release_id
-                        .get(&release.id)
-                        .cloned(),
+                    release_date: DateWithPrecision::from_option(
+                        release.release_date,
+                        release.release_date_precision,
+                    ),
+                    track_positions: track_positions
+                        .remove(&(song_model.id, release.id))
+                        .unwrap_or_default(),
                     cover_art_url: release_cover_art_urls
                         .get(&release.id)
                         .cloned(),
                 })
                 .collect();
 
-            let credits = build_song_credits(
-                song_credits,
-                &song_credits_artist_map,
-                &credit_roles_map,
-            );
+            let credits = song_credits
+                .into_iter()
+                .filter_map(|credit| {
+                    credit_references.credit(credit.artist_id, credit.role_id)
+                })
+                .collect();
 
             let languages = song_languages
                 .into_iter()
-                .filter_map(|lang| lang_cache.get(&lang.language_id))
-                .cloned()
+                .filter_map(|lang| {
+                    language_references.language(lang.language_id)
+                })
                 .collect();
 
             let localized_titles = localized_titles
                 .into_iter()
-                .filter_map(|title| try {
-                    LocalizedTitle {
-                        language: lang_cache
-                            .get(&title.language_id)
-                            .cloned()?,
-                        title: title.title,
-                    }
+                .filter_map(|title| {
+                    language_references
+                        .localized_title(title.language_id, title.title)
                 })
                 .collect();
 
-            let lyrics = build_song_lyrics(lyrics, lang_cache);
+            let lyrics =
+                build_song_lyrics(lyrics.into_iter().collect(), lang_cache);
 
             Song {
                 id: song_model.id,
@@ -280,37 +474,69 @@ async fn find_many_impl(
     .collect())
 }
 
-async fn load_credit_roles(
-    role_ids: &[Option<i32>],
+async fn load_release_track_positions(
+    song_ids: &[i32],
+    release_ids: &[i32],
     db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, CreditRoleRef>, DatabaseError> {
-    use entity::credit_role;
-
-    if role_ids.is_empty() {
+) -> Result<HashMap<(i32, i32), Vec<ReleaseTrackPosition>>, DatabaseError> {
+    if song_ids.is_empty() || release_ids.is_empty() {
         return Ok(HashMap::new());
     }
 
-    let roles = credit_role::Entity::find()
-        .filter(
-            credit_role::Column::Id
-                .is_in(role_ids.iter().flatten().unique().copied()),
-        )
-        .all(db)
-        .await
-        .db_operation("load song credit roles")?;
-
-    Ok(roles
-        .into_iter()
-        .map(|role| {
-            (
-                role.id,
-                CreditRoleRef {
-                    id: role.id,
-                    name: role.name,
-                },
+    let (discs, tracks) = try_join!(
+        release_disc::Entity::find()
+            .select_only()
+            .column(release_disc::Column::Id)
+            .column(release_disc::Column::ReleaseId)
+            .filter(
+                release_disc::Column::ReleaseId
+                    .is_in(release_ids.iter().copied())
             )
+            .order_by_asc(release_disc::Column::ReleaseId)
+            .order_by_asc(release_disc::Column::Id)
+            .into_tuple::<(i32, i32)>()
+            .all(db),
+        release_track::Entity::find()
+            .select_only()
+            .column(release_track::Column::SongId)
+            .column(release_track::Column::ReleaseId)
+            .column(release_track::Column::DiscId)
+            .column(release_track::Column::TrackNumber)
+            .filter(
+                release_track::Column::SongId.is_in(song_ids.iter().copied())
+            )
+            .filter(
+                release_track::Column::ReleaseId
+                    .is_in(release_ids.iter().copied())
+            )
+            .order_by_asc(release_track::Column::DiscId)
+            .order_by_asc(release_track::Column::Id)
+            .into_tuple::<(i32, i32, i32, Option<String>)>()
+            .all(db),
+    )
+    .db_operation("load release track positions")?;
+    let disc_number_by_id = discs
+        .chunk_by(|left, right| left.1 == right.1)
+        .flat_map(|discs| {
+            discs.iter().enumerate().map(|(index, &(id, _))| {
+                (
+                    id,
+                    i32::try_from(index + 1)
+                        .expect("release disc count fits in i32"),
+                )
+            })
         })
-        .collect())
+        .collect::<HashMap<_, _>>();
+    let mut positions = HashMap::<_, Vec<_>>::new();
+    for (song_id, release_id, disc_id, track_number) in tracks {
+        positions.entry((song_id, release_id)).or_default().push(
+            ReleaseTrackPosition {
+                disc_number: disc_number_by_id[&disc_id],
+                track_number,
+            },
+        );
+    }
+    Ok(positions)
 }
 
 async fn load_release_cover_art_urls(
@@ -346,82 +572,6 @@ fn load_release_cover_art_urls_query(
         .filter(release_image::Column::Type.eq(ReleaseImageType::Cover))
 }
 
-async fn load_credit_artists(
-    artist_ids: &[i32],
-    db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, SimpleArtist>, DatabaseError> {
-    if artist_ids.is_empty() {
-        return Ok(HashMap::new());
-    }
-
-    let artists = artist::Entity::find()
-        .filter(artist::Column::Id.is_in(artist_ids.iter().copied()))
-        .all(db)
-        .await
-        .db_operation("load song credit artists")?;
-
-    Ok(artists
-        .into_iter()
-        .map(|artist| (artist.id, artist.into()))
-        .collect())
-}
-
-async fn load_relation_artists(
-    related_song_ids: &[i32],
-    db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, SimpleArtist>, DatabaseError> {
-    if related_song_ids.is_empty() {
-        return Ok(HashMap::new());
-    }
-
-    let first_artist_ids_by_song = song_artist::Entity::find()
-        .filter(
-            song_artist::Column::SongId.is_in(related_song_ids.iter().copied()),
-        )
-        .order_by_asc(song_artist::Column::SongId)
-        .order_by_asc(song_artist::Column::ArtistId)
-        .all(db)
-        .await
-        .db_operation("load song relation artist links")?
-        .into_iter()
-        .fold(HashMap::new(), |mut map, song_artist| {
-            map.entry(song_artist.song_id)
-                .or_insert(song_artist.artist_id);
-            map
-        });
-
-    let artist_ids = first_artist_ids_by_song
-        .values()
-        .copied()
-        .collect::<Vec<_>>();
-    let artist_map = load_credit_artists(&artist_ids, db).await?;
-
-    Ok(first_artist_ids_by_song
-        .into_iter()
-        .filter_map(|(song_id, artist_id)| {
-            Some((song_id, artist_map.get(&artist_id)?.clone()))
-        })
-        .collect())
-}
-
-fn build_song_credits(
-    credits: Vec<song_credit::Model>,
-    artist_map: &HashMap<i32, SimpleArtist>,
-    role_map: &HashMap<i32, CreditRoleRef>,
-) -> Vec<SongCredit> {
-    credits
-        .into_iter()
-        .filter_map(|credit| {
-            let artist = artist_map.get(&credit.artist_id).cloned()?;
-            let role = credit
-                .role_id
-                .and_then(|role_id| role_map.get(&role_id).cloned());
-
-            Some(SongCredit { artist, role })
-        })
-        .collect()
-}
-
 fn build_song_lyrics(
     lyrics: Vec<song_lyrics::Model>,
     lang_cache: &HashMap<i32, Language>,
@@ -445,18 +595,144 @@ fn build_song_lyrics(
         .collect()
 }
 
+#[derive(FromQueryResult)]
+struct RelationReleaseRow {
+    song_id: i32,
+    id: i32,
+    title: String,
+    release_date: Option<chrono::NaiveDate>,
+    release_date_precision: DatePrecision,
+}
+
+async fn load_relation_releases(
+    song_ids: &[i32],
+    db: &impl ConnectionTrait,
+) -> Result<HashMap<i32, SongRelease>, DatabaseError> {
+    let releases = release_track::Entity::find()
+        .select_only()
+        .column(release_track::Column::SongId)
+        .column(release::Column::Id)
+        .column(release::Column::Title)
+        .column(release::Column::ReleaseDate)
+        .column(release::Column::ReleaseDatePrecision)
+        .join(JoinType::InnerJoin, release_track::Relation::Release.def())
+        .filter(release_track::Column::SongId.is_in(song_ids.iter().copied()))
+        .distinct_on([(release_track::Entity, release_track::Column::SongId)])
+        .order_by_asc(release_track::Column::SongId)
+        .order_by_with_nulls(
+            release::Column::ReleaseDate,
+            sea_orm::Order::Asc,
+            NullOrdering::Last,
+        )
+        .order_by_asc(release::Column::Id)
+        .into_model::<RelationReleaseRow>()
+        .all(db)
+        .await
+        .db_operation("load first related song releases")?;
+    let release_ids = releases
+        .iter()
+        .map(|release| release.id)
+        .unique()
+        .collect::<Vec<_>>();
+    let (cover_art_urls, mut track_positions) = try_join!(
+        load_release_cover_art_urls(&release_ids, db),
+        load_release_track_positions(song_ids, &release_ids, db),
+    )?;
+
+    Ok(releases
+        .into_iter()
+        .map(|release| {
+            (
+                release.song_id,
+                SongRelease {
+                    id: release.id,
+                    title: release.title,
+                    release_date: DateWithPrecision::from_option(
+                        release.release_date,
+                        release.release_date_precision,
+                    ),
+                    track_positions: track_positions
+                        .remove(&(release.song_id, release.id))
+                        .unwrap_or_default(),
+                    cover_art_url: cover_art_urls.get(&release.id).cloned(),
+                },
+            )
+        })
+        .collect())
+}
+
+async fn load_relation_summaries(
+    song_ids: &[i32],
+    db: &impl ConnectionTrait,
+) -> Result<HashMap<i32, SongRelationSummary>, DatabaseError> {
+    let (songs, artist_rows, mut releases) = try_join!(
+        async {
+            song::Entity::find()
+                .select_only()
+                .column(song::Column::Id)
+                .column(song::Column::Title)
+                .filter(song::Column::Id.is_in(song_ids.iter().copied()))
+                .into_tuple::<(i32, String)>()
+                .all(db)
+                .await
+                .db_operation("load related songs")
+        },
+        async {
+            song_artist::Entity::find()
+                .select_only()
+                .column(song_artist::Column::SongId)
+                .column(artist::Column::Id)
+                .column(artist::Column::Name)
+                .join(JoinType::InnerJoin, song_artist::Relation::Artist.def())
+                .filter(
+                    song_artist::Column::SongId.is_in(song_ids.iter().copied()),
+                )
+                .order_by_asc(song_artist::Column::ArtistId)
+                .into_tuple::<(i32, i32, String)>()
+                .all(db)
+                .await
+                .db_operation("load related song artists")
+        },
+        load_relation_releases(song_ids, db),
+    )
+    .db_operation("load related song summaries")?;
+
+    let mut artists = HashMap::<_, Vec<_>>::new();
+    for (song_id, id, name) in artist_rows {
+        artists
+            .entry(song_id)
+            .or_default()
+            .push(SimpleArtist { id, name });
+    }
+    Ok(songs
+        .into_iter()
+        .map(|(id, title)| {
+            (
+                id,
+                SongRelationSummary {
+                    id,
+                    title,
+                    artists: artists.remove(&id).unwrap_or_default(),
+                    release: releases.remove(&id),
+                },
+            )
+        })
+        .collect())
+}
+
 async fn load_song_relations(
     song_id: i32,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<SongRelation>, DatabaseError> {
     let relations = song_relation::Entity::find()
         .filter(
-            song_relation::Column::FirstId
+            song_relation::Column::SourceId
                 .eq(song_id)
-                .or(song_relation::Column::SecondId.eq(song_id)),
+                .or(song_relation::Column::DerivedId.eq(song_id)),
         )
-        .order_by_asc(song_relation::Column::FirstId)
-        .order_by_asc(song_relation::Column::SecondId)
+        .order_by_asc(song_relation::Column::SourceId)
+        .order_by_asc(song_relation::Column::DerivedId)
+        .order_by_asc(song_relation::Column::RelationType)
         .all(db)
         .await
         .db_operation("load song relation rows")?;
@@ -467,91 +743,44 @@ async fn load_song_relations(
 
     let related_song_ids = relations
         .iter()
-        .map(|relation| related_song_id(song_id, relation))
+        .map(|relation| {
+            if relation.source_id == song_id {
+                relation.derived_id
+            } else {
+                relation.source_id
+            }
+        })
         .collect::<Vec<_>>();
 
-    let relation_type_ids = relations
-        .iter()
-        .map(|relation| relation.relation_type_id)
-        .collect::<Vec<_>>();
+    let related_song_map =
+        load_relation_summaries(&related_song_ids, db).await?;
 
-    let (related_song_map, related_song_artist_map, relation_type_map) = try_join!(
-        async {
-            Ok(song::Entity::find()
-                .filter(
-                    song::Column::Id.is_in(related_song_ids.iter().copied()),
-                )
-                .all(db)
-                .await
-                .db_operation("load related songs")?
-                .into_iter()
-                .map(|song| {
-                    (
-                        song.id,
-                        SongRef {
-                            id: song.id,
-                            title: song.title,
-                        },
-                    )
-                })
-                .collect::<HashMap<_, _>>())
-        },
-        load_relation_artists(&related_song_ids, db),
-        async {
-            Ok(song_relation_type::Entity::find()
-                .filter(
-                    song_relation_type::Column::Id
-                        .is_in(relation_type_ids.iter().copied()),
-                )
-                .all(db)
-                .await
-                .db_operation("load song relation types")?
-                .into_iter()
-                .map(|relation_type| (relation_type.id, relation_type.into()))
-                .collect::<HashMap<i32, SongRelationType>>())
-        }
-    )?;
-
-    Ok(build_song_relations(
-        song_id,
-        relations,
-        &related_song_map,
-        &related_song_artist_map,
-        &relation_type_map,
-    ))
+    Ok(build_song_relations(song_id, relations, &related_song_map))
 }
 
 fn build_song_relations(
     song_id: i32,
     relations: Vec<song_relation::Model>,
-    related_song_map: &HashMap<i32, SongRef>,
-    related_song_artist_map: &HashMap<i32, SimpleArtist>,
-    relation_type_map: &HashMap<i32, SongRelationType>,
+    related_song_map: &HashMap<i32, SongRelationSummary>,
 ) -> Vec<SongRelation> {
     relations
         .into_iter()
         .filter_map(|relation| {
-            let related_song_id = related_song_id(song_id, &relation);
+            let (related_song_id, direction) = if relation.source_id == song_id
+            {
+                (relation.derived_id, SongRelationDirection::Source)
+            } else {
+                (relation.source_id, SongRelationDirection::Derived)
+            };
             let song = related_song_map.get(&related_song_id).cloned()?;
-            let relation_type =
-                relation_type_map.get(&relation.relation_type_id).cloned()?;
-
             Some(SongRelation {
                 song,
-                artist: related_song_artist_map.get(&related_song_id).cloned(),
-                r#type: relation_type,
+                direction,
+                r#type: relation.relation_type,
                 description: relation.description,
             })
         })
         .collect()
-}
-
-const fn related_song_id(song_id: i32, relation: &song_relation::Model) -> i32 {
-    if relation.first_id == song_id {
-        relation.second_id
-    } else {
-        relation.first_id
-    }
 }
 
 async fn find_sorted_by_correction(
@@ -560,7 +789,7 @@ async fn find_sorted_by_correction(
     sort_field: CorrectionSortField,
     sort_direction: SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<SongListItem>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<SongListing>, DatabaseError> {
     use entity::enums::EntityType;
 
     let entity_ids =
@@ -593,78 +822,4 @@ async fn find_sorted_by_correction(
     );
 
     Ok(utils::page_from_items(songs, &pagination))
-}
-
-#[cfg(test)]
-mod tests {
-    use domain::shared::SimpleArtist;
-    use sea_orm::QueryTrait;
-
-    use super::*;
-
-    #[test]
-    fn test_load_release_cover_art_urls_query() {
-        let query = load_release_cover_art_urls_query(&[1, 2, 3, 3]);
-        assert_eq!(
-            query.build(sea_orm::DatabaseBackend::Postgres).to_string(),
-            r#"SELECT "release_image"."release_id", "image"."object_key" FROM "release_image" INNER JOIN "image" ON "release_image"."image_id" = "image"."id" WHERE "release_image"."release_id" IN (1, 2, 3, 3) AND "release_image"."type" = (CAST('Cover' AS "release_image_type"))"#,
-        );
-    }
-
-    #[test]
-    fn test_build_song_relations_includes_artist() {
-        let relation = song_relation::Model {
-            id: 1,
-            first_id: 1,
-            second_id: 2,
-            relation_type_id: 3,
-            description: "Shared motif".to_string(),
-        };
-
-        let relations = build_song_relations(
-            1,
-            vec![relation],
-            &HashMap::from([(
-                2,
-                SongRef {
-                    id: 2,
-                    title: "Border of Life".to_string(),
-                },
-            )]),
-            &HashMap::from([(
-                2,
-                SimpleArtist {
-                    id: 7,
-                    name: "ZUN".to_string(),
-                },
-            )]),
-            &HashMap::from([(
-                3,
-                SongRelationType {
-                    id: 3,
-                    name: "Arrange".to_string(),
-                },
-            )]),
-        );
-
-        assert_eq!(relations.len(), 1);
-        assert_eq!(
-            relations[0],
-            SongRelation {
-                song: SongRef {
-                    id: 2,
-                    title: "Border of Life".to_string(),
-                },
-                artist: Some(SimpleArtist {
-                    id: 7,
-                    name: "ZUN".to_string(),
-                }),
-                r#type: SongRelationType {
-                    id: 3,
-                    name: "Arrange".to_string(),
-                },
-                description: "Shared motif".to_string(),
-            }
-        );
-    }
 }

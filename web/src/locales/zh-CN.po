@@ -26,6 +26,10 @@ msgid "-- Please Select Type --"
 msgstr "-- 请选择类型 --"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "-- Select direction --"
+msgstr "-- 选择关系方向 --"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "-- Select relation type --"
 msgstr "-- 选择关系类型 --"
@@ -178,9 +182,9 @@ msgid "After"
 msgstr "之后"
 
 #: src/view/event/Info/index.tsx
-#: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/Overview.tsx
 msgid "AKAs"
-msgstr "AKA"
+msgstr "AKAs"
 
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 msgid "Album"
@@ -193,9 +197,11 @@ msgstr "别名"
 
 #: src/view/artist/ArtistTypeLabel.tsx
 #: src/view/artist/explore.comp.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/song/explore.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 #: src/view/tag/explore.tsx
 #: src/view/user/Profile.tsx
 msgid "All"
@@ -219,8 +225,8 @@ msgid "Already have an account?"
 msgstr "已经有账号了？"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
-msgid "Also on"
-msgstr "也收录于"
+#~ msgid "Also on"
+#~ msgstr "也收录于"
 
 #: src/view/event/edit/comp/EventAlternativeNamesField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
@@ -326,6 +332,10 @@ msgstr "返回"
 msgid "Back to"
 msgstr "返回"
 
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "Based on"
+msgstr "来源歌曲"
+
 #: src/view/correction/Detail.tsx
 msgid "Before"
 msgstr "之前"
@@ -381,11 +391,13 @@ msgstr "正在检查会话…"
 msgid "City"
 msgstr "城市"
 
+#: src/view/tag/Info/Relations.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Collapse"
 msgstr "折叠"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Collected time"
 msgstr "收藏时间"
 
@@ -566,6 +578,7 @@ msgid "Created time"
 msgstr "创建时间"
 
 #: src/route/credit-role/$id.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 msgid "Credit role"
@@ -641,6 +654,14 @@ msgstr "评论已删除"
 msgid "Demo"
 msgstr "样带"
 
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Derived"
+msgstr "衍生"
+
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "Derived versions"
+msgstr "衍生版本"
+
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
 msgstr "降序"
@@ -652,7 +673,6 @@ msgstr "降序"
 #: src/view/event/Info/index.tsx
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/edit/comp/TagDescription.tsx
-#: src/view/tag/Info/index.tsx
 msgid "Description"
 msgstr "描述"
 
@@ -943,6 +963,7 @@ msgid "Follow"
 msgstr "关注"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Follow count"
 msgstr "关注数"
 
@@ -1108,6 +1129,10 @@ msgstr "入职年份不能与上一休假年份相同"
 msgid "Just now"
 msgstr "刚刚"
 
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "Kind"
+msgstr "类型"
+
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
@@ -1134,14 +1159,6 @@ msgstr "语言"
 msgid "Last page"
 msgstr "最后一页"
 
-#: src/view/Homepage/component/ArtistsCard.tsx
-msgid "Latest Artists"
-msgstr "最新艺术家"
-
-#: src/view/Homepage/index.tsx
-msgid "Latest Releases"
-msgstr "最新发行"
-
 #: src/view/artist/edit/comp/Membership/tenure.tsx
 msgid "Leave year"
 msgstr "离开年份"
@@ -1154,7 +1171,7 @@ msgstr "请假年份不能早于加入年份"
 msgid "Leave year cannot be the same as join year"
 msgstr "请假年份不能与加入年份相同"
 
-#: src/component/data/ExternalLinks.tsx
+#: src/component/data/ExternalLinks/__internal.tsx
 #: src/component/form/ExternalLinksField.tsx
 msgid "Links"
 msgstr "链接"
@@ -1194,6 +1211,7 @@ msgstr "正在加载条目..."
 
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/CollectionDetail.tsx
@@ -1207,6 +1225,7 @@ msgstr "正在加载条目..."
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
 #: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/results.tsx
 msgid "Loading..."
 msgstr "正在載入..."
 
@@ -1228,6 +1247,7 @@ msgid "Localized Titles"
 msgstr "本地化标题"
 
 #: src/view/event/edit/comp/EventLocationField.tsx
+#: src/view/event/Info/index.tsx
 msgid "Location"
 msgstr "位置"
 
@@ -1293,7 +1313,6 @@ msgstr "下移项目"
 msgid "Move item up"
 msgstr "上移项目"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/event/Info/index.tsx
 msgid "N/A"
 msgstr "无"
@@ -1338,6 +1357,7 @@ msgid "New password"
 msgstr "新密码"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 msgid "Newest first"
 msgstr "发行时间由近到远"
 
@@ -1386,6 +1406,7 @@ msgid "No changes detected."
 msgstr "未检测到任何更改"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "No collections"
 msgstr "暂无收藏"
 
@@ -1472,6 +1493,10 @@ msgstr "未找到标签。"
 msgid "No matching credits"
 msgstr "没有符合条件的参与作品"
 
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+msgid "No matching relations"
+msgstr "没有符合条件的关系"
+
 #: src/view/image_queue/manage.tsx
 #: src/view/image_queue/user.tsx
 msgid "No more entries"
@@ -1556,6 +1581,7 @@ msgid "Notifications ({hotkey})"
 msgstr "通知（{hotkey}）"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 msgid "Oldest first"
 msgstr "发行时间由远到近"
 
@@ -1743,13 +1769,15 @@ msgid "REJECTED"
 msgstr "已拒绝"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
 #: src/view/song/Info/index.tsx
 #: src/view/tag/edit/comp/TagRelationsField.tsx
-#: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/Relations.tsx
 msgid "Relations"
 msgstr "关系"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
@@ -1760,6 +1788,8 @@ msgstr "发行"
 
 #: src/view/release/edit/index.tsx
 #: src/view/release/explore/filter.tsx
+#: src/view/song/Info/comp/SongInfoRelations.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Release date"
 msgstr "发行日期"
 
@@ -1771,9 +1801,11 @@ msgstr "发行类型"
 msgid "Released"
 msgstr "已发行"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Releases"
 msgstr "发行"
 
@@ -1844,6 +1876,7 @@ msgstr "重置密码"
 msgid "restricted collection"
 msgstr "收藏不可访问"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/collection/CollectionDetail.tsx
 #: src/view/notification/InboxPage.tsx
 msgid "Retry"
@@ -1994,10 +2027,6 @@ msgstr "选择语言"
 msgid "Select role"
 msgstr "选择角色"
 
-#: src/view/song/edit/comp/SongRelationsField.tsx
-msgid "Select song"
-msgstr "选择歌曲"
-
 #: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "Select tag"
 msgstr "选择标签"
@@ -2090,17 +2119,20 @@ msgstr "歌曲"
 msgid "Song lyrics"
 msgstr "歌词"
 
+#: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Songs"
 msgstr "歌曲"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
-msgid "Songs without a release"
-msgstr "未关联发行作品的歌曲"
+#~ msgid "Songs without a release"
+#~ msgstr "未关联发行作品的歌曲"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort"
 msgstr "排序"
@@ -2111,6 +2143,7 @@ msgid "Sort by"
 msgstr "排序方式"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "排序收藏"
@@ -2124,6 +2157,7 @@ msgid "Sort: Alphabetical"
 msgstr "排序：字母顺序"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Sort: Collected time"
 msgstr "排序：收藏时间"
 
@@ -2132,6 +2166,7 @@ msgid "Sort: Created time"
 msgstr "排序：创建时间"
 
 #: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Sort: Follow count"
 msgstr "排序：关注数"
 
@@ -2142,6 +2177,10 @@ msgstr "排序：关注时间"
 #: src/view/user/Profile.tsx
 msgid "Sort: Item count"
 msgstr "排序：条目数"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Source"
+msgstr "来源"
 
 #: src/view/artist/edit/comp/Date.tsx
 #: src/view/event/edit/comp/EventDateFields.tsx
@@ -2254,7 +2293,7 @@ msgstr "此收藏为空"
 msgid "This entity already has a pending correction. You can review that correction or go back."
 msgstr "此实体已有待处理更正。你可以查看该更正或返回。"
 
-#. placeholder {0}: formatMinuteCount(resetSession.keyExpiresMinutes)
+#. placeholder {0}: formatMinuteCount(props.resetSession.keyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
 msgid "This is valid for {0}."
 msgstr "有效期为 {0}。"
@@ -2339,12 +2378,13 @@ msgid "Try adjusting the filters, or <0>create</0> the first one."
 msgstr "调整筛选条件，或<0>创建</0>第一个条目。"
 
 #: src/view/artist/explore.comp.tsx
+#: src/view/artist/profile/comp/ArtistInfo.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 #: src/view/tag/explore.tsx
-#: src/view/tag/Info/index.tsx
+#: src/view/tag/Info/Overview.tsx
 #: src/view/user/Profile.tsx
 msgid "Type"
 msgstr "类型"
@@ -2378,6 +2418,10 @@ msgstr "未知"
 #: src/view/Homepage/component/ReleaseCard.tsx
 msgid "Unknown artist"
 msgstr "未知艺术家"
+
+#: src/view/song/Info/comp/SongRelationItem.tsx
+msgid "Unknown date"
+msgstr "日期未知"
 
 #: src/view/admin/users.tsx
 msgid "Unknown error"

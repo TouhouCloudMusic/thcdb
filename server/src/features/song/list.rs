@@ -16,7 +16,7 @@ use crate::features::release::list::{
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
-pub(crate) struct SongListItem {
+pub(crate) struct SongListing {
     pub id: i32,
     pub title: String,
     pub cover_art_url: Option<String>,
@@ -34,7 +34,7 @@ pub(crate) struct SongRow {
 pub(crate) async fn load(
     select: Select<song::Entity>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<SongListItem>, DatabaseError> {
+) -> Result<Vec<SongListing>, DatabaseError> {
     let songs = select
         .into_partial_model::<SongRow>()
         .all(db)
@@ -48,7 +48,7 @@ pub(crate) async fn load(
 pub(crate) async fn load_items(
     songs: Vec<SongRow>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<SongListItem>, DatabaseError> {
+) -> Result<Vec<SongListing>, DatabaseError> {
     if songs.is_empty() {
         return Ok(vec![]);
     }
@@ -134,7 +134,7 @@ pub(crate) async fn load_items(
                     .unwrap_or_default()
             });
 
-            SongListItem {
+            SongListing {
                 id: song.id,
                 title: song.title,
                 cover_art_url: first_release_id.and_then(|release_id| {

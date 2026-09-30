@@ -8,7 +8,7 @@ import { Select, underlineSelectStyles } from "~/component/atomic/form/select"
 import type {
 	EntityUserCollectionSort,
 	ReleaseListItem,
-	SongListItem,
+	SongListing,
 	UserCollection,
 } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
@@ -66,7 +66,7 @@ type Props = {
 	tag: Tag
 	correctionHistory: CorrectionHistoryItem[]
 	releases: SortableTagResultsStore<ReleaseListItem>
-	songs: SortableTagResultsStore<SongListItem>
+	songs: SortableTagResultsStore<SongListing>
 	collections: TagCollectionsStore
 }
 
@@ -133,7 +133,7 @@ const tabsStyles = stylex.create({
 })
 
 function EntitySortSelect(props: {
-	store: SortableTagResultsStore<ReleaseListItem | SongListItem>
+	store: SortableTagResultsStore<ReleaseListItem | SongListing>
 	label: string
 }) {
 	const { t } = useLingui()
