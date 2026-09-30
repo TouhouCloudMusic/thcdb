@@ -1,0 +1,8 @@
+[
+  {
+    "label": "Storybook",
+    "command": "nix",
+    "args": ["develop", ".#", "-c", "pnpm", "--dir", "web", "storybook"],
+    "cwd": "$ZED_WORKTREE_ROOT"
+  }
+]
