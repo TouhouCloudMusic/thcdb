@@ -19,7 +19,6 @@ const styles = stylex.create({
 		alignItems: "center",
 		gap: px[8],
 		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 	},
 	label: {
 		borderRadius: radius.full,
