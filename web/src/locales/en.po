@@ -1554,6 +1554,10 @@ msgstr "No tags yet"
 msgid "No tracks under this disc."
 msgstr "No tracks under this disc."
 
+#: src/view/release/Info/comp/ReleaseInfoTracks.tsx
+msgid "No tracks yet"
+msgstr "No tracks yet"
+
 #: src/view/admin/users.tsx
 msgid "No users found"
 msgstr "No users found"

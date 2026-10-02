@@ -1554,6 +1554,10 @@ msgstr "暂无标签"
 msgid "No tracks under this disc."
 msgstr "此光盘下没有曲目。"
 
+#: src/view/release/Info/comp/ReleaseInfoTracks.tsx
+msgid "No tracks yet"
+msgstr "暂无曲目"
+
 #: src/view/admin/users.tsx
 msgid "No users found"
 msgstr "未找到用户"
