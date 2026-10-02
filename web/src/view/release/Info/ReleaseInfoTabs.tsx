@@ -11,6 +11,7 @@ import type { EntityCommentsModel } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { useEntityComments } from "~/view/comment/useEntityComments"
 
+import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
 import { ReleaseInfoTracks } from "./comp/ReleaseInfoTracks"
 
 // TODO: Unify tabs styles
@@ -20,6 +21,7 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 	},
 	tabPanel: { paddingBlock: px[16] },
+	trackPanel: { display: "flex", flexDirection: "column", gap: px[24] },
 })
 
 type ReleaseInfoTabsProps = {
@@ -82,13 +84,14 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 			</Tab.ScrollArea>
 			<Tab.Content
 				value="Tracks"
-				{...stylex.attrs(styles.tabPanel)}
+				{...stylex.attrs(styles.tabPanel, styles.trackPanel)}
 			>
 				<ReleaseInfoTracks
 					discs={props.release.discs}
 					tracks={props.release.tracks}
 					credits={props.release.credits}
 				/>
+				<ReleaseInfoCredits credits={props.release.credits} />
 			</Tab.Content>
 			<Tab.Content
 				value="Comments"
