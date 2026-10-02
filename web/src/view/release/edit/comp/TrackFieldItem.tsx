@@ -1,4 +1,4 @@
-import { Field, remove, setInput } from "@formisch/solid"
+import { Field, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
@@ -17,6 +17,7 @@ import { palette } from "~/style/color/palette.stylex"
 import { formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
+import { removeTrack } from "../model"
 import { ArtistInfo, SongInfo } from "./EntityInfo"
 import type { ReleaseFormStore } from "./types"
 
@@ -70,8 +71,7 @@ export function TrackItem(props: {
 		})),
 	)
 
-	const onRemoveTrack = () =>
-		remove(props.of, { path: ["data", "tracks"], at: props.index })
+	const onRemoveTrack = () => removeTrack(props.of, props.index)
 	const onSelectSong = (s: Song) => {
 		setTrack("song", s)
 		setInput(props.of, {
