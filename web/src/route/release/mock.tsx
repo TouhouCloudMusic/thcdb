@@ -219,7 +219,7 @@ const mockData: Release = {
 				id: 1,
 				name: "Original Composer",
 			},
-			on: undefined,
+			on: null,
 		},
 		{
 			artist: {
@@ -230,7 +230,7 @@ const mockData: Release = {
 				id: 2,
 				name: "Game Designer",
 			},
-			on: undefined,
+			on: null,
 		},
 		{
 			artist: {
@@ -241,7 +241,7 @@ const mockData: Release = {
 				id: 3,
 				name: "Programmer",
 			},
-			on: undefined,
+			on: null,
 		},
 		{
 			artist: {
@@ -252,7 +252,7 @@ const mockData: Release = {
 				id: 4,
 				name: "Arranger",
 			},
-			on: [1, 2, 3, 4, 5],
+			on: [0, 1, 2, 3, 4],
 		},
 		{
 			artist: {
@@ -263,7 +263,7 @@ const mockData: Release = {
 				id: 5,
 				name: "Publisher",
 			},
-			on: undefined,
+			on: null,
 		},
 		{
 			artist: {
@@ -274,7 +274,7 @@ const mockData: Release = {
 				id: 6,
 				name: "Audio Engineer",
 			},
-			on: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+			on: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
 		},
 	],
 }

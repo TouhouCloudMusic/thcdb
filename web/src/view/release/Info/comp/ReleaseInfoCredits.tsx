@@ -34,7 +34,7 @@ export function ReleaseInfoCredits(props: ReleaseInfoCreditsProps) {
 			{ artist: ReleaseCredit["artist"]; roles: ReleaseCredit["role"][] }
 		>()
 		for (const credit of props.credits ?? []) {
-			if (credit.on !== null && credit.on !== undefined) continue
+			if (credit.on !== null) continue
 
 			const group = grouped.get(credit.artist.id)
 			if (group) {

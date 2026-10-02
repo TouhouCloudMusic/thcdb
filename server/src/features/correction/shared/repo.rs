@@ -27,6 +27,7 @@ use serde_json::{Value, json};
 use user_core::UserSummary;
 
 use crate::features::correction::CorrectionDiffEntry;
+use crate::features::release::model::CreditScope;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub async fn find_correction(
@@ -456,7 +457,7 @@ async fn snapshot_release(
             json!({
                 "artist_id": model.artist_id,
                 "role_id": model.role_id,
-                "on": model.on,
+                "on": CreditScope::from(model.on),
             })
         })
         .collect::<Vec<_>>();

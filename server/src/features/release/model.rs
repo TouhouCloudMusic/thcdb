@@ -27,7 +27,7 @@ pub struct NewRelease {
     pub artists: Vec<i32>,
     #[garde(skip)]
     pub catalog_nums: Vec<NewCatalogNumber>,
-    #[garde(skip)]
+    #[garde(custom(is_valid_credit_scope(&self.tracks)))]
     pub credits: Vec<NewCredit>,
     #[garde(length(min = 1))]
     pub discs: Vec<NewDisc>,
@@ -52,6 +52,27 @@ fn is_valid_track_list(
                 return Err(garde::Error::new(format!(
                     "Disc index {disc_idx} of track {idx} is out of bounds",
                 )));
+            }
+        }
+
+        Ok(())
+    }
+}
+
+fn is_valid_credit_scope(
+    tracks: &[NewTrack],
+) -> impl FnOnce(&[NewCredit], &()) -> garde::Result + '_ {
+    move |credits, ()| {
+        for credit in credits {
+            for &index in credit.on.track_indices().unwrap_or_default() {
+                if usize::try_from(index)
+                    .ok()
+                    .is_none_or(|index| index >= tracks.len())
+                {
+                    return Err(garde::Error::new(format!(
+                        "Credit track index {index} is out of bounds",
+                    )));
+                }
             }
         }
 
@@ -90,7 +111,31 @@ pub struct NewDisc {
 pub struct NewCredit {
     pub artist_id: i32,
     pub role_id: i32,
-    pub on: Option<Vec<i16>>,
+    #[serde(default)]
+    #[schema(value_type = Option<Vec<i16>>, minimum = 0, maximum = 32_767)]
+    pub on: CreditScope,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(from = "Option<Vec<i16>>")]
+pub struct CreditScope(Option<Vec<i16>>);
+
+impl CreditScope {
+    pub fn track_indices(&self) -> Option<&[i16]> {
+        self.0.as_deref()
+    }
+}
+
+impl From<Option<Vec<i16>>> for CreditScope {
+    fn from(indices: Option<Vec<i16>>) -> Self {
+        Self(indices.filter(|indices| !indices.is_empty()))
+    }
+}
+
+impl From<CreditScope> for Option<Vec<i16>> {
+    fn from(scope: CreditScope) -> Self {
+        scope.0
+    }
 }
 
 #[serde_with::apply(
@@ -137,7 +182,8 @@ pub struct CatalogNumber {
 pub struct ReleaseCredit {
     pub artist: ReleaseArtist,
     pub role: CreditRoleRef,
-    pub on: Option<Vec<i16>>,
+    #[schema(value_type = Option<Vec<i16>>, min_items = 1, minimum = 0, maximum = 32_767, required = true)]
+    pub on: CreditScope,
 }
 
 #[serde_with::apply(
@@ -175,4 +221,54 @@ pub struct SimpleRelease {
 pub struct ReleaseDisc {
     pub id: i32,
     pub name: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use garde::Validate;
+    use serde_json::json;
+
+    use super::{NewCredit, NewRelease};
+
+    #[test]
+    fn credits_without_selected_tracks_apply_to_the_release()
+    -> anyhow::Result<()> {
+        for input in [
+            json!({ "artist_id": 1, "role_id": 2 }),
+            json!({ "artist_id": 1, "role_id": 2, "on": null }),
+            json!({ "artist_id": 1, "role_id": 2, "on": [] }),
+        ] {
+            let credit: NewCredit = serde_json::from_value(input)?;
+            assert_eq!(serde_json::to_value(credit.on)?, json!(null));
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn credit_track_indices_start_at_zero_and_stay_within_the_release()
+    -> anyhow::Result<()> {
+        for (index, valid) in [(0, true), (-1, false), (1, false)] {
+            let release: NewRelease = serde_json::from_value(json!({
+                "title": "Release",
+                "release_type": "Album",
+                "artists": [1],
+                "catalog_nums": [],
+                "credits": [{ "artist_id": 1, "role_id": 2, "on": [index] }],
+                "discs": [{}],
+                "events": [],
+                "localized_titles": [],
+                "links": [],
+                "tracks": [{ "song_id": 3, "disc_index": 0, "artists": [1] }],
+            }))?;
+
+            assert_eq!(
+                release.validate().is_ok(),
+                valid,
+                "track index {index}"
+            );
+        }
+
+        Ok(())
+    }
 }

@@ -3204,7 +3204,10 @@ export type components = {
         };
         ReleaseCredit: {
             artist: components["schemas"]["ReleaseArtist"];
-            on?: number[] | null;
+            on: [
+                number,
+                ...number[]
+            ] | null;
             role: components["schemas"]["CreditRoleRef"];
         };
         ReleaseDisc: {

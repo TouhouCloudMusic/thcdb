@@ -1,4 +1,4 @@
-import type { Release } from "@thc/api"
+import type { Release, ReleaseCredit } from "@thc/api"
 
 export const CRADLE_RELEASE_DESCRIPTION =
 	"《Cradle - 東方幻樂祀典》（2004，SEPR-0001）。曲目、编曲及美术署名来自 [sound sepher 官网](https://sepher.jp/circle/circle_09.htm)，时长和演唱、作词署名来自 [Gensokyo Radio](https://gensokyoradio.net/music/album/11094/)。未确认的演出者留空；ID 仅用于本地展示，不对应线上实体。"
@@ -181,7 +181,7 @@ export const CRADLE_RELEASE = {
 	})),
 	credits: [
 		...CRADLE_TRACKS.flatMap((track, index) =>
-			track.arrangers.map((name) => ({
+			track.arrangers.map<ReleaseCredit>((name) => ({
 				artist: CRADLE_ARTISTS.get(name)!,
 				role: { id: 1, name: "Arrangement" },
 				on: [index],
