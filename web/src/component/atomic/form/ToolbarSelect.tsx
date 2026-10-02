@@ -2,7 +2,7 @@ import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 
 import { palette } from "~/style/color/palette.stylex"
-import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
+import { colors, fontSizes, px } from "~/style/tokens.stylex"
 
 import { Select } from "./select"
 
@@ -15,7 +15,6 @@ export type ToolbarSelectOption<T extends string> = {
 export const toolbarStyles = stylex.create({
 	control: {
 		height: px[36],
-		borderRadius: radius.sm,
 		borderColor: {
 			default: palette.slate[400],
 			":hover": { default: null, "@media (hover: hover)": palette.slate[500] },
@@ -28,15 +27,16 @@ export const toolbarStyles = stylex.create({
 		transitionProperty:
 			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
 		transitionDuration: "150ms",
-		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
 	select: {
-		gap: px[4],
-		paddingLeft: px[12],
-		paddingRight: px[8],
+		gridTemplateColumns: `minmax(0, 1fr) ${px[16]}`,
+		columnGap: px[8],
+		paddingInlineStart: px[12],
+		paddingInlineEnd: px[12],
 		fontWeight: 400,
 		color: colors.textPrimary,
 	},
+	selectValue: { paddingInlineStart: 0 },
 })
 
 export function ToolbarSelect<T extends string>(props: {
@@ -71,7 +71,9 @@ export function ToolbarSelect<T extends string>(props: {
 				aria-label={props.ariaLabel}
 				styles={[toolbarStyles.control, toolbarStyles.select, props.styles]}
 			>
-				<Select.Value<ToolbarSelectOption<T>>>
+				<Select.Value<ToolbarSelectOption<T>>
+					styles={toolbarStyles.selectValue}
+				>
 					{(state) => state.selectedOption().label}
 				</Select.Value>
 				<Select.Icon />
