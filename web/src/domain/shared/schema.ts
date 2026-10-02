@@ -54,10 +54,7 @@ export const CorrectionType = v.union([
 
 export type CorrectionType = v.InferInput<typeof CorrectionType>
 
-export function NewCorrection<T extends v.ObjectEntries>(
-	// oxlint-disable-next-line @typescript-eslint/no-explicit-any
-	schema: v.ObjectSchema<T, any>,
-) {
+export function NewCorrection<T extends v.GenericSchema>(schema: T) {
 	return v.object({
 		data: schema,
 		description: v.string(),

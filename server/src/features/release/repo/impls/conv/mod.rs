@@ -156,7 +156,7 @@ fn conv_credits(
                     id: role.id,
                     name: role.name.clone(),
                 },
-                on: credit.on.clone(),
+                on: credit.on.clone().into(),
             }
         })
         .collect()

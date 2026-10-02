@@ -1,4 +1,7 @@
+import * as v from "valibot"
 import { describe, expect, it } from "vitest"
+
+import { NewReleaseCorrection } from "~/domain/release"
 
 import { useReleaseFormInitialValues } from "./useFormInitialValues"
 
@@ -81,7 +84,7 @@ describe("release form initialization", () => {
 				{
 					artist: { id: 10, name: "A" },
 					role: { id: 100, name: "Composer" },
-					on: [1, 2],
+					on: [0, 1],
 				},
 			],
 			links: ["https://example.com/releases/1"],
@@ -103,7 +106,7 @@ describe("release form initialization", () => {
 			artists: result.data.artists,
 			events: result.data.events,
 			catalogNums: result.data.catalog_nums,
-			credits: result.data.credits,
+			credits: v.parse(NewReleaseCorrection, result).data.credits,
 			discs: result.data.discs,
 			tracks: result.data.tracks,
 			links: result.data.links,
@@ -118,7 +121,7 @@ describe("release form initialization", () => {
 				{ catalog_number: "CAT-001", label_id: 1 },
 				{ catalog_number: "CAT-002", label_id: undefined },
 			],
-			credits: [{ artist_id: 10, role_id: 100, on: [1, 2] }],
+			credits: [{ artist_id: 10, role_id: 100, on: [0, 1] }],
 			discs: [{ name: "Disc A" }, { name: undefined }],
 			tracks: [
 				{

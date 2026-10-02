@@ -174,7 +174,7 @@ fn test_conv_credits() {
             release_id: 1,
             artist_id: 2,
             role_id: 2,
-            on: None,
+            on: Some(vec![]),
         },
     ];
 
@@ -238,7 +238,7 @@ fn test_conv_credits() {
                 id: 1,
                 name: "Role 1".to_string(),
             },
-            on: Some(vec![1]),
+            on: Some(vec![1]).into(),
         },
         ReleaseCredit {
             artist: ReleaseArtist {
@@ -249,7 +249,7 @@ fn test_conv_credits() {
                 id: 2,
                 name: "Role 2".to_string(),
             },
-            on: None,
+            on: None.into(),
         },
     ];
 

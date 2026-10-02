@@ -1136,20 +1136,7 @@ export const vNewCredit = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	on: v.nullish(
-		v.array(
-			v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-		),
+		v.array(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(32767))),
 	),
 })
 
@@ -1568,20 +1555,12 @@ export const vReleaseCoverArtFormData = v.object({
 export const vReleaseCredit = v.object({
 	artist: vReleaseArtist,
 	role: vCreditRoleRef,
-	on: v.nullish(
-		v.array(
-			v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
+	on: v.nullable(
+		v.pipe(
+			v.array(
+				v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(32767)),
 			),
+			v.minLength(1),
 		),
 	),
 })

@@ -1588,7 +1588,7 @@ export type ReleaseCoverArtFormData = {
 export type ReleaseCredit = {
 	artist: ReleaseArtist
 	role: CreditRoleRef
-	on?: Array<number> | null
+	on: Array<number> | null
 }
 
 export type ReleaseDisc = {

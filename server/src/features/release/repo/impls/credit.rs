@@ -22,7 +22,7 @@ pub(crate) async fn create_release_credit(
             release_id: Set(release_id),
             artist_id: Set(credit.artist_id),
             role_id: Set(credit.role_id),
-            on: Set(credit.on.clone()),
+            on: Set(credit.on.clone().into()),
         })
         .collect::<Vec<_>>();
 
@@ -47,7 +47,7 @@ pub(crate) async fn create_release_credit_history(
             history_id: Set(history_id),
             artist_id: Set(credit.artist_id),
             role_id: Set(credit.role_id),
-            on: Set(credit.on.clone()),
+            on: Set(credit.on.clone().into()),
         })
         .collect::<Vec<_>>();
 
@@ -76,7 +76,7 @@ pub(crate) async fn update_release_credit(
         .map(|x| NewCredit {
             artist_id: x.artist_id,
             role_id: x.role_id,
-            on: x.on,
+            on: x.on.into(),
         })
         .collect::<Vec<_>>();
 
