@@ -25,7 +25,7 @@ const styles = stylex.create({
 	},
 	root: { display: "flex", flexDirection: "column", gap: px[16] },
 	toolbar: { display: "flex", justifyContent: "flex-end" },
-	sort: { minWidth: px[144] },
+	sort: { minWidth: px[144], height: px[32] },
 	list: {
 		borderTopWidth: "1px",
 		borderTopStyle: "solid",
