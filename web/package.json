@@ -12,7 +12,7 @@
 		"build-storybook": "storybook build"
 	},
 	"dependencies": {
-		"@formisch/solid": "^0.9.5",
+		"@formisch/solid": "^0.13.0",
 		"@kobalte/core": "^0.13.11",
 		"@lingui/core": "6.6.0",
 		"@lingui/solid": "6.6.0",
