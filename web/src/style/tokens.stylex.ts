@@ -14,9 +14,9 @@ export const colors = stylex.defineVars({
 })
 
 export const fonts = stylex.defineConsts({
-	sans: '"Geist", "ui-sans-serif", "system-ui", "sans-serif", \'"Apple Color Emoji"\', \'"Segoe UI Emoji"\', \'"Segoe UI Symbol"\', \'"Noto Color Emoji"\'',
-	mono: '"Geist Mono", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace"',
-	code: '"Cascadia Next SC", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace"',
+	sans: 'Geist, -apple-system, "Noto Sans SC", BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, "Segoe UI", system-ui, "Open Sans", "Helvetica Neue", sans-serif',
+	mono: '"Geist Mono", ui-monospace, Menlo, Monaco, Consolas, monospace',
+	code: '"Cascadia Next SC", ui-monospace, Menlo, Monaco, Consolas, monospace',
 })
 
 export const px = stylex.defineConsts({

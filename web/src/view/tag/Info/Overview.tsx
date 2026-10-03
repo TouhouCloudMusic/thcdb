@@ -3,7 +3,8 @@ import * as stylex from "@stylexjs/stylex"
 import { Show } from "solid-js"
 
 import { Intersperse } from "~/component/data/Intersperse"
-import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import { colors, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 
@@ -98,13 +99,6 @@ export function TagInfoOverview() {
 
 const headerStyles = stylex.create({
 	header: { display: "grid", alignContent: "start", gridColumn: "1 / -1" },
-	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-		letterSpacing: "-0.05em",
-		color: colors.textPrimary,
-	},
 	shortDescription: { color: colors.textSecondary },
 })
 
@@ -113,7 +107,7 @@ function TagInfoHeader() {
 
 	return (
 		<header {...stylex.attrs(headerStyles.header)}>
-			<h1 {...stylex.attrs(headerStyles.title)}>{ctx.tag.name}</h1>
+			<h1 {...stylex.attrs(typography.heading.lg)}>{ctx.tag.name}</h1>
 			<Show when={ctx.tag.short_description}>
 				<p {...stylex.attrs(headerStyles.shortDescription)}>
 					{ctx.tag.short_description}

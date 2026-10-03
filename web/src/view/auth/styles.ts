@@ -4,11 +4,6 @@ import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 export const authStyles = stylex.create({
 	header: { marginBottom: px[24] },
 	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-		letterSpacing: "-.025em",
-		color: colors.textPrimary,
 		marginBlockEnd: { default: 0, ":not(:last-child)": px[8] },
 	},
 	description: {

@@ -29,6 +29,7 @@ import {
 	px,
 	radius,
 } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { CollectionFormDialog } from "~/view/collection/CollectionFormDialog"
 import { CollectionLoadMore } from "~/view/collection/CollectionLoadMore"
@@ -102,11 +103,6 @@ const styles = stylex.create({
 		borderColor: palette.white,
 		backgroundColor: palette.white,
 		boxShadow: `0 0 0 1px ${palette.slate[200]}`,
-	},
-	name: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: 1.25,
-		color: colors.textPrimary,
 	},
 	roles: {
 		marginTop: px[8],
@@ -715,7 +711,7 @@ export function Profile(props: Props) {
 						/>
 					</div>
 
-					<h1 {...stylex.attrs(styles.name)}>{props.data.name}</h1>
+					<h1 {...stylex.attrs(typography.heading.lg)}>{props.data.name}</h1>
 
 					<div {...stylex.attrs(styles.roles)}>
 						<Show when={topRole()}>

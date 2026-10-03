@@ -9,6 +9,7 @@ import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { ResetPassword as ResetPasswordSchema } from "~/domain/auth/schema"
 import { px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 import { PasswordField } from "../component/PasswordField"
 import { authStyles } from "../styles"
@@ -103,7 +104,9 @@ function ResetPasswordForm(props: { resetSession: ResetPasswordSession }) {
 	return (
 		<>
 			<header {...stylex.attrs(authStyles.header)}>
-				<h1 {...stylex.attrs(authStyles.title)}>{t`Set a new password`}</h1>
+				<h1
+					{...stylex.attrs(typography.heading.md, authStyles.title)}
+				>{t`Set a new password`}</h1>
 				<p
 					{...stylex.attrs(authStyles.description)}
 				>{t`This is valid for ${formatMinuteCount(props.resetSession.keyExpiresMinutes)}.`}</p>

@@ -26,6 +26,7 @@ import {
 	fontSizes,
 	px,
 } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 import { ArtistItem } from "~/view/artist/ArtistItem"
 import { CollectionListItem } from "~/view/collection/CollectionListItem"
@@ -81,11 +82,7 @@ const styles = stylex.create({
 		paddingBottom: px[16],
 	},
 	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
 		overflowWrap: "anywhere",
-		color: colors.textPrimary,
 	},
 	term: { color: colors.textSecondary },
 	tabViewport: { overflowX: "auto" },
@@ -228,7 +225,7 @@ function SearchHeader(props: { enabled: boolean; term: string }) {
 	return (
 		<div {...stylex.attrs(styles.header)}>
 			<Show when={props.enabled}>
-				<h1 {...stylex.attrs(styles.title)}>
+				<h1 {...stylex.attrs(typography.heading.md, styles.title)}>
 					{t`Search result of`}{" "}
 					<span {...stylex.attrs(styles.term)}>{props.term}</span>
 				</h1>

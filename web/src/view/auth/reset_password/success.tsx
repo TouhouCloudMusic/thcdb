@@ -4,6 +4,7 @@ import { Link, Navigate } from "@tanstack/solid-router"
 import { onMount, Show } from "solid-js"
 
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 import { authStyles } from "../styles"
 import { clearResetPasswordSession, hasResetPasswordSuccess } from "./session"
@@ -37,7 +38,7 @@ function ResetPasswordSuccessContent() {
 		<>
 			<header {...stylex.attrs(authStyles.header)}>
 				<h1
-					{...stylex.attrs(authStyles.title)}
+					{...stylex.attrs(typography.heading.md, authStyles.title)}
 				>{t`Password reset complete`}</h1>
 				<p
 					{...stylex.attrs(authStyles.description)}

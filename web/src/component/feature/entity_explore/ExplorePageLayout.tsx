@@ -5,9 +5,9 @@ import type { ParentProps } from "solid-js"
 import { Show } from "solid-js"
 
 import { PageLayout } from "~/layout"
-import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
 import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 const styles = stylex.create({
 	root: {
@@ -24,11 +24,7 @@ const styles = stylex.create({
 		gap: px[16],
 	},
 	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
 		overflowWrap: "anywhere",
-		color: palette.slate[900],
 	},
 	action: {
 		fontSize: fontSizes.sm,
@@ -54,7 +50,7 @@ export function ExplorePageLayout(props: ExplorePageLayoutProps) {
 			<div {...stylex.attrs(styles.header)}>
 				<h1
 					id={props.titleId}
-					{...stylex.attrs(styles.title)}
+					{...stylex.attrs(typography.heading.md, styles.title)}
 				>
 					{props.title}
 				</h1>

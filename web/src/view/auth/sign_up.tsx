@@ -11,6 +11,7 @@ import { FormComp } from "~/component/atomic/form"
 import { SignUp as FormSchema } from "~/domain/auth/schema"
 import { link } from "~/style/link"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 import { EmailField } from "./component/EmailField"
 import { PasswordField } from "./component/PasswordField"
@@ -60,7 +61,9 @@ export function SignUpPage() {
 	return (
 		<>
 			<header {...stylex.attrs(authStyles.header)}>
-				<h1 {...stylex.attrs(authStyles.title)}>{t`Create account`}</h1>
+				<h1
+					{...stylex.attrs(typography.heading.md, authStyles.title)}
+				>{t`Create account`}</h1>
 			</header>
 			<Form
 				of={form}

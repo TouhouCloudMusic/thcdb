@@ -13,6 +13,7 @@ import { createMockEntityComments } from "~/view/comment/storybook"
 import { ImageQueueDetailView } from "~/view/image_queue/detail"
 
 const styles = stylex.create({
+	narrow: { width: "100%", maxWidth: px[640], marginInline: "auto" },
 	missing: {
 		padding: px[32],
 		fontSize: fontSizes.sm,
@@ -418,4 +419,12 @@ export const Default: Story = {
 	args: {
 		status: "Pending",
 	},
+}
+
+export const Narrow: Story = {
+	render: (args: StoryRootProps) => (
+		<div {...stylex.attrs(styles.narrow)}>
+			<StoryRoot {...args} />
+		</div>
+	),
 }

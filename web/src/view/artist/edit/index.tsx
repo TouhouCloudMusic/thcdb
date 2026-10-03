@@ -13,7 +13,8 @@ import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewArtistCorrection } from "~/domain/artist/schema"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
-import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import { px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { ArtistFormAliasesField } from "./comp/Aliases"
@@ -53,11 +54,6 @@ const styles = stylex.create({
 	backIcon: {
 		width: px[24],
 		height: px[24],
-	},
-	pageTitle: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
 	},
 	form: {
 		display: "flex",
@@ -114,7 +110,7 @@ function PageHeader(props: { type: Props["type"] }) {
 				>
 					<ArrowLeftIcon {...stylex.attrs(styles.backIcon)} />
 				</Button>
-				<h1 {...stylex.attrs(styles.pageTitle)}>
+				<h1 {...stylex.attrs(typography.heading.md)}>
 					<Show
 						when={props.type === "new"}
 						fallback={t`Edit Artist`}

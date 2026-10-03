@@ -29,6 +29,7 @@ import {
 	fontSizes,
 	px,
 } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { getErrorMessage } from "~/utils/getErrorMessage"
 
 import { animationStyles } from "../../style/animations.stylex"
@@ -96,13 +97,6 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		lineHeight: lineHeights.sm,
 		color: colors.textTertiary,
-	},
-	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		color: colors.textPrimary,
 	},
 	section: { display: "flex", flexDirection: "column", gap: px[16] },
 	filters: {
@@ -637,7 +631,7 @@ export function AdminUsersPage() {
 			<div {...stylex.attrs(styles.content)}>
 				<header {...stylex.attrs(styles.header)}>
 					<p {...stylex.attrs(styles.muted)}>{t`Admin Settings`}</p>
-					<h1 {...stylex.attrs(styles.title)}>{t`Users`}</h1>
+					<h1 {...stylex.attrs(typography.heading.md)}>{t`Users`}</h1>
 					<p {...stylex.attrs(styles.muted)}>
 						View users and update system roles.
 					</p>

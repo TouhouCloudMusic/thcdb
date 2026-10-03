@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { Intersperse } from "~/component/data/Intersperse"
+import { ExplorePageLayout } from "~/component/feature/entity_explore/ExplorePageLayout"
 import type { LabelListItem } from "~/hey-api"
 import { dividerStyles } from "~/style/primitives"
 import { colors, px } from "~/style/tokens.stylex"
@@ -121,4 +122,15 @@ export const List: Story = {}
 
 export const Narrow: Story = {
 	args: { width: "narrow" },
+}
+
+export const Page: Story = {
+	render: (args: StoryRootProps) => (
+		<ExplorePageLayout
+			title="Labels"
+			action={{ to: "/label/new", label: "Add label" }}
+		>
+			<StoryRoot {...args} />
+		</ExplorePageLayout>
+	),
 }

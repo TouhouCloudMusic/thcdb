@@ -41,6 +41,7 @@ import {
 	fontSizes,
 	px,
 } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { EntityComments } from "~/view/comment/EntityComments"
 import type { EntityCommentsModel } from "~/view/comment/EntityComments"
@@ -128,17 +129,6 @@ const styles = stylex.create({
 			"@container (min-width: 56rem)": "span 1",
 		},
 		gridRowStart: { default: "2", "@container (min-width: 56rem)": "1" },
-		fontSize: {
-			default: fontSizes.xl,
-			"@container (min-width: 56rem)": fontSizes["2xl"],
-		},
-		lineHeight: {
-			default: "calc(1.75 / 1.25)",
-			"@container (min-width: 56rem)": "calc(2 / 1.5)",
-		},
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		color: colors.textPrimary,
 		gridColumnStart: {
 			default: "span 2",
 			"@container (min-width: 56rem)": "2",
@@ -576,7 +566,7 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 				>
 					<ImageQueueStatusLabel status={props.detail.status} />
 				</Badge>
-				<h1 {...stylex.attrs(styles.title)}>
+				<h1 {...stylex.attrs(typography.heading.lg, styles.title)}>
 					<Show
 						when={getTargetMeta(props.detail)}
 						fallback={t`Image queue`}

@@ -21,6 +21,7 @@ import {
 	fontSizes,
 	px,
 } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 import { useNow } from "~/utils/solid/useNow"
 
@@ -84,12 +85,6 @@ const styles = stylex.create({
 		paddingRight: px[16],
 		paddingBottom: px[16],
 		paddingLeft: px[16],
-	},
-	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
 	},
 	toolbar: {
 		marginTop: px[12],
@@ -356,7 +351,7 @@ export function NotificationInboxPage(props: NotificationInboxPageProps) {
 	return (
 		<PageLayout styles={styles.pageLayout}>
 			{/* TODO: Header Text component */}
-			<h1 {...stylex.attrs(styles.title)}>
+			<h1 {...stylex.attrs(typography.heading.md)}>
 				<Trans>Notifications</Trans>
 			</h1>
 

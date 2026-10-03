@@ -4,6 +4,7 @@ import { Link } from "@tanstack/solid-router"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
 
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
@@ -12,13 +13,6 @@ const styles = stylex.create({
 	section: {
 		marginBlockStart: 0,
 		marginBlockEnd: { default: null, ":not(:last-child)": px[16] },
-	},
-	title: {
-		fontSize: fontSizes["3xl"],
-		lineHeight: 1.25,
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		color: colors.textPrimary,
 	},
 	creditName: {
 		fontSize: fontSizes.base,
@@ -70,7 +64,7 @@ export function SongInfoTitleAndCreditName() {
 	return (
 		<header>
 			<div {...stylex.attrs(styles.section)}>
-				<h1 {...stylex.attrs(styles.title)}>{context.song.title}</h1>
+				<h1 {...stylex.attrs(typography.heading.lg)}>{context.song.title}</h1>
 				<Show when={localizedTitle()}>
 					<div {...stylex.attrs(styles.creditName)}>
 						{localizedTitle()!.title}

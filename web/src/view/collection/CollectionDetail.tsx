@@ -17,6 +17,7 @@ import {
 	fontSizes,
 	px,
 } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 import { animationStyles } from "../../style/animations.stylex"
 import { CollectionFormDialog } from "./CollectionFormDialog"
@@ -68,11 +69,6 @@ const styles = stylex.create({
 	title: {
 		minWidth: 0,
 		overflowWrap: "break-word",
-		fontSize: fontSizes["3xl"],
-		lineHeight: 1.2,
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		color: colors.textPrimary,
 	},
 	description: {
 		marginTop: px[8],
@@ -398,7 +394,9 @@ function CollectionDetailHeader(props: CollectionDetailHeaderProps) {
 	return (
 		<header {...stylex.attrs(styles.header)}>
 			<div {...stylex.attrs(styles.heading)}>
-				<h1 {...stylex.attrs(styles.title)}>{props.model.collection.name}</h1>
+				<h1 {...stylex.attrs(typography.heading.lg, styles.title)}>
+					{props.model.collection.name}
+				</h1>
 				<CollectionHeaderActions
 					viewer={props.model.viewer}
 					controller={props.controller}

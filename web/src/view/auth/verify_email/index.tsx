@@ -12,6 +12,7 @@ import { VerifyEmail as FormSchema } from "~/domain/auth/schema"
 import { useCurrentUser } from "~/state/user"
 import { link } from "~/style/link"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 import { VerificationCodeField } from "../component/VerificationCodeField"
 import { authStyles } from "../styles"
@@ -116,7 +117,9 @@ function VerifyEmailForm(props: { session: VerificationSession }) {
 	return (
 		<>
 			<header {...stylex.attrs(authStyles.header)}>
-				<h1 {...stylex.attrs(authStyles.title)}>{t`Verify email`}</h1>
+				<h1
+					{...stylex.attrs(typography.heading.md, authStyles.title)}
+				>{t`Verify email`}</h1>
 				<p
 					{...stylex.attrs(authStyles.description)}
 				>{t`Enter the 6-digit code sent to your email.`}</p>
