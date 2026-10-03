@@ -11,7 +11,8 @@ import { FormActionBar } from "~/component/form"
 import { NewTagCorrection } from "~/domain/tag"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
-import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import { px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { TagFormAltNamesField } from "./comp/TagAltNames"
@@ -34,12 +35,6 @@ const styles = stylex.create({
 		padding: px[32],
 	},
 	headingRow: { display: "flex", alignItems: "center", gap: px[16] },
-	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-		letterSpacing: "-.025em",
-	},
 	form: {
 		display: "grid",
 		gridTemplateColumns: {
@@ -89,7 +84,7 @@ function PageHeader(props: { type: Props["type"] }) {
 	return (
 		<div {...stylex.attrs(styles.pageHeader)}>
 			<div {...stylex.attrs(styles.headingRow)}>
-				<h1 {...stylex.attrs(styles.title)}>
+				<h1 {...stylex.attrs(typography.heading.md)}>
 					<Show
 						when={props.type === "new"}
 						fallback={t`Edit Tag`}

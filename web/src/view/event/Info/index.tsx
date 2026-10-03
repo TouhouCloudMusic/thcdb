@@ -11,6 +11,7 @@ import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { infoStyles } from "~/style/primitives"
 import { colors, fontSizes, lineHeights, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
@@ -28,11 +29,6 @@ const styles = stylex.create({
 	pageContent: { display: "flex", flexDirection: "column", rowGap: px[24] },
 	headerSection: { display: "flex", flexDirection: "column", rowGap: px[16] },
 	title: {
-		fontSize: fontSizes["3xl"],
-		lineHeight: 1.25,
-		fontWeight: 300,
-		letterSpacing: "-.025em",
-		color: colors.textPrimary,
 		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
 	},
 	shortDescription: {
@@ -118,7 +114,9 @@ function EventInfoHeader() {
 	return (
 		<>
 			<header>
-				<h1 {...stylex.attrs(styles.title)}>{ctx.event.name}</h1>
+				<h1 {...stylex.attrs(typography.heading.lg, styles.title)}>
+					{ctx.event.name}
+				</h1>
 				<p {...stylex.attrs(styles.shortDescription)}>
 					{ctx.event.short_description ?? t`Short description is not provided`}
 				</p>

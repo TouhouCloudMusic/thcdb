@@ -13,6 +13,7 @@ import { SignIn as FormSchema } from "~/domain/auth/schema"
 import { useCurrentUser } from "~/state/user"
 import { link } from "~/style/link"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 import { SignInIdentifierField } from "./component/SignInIdentifierField"
 import { authStyles } from "./styles"
@@ -63,7 +64,9 @@ export function SignInPage() {
 	return (
 		<>
 			<header {...stylex.attrs(authStyles.header)}>
-				<h1 {...stylex.attrs(authStyles.title)}>{t`Sign in`}</h1>
+				<h1
+					{...stylex.attrs(typography.heading.md, authStyles.title)}
+				>{t`Sign in`}</h1>
 			</header>
 			<Form
 				of={form}

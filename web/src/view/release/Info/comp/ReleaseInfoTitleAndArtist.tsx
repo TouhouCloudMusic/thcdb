@@ -6,6 +6,7 @@ import { createMemo, Show } from "solid-js"
 import { Intersperse } from "~/component/data/Intersperse"
 import { getPreferredLocalizedTitle } from "~/domain/localized_title"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { ReleaseInfoPageContext } from "../context"
@@ -17,9 +18,6 @@ const styles = stylex.create({
 	},
 	title: {
 		overflowWrap: "break-word",
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		color: colors.textPrimary,
 	},
 	subtitle: {
 		overflowWrap: "break-word",
@@ -59,7 +57,9 @@ export function ReleaseInfoTitleAndArtist() {
 	return (
 		<div>
 			<div {...stylex.attrs(styles.sectionSpacing)}>
-				<h1 {...stylex.attrs(styles.title)}>{ctx.release.title}</h1>
+				<h1 {...stylex.attrs(typography.heading.lg, styles.title)}>
+					{ctx.release.title}
+				</h1>
 
 				<Show when={preferredLocalizedTitle()}>
 					<p {...stylex.attrs(styles.subtitle)}>

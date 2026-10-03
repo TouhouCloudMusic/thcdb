@@ -12,7 +12,8 @@ import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewLabelCorrection } from "~/domain/label"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
-import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import { px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { LabelDateFields } from "./comp/LabelDateFields"
@@ -33,12 +34,6 @@ const styles = stylex.create({
 		padding: px[32],
 	},
 	headerContent: { display: "flex", alignItems: "center", gap: px[16] },
-	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-	},
 	form: {
 		display: "grid",
 		gridTemplateColumns: {
@@ -78,7 +73,7 @@ function PageHeader(props: { type: Props["type"] }) {
 	return (
 		<div {...stylex.attrs(styles.header)}>
 			<div {...stylex.attrs(styles.headerContent)}>
-				<h1 {...stylex.attrs(styles.title)}>
+				<h1 {...stylex.attrs(typography.heading.md)}>
 					<Show
 						when={props.type === "new"}
 						fallback={t`Edit Label`}

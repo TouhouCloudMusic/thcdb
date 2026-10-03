@@ -9,6 +9,7 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
@@ -27,13 +28,6 @@ const styles = stylex.create({
 		display: "flex",
 		flexDirection: "column",
 		rowGap: px[24],
-	},
-	title: {
-		fontSize: fontSizes["3xl"],
-		lineHeight: 1.25,
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		color: colors.textPrimary,
 	},
 	details: {
 		display: "grid",
@@ -109,7 +103,7 @@ function LabelInfoHeader() {
 	const ctx = assertContext(LabelInfoPageContext)
 	return (
 		<header>
-			<h1 {...stylex.attrs(styles.title)}>{ctx.label.name}</h1>
+			<h1 {...stylex.attrs(typography.heading.lg)}>{ctx.label.name}</h1>
 		</header>
 	)
 }

@@ -10,7 +10,8 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { link } from "~/style/link"
 import { infoStyles } from "~/style/primitives"
-import { fontSizes, px } from "~/style/tokens.stylex"
+import { px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 import { ArtistTypeLabel } from "~/view/artist/ArtistTypeLabel"
 
@@ -27,9 +28,6 @@ const styles = stylex.create({
 		gridColumn: "1 / -1",
 		paddingBlockEnd: px[8],
 		overflowWrap: "break-word",
-		fontSize: fontSizes.xl,
-		lineHeight: px[24],
-		fontWeight: 600,
 	},
 	fields: {
 		display: "grid",
@@ -65,7 +63,9 @@ export function ArtistInfo() {
 
 	return (
 		<div {...stylex.attrs(styles.root)}>
-			<h1 {...stylex.attrs(styles.name)}>{context.artist.name}</h1>
+			<h1 {...stylex.attrs(typography.heading.lg, styles.name)}>
+				{context.artist.name}
+			</h1>
 			<div {...stylex.attrs(styles.fields)}>
 				<div {...stylex.attrs(styles.infoCell)}>
 					<span {...stylex.attrs(infoStyles.label)}>{t`Type`}</span>

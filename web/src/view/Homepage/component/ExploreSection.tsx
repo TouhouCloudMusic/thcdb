@@ -7,6 +7,7 @@ import type { JSX } from "solid-js"
 
 import { link } from "~/style/link"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 const styles = stylex.create({
 	root: { display: "flex", flexDirection: "column", gap: px[16] },
@@ -14,13 +15,6 @@ const styles = stylex.create({
 		display: "flex",
 		alignItems: "baseline",
 		justifyContent: "space-between",
-	},
-	title: {
-		fontSize: fontSizes.xl,
-		lineHeight: 1.4,
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		color: colors.textPrimary,
 	},
 	explore: {
 		display: "inline-flex",
@@ -48,7 +42,7 @@ export function ExploreSection(props: ExploreSectionProps) {
 	return (
 		<div {...stylex.attrs(styles.root)}>
 			<div {...stylex.attrs(styles.header)}>
-				<h2 {...stylex.attrs(styles.title)}>{props.title}</h2>
+				<h2 {...stylex.attrs(typography.heading.sm)}>{props.title}</h2>
 				<Link
 					to={props.to}
 					class={stylex.attrs(link.base, styles.explore).class}

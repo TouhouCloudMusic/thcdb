@@ -23,7 +23,8 @@ import { NewReleaseCorrection as NewReleaseCorrectionSchema } from "~/domain/rel
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
 import { formStyles } from "~/style/primitives"
-import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import { px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { LocalizedTitlesField } from "./comp/LocalizedTitlesField"
@@ -54,11 +55,6 @@ const styles = stylex.create({
 		padding: px[32],
 	},
 	headerContent: { display: "flex", alignItems: "center", gap: px[16] },
-	title: {
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-	},
 	form: {
 		display: "grid",
 		gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
@@ -105,7 +101,7 @@ function PageHeader(props: { type: Props["type"] }) {
 	return (
 		<div {...stylex.attrs(styles.header)}>
 			<div {...stylex.attrs(styles.headerContent)}>
-				<h1 {...stylex.attrs(styles.title)}>
+				<h1 {...stylex.attrs(typography.heading.md)}>
 					<Show
 						when={props.type === "new"}
 						fallback={<>{t`Edit Release`}</>}

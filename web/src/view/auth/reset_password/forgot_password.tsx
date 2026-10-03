@@ -34,6 +34,7 @@ import { FormComp } from "~/component/atomic/form"
 import { VerifyResetCode as VerifyResetCodeSchema } from "~/domain/auth/schema"
 import { palette } from "~/style/color/palette.stylex"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import * as typography from "~/style/typography"
 
 import { EmailField } from "../component/EmailField"
 import { VerificationCodeField } from "../component/VerificationCodeField"
@@ -345,7 +346,9 @@ export function ForgotPasswordPage() {
 	return (
 		<>
 			<header {...stylex.attrs(authStyles.header)}>
-				<h1 {...stylex.attrs(authStyles.title)}>{t`Forgot password`}</h1>
+				<h1
+					{...stylex.attrs(typography.heading.md, authStyles.title)}
+				>{t`Forgot password`}</h1>
 			</header>
 			<Form
 				of={form}
