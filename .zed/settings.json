@@ -1,14 +1,39 @@
 {
-    "terminal": {
-        "detect_venv": "off"
-    },
-    "lsp": {
-        "rust-analyzer": {
-            "initialization_options": {
-                "cargo": {
-                    "extraArgs": ["--profile", "ra"]
-                }
-            }
-        }
-    }
+	"terminal": {
+		"detect_venv": "off"
+	},
+	"languages": {
+		"JSON": {
+			"format_on_save": "on",
+			"language_servers": ["oxfmt", "..."],
+			"formatter": {
+				"language_server": { "name": "oxfmt" }
+			}
+		},
+		"JSONC": {
+			"format_on_save": "on",
+			"language_servers": ["oxfmt", "..."],
+			"formatter": {
+				"language_server": { "name": "oxfmt" }
+			}
+		}
+	},
+	"lsp": {
+		"oxfmt": {
+			"binary": {
+				"path": "oxfmt",
+				"arguments": ["--lsp"]
+			},
+			"initialization_options": {
+				"settings": { "fmt.configPath": "./web/.oxfmtrc.json" }
+			}
+		},
+		"rust-analyzer": {
+			"initialization_options": {
+				"cargo": {
+					"extraArgs": ["--profile", "ra"]
+				}
+			}
+		}
+	}
 }
