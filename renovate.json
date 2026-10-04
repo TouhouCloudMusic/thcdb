@@ -1,5 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>TouhouCloudMusic/renovate-config"],
-  "baseBranchPatterns": ["dev"]
+  "baseBranchPatterns": ["main"]
 }
