@@ -29,7 +29,7 @@
 		"@thc/query": "workspace:*",
 		"@thc/toolkit": "workspace:*",
 		"@typescript/native-preview": "beta",
-		"@vitest/coverage-v8": "4.1.4",
+		"@vitest/coverage-v8": "5.0.1",
 		"arktype": "^2.2.0",
 		"cropperjs": "^2.1.1",
 		"dayjs": "^1.11.20",
@@ -76,8 +76,8 @@
 		"@tanstack/solid-router-devtools": "^1.153.2",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/user-event": "^14.6.1",
-		"@vitest/browser": "^4.1.4",
-		"@vitest/browser-playwright": "^4.1.4",
+		"@vitest/browser": "^5.0.0",
+		"@vitest/browser-playwright": "^5.0.0",
 		"babel-plugin-macros": "^3.1.0",
 		"eslint": "^9.39.4",
 		"eslint-plugin-jsx-a11y": "^6.10.2",
@@ -99,7 +99,7 @@
 		"typescript-eslint": "^8.53.1",
 		"vite": "8.2.2",
 		"vite-plugin-solid": "^2.11.12",
-		"vitest": "^4.1.4"
+		"vitest": "^5.0.0"
 	},
 	"eslintConfig": {
 		"extends": [
