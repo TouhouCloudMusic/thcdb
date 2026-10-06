@@ -13,6 +13,7 @@ import {
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { createMockEntityRating } from "~/view/rating/storybook"
 import { SongInfoPage } from "~/view/song/Info"
 
 const styles = stylex.create({
@@ -152,6 +153,10 @@ type StoryRootProps = {
 }
 
 function StoryRoot(props: StoryRootProps) {
+	const rating = createMockEntityRating({
+		otherRatings: [4, 5, 4, 3, 5, 4, 5, 4, 4],
+		userRating: 4,
+	})
 	const song = () => (props.displayMode === "full" ? FULL_SONG : SPARSE_SONG)
 	const correctionHistory = () =>
 		props.displayMode === "full" ? CORRECTION_HISTORY : []
@@ -161,6 +166,7 @@ function StoryRoot(props: StoryRootProps) {
 			<SongInfoPage
 				song={song()}
 				correctionHistory={correctionHistory()}
+				rating={rating}
 			/>
 		</div>
 	)

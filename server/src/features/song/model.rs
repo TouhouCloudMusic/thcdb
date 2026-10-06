@@ -7,6 +7,7 @@ use domain::shared::{
     NewLocalizedName, SimpleArtist,
 };
 use entity::enums::{EntityType, SongRelationType};
+use rating_core::RatingSummary;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -28,6 +29,13 @@ pub struct Song {
     pub links: Vec<String>,
     pub relations: Vec<SongRelation>,
     pub lyrics: Vec<SongLyrics>,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema)]
+pub struct SongDetail {
+    #[serde(flatten)]
+    pub song: Song,
+    pub rating: RatingSummary,
 }
 
 #[serde_with::apply(

@@ -10,6 +10,7 @@ use constants::{
 use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
 use infra_db::SeaOrmRepository;
+use infra_error::EntityNotFound;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use user_core::UserSummary;
 
@@ -24,7 +25,6 @@ use crate::features::image_upload::{CreateImageMeta, ParseOption, Parser};
 use crate::features::release::find::repo as release_repo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::storage::GenericFileStorage;
-use crate::shared::error::EntityNotFound;
 use crate::shared::http::api_response::AppError;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
@@ -76,7 +76,7 @@ impl IntoResponse for Error {
                 }
             },
             Error::Database(source) => source.into_response(),
-            Error::NotFound(source) => source.into_response(),
+            Error::NotFound(source) => AppError::from(source).into_response(),
         }
     }
 }

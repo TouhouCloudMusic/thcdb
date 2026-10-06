@@ -1,17 +1,18 @@
 use axum::extract::{Path, Query, State};
 use domain::shared::PageResponse;
+use rating_core::{RatingTarget, RatingTargetKind};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::{PageQuery, SongFilter};
-use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::song::list::SongListing;
-use crate::features::song::model::Song;
+use crate::features::song::model::{Song, SongDetail};
 use crate::infra::database::error::DatabaseError;
-use crate::shared::http::api_response::{Data, Error as ApiError};
+use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Song";
 
@@ -28,6 +29,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 
 data! {
     DataOptionSong, Option<Song>
+    DataOptionSongDetail, Option<SongDetail>
     DataVecSong, Vec<Song>
     DataPageSong, PageResponse<SongListing>
 }
@@ -37,14 +39,29 @@ data! {
     tag = TAG,
     path = "/song/{id}",
     responses(
-        (status = 200, body = DataOptionSong),
+        (status = 200, body = DataOptionSongDetail),
     ),
 )]
 async fn find_song_by_id(
+    session: AuthSession,
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Song>>, DatabaseError> {
-    super::repo::find_by_id(&repo, id).await.map(Data::from)
+) -> Result<Data<Option<SongDetail>>, AppError> {
+    let Some(song) = super::repo::find_by_id(&repo, id).await? else {
+        return Ok(Data::from(None));
+    };
+
+    let rating = rating_core::get(
+        &repo.conn,
+        RatingTarget {
+            kind: RatingTargetKind::Song,
+            id,
+        },
+        session.user.as_ref().map(|user| user.id),
+    )
+    .await?;
+
+    Ok(Data::from(Some(SongDetail { song, rating })))
 }
 
 #[utoipa::path(

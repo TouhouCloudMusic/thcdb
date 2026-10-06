@@ -5,6 +5,7 @@ use domain::shared::{
 };
 use entity::sea_orm_active_enums::ReleaseType;
 use garde::Validate;
+use rating_core::RatingSummary;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -161,6 +162,13 @@ pub struct Release {
     pub discs: Vec<ReleaseDisc>,
     pub tracks: Vec<ReleaseTrack>,
     pub events: Vec<SimpleEvent>,
+}
+
+#[derive(Clone, Debug, ToSchema, Serialize)]
+pub struct ReleaseDetail {
+    #[serde(flatten)]
+    pub release: Release,
+    pub rating: RatingSummary,
 }
 
 #[derive(Clone, Debug, ToSchema, Serialize, Deserialize)]

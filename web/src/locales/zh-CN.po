@@ -103,6 +103,10 @@ msgstr "{commenters} 回复了 [已删除]。"
 msgid "{count} votes · relevance {relevance}"
 msgstr "{count} 票 · 相关度 {relevance}"
 
+#: src/view/rating/EntityRating.tsx
+msgid "{rating} out of 5 stars"
+msgstr "{rating} 星（满分 5 星）"
+
 #: src/view/NotFound.tsx
 msgid "404 Not Found"
 msgstr "404 未找到"
@@ -498,6 +502,11 @@ msgstr "编辑历史 · {0}"
 #: src/view/artist/profile/comp/ArtistCredits.tsx
 msgid "Could not load credits"
 msgstr "参与作品加载失败"
+
+#: src/route/release/$id.tsx
+#: src/route/song/$id.tsx
+msgid "Could not update rating"
+msgstr "更新评分失败"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -1209,6 +1218,10 @@ msgstr "加载"
 msgid "Loading items..."
 msgstr "正在加载条目..."
 
+#: src/view/rating/EntityRating.tsx
+msgid "Loading ratings…"
+msgstr "正在加载评分…"
+
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistCredits.tsx
@@ -1510,6 +1523,10 @@ msgstr "没有更多结果"
 msgid "No notifications."
 msgstr "暂无通知。"
 
+#: src/view/rating/EntityRating.tsx
+msgid "No ratings yet"
+msgstr "暂无评分"
+
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
 msgstr "未找到发行"
@@ -1729,6 +1746,10 @@ msgstr "已在队列中"
 #: src/view/image_queue/detail.tsx
 msgid "Queued upload preview"
 msgstr "排队上传预览"
+
+#: src/view/rating/EntityRating.tsx
+msgid "Rating"
+msgstr "评分"
 
 #: src/component/Header/LeftSidebar.tsx
 msgid "Recommendation"

@@ -8,6 +8,7 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use domain::shared::PageResponse;
+use infra_error::EntityNotFound;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -17,9 +18,9 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::features::auth::{EditableUserRole, UserRole};
 use crate::infra::database::error::DatabaseError;
-use crate::shared::error::{EntityNotFound, InternalError};
+use crate::shared::error::InternalError;
 use crate::shared::http::PageQuery;
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Admin";
 
@@ -53,7 +54,7 @@ impl IntoResponse for Error {
             Error::Authz(source) => source.into_response(),
             Error::Database(source) => source.into_response(),
             Error::Internal(source) => source.into_response(),
-            Error::NotFound(source) => source.into_response(),
+            Error::NotFound(source) => AppError::from(source).into_response(),
         }
     }
 }

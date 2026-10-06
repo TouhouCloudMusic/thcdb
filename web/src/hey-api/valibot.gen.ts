@@ -1531,6 +1531,39 @@ export const vPermission = v.picklist([
 	"admin.user.role.write",
 ])
 
+export const vRating = v.picklist([0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
+
+export const vDataRatingSummary = v.object({
+	status: v.picklist(["Ok"]),
+	data: v.object({
+		average: v.nullish(v.number()),
+		count: v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(0)),
+			v.maxValue(
+				BigInt("9223372036854775807"),
+				"Invalid value: Expected int64 to be <= 9223372036854775807",
+			),
+		),
+		user_rating: v.nullish(vRating),
+	}),
+})
+
+export const vRatingSummary = v.object({
+	average: v.nullish(v.number()),
+	count: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	user_rating: v.nullish(vRating),
+})
+
 export const vReadAllRequest = v.object({
 	snapshot_inbox_seq: v.string(),
 })
@@ -1871,6 +1904,10 @@ export const vResetPasswordRequest = v.object({
 })
 
 export const vScore = v.picklist(["Veto", "Low", "Medium", "High"])
+
+export const vSetRatingRequest = v.object({
+	rating: v.nullable(vRating),
+})
 
 export const vSetUserRolesRequest = v.object({
 	roles: v.array(vEditableUserRole),
@@ -2491,14 +2528,21 @@ export const vRelease = v.object({
 	events: v.optional(v.array(vSimpleEvent)),
 })
 
-export const vDataOptionRelease = v.object({
-	status: v.string(),
-	data: v.nullable(vRelease),
-})
-
 export const vDataVecRelease = v.object({
 	status: v.string(),
 	data: v.array(vRelease),
+})
+
+export const vReleaseDetail = v.intersect([
+	vRelease,
+	v.object({
+		rating: vRatingSummary,
+	}),
+])
+
+export const vDataOptionReleaseDetail = v.object({
+	status: v.string(),
+	data: v.nullable(vReleaseDetail),
 })
 
 export const vSongRelationDirection = v.picklist(["Source", "Derived"])
@@ -2679,6 +2723,18 @@ export const vDataOptionSong = v.object({
 export const vDataVecSong = v.object({
 	status: v.string(),
 	data: v.array(vSong),
+})
+
+export const vSongDetail = v.intersect([
+	vSong,
+	v.object({
+		rating: vRatingSummary,
+	}),
+])
+
+export const vDataOptionSongDetail = v.object({
+	status: v.string(),
+	data: v.nullable(vSongDetail),
 })
 
 export const vSongSummary = v.object({
@@ -5347,7 +5403,7 @@ export const vFindReleaseByIdPath = v.object({
 	),
 })
 
-export const vFindReleaseByIdResponse = vDataOptionRelease
+export const vFindReleaseByIdResponse = vDataOptionReleaseDetail
 
 export const vUpdateReleaseBody = vNewCorrectionNewRelease
 
@@ -5742,7 +5798,7 @@ export const vFindSongByIdPath = v.object({
 	),
 })
 
-export const vFindSongByIdResponse = vDataOptionSong
+export const vFindSongByIdResponse = vDataOptionSongDetail
 
 export const vUpdateSongBody = vNewCorrectionNewSong
 
@@ -6196,3 +6252,23 @@ export const vCreateEntityCommentPath = v.object({
 })
 
 export const vCreateEntityCommentResponse = vDataComment
+
+export const vSetRatingBody = vSetRatingRequest
+
+export const vSetRatingPath = v.object({
+	target_type: v.picklist(["release", "song"]),
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+/**
+ * Rating updated
+ */
+export const vSetRatingResponse = vDataRatingSummary

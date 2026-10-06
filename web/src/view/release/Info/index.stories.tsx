@@ -8,6 +8,7 @@ import { CRADLE_RELEASE, CRADLE_RELEASE_DESCRIPTION } from "~/storybook/release"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { createMockEntityRating } from "~/view/rating/storybook"
 
 import { ReleaseInfoPage } from "."
 
@@ -20,11 +21,16 @@ const styles = stylex.create({
 })
 
 function StoryRoot(props: { release: Release }) {
+	const rating = createMockEntityRating({
+		otherRatings: [4, 5, 4, 3, 5, 4, 5, 4, 4],
+		userRating: 4,
+	})
 	return (
 		<div {...stylex.attrs(styles.preview)}>
 			<ReleaseInfoPage
 				release={props.release}
 				correctionHistory={MOCK_CORRECTION_HISTORY}
+				rating={rating}
 			/>
 		</div>
 	)

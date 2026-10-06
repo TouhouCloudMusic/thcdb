@@ -149,10 +149,7 @@ function EventInfoHeader() {
 						</Intersperse>
 					</ul>
 				</Show>
-				<Show when={ctx.event.links?.length}>
-					<ExternalLinks.Label />
-					<ExternalLinks.Body links={ctx.event.links} />
-				</Show>
+				<ExternalLinks links={ctx.event.links} />
 			</div>
 		</>
 	)

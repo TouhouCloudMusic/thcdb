@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@formisch/solid": "^0.9.5",
-		"@kobalte/core": "^0.13.11",
+		"@kobalte/core": "^0.13.14",
 		"@lingui/core": "6.6.0",
 		"@lingui/solid": "6.6.0",
 		"@shikijs/transformers": "^3.21.0",

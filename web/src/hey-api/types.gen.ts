@@ -475,14 +475,19 @@ export type DataOptionLabel = {
 	data: null | Label
 }
 
-export type DataOptionRelease = {
+export type DataOptionReleaseDetail = {
 	status: string
-	data: null | Release
+	data: null | ReleaseDetail
 }
 
 export type DataOptionSong = {
 	status: string
 	data: null | Song
+}
+
+export type DataOptionSongDetail = {
+	status: string
+	data: null | SongDetail
 }
 
 export type DataOptionSongLyrics = {
@@ -748,6 +753,15 @@ export type DataOptionCurrentImageMetadata = {
 export type DataOptionI32 = {
 	status: "Ok"
 	data: null | number
+}
+
+export type DataRatingSummary = {
+	status: "Ok"
+	data: {
+		average?: number | null
+		count: number
+		user_rating?: null | Rating
+	}
 }
 
 export type DataVecCorrectionHistoryItem = {
@@ -1554,6 +1568,14 @@ export type PopularItems = {
 	artists: Array<ArtistListItem>
 }
 
+export type Rating = 0.5 | 1 | 1.5 | 2 | 2.5 | 3 | 3.5 | 4 | 4.5 | 5
+
+export type RatingSummary = {
+	average?: number | null
+	count: number
+	user_rating?: null | Rating
+}
+
 export type ReadAllRequest = {
 	snapshot_inbox_seq: string
 }
@@ -1589,6 +1611,10 @@ export type ReleaseCredit = {
 	artist: ReleaseArtist
 	role: CreditRoleRef
 	on: Array<number> | null
+}
+
+export type ReleaseDetail = Release & {
+	rating: RatingSummary
 }
 
 export type ReleaseDisc = {
@@ -1683,6 +1709,10 @@ export type SearchResponse = {
 	tags: CursorResponseSearchResultTagListItem
 }
 
+export type SetRatingRequest = {
+	rating: null | Rating
+}
+
 export type SetUserRolesRequest = {
 	roles: Array<EditableUserRole>
 }
@@ -1730,6 +1760,10 @@ export type Song = {
 export type SongCredit = {
 	artist: SimpleArtist
 	role?: null | CreditRoleRef
+}
+
+export type SongDetail = Song & {
+	rating: RatingSummary
 }
 
 export type SongListing = {
@@ -4468,7 +4502,7 @@ export type FindReleaseByIdError =
 	FindReleaseByIdErrors[keyof FindReleaseByIdErrors]
 
 export type FindReleaseByIdResponses = {
-	200: DataOptionRelease
+	200: DataOptionReleaseDetail
 }
 
 export type FindReleaseByIdResponse =
@@ -5266,7 +5300,7 @@ export type FindSongByIdErrors = {
 export type FindSongByIdError = FindSongByIdErrors[keyof FindSongByIdErrors]
 
 export type FindSongByIdResponses = {
-	200: DataOptionSong
+	200: DataOptionSongDetail
 }
 
 export type FindSongByIdResponse =
@@ -6143,3 +6177,39 @@ export type CreateEntityCommentResponses = {
 
 export type CreateEntityCommentResponse =
 	CreateEntityCommentResponses[keyof CreateEntityCommentResponses]
+
+export type SetRatingData = {
+	body: SetRatingRequest
+	path: {
+		target_type: "release" | "song"
+		id: number
+	}
+	query?: never
+	url: "/{target_type}/{id}/rating"
+}
+
+export type SetRatingErrors = {
+	/**
+	 * Rating target not found
+	 */
+	404: unknown
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type SetRatingError = SetRatingErrors[keyof SetRatingErrors]
+
+export type SetRatingResponses = {
+	/**
+	 * Rating updated
+	 */
+	200: DataRatingSummary
+}
+
+export type SetRatingResponse = SetRatingResponses[keyof SetRatingResponses]

@@ -147,10 +147,7 @@ function LabelInfoDetails() {
 					</Intersperse>
 				</ul>
 			</Show>
-			<Show when={ctx.label.links.length}>
-				<ExternalLinks.Label />
-				<ExternalLinks.Body links={ctx.label.links} />
-			</Show>
+			<ExternalLinks links={ctx.label.links} />
 		</div>
 	)
 }

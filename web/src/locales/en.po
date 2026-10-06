@@ -103,6 +103,10 @@ msgstr "{commenters} replied to [deleted]."
 msgid "{count} votes · relevance {relevance}"
 msgstr "{count} votes · relevance {relevance}"
 
+#: src/view/rating/EntityRating.tsx
+msgid "{rating} out of 5 stars"
+msgstr "{rating} out of 5 stars"
+
 #: src/view/NotFound.tsx
 msgid "404 Not Found"
 msgstr "404 Not Found"
@@ -498,6 +502,11 @@ msgstr "Corrections · {0}"
 #: src/view/artist/profile/comp/ArtistCredits.tsx
 msgid "Could not load credits"
 msgstr "Could not load credits"
+
+#: src/route/release/$id.tsx
+#: src/route/song/$id.tsx
+msgid "Could not update rating"
+msgstr "Could not update rating"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -1209,6 +1218,10 @@ msgstr "Loading diff..."
 msgid "Loading items..."
 msgstr "Loading items..."
 
+#: src/view/rating/EntityRating.tsx
+msgid "Loading ratings…"
+msgstr "Loading ratings…"
+
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistCredits.tsx
@@ -1510,6 +1523,10 @@ msgstr "No more results"
 msgid "No notifications."
 msgstr "No notifications."
 
+#: src/view/rating/EntityRating.tsx
+msgid "No ratings yet"
+msgstr "No ratings yet"
+
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
 msgstr "No releases found"
@@ -1729,6 +1746,10 @@ msgstr "Queued"
 #: src/view/image_queue/detail.tsx
 msgid "Queued upload preview"
 msgstr "Queued upload preview"
+
+#: src/view/rating/EntityRating.tsx
+msgid "Rating"
+msgstr "Rating"
 
 #: src/component/Header/LeftSidebar.tsx
 msgid "Recommendation"

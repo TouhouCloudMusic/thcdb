@@ -9,6 +9,7 @@ members = [
     "crates/features/user/core",
     "crates/features/visit/core",
     "crates/features/popularity/core",
+    "crates/features/rating/core",
     "crates/features/auth/core",
     "crates/features/auth/worker",
     "crates/features/account/notification",
@@ -43,6 +44,7 @@ members = [
 artist_repo                  = { package = "thcdb-feature-artist-repo", path = "crates/features/artist/repo" }
 visit_core                   = { package = "thcdb-feature-visit-core", path = "crates/features/visit/core" }
 popularity_core              = { package = "thcdb-feature-popularity-core", path = "crates/features/popularity/core" }
+rating_core                  = { package = "thcdb-feature-rating-core", path = "crates/features/rating/core" }
 futures-util                 = "0.3"
 constants                    = { package = "thcdb-constants", path = "crates/constants" }
 domain                       = { package = "thcdb-domain", path = "crates/domain" }
@@ -233,6 +235,7 @@ workspace = true
 artist_repo.workspace                  = true
 visit_core.workspace                   = true
 popularity_core.workspace              = true
+rating_core.workspace                  = true
 user_core.workspace                    = true
 auth_core.workspace                    = true
 account_notification.workspace         = true

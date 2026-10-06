@@ -7,6 +7,7 @@ use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::Display;
+use infra_error::EntityNotFound;
 use serde::Serialize;
 use utoipa::openapi::{
     ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, Schema,
@@ -14,7 +15,7 @@ use utoipa::openapi::{
 use utoipa::{PartialSchema, ToSchema, openapi};
 
 use crate::infra::database::error::DatabaseError;
-use crate::shared::error::{EntityNotFound, InternalError, PermissionDenied};
+use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::types::BoxedError;
 use crate::utils::openapi::ContentType;
 
@@ -231,12 +232,6 @@ fn internal_error_response(
 impl IntoResponse for PermissionDenied {
     fn into_response(self) -> axum::response::Response {
         Error::from_err_and_code(&self, StatusCode::FORBIDDEN).into_response()
-    }
-}
-
-impl IntoResponse for EntityNotFound {
-    fn into_response(self) -> axum::response::Response {
-        Error::from_err_and_code(&self, StatusCode::NOT_FOUND).into_response()
     }
 }
 

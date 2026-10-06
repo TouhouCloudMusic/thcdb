@@ -197,6 +197,7 @@ function generateHeyApiOutput() {
 						},
 						{
 							infiniteQueryKeys: { tags: true },
+							mutationKeys: { tags: true },
 							name: "@tanstack/solid-query",
 							queryKeys: { tags: true },
 						},

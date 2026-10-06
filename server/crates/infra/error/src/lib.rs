@@ -2,6 +2,19 @@ use derive_more::{Display, Error};
 
 pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
+#[derive(Debug, Clone, Copy, Display, Error)]
+#[display("{entity} #{id} not found")]
+pub struct EntityNotFound {
+    pub entity: &'static str,
+    pub id: i32,
+}
+
+impl EntityNotFound {
+    pub const fn new(entity: &'static str, id: i32) -> Self {
+        Self { entity, id }
+    }
+}
+
 #[derive(Debug, Display, Error)]
 #[display("Failed to {operation}: {source}")]
 pub struct ContextError {

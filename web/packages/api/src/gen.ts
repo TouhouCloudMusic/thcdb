@@ -111,6 +111,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/{target_type}/{id}/rating": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["set_rating"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/user/{id}/roles": {
         parameters: {
             query?: never;
@@ -2144,6 +2160,17 @@ export type components = {
             /** @enum {string} */
             status: "Ok";
         };
+        Data_RatingSummary: {
+            data: {
+                /** Format: double */
+                average?: number | null;
+                /** Format: int64 */
+                count: number;
+                user_rating?: null | components["schemas"]["Rating"];
+            };
+            /** @enum {string} */
+            status: "Ok";
+        };
         Data_Vec_CorrectionHistoryItem: {
             data: {
                 author: components["schemas"]["UserSummary"];
@@ -2221,12 +2248,16 @@ export type components = {
             data: null | components["schemas"]["Label"];
             status: string;
         };
-        DataOptionRelease: {
-            data: null | components["schemas"]["Release"];
+        DataOptionReleaseDetail: {
+            data: null | components["schemas"]["ReleaseDetail"];
             status: string;
         };
         DataOptionSong: {
             data: null | components["schemas"]["Song"];
+            status: string;
+        };
+        DataOptionSongDetail: {
+            data: null | components["schemas"]["SongDetail"];
             status: string;
         };
         DataOptionSongLyrics: {
@@ -3172,6 +3203,15 @@ export type components = {
             artists: components["schemas"]["ArtistListItem"][];
             releases: components["schemas"]["ReleaseListItem"][];
         };
+        /** @enum {number} */
+        Rating: 0.5 | 1 | 1.5 | 2 | 2.5 | 3 | 3.5 | 4 | 4.5 | 5;
+        RatingSummary: {
+            /** Format: double */
+            average?: number | null;
+            /** Format: int64 */
+            count: number;
+            user_rating?: null | components["schemas"]["Rating"];
+        };
         ReadAllRequest: {
             snapshot_inbox_seq: string;
         };
@@ -3209,6 +3249,9 @@ export type components = {
                 ...number[]
             ] | null;
             role: components["schemas"]["CreditRoleRef"];
+        };
+        ReleaseDetail: components["schemas"]["Release"] & {
+            rating: components["schemas"]["RatingSummary"];
         };
         ReleaseDisc: {
             /** Format: int32 */
@@ -3295,6 +3338,9 @@ export type components = {
             songs: components["schemas"]["CursorResponse_SearchResult_SongListing"];
             tags: components["schemas"]["CursorResponse_SearchResult_TagListItem"];
         };
+        SetRatingRequest: {
+            rating: null | components["schemas"]["Rating"];
+        };
         SetUserRolesRequest: {
             roles: components["schemas"]["EditableUserRole"][];
         };
@@ -3342,6 +3388,9 @@ export type components = {
         SongCredit: {
             artist: components["schemas"]["SimpleArtist"];
             role?: null | components["schemas"]["CreditRoleRef"];
+        };
+        SongDetail: components["schemas"]["Song"] & {
+            rating: components["schemas"]["RatingSummary"];
         };
         SongListing: {
             artists: components["schemas"]["SimpleArtist"][];
@@ -3633,6 +3682,7 @@ export type DataCorrectionSubmitResult = components['schemas']['Data_CorrectionS
 export type DataI32 = components['schemas']['Data_i32'];
 export type DataOptionCurrentImageMetadata = components['schemas']['Data_Option_CurrentImageMetadata'];
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
+export type DataRatingSummary = components['schemas']['Data_RatingSummary'];
 export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_CorrectionHistoryItem'];
 export type DataVecCorrectionRevisionSummary = components['schemas']['Data_Vec_CorrectionRevisionSummary'];
 export type DataArtistCredits = components['schemas']['DataArtistCredits'];
@@ -3648,8 +3698,9 @@ export type DataOptionArtist = components['schemas']['DataOptionArtist'];
 export type DataOptionCreditRole = components['schemas']['DataOptionCreditRole'];
 export type DataOptionEvent = components['schemas']['DataOptionEvent'];
 export type DataOptionLabel = components['schemas']['DataOptionLabel'];
-export type DataOptionRelease = components['schemas']['DataOptionRelease'];
+export type DataOptionReleaseDetail = components['schemas']['DataOptionReleaseDetail'];
 export type DataOptionSong = components['schemas']['DataOptionSong'];
+export type DataOptionSongDetail = components['schemas']['DataOptionSongDetail'];
 export type DataOptionSongLyrics = components['schemas']['DataOptionSongLyrics'];
 export type DataOptionTag = components['schemas']['DataOptionTag'];
 export type DataPageArtist = components['schemas']['DataPageArtist'];
@@ -3782,11 +3833,14 @@ export type PageResponseUserCollectionItemDetail = components['schemas']['PageRe
 export type PageResponseUserSummary = components['schemas']['PageResponse_UserSummary'];
 export type Permission = components['schemas']['Permission'];
 export type PopularItems = components['schemas']['PopularItems'];
+export type Rating = components['schemas']['Rating'];
+export type RatingSummary = components['schemas']['RatingSummary'];
 export type ReadAllRequest = components['schemas']['ReadAllRequest'];
 export type Release = components['schemas']['Release'];
 export type ReleaseArtist = components['schemas']['ReleaseArtist'];
 export type ReleaseCoverArtFormData = components['schemas']['ReleaseCoverArtFormData'];
 export type ReleaseCredit = components['schemas']['ReleaseCredit'];
+export type ReleaseDetail = components['schemas']['ReleaseDetail'];
 export type ReleaseDisc = components['schemas']['ReleaseDisc'];
 export type ReleaseImageQueueTarget = components['schemas']['ReleaseImageQueueTarget'];
 export type ReleaseImageType = components['schemas']['ReleaseImageType'];
@@ -3803,6 +3857,7 @@ export type ResendVerificationEmailResponse = components['schemas']['ResendVerif
 export type ResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type Score = components['schemas']['Score'];
 export type SearchResponse = components['schemas']['SearchResponse'];
+export type SetRatingRequest = components['schemas']['SetRatingRequest'];
 export type SetUserRolesRequest = components['schemas']['SetUserRolesRequest'];
 export type SignUpRequest = components['schemas']['SignUpRequest'];
 export type SignUpResponse = components['schemas']['SignUpResponse'];
@@ -3811,6 +3866,7 @@ export type SimpleEvent = components['schemas']['SimpleEvent'];
 export type SimpleLabel = components['schemas']['SimpleLabel'];
 export type Song = components['schemas']['Song'];
 export type SongCredit = components['schemas']['SongCredit'];
+export type SongDetail = components['schemas']['SongDetail'];
 export type SongListing = components['schemas']['SongListing'];
 export type SongLyrics = components['schemas']['SongLyrics'];
 export type SongRef = components['schemas']['SongRef'];
@@ -4262,6 +4318,62 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DataComment"];
                 };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    set_rating: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                target_type: "release" | "song";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetRatingRequest"];
+            };
+        };
+        responses: {
+            /** @description Rating updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_RatingSummary"];
+                };
+            };
+            /** @description Rating target not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Too Many Requests */
             429: {
@@ -7875,7 +7987,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataOptionRelease"];
+                    "application/json": components["schemas"]["DataOptionReleaseDetail"];
                 };
             };
             /** @description Too Many Requests */
@@ -9065,7 +9177,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataOptionSong"];
+                    "application/json": components["schemas"]["DataOptionSongDetail"];
                 };
             };
             /** @description Too Many Requests */
@@ -10082,5 +10194,6 @@ export enum ApiPaths {
     get_tags = "/{entity_type}/{id}/tags",
     record_visit = "/{entity_type}/{id}/visit",
     find_entity_comments = "/{target_type}/{id}/comments",
-    create_entity_comment = "/{target_type}/{id}/comments"
+    create_entity_comment = "/{target_type}/{id}/comments",
+    set_rating = "/{target_type}/{id}/rating"
 }

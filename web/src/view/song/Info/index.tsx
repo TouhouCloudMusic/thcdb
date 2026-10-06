@@ -6,7 +6,7 @@ import { createContext, createSignal, Show } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { PageLayout } from "~/layout/PageLayout"
-import { px } from "~/style/tokens.stylex"
+import { fontSizes, lineHeights, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
@@ -17,6 +17,8 @@ import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { entityDetailStyles } from "~/view/entity/detailStyles"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
+import { EntityRating } from "~/view/rating/EntityRating"
+import type { EntityRatingModel } from "~/view/rating/EntityRating"
 
 import { SongInfoCoverImage } from "./comp/SongInfoCoverImage"
 import { SongInfoCredit } from "./comp/SongInfoCredit"
@@ -50,6 +52,29 @@ const styles = stylex.create({
 		flexDirection: "column",
 		rowGap: px[16],
 	},
+	metadata: {
+		display: "grid",
+		gridTemplateColumns: "auto minmax(0,1fr)",
+		alignItems: "baseline",
+		columnGap: px[16],
+		rowGap: px[12],
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	rating: {
+		display: "grid",
+		gridColumn: "1 / -1",
+		gridTemplateColumns: "subgrid",
+		alignItems: "baseline",
+		columnGap: px[16],
+	},
+	ratingContent: { display: "flex", flexDirection: "column", gap: px[4] },
+	tags: {
+		gridColumn: "1 / -1",
+		gridTemplateColumns: "subgrid",
+		justifySelf: "stretch",
+		width: "100%",
+	},
 	tabContent: {
 		padding: px[16],
 	},
@@ -64,6 +89,7 @@ export const SongInfoPageContext = createContext<SongInfoPageContext>()
 type SongInfoPageProps = {
 	song: Song
 	correctionHistory: CorrectionHistoryItem[]
+	rating: EntityRatingModel
 }
 
 type SongInfoPageViewProps = SongInfoPageProps & {
@@ -84,6 +110,7 @@ export function SongInfoPage(props: SongInfoPageProps) {
 		<SongInfoPageView
 			song={props.song}
 			correctionHistory={props.correctionHistory}
+			rating={props.rating}
 			activeTab={activeTab()}
 			comments={comments}
 			onActiveTabChange={setActiveTab}
@@ -106,18 +133,25 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 						<SongInfoCoverImage />
 						<div {...stylex.attrs(styles.details)}>
 							<SongInfoTitleAndCreditName />
-							<SongInfoLanguages />
-							<Show when={props.song.links?.length}>
-								<div>
-									<ExternalLinks.Label />
-									<ExternalLinks.Body links={props.song.links} />
-								</div>
-							</Show>
-							<EntityTags
-								styles={entityDetailStyles.tags}
-								entityType="song"
-								entityId={props.song.id}
-							/>
+							<div {...stylex.attrs(styles.metadata)}>
+								<SongInfoLanguages />
+								<ExternalLinks links={props.song.links} />
+								<EntityRating.Root
+									model={props.rating}
+									styles={styles.rating}
+								>
+									<EntityRating.Label />
+									<div {...stylex.attrs(styles.ratingContent)}>
+										<EntityRating.Summary />
+										<EntityRating.Control />
+									</div>
+								</EntityRating.Root>
+								<EntityTags
+									styles={[entityDetailStyles.tags, styles.tags]}
+									entityType="song"
+									entityId={props.song.id}
+								/>
+							</div>
 							<div {...stylex.attrs(entityDetailStyles.collectionActions)}>
 								<AddToUserCollectionButton
 									entityType="Song"

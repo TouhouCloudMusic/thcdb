@@ -1,7 +1,7 @@
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import { playwright } from "@vitest/browser-playwright"
 import path from "node:path"
-import { defineConfig, defineProject } from "vitest/config"
+import { defineConfig } from "vitest/config"
 
 import { createSharedPlugins } from "./vite.shared"
 
@@ -14,12 +14,10 @@ export default defineConfig({
 		tsconfigPaths: true,
 	},
 	test: {
+		setupFiles: ["./src/test/vitest.setup.ts"],
 		projects: [
-			defineProject({
-				plugins: createSharedPlugins(),
-				resolve: {
-					tsconfigPaths: true,
-				},
+			{
+				extends: true,
 				optimizeDeps: {
 					entries: ["src/**/*.test.{ts,tsx}"],
 					exclude: LINGUI_MACROS,
@@ -28,21 +26,17 @@ export default defineConfig({
 					name: "unit",
 					globals: true,
 					include: ["./src/**/*.test.{ts,tsx}"],
-					setupFiles: ["./src/test/vitest.setup.ts"],
 				},
-			}),
-			defineProject({
+			},
+			{
+				extends: true,
 				plugins: [
-					...createSharedPlugins(),
 					// The plugin will run tests for the stories defined in your Storybook config
 					// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
 					storybookTest({
 						configDir: path.join(dirname, ".storybook"),
 					}),
 				],
-				resolve: {
-					tsconfigPaths: true,
-				},
 				optimizeDeps: {
 					entries: [".storybook/preview.tsx", "src/**/*.stories.{ts,tsx}"],
 					exclude: LINGUI_MACROS,
@@ -62,9 +56,8 @@ export default defineConfig({
 						provider: playwright(),
 						instances: [{ browser: "chromium" }],
 					},
-					setupFiles: ["./src/test/vitest.setup.ts"],
 				},
-			}),
+			},
 		],
 	},
 })

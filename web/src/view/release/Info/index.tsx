@@ -1,10 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
-import type { CorrectionHistoryItem, Release } from "@thc/api"
 import { Suspense } from "solid-js"
 
 import { buttonStyles } from "~/component/atomic/button"
+import type { CorrectionHistoryItem, Release } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
 import { link } from "~/style/link"
 import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
@@ -12,6 +12,8 @@ import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollection
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { entityDetailStyles } from "~/view/entity/detailStyles"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
+import { EntityRating } from "~/view/rating/EntityRating"
+import type { EntityRatingModel } from "~/view/rating/EntityRating"
 
 import { ReleaseInfoTabs } from "./ReleaseInfoTabs"
 import { ReleaseInfoCoverImage } from "./comp/ReleaseInfoCoverImage"
@@ -56,11 +58,20 @@ const styles = stylex.create({
 		justifySelf: "stretch",
 		width: "100%",
 	},
+	rating: {
+		display: "grid",
+		gridColumn: "1 / -1",
+		gridTemplateColumns: "subgrid",
+		alignItems: "baseline",
+		columnGap: px[16],
+	},
+	ratingContent: { display: "flex", flexDirection: "column", gap: px[4] },
 })
 
 type ReleaseInfoPageProps = {
 	release: Release
 	correctionHistory: CorrectionHistoryItem[]
+	rating: EntityRatingModel
 }
 
 export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
@@ -82,6 +93,16 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 								<ReleaseInfoTitleAndArtist />
 								<div {...stylex.attrs(styles.details)}>
 									<ReleaseInfoDetails />
+									<EntityRating.Root
+										model={props.rating}
+										styles={styles.rating}
+									>
+										<EntityRating.Label />
+										<div {...stylex.attrs(styles.ratingContent)}>
+											<EntityRating.Summary />
+											<EntityRating.Control />
+										</div>
+									</EntityRating.Root>
 									<EntityTags
 										styles={[entityDetailStyles.tags, styles.tags]}
 										entityType="release"
