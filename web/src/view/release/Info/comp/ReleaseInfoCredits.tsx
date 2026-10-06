@@ -1,8 +1,8 @@
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
-import type { Release, ReleaseCredit } from "@thc/api"
 import { createMemo, For, Show } from "solid-js"
 
+import type { Release, ReleaseCredit } from "~/hey-api"
 import { colors, fontSizes, px } from "~/style/tokens.stylex"
 
 const styles = stylex.create({

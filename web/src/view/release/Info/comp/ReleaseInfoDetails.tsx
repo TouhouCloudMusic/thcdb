@@ -84,10 +84,7 @@ export function ReleaseInfoDetails() {
 				</ul>
 			</Show>
 
-			<Show when={ctx.release.links?.length}>
-				<ExternalLinks.Label />
-				<ExternalLinks.Body links={ctx.release.links} />
-			</Show>
+			<ExternalLinks links={ctx.release.links} />
 		</div>
 	)
 }

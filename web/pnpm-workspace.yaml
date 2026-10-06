@@ -27,4 +27,4 @@ packages:
   - "packages/*"
   - "."
 patchedDependencies:
-  "@kobalte/core@0.13.11": patches/@kobalte__core@0.13.11.patch
+  "@kobalte/core@0.13.14": patches/@kobalte__core@0.13.14.patch

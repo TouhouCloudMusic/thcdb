@@ -9,6 +9,7 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { SongInfoPageContext } from ".."
 
 const styles = stylex.create({
+	root: { display: "contents" },
 	values: {
 		display: "flex",
 		flexWrap: "wrap",
@@ -28,7 +29,7 @@ export function SongInfoLanguages() {
 
 	return (
 		<Show when={ctx.song.languages?.length}>
-			<div>
+			<div {...stylex.attrs(styles.root)}>
 				{/* TODO: Replace Info.Label with this */}
 				<div {...stylex.attrs(infoStyles.label)}>Languages</div>
 				<div {...stylex.attrs(styles.values)}>

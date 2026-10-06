@@ -1,5 +1,6 @@
-import type { Release } from "@thc/api"
 import { createContext } from "solid-js"
+
+import type { Release } from "~/hey-api"
 
 export type ReleaseInfoPageContext = {
 	release: Release

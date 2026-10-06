@@ -27,7 +27,6 @@ import { Route as SongExploreRouteImport } from './route/song/explore'
 import { Route as SongIdRouteImport } from './route/song/$id'
 import { Route as SongLyricsIdRouteImport } from './route/song-lyrics/$id'
 import { Route as ReleaseNewRouteImport } from './route/release/new'
-import { Route as ReleaseMockRouteImport } from './route/release/mock'
 import { Route as ReleaseExploreRouteImport } from './route/release/explore'
 import { Route as ReleaseIdRouteImport } from './route/release/$id'
 import { Route as LabelNewRouteImport } from './route/label/new'
@@ -160,11 +159,6 @@ const SongLyricsIdRoute = SongLyricsIdRouteImport.update({
 const ReleaseNewRoute = ReleaseNewRouteImport.update({
   id: '/release/new',
   path: '/release/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReleaseMockRoute = ReleaseMockRouteImport.update({
-  id: '/release/mock',
-  path: '/release/mock',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReleaseExploreRoute = ReleaseExploreRouteImport.update({
@@ -413,7 +407,6 @@ export interface FileRoutesByFullPath {
   '/label/new': typeof LabelNewRoute
   '/release/$id': typeof ReleaseIdRoute
   '/release/explore': typeof ReleaseExploreRoute
-  '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
   '/song-lyrics/$id': typeof SongLyricsIdRoute
   '/song/$id': typeof SongIdRoute
@@ -476,7 +469,6 @@ export interface FileRoutesByTo {
   '/label/new': typeof LabelNewRoute
   '/release/$id': typeof ReleaseIdRoute
   '/release/explore': typeof ReleaseExploreRoute
-  '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
   '/song-lyrics/$id': typeof SongLyricsIdRoute
   '/song/$id': typeof SongIdRoute
@@ -541,7 +533,6 @@ export interface FileRoutesById {
   '/label/new': typeof LabelNewRoute
   '/release/$id': typeof ReleaseIdRoute
   '/release/explore': typeof ReleaseExploreRoute
-  '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
   '/song-lyrics/$id': typeof SongLyricsIdRoute
   '/song/$id': typeof SongIdRoute
@@ -607,7 +598,6 @@ export interface FileRouteTypes {
     | '/label/new'
     | '/release/$id'
     | '/release/explore'
-    | '/release/mock'
     | '/release/new'
     | '/song-lyrics/$id'
     | '/song/$id'
@@ -670,7 +660,6 @@ export interface FileRouteTypes {
     | '/label/new'
     | '/release/$id'
     | '/release/explore'
-    | '/release/mock'
     | '/release/new'
     | '/song-lyrics/$id'
     | '/song/$id'
@@ -734,7 +723,6 @@ export interface FileRouteTypes {
     | '/label/new'
     | '/release/$id'
     | '/release/explore'
-    | '/release/mock'
     | '/release/new'
     | '/song-lyrics/$id'
     | '/song/$id'
@@ -795,7 +783,6 @@ export interface RootRouteChildren {
   LabelNewRoute: typeof LabelNewRoute
   ReleaseIdRoute: typeof ReleaseIdRoute
   ReleaseExploreRoute: typeof ReleaseExploreRoute
-  ReleaseMockRoute: typeof ReleaseMockRoute
   ReleaseNewRoute: typeof ReleaseNewRoute
   SongLyricsIdRoute: typeof SongLyricsIdRoute
   SongIdRoute: typeof SongIdRoute
@@ -954,13 +941,6 @@ declare module '@tanstack/solid-router' {
       path: '/release/new'
       fullPath: '/release/new'
       preLoaderRoute: typeof ReleaseNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/release/mock': {
-      id: '/release/mock'
-      path: '/release/mock'
-      fullPath: '/release/mock'
-      preLoaderRoute: typeof ReleaseMockRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/release/explore': {
@@ -1324,7 +1304,6 @@ const rootRouteChildren: RootRouteChildren = {
   LabelNewRoute: LabelNewRoute,
   ReleaseIdRoute: ReleaseIdRoute,
   ReleaseExploreRoute: ReleaseExploreRoute,
-  ReleaseMockRoute: ReleaseMockRoute,
   ReleaseNewRoute: ReleaseNewRoute,
   SongLyricsIdRoute: SongLyricsIdRoute,
   SongIdRoute: SongIdRoute,

@@ -1,12 +1,12 @@
 use std::collections::BTreeSet;
 
 use infra_db::SeaOrmRepository;
+use infra_error::EntityNotFound;
 
 use super::{Error, repo};
 use crate::features::auth::{EditableUserRole, UserRole, UserRoleEnum};
 use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::EntityNotFound;
 
 pub(super) struct Service {
     pub(super) repo: SeaOrmRepository,

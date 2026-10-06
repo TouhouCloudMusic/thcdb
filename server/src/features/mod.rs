@@ -15,6 +15,7 @@ pub(crate) mod image_upload;
 pub mod label;
 pub mod notification;
 pub mod popularity;
+pub mod rating;
 pub mod release;
 pub mod release_image;
 pub mod search;
@@ -49,6 +50,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(image_queue::router())
         .merge(label::router())
         .merge(notification::router())
+        .merge(rating::router())
         .merge(visit::router())
         .merge(release::router())
         .merge(search::router())

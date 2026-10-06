@@ -1,1 +1,1 @@
-export * as ExternalLinks from "./__internal"
+export { ExternalLinks } from "./__internal"

@@ -5983,6 +5983,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-feature-rating-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "derive_more",
+ "entity",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "thcdb-infra-db",
+ "thcdb-infra-error",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
 name = "thcdb-feature-user-collection-notification"
 version = "0.1.0"
 dependencies = [
@@ -6187,6 +6204,7 @@ dependencies = [
  "thcdb-feature-notification-service",
  "thcdb-feature-notification-worker",
  "thcdb-feature-popularity-core",
+ "thcdb-feature-rating-core",
  "thcdb-feature-user-collection-notification",
  "thcdb-feature-user-core",
  "thcdb-feature-user-profile-notification",

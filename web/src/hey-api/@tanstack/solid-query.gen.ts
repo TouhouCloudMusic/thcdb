@@ -104,6 +104,7 @@ import {
 	searchUserCollections,
 	setCorrectionSubscription,
 	setImageQueueSubscription,
+	setRating,
 	setUserRoles,
 	signIn,
 	signOut,
@@ -422,6 +423,9 @@ import type {
 	SetImageQueueSubscriptionData,
 	SetImageQueueSubscriptionError,
 	SetImageQueueSubscriptionResponse,
+	SetRatingData,
+	SetRatingError,
+	SetRatingResponse,
 	SetUserRolesData,
 	SetUserRolesError,
 	SetUserRolesResponse,
@@ -534,6 +538,45 @@ import type {
 	VoteTagError,
 } from "../types.gen"
 
+export type MutationKey<TOptions extends Partial<Options>> = [
+	Pick<TOptions, "baseUrl" | "body" | "headers" | "path" | "query"> & {
+		_id: string
+		tags?: ReadonlyArray<string>
+	},
+]
+
+const createMutationKey = <TOptions extends Partial<Options>>(
+	id: string,
+	options?: TOptions,
+	tags?: ReadonlyArray<string>,
+): [MutationKey<TOptions>[0]] => {
+	const params: MutationKey<TOptions>[0] = {
+		_id: id,
+		baseUrl:
+			options?.baseUrl || (options?.client ?? client).getConfig().baseUrl,
+	}
+	if (tags) {
+		params.tags = tags
+	}
+	if (options?.body) {
+		params.body = options.body
+	}
+	if (options?.headers) {
+		params.headers = options.headers
+	}
+	if (options?.path) {
+		params.path = options.path
+	}
+	if (options?.query) {
+		params.query = options.query
+	}
+	return [params]
+}
+
+export const setUserRolesMutationKey = (
+	options?: Partial<Options<SetUserRolesData>>,
+) => createMutationKey("setUserRoles", options, ["Admin"])
+
 export const setUserRolesMutation = (
 	options?: Partial<Options<SetUserRolesData>>,
 ): MutationOptions<
@@ -554,6 +597,7 @@ export const setUserRolesMutation = (
 			})
 			return data
 		},
+		mutationKey: setUserRolesMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -725,6 +769,10 @@ export const findManyArtistOptions = (options: Options<FindManyArtistData>) =>
 		queryKey: findManyArtistQueryKey(options),
 	})
 
+export const createArtistMutationKey = (
+	options?: Partial<Options<CreateArtistData>>,
+) => createMutationKey("createArtist", options, ["Artist"])
+
 export const createArtistMutation = (
 	options?: Partial<Options<CreateArtistData>>,
 ): MutationOptions<
@@ -745,6 +793,7 @@ export const createArtistMutation = (
 			})
 			return data
 		},
+		mutationKey: createArtistMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -842,6 +891,10 @@ export const findArtistByIdOptions = (options: Options<FindArtistByIdData>) =>
 		queryKey: findArtistByIdQueryKey(options),
 	})
 
+export const upsertArtistCorrectionMutationKey = (
+	options?: Partial<Options<UpsertArtistCorrectionData>>,
+) => createMutationKey("upsertArtistCorrection", options, ["Artist"])
+
 export const upsertArtistCorrectionMutation = (
 	options?: Partial<Options<UpsertArtistCorrectionData>>,
 ): MutationOptions<
@@ -862,6 +915,7 @@ export const upsertArtistCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: upsertArtistCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -940,6 +994,10 @@ export const findArtistAppearancesInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const updateArtistPendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateArtistPendingCorrectionData>>,
+) => createMutationKey("updateArtistPendingCorrection", options, ["Artist"])
+
 export const updateArtistPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateArtistPendingCorrectionData>>,
 ): MutationOptions<
@@ -960,6 +1018,7 @@ export const updateArtistPendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateArtistPendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1163,6 +1222,10 @@ export const getArtistProfileImageMetadataOptions = (
 		queryKey: getArtistProfileImageMetadataQueryKey(options),
 	})
 
+export const uploadArtistProfileImageMutationKey = (
+	options?: Partial<Options<UploadArtistProfileImageData>>,
+) => createMutationKey("uploadArtistProfileImage", options, ["Artist"])
+
 export const uploadArtistProfileImageMutation = (
 	options?: Partial<Options<UploadArtistProfileImageData>>,
 ): MutationOptions<
@@ -1183,9 +1246,14 @@ export const uploadArtistProfileImageMutation = (
 			})
 			return data
 		},
+		mutationKey: uploadArtistProfileImageMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const uploadAvatarMutationKey = (
+	options?: Partial<Options<UploadAvatarData>>,
+) => createMutationKey("uploadAvatar", options, ["User"])
 
 export const uploadAvatarMutation = (
 	options?: Partial<Options<UploadAvatarData>>,
@@ -1207,9 +1275,14 @@ export const uploadAvatarMutation = (
 			})
 			return data
 		},
+		mutationKey: uploadAvatarMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const createUserCollectionMutationKey = (
+	options?: Partial<Options<CreateUserCollectionData>>,
+) => createMutationKey("createUserCollection", options, ["User Collection"])
 
 export const createUserCollectionMutation = (
 	options?: Partial<Options<CreateUserCollectionData>>,
@@ -1231,9 +1304,14 @@ export const createUserCollectionMutation = (
 			})
 			return data
 		},
+		mutationKey: createUserCollectionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const deleteUserCollectionMutationKey = (
+	options?: Partial<Options<DeleteUserCollectionData>>,
+) => createMutationKey("deleteUserCollection", options, ["User Collection"])
 
 export const deleteUserCollectionMutation = (
 	options?: Partial<Options<DeleteUserCollectionData>>,
@@ -1255,6 +1333,7 @@ export const deleteUserCollectionMutation = (
 			})
 			return data
 		},
+		mutationKey: deleteUserCollectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1284,6 +1363,10 @@ export const userCollectionDetailOptions = (
 		queryKey: userCollectionDetailQueryKey(options),
 	})
 
+export const updateUserCollectionMutationKey = (
+	options?: Partial<Options<UpdateUserCollectionData>>,
+) => createMutationKey("updateUserCollection", options, ["User Collection"])
+
 export const updateUserCollectionMutation = (
 	options?: Partial<Options<UpdateUserCollectionData>>,
 ): MutationOptions<
@@ -1304,6 +1387,7 @@ export const updateUserCollectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateUserCollectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1382,6 +1466,10 @@ export const userCollectionItemsInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const createUserCollectionItemMutationKey = (
+	options?: Partial<Options<CreateUserCollectionItemData>>,
+) => createMutationKey("createUserCollectionItem", options, ["User Collection"])
+
 export const createUserCollectionItemMutation = (
 	options?: Partial<Options<CreateUserCollectionItemData>>,
 ): MutationOptions<
@@ -1402,9 +1490,15 @@ export const createUserCollectionItemMutation = (
 			})
 			return data
 		},
+		mutationKey: createUserCollectionItemMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const reorderUserCollectionItemsMutationKey = (
+	options?: Partial<Options<ReorderUserCollectionItemsData>>,
+) =>
+	createMutationKey("reorderUserCollectionItems", options, ["User Collection"])
 
 export const reorderUserCollectionItemsMutation = (
 	options?: Partial<Options<ReorderUserCollectionItemsData>>,
@@ -1426,9 +1520,14 @@ export const reorderUserCollectionItemsMutation = (
 			})
 			return data
 		},
+		mutationKey: reorderUserCollectionItemsMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const deleteUserCollectionItemMutationKey = (
+	options?: Partial<Options<DeleteUserCollectionItemData>>,
+) => createMutationKey("deleteUserCollectionItem", options, ["User Collection"])
 
 export const deleteUserCollectionItemMutation = (
 	options?: Partial<Options<DeleteUserCollectionItemData>>,
@@ -1450,6 +1549,7 @@ export const deleteUserCollectionItemMutation = (
 			})
 			return data
 		},
+		mutationKey: deleteUserCollectionItemMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1604,6 +1704,10 @@ export const searchUserCollectionsInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const deleteCommentMutationKey = (
+	options?: Partial<Options<DeleteCommentData>>,
+) => createMutationKey("deleteComment", options, ["Comment"])
+
 export const deleteCommentMutation = (
 	options?: Partial<Options<DeleteCommentData>>,
 ): MutationOptions<
@@ -1624,6 +1728,7 @@ export const deleteCommentMutation = (
 			})
 			return data
 		},
+		mutationKey: deleteCommentMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1675,6 +1780,10 @@ export const getCorrectionOptions = (options: Options<GetCorrectionData>) =>
 		queryKey: getCorrectionQueryKey(options),
 	})
 
+export const moderateCorrectionMutationKey = (
+	options?: Partial<Options<ModerateCorrectionData>>,
+) => createMutationKey("moderateCorrection", options, ["Correction"])
+
 export const moderateCorrectionMutation = (
 	options?: Partial<Options<ModerateCorrectionData>>,
 ): MutationOptions<
@@ -1695,6 +1804,7 @@ export const moderateCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: moderateCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1749,6 +1859,10 @@ export const getCorrectionRevisionsOptions = (
 		queryKey: getCorrectionRevisionsQueryKey(options),
 	})
 
+export const setCorrectionSubscriptionMutationKey = (
+	options?: Partial<Options<SetCorrectionSubscriptionData>>,
+) => createMutationKey("setCorrectionSubscription", options, ["Correction"])
+
 export const setCorrectionSubscriptionMutation = (
 	options?: Partial<Options<SetCorrectionSubscriptionData>>,
 ): MutationOptions<
@@ -1769,9 +1883,14 @@ export const setCorrectionSubscriptionMutation = (
 			})
 			return data
 		},
+		mutationKey: setCorrectionSubscriptionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const createCreditRoleMutationKey = (
+	options?: Partial<Options<CreateCreditRoleData>>,
+) => createMutationKey("createCreditRole", options, ["Credit Role"])
 
 export const createCreditRoleMutation = (
 	options?: Partial<Options<CreateCreditRoleData>>,
@@ -1793,6 +1912,7 @@ export const createCreditRoleMutation = (
 			})
 			return data
 		},
+		mutationKey: createCreditRoleMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1848,6 +1968,10 @@ export const findCreditRoleByIdOptions = (
 		queryKey: findCreditRoleByIdQueryKey(options),
 	})
 
+export const upsertCreditRoleCorrectionMutationKey = (
+	options?: Partial<Options<UpsertCreditRoleCorrectionData>>,
+) => createMutationKey("upsertCreditRoleCorrection", options, ["Credit Role"])
+
 export const upsertCreditRoleCorrectionMutation = (
 	options?: Partial<Options<UpsertCreditRoleCorrectionData>>,
 ): MutationOptions<
@@ -1868,9 +1992,17 @@ export const upsertCreditRoleCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: upsertCreditRoleCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const updateCreditRolePendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateCreditRolePendingCorrectionData>>,
+) =>
+	createMutationKey("updateCreditRolePendingCorrection", options, [
+		"Credit Role",
+	])
 
 export const updateCreditRolePendingCorrectionMutation = (
 	options?: Partial<Options<UpdateCreditRolePendingCorrectionData>>,
@@ -1892,6 +2024,7 @@ export const updateCreditRolePendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateCreditRolePendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -1946,6 +2079,10 @@ export const findEventByKeywordOptions = (
 		queryKey: findEventByKeywordQueryKey(options),
 	})
 
+export const createEventMutationKey = (
+	options?: Partial<Options<CreateEventData>>,
+) => createMutationKey("createEvent", options, ["Event"])
+
 export const createEventMutation = (
 	options?: Partial<Options<CreateEventData>>,
 ): MutationOptions<
@@ -1966,6 +2103,7 @@ export const createEventMutation = (
 			})
 			return data
 		},
+		mutationKey: createEventMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -2063,6 +2201,10 @@ export const findEventByIdOptions = (options: Options<FindEventByIdData>) =>
 		queryKey: findEventByIdQueryKey(options),
 	})
 
+export const upsertEventCorrectionMutationKey = (
+	options?: Partial<Options<UpsertEventCorrectionData>>,
+) => createMutationKey("upsertEventCorrection", options, ["Event"])
+
 export const upsertEventCorrectionMutation = (
 	options?: Partial<Options<UpsertEventCorrectionData>>,
 ): MutationOptions<
@@ -2083,9 +2225,14 @@ export const upsertEventCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: upsertEventCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const updateEventPendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateEventPendingCorrectionData>>,
+) => createMutationKey("updateEventPendingCorrection", options, ["Event"])
 
 export const updateEventPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateEventPendingCorrectionData>>,
@@ -2107,9 +2254,14 @@ export const updateEventPendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateEventPendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const forgotPasswordMutationKey = (
+	options?: Partial<Options<ForgotPasswordData>>,
+) => createMutationKey("forgotPassword", options, ["Auth"])
 
 export const forgotPasswordMutation = (
 	options?: Partial<Options<ForgotPasswordData>>,
@@ -2131,6 +2283,7 @@ export const forgotPasswordMutation = (
 			})
 			return data
 		},
+		mutationKey: forgotPasswordMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -2303,6 +2456,10 @@ export const imageQueueDetailOptions = (
 		queryKey: imageQueueDetailQueryKey(options),
 	})
 
+export const moderateImageQueueMutationKey = (
+	options?: Partial<Options<ModerateImageQueueData>>,
+) => createMutationKey("moderateImageQueue", options, ["Image Queue"])
+
 export const moderateImageQueueMutation = (
 	options?: Partial<Options<ModerateImageQueueData>>,
 ): MutationOptions<
@@ -2323,9 +2480,14 @@ export const moderateImageQueueMutation = (
 			})
 			return data
 		},
+		mutationKey: moderateImageQueueMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const setImageQueueSubscriptionMutationKey = (
+	options?: Partial<Options<SetImageQueueSubscriptionData>>,
+) => createMutationKey("setImageQueueSubscription", options, ["Image Queue"])
 
 export const setImageQueueSubscriptionMutation = (
 	options?: Partial<Options<SetImageQueueSubscriptionData>>,
@@ -2347,6 +2509,7 @@ export const setImageQueueSubscriptionMutation = (
 			})
 			return data
 		},
+		mutationKey: setImageQueueSubscriptionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -2376,6 +2539,10 @@ export const findLabelByKeywordOptions = (
 		queryKey: findLabelByKeywordQueryKey(options),
 	})
 
+export const createLabelMutationKey = (
+	options?: Partial<Options<CreateLabelData>>,
+) => createMutationKey("createLabel", options, ["Label"])
+
 export const createLabelMutation = (
 	options?: Partial<Options<CreateLabelData>>,
 ): MutationOptions<
@@ -2396,6 +2563,7 @@ export const createLabelMutation = (
 			})
 			return data
 		},
+		mutationKey: createLabelMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -2493,6 +2661,10 @@ export const findLabelByIdOptions = (options: Options<FindLabelByIdData>) =>
 		queryKey: findLabelByIdQueryKey(options),
 	})
 
+export const upsertLabelCorrectionMutationKey = (
+	options?: Partial<Options<UpsertLabelCorrectionData>>,
+) => createMutationKey("upsertLabelCorrection", options, ["Label"])
+
 export const upsertLabelCorrectionMutation = (
 	options?: Partial<Options<UpsertLabelCorrectionData>>,
 ): MutationOptions<
@@ -2513,9 +2685,14 @@ export const upsertLabelCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: upsertLabelCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const updateLabelPendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateLabelPendingCorrectionData>>,
+) => createMutationKey("updateLabelPendingCorrection", options, ["Label"])
 
 export const updateLabelPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateLabelPendingCorrectionData>>,
@@ -2537,6 +2714,7 @@ export const updateLabelPendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateLabelPendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -2637,6 +2815,9 @@ export const listNotificationsInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const readAllMutationKey = (options?: Partial<Options<ReadAllData>>) =>
+	createMutationKey("readAll", options, ["Notification"])
+
 export const readAllMutation = (
 	options?: Partial<Options<ReadAllData>>,
 ): MutationOptions<ReadAllResponse, ReadAllError, Options<ReadAllData>> => {
@@ -2653,6 +2834,7 @@ export const readAllMutation = (
 			})
 			return data
 		},
+		mutationKey: readAllMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -2679,6 +2861,9 @@ export const unreadCountOptions = (options?: Options<UnreadCountData>) =>
 		queryKey: unreadCountQueryKey(options),
 	})
 
+export const markReadMutationKey = (options?: Partial<Options<MarkReadData>>) =>
+	createMutationKey("markRead", options, ["Notification"])
+
 export const markReadMutation = (
 	options?: Partial<Options<MarkReadData>>,
 ): MutationOptions<MarkReadResponse, MarkReadError, Options<MarkReadData>> => {
@@ -2695,9 +2880,14 @@ export const markReadMutation = (
 			})
 			return data
 		},
+		mutationKey: markReadMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const unsaveNotificationMutationKey = (
+	options?: Partial<Options<UnsaveNotificationData>>,
+) => createMutationKey("unsaveNotification", options, ["Notification"])
 
 export const unsaveNotificationMutation = (
 	options?: Partial<Options<UnsaveNotificationData>>,
@@ -2719,9 +2909,14 @@ export const unsaveNotificationMutation = (
 			})
 			return data
 		},
+		mutationKey: unsaveNotificationMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const saveNotificationMutationKey = (
+	options?: Partial<Options<SaveNotificationData>>,
+) => createMutationKey("saveNotification", options, ["Notification"])
 
 export const saveNotificationMutation = (
 	options?: Partial<Options<SaveNotificationData>>,
@@ -2743,9 +2938,14 @@ export const saveNotificationMutation = (
 			})
 			return data
 		},
+		mutationKey: saveNotificationMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const markUnreadMutationKey = (
+	options?: Partial<Options<MarkUnreadData>>,
+) => createMutationKey("markUnread", options, ["Notification"])
 
 export const markUnreadMutation = (
 	options?: Partial<Options<MarkUnreadData>>,
@@ -2767,6 +2967,7 @@ export const markUnreadMutation = (
 			})
 			return data
 		},
+		mutationKey: markUnreadMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -2793,6 +2994,10 @@ export const profileOptions = (options?: Options<ProfileData>) =>
 		queryKey: profileQueryKey(options),
 	})
 
+export const uploadProfileBannerMutationKey = (
+	options?: Partial<Options<UploadProfileBannerData>>,
+) => createMutationKey("uploadProfileBanner", options, ["User"])
+
 export const uploadProfileBannerMutation = (
 	options?: Partial<Options<UploadProfileBannerData>>,
 ): MutationOptions<
@@ -2813,9 +3018,14 @@ export const uploadProfileBannerMutation = (
 			})
 			return data
 		},
+		mutationKey: uploadProfileBannerMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const updateBioMutationKey = (
+	options?: Partial<Options<UpdateBioData>>,
+) => createMutationKey("updateBio", options, ["User"])
 
 export const updateBioMutation = (
 	options?: Partial<Options<UpdateBioData>>,
@@ -2837,6 +3047,7 @@ export const updateBioMutation = (
 			})
 			return data
 		},
+		mutationKey: updateBioMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -3013,6 +3224,10 @@ export const profileWithNameOptions = (options: Options<ProfileWithNameData>) =>
 		queryKey: profileWithNameQueryKey(options),
 	})
 
+export const unfollowUserMutationKey = (
+	options?: Partial<Options<UnfollowUserData>>,
+) => createMutationKey("unfollowUser", options, ["User"])
+
 export const unfollowUserMutation = (
 	options?: Partial<Options<UnfollowUserData>>,
 ): MutationOptions<
@@ -3033,9 +3248,14 @@ export const unfollowUserMutation = (
 			})
 			return data
 		},
+		mutationKey: unfollowUserMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const followUserMutationKey = (
+	options?: Partial<Options<FollowUserData>>,
+) => createMutationKey("followUser", options, ["User"])
 
 export const followUserMutation = (
 	options?: Partial<Options<FollowUserData>>,
@@ -3057,6 +3277,7 @@ export const followUserMutation = (
 			})
 			return data
 		},
+		mutationKey: followUserMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -3183,6 +3404,10 @@ export const findReleaseByKeywordOptions = (
 		queryKey: findReleaseByKeywordQueryKey(options),
 	})
 
+export const createReleaseMutationKey = (
+	options?: Partial<Options<CreateReleaseData>>,
+) => createMutationKey("createRelease", options, ["Release"])
+
 export const createReleaseMutation = (
 	options?: Partial<Options<CreateReleaseData>>,
 ): MutationOptions<
@@ -3203,6 +3428,7 @@ export const createReleaseMutation = (
 			})
 			return data
 		},
+		mutationKey: createReleaseMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -3301,6 +3527,10 @@ export const findReleaseByIdOptions = (options: Options<FindReleaseByIdData>) =>
 		queryKey: findReleaseByIdQueryKey(options),
 	})
 
+export const updateReleaseMutationKey = (
+	options?: Partial<Options<UpdateReleaseData>>,
+) => createMutationKey("updateRelease", options, ["Release"])
+
 export const updateReleaseMutation = (
 	options?: Partial<Options<UpdateReleaseData>>,
 ): MutationOptions<
@@ -3321,9 +3551,14 @@ export const updateReleaseMutation = (
 			})
 			return data
 		},
+		mutationKey: updateReleaseMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const updateReleasePendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateReleasePendingCorrectionData>>,
+) => createMutationKey("updateReleasePendingCorrection", options, ["Release"])
 
 export const updateReleasePendingCorrectionMutation = (
 	options?: Partial<Options<UpdateReleasePendingCorrectionData>>,
@@ -3345,6 +3580,7 @@ export const updateReleasePendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateReleasePendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -3374,6 +3610,10 @@ export const getReleaseCoverArtMetadataOptions = (
 		queryKey: getReleaseCoverArtMetadataQueryKey(options),
 	})
 
+export const uploadReleaseCoverArtMutationKey = (
+	options?: Partial<Options<UploadReleaseCoverArtData>>,
+) => createMutationKey("uploadReleaseCoverArt", options, ["Release"])
+
 export const uploadReleaseCoverArtMutation = (
 	options?: Partial<Options<UploadReleaseCoverArtData>>,
 ): MutationOptions<
@@ -3394,9 +3634,14 @@ export const uploadReleaseCoverArtMutation = (
 			})
 			return data
 		},
+		mutationKey: uploadReleaseCoverArtMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const resendVerificationEmailMutationKey = (
+	options?: Partial<Options<ResendVerificationEmailData>>,
+) => createMutationKey("resendVerificationEmail", options, ["Auth"])
 
 export const resendVerificationEmailMutation = (
 	options?: Partial<Options<ResendVerificationEmailData>>,
@@ -3418,9 +3663,14 @@ export const resendVerificationEmailMutation = (
 			})
 			return data
 		},
+		mutationKey: resendVerificationEmailMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const resetPasswordMutationKey = (
+	options?: Partial<Options<ResetPasswordData>>,
+) => createMutationKey("resetPassword", options, ["Auth"])
 
 export const resetPasswordMutation = (
 	options?: Partial<Options<ResetPasswordData>>,
@@ -3442,6 +3692,7 @@ export const resetPasswordMutation = (
 			})
 			return data
 		},
+		mutationKey: resetPasswordMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -3896,6 +4147,9 @@ export const searchTagInfiniteOptions = (options: Options<SearchTagData>) => {
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const signInMutationKey = (options?: Partial<Options<SignInData>>) =>
+	createMutationKey("signIn", options, ["Auth"])
+
 export const signInMutation = (
 	options?: Partial<Options<SignInData>>,
 ): MutationOptions<SignInResponse, SignInError, Options<SignInData>> => {
@@ -3912,6 +4166,7 @@ export const signInMutation = (
 			})
 			return data
 		},
+		mutationKey: signInMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -3938,6 +4193,9 @@ export const signOutOptions = (options?: Options<SignOutData>) =>
 		queryKey: signOutQueryKey(options),
 	})
 
+export const signUpMutationKey = (options?: Partial<Options<SignUpData>>) =>
+	createMutationKey("signUp", options, ["Auth"])
+
 export const signUpMutation = (
 	options?: Partial<Options<SignUpData>>,
 ): MutationOptions<SignUpResponse2, SignUpError, Options<SignUpData>> => {
@@ -3954,6 +4212,7 @@ export const signUpMutation = (
 			})
 			return data
 		},
+		mutationKey: signUpMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -3983,6 +4242,10 @@ export const findSongByKeywordOptions = (
 		queryKey: findSongByKeywordQueryKey(options),
 	})
 
+export const createSongMutationKey = (
+	options?: Partial<Options<CreateSongData>>,
+) => createMutationKey("createSong", options, ["Song"])
+
 export const createSongMutation = (
 	options?: Partial<Options<CreateSongData>>,
 ): MutationOptions<
@@ -4003,6 +4266,7 @@ export const createSongMutation = (
 			})
 			return data
 		},
+		mutationKey: createSongMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4032,6 +4296,10 @@ export const findOneSongLyricsOptions = (
 		queryKey: findOneSongLyricsQueryKey(options),
 	})
 
+export const createSongLyricsMutationKey = (
+	options?: Partial<Options<CreateSongLyricsData>>,
+) => createMutationKey("createSongLyrics", options, ["Song Lyrics"])
+
 export const createSongLyricsMutation = (
 	options?: Partial<Options<CreateSongLyricsData>>,
 ): MutationOptions<
@@ -4052,6 +4320,7 @@ export const createSongLyricsMutation = (
 			})
 			return data
 		},
+		mutationKey: createSongLyricsMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4106,6 +4375,10 @@ export const findSongLyricsByIdOptions = (
 		queryKey: findSongLyricsByIdQueryKey(options),
 	})
 
+export const updateSongLyricsMutationKey = (
+	options?: Partial<Options<UpdateSongLyricsData>>,
+) => createMutationKey("updateSongLyrics", options, ["Song Lyrics"])
+
 export const updateSongLyricsMutation = (
 	options?: Partial<Options<UpdateSongLyricsData>>,
 ): MutationOptions<
@@ -4126,9 +4399,17 @@ export const updateSongLyricsMutation = (
 			})
 			return data
 		},
+		mutationKey: updateSongLyricsMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const updateSongLyricsPendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateSongLyricsPendingCorrectionData>>,
+) =>
+	createMutationKey("updateSongLyricsPendingCorrection", options, [
+		"Song Lyrics",
+	])
 
 export const updateSongLyricsPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateSongLyricsPendingCorrectionData>>,
@@ -4150,6 +4431,7 @@ export const updateSongLyricsPendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateSongLyricsPendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4247,6 +4529,10 @@ export const findSongByIdOptions = (options: Options<FindSongByIdData>) =>
 		queryKey: findSongByIdQueryKey(options),
 	})
 
+export const updateSongMutationKey = (
+	options?: Partial<Options<UpdateSongData>>,
+) => createMutationKey("updateSong", options, ["Song"])
+
 export const updateSongMutation = (
 	options?: Partial<Options<UpdateSongData>>,
 ): MutationOptions<
@@ -4267,6 +4553,7 @@ export const updateSongMutation = (
 			})
 			return data
 		},
+		mutationKey: updateSongMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4296,6 +4583,10 @@ export const findSongPendingCorrectionOptions = (
 		queryKey: findSongPendingCorrectionQueryKey(options),
 	})
 
+export const updateSongPendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateSongPendingCorrectionData>>,
+) => createMutationKey("updateSongPendingCorrection", options, ["Song"])
+
 export const updateSongPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateSongPendingCorrectionData>>,
 ): MutationOptions<
@@ -4316,6 +4607,7 @@ export const updateSongPendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateSongPendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4345,6 +4637,10 @@ export const findTagByKeywordOptions = (
 		queryKey: findTagByKeywordQueryKey(options),
 	})
 
+export const createTagMutationKey = (
+	options?: Partial<Options<CreateTagData>>,
+) => createMutationKey("createTag", options, ["Tag"])
+
 export const createTagMutation = (
 	options?: Partial<Options<CreateTagData>>,
 ): MutationOptions<
@@ -4365,6 +4661,7 @@ export const createTagMutation = (
 			})
 			return data
 		},
+		mutationKey: createTagMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4462,6 +4759,10 @@ export const findTagByIdOptions = (options: Options<FindTagByIdData>) =>
 		queryKey: findTagByIdQueryKey(options),
 	})
 
+export const upsertTagCorrectionMutationKey = (
+	options?: Partial<Options<UpsertTagCorrectionData>>,
+) => createMutationKey("upsertTagCorrection", options, ["Tag"])
+
 export const upsertTagCorrectionMutation = (
 	options?: Partial<Options<UpsertTagCorrectionData>>,
 ): MutationOptions<
@@ -4482,9 +4783,14 @@ export const upsertTagCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: upsertTagCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const updateTagPendingCorrectionMutationKey = (
+	options?: Partial<Options<UpdateTagPendingCorrectionData>>,
+) => createMutationKey("updateTagPendingCorrection", options, ["Tag"])
 
 export const updateTagPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateTagPendingCorrectionData>>,
@@ -4506,6 +4812,7 @@ export const updateTagPendingCorrectionMutation = (
 			})
 			return data
 		},
+		mutationKey: updateTagPendingCorrectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4582,6 +4889,10 @@ export const findTagEntitiesInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const unfollowUserCollectionMutationKey = (
+	options?: Partial<Options<UnfollowUserCollectionData>>,
+) => createMutationKey("unfollowUserCollection", options, ["User Collection"])
+
 export const unfollowUserCollectionMutation = (
 	options?: Partial<Options<UnfollowUserCollectionData>>,
 ): MutationOptions<
@@ -4602,9 +4913,14 @@ export const unfollowUserCollectionMutation = (
 			})
 			return data
 		},
+		mutationKey: unfollowUserCollectionMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const followUserCollectionMutationKey = (
+	options?: Partial<Options<FollowUserCollectionData>>,
+) => createMutationKey("followUserCollection", options, ["User Collection"])
 
 export const followUserCollectionMutation = (
 	options?: Partial<Options<FollowUserCollectionData>>,
@@ -4626,6 +4942,7 @@ export const followUserCollectionMutation = (
 			})
 			return data
 		},
+		mutationKey: followUserCollectionMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4724,6 +5041,10 @@ export const userCollectionsInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const verifyEmailMutationKey = (
+	options?: Partial<Options<VerifyEmailData>>,
+) => createMutationKey("verifyEmail", options, ["Auth"])
+
 export const verifyEmailMutation = (
 	options?: Partial<Options<VerifyEmailData>>,
 ): MutationOptions<
@@ -4744,9 +5065,14 @@ export const verifyEmailMutation = (
 			})
 			return data
 		},
+		mutationKey: verifyEmailMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const verifyResetCodeMutationKey = (
+	options?: Partial<Options<VerifyResetCodeData>>,
+) => createMutationKey("verifyResetCode", options, ["Auth"])
 
 export const verifyResetCodeMutation = (
 	options?: Partial<Options<VerifyResetCodeData>>,
@@ -4768,6 +5094,7 @@ export const verifyResetCodeMutation = (
 			})
 			return data
 		},
+		mutationKey: verifyResetCodeMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -4897,6 +5224,10 @@ export const pendingCorrectionOptions = (
 		queryKey: pendingCorrectionQueryKey(options),
 	})
 
+export const deleteVoteMutationKey = (
+	options?: Partial<Options<DeleteVoteData>>,
+) => createMutationKey("deleteVote", options, ["TagVote"])
+
 export const deleteVoteMutation = (
 	options?: Partial<Options<DeleteVoteData>>,
 ): MutationOptions<unknown, DeleteVoteError, Options<DeleteVoteData>> => {
@@ -4913,9 +5244,13 @@ export const deleteVoteMutation = (
 			})
 			return data
 		},
+		mutationKey: deleteVoteMutationKey(options),
 	}
 	return mutationOptions
 }
+
+export const voteTagMutationKey = (options?: Partial<Options<VoteTagData>>) =>
+	createMutationKey("voteTag", options, ["TagVote"])
 
 export const voteTagMutation = (
 	options?: Partial<Options<VoteTagData>>,
@@ -4933,6 +5268,7 @@ export const voteTagMutation = (
 			})
 			return data
 		},
+		mutationKey: voteTagMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -5006,6 +5342,10 @@ export const getTagsInfiniteOptions = (options: Options<GetTagsData>) => {
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const recordVisitMutationKey = (
+	options?: Partial<Options<RecordVisitData>>,
+) => createMutationKey("recordVisit", options, ["Visit"])
+
 export const recordVisitMutation = (
 	options?: Partial<Options<RecordVisitData>>,
 ): MutationOptions<
@@ -5026,6 +5366,7 @@ export const recordVisitMutation = (
 			})
 			return data
 		},
+		mutationKey: recordVisitMutationKey(options),
 	}
 	return mutationOptions
 }
@@ -5104,6 +5445,10 @@ export const findEntityCommentsInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const createEntityCommentMutationKey = (
+	options?: Partial<Options<CreateEntityCommentData>>,
+) => createMutationKey("createEntityComment", options, ["Comment"])
+
 export const createEntityCommentMutation = (
 	options?: Partial<Options<CreateEntityCommentData>>,
 ): MutationOptions<
@@ -5124,6 +5469,36 @@ export const createEntityCommentMutation = (
 			})
 			return data
 		},
+		mutationKey: createEntityCommentMutationKey(options),
+	}
+	return mutationOptions
+}
+
+export const setRatingMutationKey = (
+	options?: Partial<Options<SetRatingData>>,
+) => createMutationKey("setRating", options, ["Rating"])
+
+export const setRatingMutation = (
+	options?: Partial<Options<SetRatingData>>,
+): MutationOptions<
+	SetRatingResponse,
+	SetRatingError,
+	Options<SetRatingData>
+> => {
+	const mutationOptions: MutationOptions<
+		SetRatingResponse,
+		SetRatingError,
+		Options<SetRatingData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await setRating({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+		mutationKey: setRatingMutationKey(options),
 	}
 	return mutationOptions
 }

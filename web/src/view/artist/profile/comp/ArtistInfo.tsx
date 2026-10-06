@@ -90,8 +90,7 @@ export function ArtistInfo() {
 				<Membership />
 				<Show when={context.artist.links?.length}>
 					<div {...stylex.attrs(styles.infoCell)}>
-						<ExternalLinks.Label />
-						<ExternalLinks.Body links={context.artist.links} />
+						<ExternalLinks links={context.artist.links} />
 					</div>
 				</Show>
 			</div>

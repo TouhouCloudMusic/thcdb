@@ -1,0 +1,382 @@
+diff --git a/src/tabs/tabs-indicator.tsx b/src/tabs/tabs-indicator.tsx
+--- a/src/tabs/tabs-indicator.tsx
++++ b/src/tabs/tabs-indicator.tsx
+@@ -11,12 +11,13 @@
+ 	createEffect,
+ 	createSignal,
+ 	on,
++	onCleanup,
+ 	splitProps,
+ } from "solid-js";
+ 
+ import type { Orientation } from "@kobalte/utils";
+ import { combineStyle } from "@solid-primitives/props";
+-import { createResizeObserver } from "@solid-primitives/resize-observer";
++import { makeResizeObserver } from "@solid-primitives/resize-observer";
+ import { useLocale } from "../i18n";
+ import {
+ 	type ElementOf,
+@@ -97,7 +98,7 @@
+ 
+ 	createEffect(
+ 		on(
+-			[context.selectedTab, context.orientation, direction],
++			[context.selectedTab, context.orientation, direction, () => context.listState().collection()],
+ 			() => {
+ 				if (style() != null) {
+ 					computeStyle();
+@@ -110,14 +111,7 @@
+ 	const [resizing, setResizing] = createSignal(false);
+ 
+ 	let timeout: NodeJS.Timeout | null = null;
+-	let prevTarget: any = null;
+-	createResizeObserver(context.selectedTab, (_, t) => {
+-		if (prevTarget !== t) {
+-			prevTarget = t;
+-			computeStyle();
+-			return;
+-		}
+-
++	const { observe, unobserve } = makeResizeObserver(() => {
+ 		setResizing(true);
+ 
+ 		if (timeout) clearTimeout(timeout);
+@@ -129,6 +123,15 @@
+ 		}, 1);
+ 
+ 		computeStyle();
++	}, { box: "border-box" });
++
++	createEffect(() => {
++		for (const item of context.listState().collection()) {
++			const tab = item.rawValue.ref();
++			if (!tab) continue;
++			observe(tab);
++			onCleanup(() => unobserve(tab));
++		}
+ 	});
+ 
+ 	return (
+diff --git a/dist/chunk/7DPKSDZL.js b/dist/chunk/7DPKSDZL.js
+--- a/dist/chunk/7DPKSDZL.js
++++ b/dist/chunk/7DPKSDZL.js
+@@ -10,7 +10,7 @@
+ import { createContext, useContext, createSignal, splitProps, createEffect, on, onCleanup, Show, createUniqueId, createMemo, mergeProps as mergeProps$1 } from 'solid-js';
+ import createPresence from 'solid-presence';
+ import { combineStyle } from '@solid-primitives/props';
+-import { createResizeObserver } from '@solid-primitives/resize-observer';
++import { makeResizeObserver } from '@solid-primitives/resize-observer';
+ 
+ // src/tabs/index.tsx
+ var tabs_exports = {};
+@@ -129,7 +129,7 @@
+     }
+     setStyle(styleObj);
+   };
+-  createEffect(on([context.selectedTab, context.orientation, direction], () => {
++  createEffect(on([context.selectedTab, context.orientation, direction, () => context.listState().collection()], () => {
+     if (style() != null) {
+       computeStyle();
+     }
+@@ -138,13 +138,7 @@
+   }));
+   const [resizing, setResizing] = createSignal(false);
+   let timeout = null;
+-  let prevTarget = null;
+-  createResizeObserver(context.selectedTab, (_, t) => {
+-    if (prevTarget !== t) {
+-      prevTarget = t;
+-      computeStyle();
+-      return;
+-    }
++  const { observe, unobserve } = makeResizeObserver(() => {
+     setResizing(true);
+     if (timeout)
+       clearTimeout(timeout);
+@@ -153,6 +147,15 @@
+       setResizing(false);
+     }, 1);
+     computeStyle();
++  }, { box: "border-box" });
++
++  createEffect(() => {
++    for (const item of context.listState().collection()) {
++      const tab = item.rawValue.ref();
++      if (!tab) continue;
++      observe(tab);
++      onCleanup(() => unobserve(tab));
++    }
+   });
+   return createComponent(Polymorphic, mergeProps({
+     as: "div",
+diff --git a/dist/chunk/PTWD4LYA.jsx b/dist/chunk/PTWD4LYA.jsx
+--- a/dist/chunk/PTWD4LYA.jsx
++++ b/dist/chunk/PTWD4LYA.jsx
+@@ -131,7 +131,7 @@
+   splitProps as splitProps2
+ } from "solid-js";
+ import { combineStyle } from "@solid-primitives/props";
+-import { createResizeObserver } from "@solid-primitives/resize-observer";
++import { makeResizeObserver } from "@solid-primitives/resize-observer";
+ function TabsIndicator(props) {
+   const context = useTabsContext();
+   const [local, others] = splitProps2(props, ["style"]);
+@@ -159,7 +159,7 @@
+   };
+   createEffect2(
+     on2(
+-      [context.selectedTab, context.orientation, direction],
++      [context.selectedTab, context.orientation, direction, () => context.listState().collection()],
+       () => {
+         if (style() != null) {
+           computeStyle();
+@@ -170,13 +170,7 @@
+   );
+   const [resizing, setResizing] = createSignal2(false);
+   let timeout = null;
+-  let prevTarget = null;
+-  createResizeObserver(context.selectedTab, (_, t) => {
+-    if (prevTarget !== t) {
+-      prevTarget = t;
+-      computeStyle();
+-      return;
+-    }
++  const { observe, unobserve } = makeResizeObserver(() => {
+     setResizing(true);
+     if (timeout)
+       clearTimeout(timeout);
+@@ -185,6 +179,15 @@
+       setResizing(false);
+     }, 1);
+     computeStyle();
++  }, { box: "border-box" });
++
++  createEffect2(() => {
++    for (const item of context.listState().collection()) {
++      const tab = item.rawValue.ref();
++      if (!tab) continue;
++      observe(tab);
++      onCleanup(() => unobserve(tab));
++    }
+   });
+   return <Polymorphic
+     as="div"
+diff --git a/src/rating/rating-item.tsx b/src/rating/rating-item.tsx
+--- a/src/rating/rating-item.tsx
++++ b/src/rating/rating-item.tsx
+@@ -151,7 +151,7 @@
+ 	const tabIndex = () => {
+ 		if (formControlContext.isDisabled()) return undefined;
+ 		if (formControlContext.isReadOnly()) equal() ? 0 : undefined;
+-		return equal() ? 0 : -1;
++		return equal() || (RatingContext.value() === 0 && index() === 0) ? 0 : -1;
+ 	};
+ 
+ 	const focusItem = (index: number) =>
+@@ -174,14 +174,29 @@
+ 		focusItem(value - 1);
+ 	};
+ 
++	const getValueFromPointer = (e: JSX.TargetedMouseEvent<HTMLElement>) => {
++		const point = getEventPoint(e);
++		const relativePoint = getRelativePoint(point, e.currentTarget);
++		const percentX = relativePoint.getPercentValue({
++			orientation: RatingContext.orientation(),
++			dir: direction(),
++		});
++		const isMidway = percentX < 0.5;
++		const half = RatingContext.allowHalf() && isMidway;
++		const factor = half ? 0.5 : 0;
++		return value()! - factor;
++	};
++
+ 	const onClick: JSX.EventHandlerUnion<any, MouseEvent> = (e) => {
+ 		callHandler(e, local.onClick);
+ 
+ 		const value =
+-			RatingContext.hoveredValue() === -1
+-				? index() + 1
+-				: RatingContext.hoveredValue();
+-		RatingContext.setValue(value);
++			e.detail > 0
++				? getValueFromPointer(e)
++				: RatingContext.hoveredValue() === -1
++					? index() + 1
++					: RatingContext.hoveredValue();
++		RatingContext.setValue(value === RatingContext.value() ? 0 : value);
+ 		RatingContext.setHoveredValue(-1);
+ 		focusItem(value - 1);
+ 	};
+@@ -191,16 +206,7 @@
+ 			return;
+ 		callHandler(e, local.onPointerMove);
+ 
+-		const point = getEventPoint(e);
+-		const relativePoint = getRelativePoint(point, e.currentTarget);
+-		const percentX = relativePoint.getPercentValue({
+-			orientation: RatingContext.orientation(),
+-			dir: direction(),
+-		});
+-		const isMidway = percentX < 0.5;
+-		const half = RatingContext.allowHalf() && isMidway;
+-		const factor = half ? 0.5 : 0;
+-		RatingContext.setHoveredValue(value()! - factor);
++		RatingContext.setHoveredValue(getValueFromPointer(e));
+ 	};
+ 
+ 	const onKeyDown: JSX.EventHandlerUnion<any, KeyboardEvent> = (e) => {
+@@ -225,10 +231,14 @@
+ 					setPrevValue();
+ 				}
+ 				break;
+-			case EventKey.Space:
++			case EventKey.Space: {
+ 				e.preventDefault();
+-				RatingContext.setValue(newValue()!);
++				const selectedValue = equal() ? newValue()! : value()!;
++				RatingContext.setValue(
++					selectedValue === RatingContext.value() ? 0 : selectedValue,
++				);
+ 				break;
++			}
+ 			case EventKey.Home:
+ 				e.preventDefault();
+ 				RatingContext.setValue(1);
+diff --git a/dist/rating/index.js b/dist/rating/index.js
+--- a/dist/rating/index.js
++++ b/dist/rating/index.js
+@@ -159,7 +159,7 @@
+       return void 0;
+     if (formControlContext.isReadOnly())
+       equal() ? 0 : void 0;
+-    return equal() ? 0 : -1;
++    return equal() || RatingContext2.value() === 0 && index() === 0 ? 0 : -1;
+   };
+   const focusItem = (index2) => RatingContext2.items()[Math.round(index2)].ref().focus();
+   const setPrevValue = () => {
+@@ -174,17 +174,7 @@
+     RatingContext2.setValue(value2);
+     focusItem(value2 - 1);
+   };
+-  const onClick = (e) => {
+-    callHandler(e, local.onClick);
+-    const value2 = RatingContext2.hoveredValue() === -1 ? index() + 1 : RatingContext2.hoveredValue();
+-    RatingContext2.setValue(value2);
+-    RatingContext2.setHoveredValue(-1);
+-    focusItem(value2 - 1);
+-  };
+-  const onPointerMove = (e) => {
+-    if (formControlContext.isDisabled() || formControlContext.isReadOnly())
+-      return;
+-    callHandler(e, local.onPointerMove);
++  const getValueFromPointer = (e) => {
+     const point = getEventPoint(e);
+     const relativePoint = getRelativePoint(point, e.currentTarget);
+     const percentX = relativePoint.getPercentValue({
+@@ -194,7 +184,21 @@
+     const isMidway = percentX < 0.5;
+     const half2 = RatingContext2.allowHalf() && isMidway;
+     const factor = half2 ? 0.5 : 0;
+-    RatingContext2.setHoveredValue(value() - factor);
++    return value() - factor;
++  };
++
++  const onClick = (e) => {
++    callHandler(e, local.onClick);
++    const value2 = e.detail > 0 ? getValueFromPointer(e) : RatingContext2.hoveredValue() === -1 ? index() + 1 : RatingContext2.hoveredValue();
++    RatingContext2.setValue(value2 === RatingContext2.value() ? 0 : value2);
++    RatingContext2.setHoveredValue(-1);
++    focusItem(value2 - 1);
++  };
++  const onPointerMove = (e) => {
++    if (formControlContext.isDisabled() || formControlContext.isReadOnly())
++      return;
++    callHandler(e, local.onPointerMove);
++    RatingContext2.setHoveredValue(getValueFromPointer(e));
+   };
+   const onKeyDown = (e) => {
+     callHandler(e, local.onKeyDown);
+@@ -217,10 +221,12 @@
+           setPrevValue();
+         }
+         break;
+-      case EventKey.Space:
++      case EventKey.Space: {
+         e.preventDefault();
+-        RatingContext2.setValue(newValue());
++        const selectedValue = equal() ? newValue() : value();
++        RatingContext2.setValue(selectedValue === RatingContext2.value() ? 0 : selectedValue);
+         break;
++      }
+       case EventKey.Home:
+         e.preventDefault();
+         RatingContext2.setValue(1);
+diff --git a/dist/rating/index.jsx b/dist/rating/index.jsx
+--- a/dist/rating/index.jsx
++++ b/dist/rating/index.jsx
+@@ -223,7 +223,7 @@
+       return void 0;
+     if (formControlContext.isReadOnly())
+       equal() ? 0 : void 0;
+-    return equal() ? 0 : -1;
++    return equal() || RatingContext2.value() === 0 && index() === 0 ? 0 : -1;
+   };
+   const focusItem = (index2) => RatingContext2.items()[Math.round(index2)].ref().focus();
+   const setPrevValue = () => {
+@@ -241,17 +241,7 @@
+     RatingContext2.setValue(value2);
+     focusItem(value2 - 1);
+   };
+-  const onClick = (e) => {
+-    callHandler2(e, local.onClick);
+-    const value2 = RatingContext2.hoveredValue() === -1 ? index() + 1 : RatingContext2.hoveredValue();
+-    RatingContext2.setValue(value2);
+-    RatingContext2.setHoveredValue(-1);
+-    focusItem(value2 - 1);
+-  };
+-  const onPointerMove = (e) => {
+-    if (formControlContext.isDisabled() || formControlContext.isReadOnly())
+-      return;
+-    callHandler2(e, local.onPointerMove);
++  const getValueFromPointer = (e) => {
+     const point = getEventPoint(e);
+     const relativePoint = getRelativePoint(point, e.currentTarget);
+     const percentX = relativePoint.getPercentValue({
+@@ -261,7 +251,21 @@
+     const isMidway = percentX < 0.5;
+     const half2 = RatingContext2.allowHalf() && isMidway;
+     const factor = half2 ? 0.5 : 0;
+-    RatingContext2.setHoveredValue(value() - factor);
++    return value() - factor;
++  };
++
++  const onClick = (e) => {
++    callHandler2(e, local.onClick);
++    const value2 = e.detail > 0 ? getValueFromPointer(e) : RatingContext2.hoveredValue() === -1 ? index() + 1 : RatingContext2.hoveredValue();
++    RatingContext2.setValue(value2 === RatingContext2.value() ? 0 : value2);
++    RatingContext2.setHoveredValue(-1);
++    focusItem(value2 - 1);
++  };
++  const onPointerMove = (e) => {
++    if (formControlContext.isDisabled() || formControlContext.isReadOnly())
++      return;
++    callHandler2(e, local.onPointerMove);
++    RatingContext2.setHoveredValue(getValueFromPointer(e));
+   };
+   const onKeyDown = (e) => {
+     callHandler2(e, local.onKeyDown);
+@@ -284,10 +288,12 @@
+           setPrevValue();
+         }
+         break;
+-      case EventKey.Space:
++      case EventKey.Space: {
+         e.preventDefault();
+-        RatingContext2.setValue(newValue());
++        const selectedValue = equal() ? newValue() : value();
++        RatingContext2.setValue(selectedValue === RatingContext2.value() ? 0 : selectedValue);
+         break;
++      }
+       case EventKey.Home:
+         e.preventDefault();
+         RatingContext2.setValue(1);

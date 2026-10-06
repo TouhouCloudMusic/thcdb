@@ -293,6 +293,9 @@ import type {
 	SetImageQueueSubscriptionData,
 	SetImageQueueSubscriptionErrors,
 	SetImageQueueSubscriptionResponses,
+	SetRatingData,
+	SetRatingErrors,
+	SetRatingResponses,
 	SetUserRolesData,
 	SetUserRolesErrors,
 	SetUserRolesResponses,
@@ -2401,6 +2404,23 @@ export const createEntityComment = <ThrowOnError extends boolean = false>(
 	>({
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/{target_type}/{id}/comments",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const setRating = <ThrowOnError extends boolean = false>(
+	options: Options<SetRatingData, ThrowOnError>,
+): RequestResult<SetRatingResponses, SetRatingErrors, ThrowOnError> =>
+	(options.client ?? client).put<
+		SetRatingResponses,
+		SetRatingErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/{target_type}/{id}/rating",
 		...options,
 		headers: {
 			"Content-Type": "application/json",

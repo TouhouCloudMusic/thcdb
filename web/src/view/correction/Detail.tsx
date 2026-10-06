@@ -21,6 +21,7 @@ import type {
 	EntityType,
 } from "~/hey-api"
 import {
+	entityCorrectionsQueryKey,
 	moderateCorrectionMutation,
 	setCorrectionSubscriptionMutation,
 } from "~/hey-api/@tanstack/solid-query.gen"
@@ -673,6 +674,11 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 			void queryClient.invalidateQueries({ queryKey: ["correction::diff"] })
 			void queryClient.invalidateQueries({ queryKey: ["correction::history"] })
 			if (entity) {
+				void queryClient.invalidateQueries({
+					queryKey: entityCorrectionsQueryKey({
+						path: { entity_type: entity.entityType, id: entity.entityId },
+					}),
+				})
 				void invalidatePendingCorrection(
 					queryClient,
 					entity.entityType,

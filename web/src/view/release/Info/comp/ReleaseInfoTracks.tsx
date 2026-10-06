@@ -1,11 +1,11 @@
 import { Trans } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
-import type { Release, ReleaseArtist, ReleaseTrack } from "@thc/api"
 import { createMemo, For, Show } from "solid-js"
 
 import { Intersperse } from "~/component/data/Intersperse"
 import { Duration } from "~/domain/shared"
+import type { Release, ReleaseArtist, ReleaseTrack } from "~/hey-api"
 import { link } from "~/style/link"
 import { dividerStyles, infoStyles } from "~/style/primitives"
 import { colors, fontSizes, lineHeights, px } from "~/style/tokens.stylex"

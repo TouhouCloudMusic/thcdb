@@ -1,9 +1,9 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
-import type { Release } from "@thc/api"
 import { createMemo, createSignal, Show, untrack } from "solid-js"
 
 import { Tab } from "~/component/atomic"
+import type { Release } from "~/hey-api"
 import { px } from "~/style/tokens.stylex"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"

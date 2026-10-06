@@ -21,6 +21,7 @@ import type {
 	ImageQueueStatus,
 } from "~/hey-api"
 import {
+	findReleaseByIdQueryKey,
 	imageQueueDetailOptions,
 	imageQueueDetailQueryKey,
 	moderateImageQueueMutation,
@@ -492,6 +493,11 @@ export function ImageQueueDetailPage(props: Props) {
 					if (currentDetail.release?.release_id !== undefined) {
 						void queryClient.invalidateQueries({
 							queryKey: ["release::info", currentDetail.release.release_id],
+						})
+						void queryClient.invalidateQueries({
+							queryKey: findReleaseByIdQueryKey({
+								path: { id: currentDetail.release.release_id },
+							}),
 						})
 					}
 				},

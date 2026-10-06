@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use domain::shared::CursorResponse;
 use entity::{artist, release, song, tag, user};
 use infra_db::SeaOrmRepository;
+use infra_error::EntityNotFound;
 use sea_orm::{ConnectionTrait, EntityTrait, FromQueryResult};
 use sea_query::{
     Alias, Expr, ExprTrait, Func, OnConflict, Order, Query, SimpleExpr,
@@ -11,7 +12,6 @@ use sea_query::{
 use super::Error;
 use super::model::{EntityType, Score, TagAggregate, TagAggregateVote};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::EntityNotFound;
 
 macro_rules! with_vote_entity {
     ($kind:expr, | $vote:ident, $entity_id_col:ident | $query:expr) => {
