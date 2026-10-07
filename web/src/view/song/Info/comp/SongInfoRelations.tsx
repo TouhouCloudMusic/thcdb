@@ -91,8 +91,6 @@ const relationsStyles = stylex.create({
 		borderRadius: radius.md,
 		paddingInline: px[12],
 		textAlign: "center",
-		fontSize: fontSizes.sm,
-		fontWeight: 400,
 		color: colors.textSecondary,
 		outlineWidth: 2,
 		outlineStyle: "solid",

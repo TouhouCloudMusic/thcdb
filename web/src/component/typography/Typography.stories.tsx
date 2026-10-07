@@ -68,6 +68,7 @@ const HEADINGS = [
 	{ size: "lg", fontSize: 28 },
 	{ size: "md", fontSize: 24 },
 	{ size: "sm", fontSize: 20 },
+	{ size: "xs", fontSize: 18 },
 ] as const
 
 const BUTTONS = [
@@ -98,6 +99,18 @@ function TypographySpecimen(props: { sampleText: string }) {
 							</div>
 						)}
 					</For>
+					<div {...stylex.attrs(styles.row)}>
+						<dt {...stylex.attrs(styles.label)}>Subtle / 18</dt>
+						<dd
+							{...stylex.attrs(
+								typography.heading.xs,
+								typography.heading.subtle,
+								styles.sample,
+							)}
+						>
+							{props.sampleText}
+						</dd>
+					</div>
 				</dl>
 			</section>
 			<section {...stylex.attrs(styles.section)}>
