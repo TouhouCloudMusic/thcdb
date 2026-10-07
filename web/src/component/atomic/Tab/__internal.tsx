@@ -6,7 +6,7 @@ import type { ParentProps } from "solid-js"
 import { createMemo, splitProps } from "solid-js"
 
 import { palette } from "~/style/color/palette.stylex"
-import { radius, colors, px } from "~/style/tokens.stylex"
+import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
 import { createHorizontalFocusScroll } from "~/utils/solid/createHorizontalFocusScroll"
 import { createScrollEdges } from "~/utils/solid/createScrollEdges"
 
@@ -114,7 +114,7 @@ const listStyles = stylex.create({
 		borderBottomColor: palette.slate[300],
 	},
 	list: { position: "relative", display: "flex" },
-	horizontal: { columnGap: px[8], whiteSpace: "nowrap" },
+	horizontal: { columnGap: 0, whiteSpace: "nowrap" },
 	vertical: { flexDirection: "column" },
 })
 
@@ -144,17 +144,23 @@ export function List(
 
 const triggerStyles = stylex.create({
 	trigger: {
-		paddingInline: px[8],
+		display: "flex",
+		height: px[32],
+		alignItems: "center",
+		justifyContent: "center",
+		paddingInline: px[12],
+		paddingBlock: 0,
 		borderRadius: 0,
-		lineHeight: "1.25rem",
+		fontSize: fontSizes.base,
+		lineHeight: px[20],
 		fontWeight: 300,
-		letterSpacing: "0.025em",
+		letterSpacing: "-0.025em",
 		color: {
 			default: colors.textTertiary,
 			":hover": { default: null, "@media (hover: hover)": colors.textPrimary },
 			":is([data-selected])": colors.textPrimary,
 		},
-		textTransform: "uppercase",
+		textTransform: "none",
 		transitionProperty: "all",
 		transitionDuration: "150ms",
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",

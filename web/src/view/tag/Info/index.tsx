@@ -97,6 +97,7 @@ const pageStyles = stylex.create({
 })
 
 const sortStyles = stylex.create({
+	trigger: { height: px[32], paddingBlock: 0 },
 	text: {
 		fontWeight: 300,
 	},
@@ -121,14 +122,6 @@ const tabsStyles = stylex.create({
 	},
 	content: {
 		paddingTop: px[8],
-		paddingInline: px[8],
-	},
-	// TODO: font design systems
-	trigger: {
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		// The default styles of tab use UPPERCASE.
-		textTransform: "none",
 	},
 })
 
@@ -159,7 +152,11 @@ function EntitySortSelect(props: {
 		>
 			<Select.Trigger
 				aria-label={props.label}
-				styles={[underlineSelectStyles.trigger, sortStyles.text]}
+				styles={[
+					underlineSelectStyles.trigger,
+					sortStyles.trigger,
+					sortStyles.text,
+				]}
 			>
 				<Select.Value<TagEntitySort>>
 					{(state) =>
@@ -205,7 +202,11 @@ function CollectionSortSelect(props: { store: TagCollectionsStore }) {
 		>
 			<Select.Trigger
 				aria-label={t`Sort collections`}
-				styles={[underlineSelectStyles.trigger, sortStyles.text]}
+				styles={[
+					underlineSelectStyles.trigger,
+					sortStyles.trigger,
+					sortStyles.text,
+				]}
 			>
 				<Select.Value<EntityUserCollectionSort>>
 					{(state) =>
@@ -246,30 +247,19 @@ export function TagInfoPage(props: Props) {
 								onChange={setActiveTab}
 							>
 								<div {...stylex.attrs(tabsStyles.root)}>
-									<Tab.List>
-										<Tab.Trigger
-											value="release"
-											styles={tabsStyles.trigger}
-										>
-											{t`Releases`}
-										</Tab.Trigger>
+									<Tab.ScrollArea>
+										<Tab.List>
+											<Tab.Trigger value="release">{t`Releases`}</Tab.Trigger>
 
-										<Tab.Trigger
-											value="song"
-											styles={tabsStyles.trigger}
-										>
-											{t`Songs`}
-										</Tab.Trigger>
+											<Tab.Trigger value="song">{t`Songs`}</Tab.Trigger>
 
-										<Tab.Trigger
-											value="collection"
-											styles={tabsStyles.trigger}
-										>
-											{t`Collections`}
-										</Tab.Trigger>
+											<Tab.Trigger value="collection">
+												{t`Collections`}
+											</Tab.Trigger>
 
-										<Tab.Indicator styles={tabsStyles.indicator} />
-									</Tab.List>
+											<Tab.Indicator styles={tabsStyles.indicator} />
+										</Tab.List>
+									</Tab.ScrollArea>
 
 									<Switch>
 										<Match when={activeTab() === "release"}>

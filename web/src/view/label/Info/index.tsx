@@ -52,11 +52,6 @@ const styles = stylex.create({
 		gap: px[2],
 		whiteSpace: "pre",
 	},
-	tabTrigger: {
-		paddingBlock: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-	},
 	tabPanel: { padding: px[16] },
 })
 
@@ -177,16 +172,8 @@ function LabelInfoComments() {
 		>
 			<Tab.ScrollArea>
 				<Tab.List styles={Tab.containerStyles}>
-					<EntityCommentsTabTrigger
-						count={comments.activeCommentCount()}
-						styles={styles.tabTrigger}
-					/>
-					<Tab.Trigger
-						value="Collections"
-						styles={styles.tabTrigger}
-					>
-						{t`Collections`}
-					</Tab.Trigger>
+					<EntityCommentsTabTrigger count={comments.activeCommentCount()} />
+					<Tab.Trigger value="Collections">{t`Collections`}</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
 			</Tab.ScrollArea>

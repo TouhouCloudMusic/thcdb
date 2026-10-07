@@ -90,9 +90,6 @@ const styles = stylex.create({
 		display: "flex",
 		alignItems: "center",
 		gap: px[8],
-		paddingBlock: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 	},
 	count: {
 		fontSize: fontSizes.sm,

@@ -10,7 +10,7 @@ import { formatEventLocation } from "~/domain/event"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { infoStyles } from "~/style/primitives"
-import { colors, fontSizes, lineHeights, px } from "~/style/tokens.stylex"
+import { colors, fontSizes, px } from "~/style/tokens.stylex"
 import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
@@ -47,11 +47,6 @@ const styles = stylex.create({
 		display: "flex",
 		flexWrap: "wrap",
 		whiteSpace: "pre",
-	},
-	tabTrigger: {
-		paddingBlock: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 	},
 	tabContent: { padding: px[16] },
 	descriptionContainer: { padding: px[8] },
@@ -183,23 +178,10 @@ function EventInfoTabs() {
 			<Tab.ScrollArea>
 				<Tab.List styles={Tab.containerStyles}>
 					<Show when={hasDescription()}>
-						<Tab.Trigger
-							value="Description"
-							styles={styles.tabTrigger}
-						>
-							{t`Description`}
-						</Tab.Trigger>
+						<Tab.Trigger value="Description">{t`Description`}</Tab.Trigger>
 					</Show>
-					<EntityCommentsTabTrigger
-						count={comments.activeCommentCount()}
-						styles={styles.tabTrigger}
-					/>
-					<Tab.Trigger
-						value="Collections"
-						styles={styles.tabTrigger}
-					>
-						{t`Collections`}
-					</Tab.Trigger>
+					<EntityCommentsTabTrigger count={comments.activeCommentCount()} />
+					<Tab.Trigger value="Collections">{t`Collections`}</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
 			</Tab.ScrollArea>
