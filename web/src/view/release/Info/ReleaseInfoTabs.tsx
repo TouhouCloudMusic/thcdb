@@ -1,10 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { Release } from "@thc/api"
-import { createSignal } from "solid-js"
+import { createSignal, Show, untrack } from "solid-js"
 
 import { Tab } from "~/component/atomic"
-import { fontSizes, px } from "~/style/tokens.stylex"
+import { px } from "~/style/tokens.stylex"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import type { EntityCommentsModel } from "~/view/comment/EntityComments"
@@ -14,14 +14,9 @@ import { useEntityComments } from "~/view/comment/useEntityComments"
 import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
 import { ReleaseInfoTracks } from "./comp/ReleaseInfoTracks"
 
-// TODO: Unify tabs styles
 const styles = stylex.create({
-	tabTrigger: {
-		paddingBlock: px[16],
-		fontSize: fontSizes.sm,
-	},
 	tabPanel: { paddingBlock: px[16] },
-	trackPanel: { display: "flex", flexDirection: "column", gap: px[24] },
+	creditsPanel: { padding: px[16] },
 })
 
 type ReleaseInfoTabsProps = {
@@ -35,8 +30,24 @@ type ReleaseInfoTabsViewProps = {
 	onActiveTabChange: (value: string) => void
 }
 
+function releaseHasTracks(release: Release) {
+	return (release.tracks?.length ?? 0) > 0
+}
+
+function releaseHasCredits(release: Release) {
+	return release.credits?.some((credit) => credit.on === null) ?? false
+}
+
 export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
-	const [activeTab, setActiveTab] = createSignal("Tracks")
+	const [activeTab, setActiveTab] = createSignal(
+		untrack(() =>
+			releaseHasTracks(props.release)
+				? "Tracks"
+				: releaseHasCredits(props.release)
+					? "Credits"
+					: "Comments",
+		),
+	)
 	const comments = useEntityComments(() => ({
 		entityType: "release",
 		entityId: props.release.id,
@@ -63,36 +74,35 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 		>
 			<Tab.ScrollArea>
 				<Tab.List styles={Tab.containerStyles}>
-					<Tab.Trigger
-						value="Tracks"
-						styles={styles.tabTrigger}
-					>
-						{t`Tracks`}
-					</Tab.Trigger>
+					<Tab.Trigger value="Tracks">{t`Tracks`}</Tab.Trigger>
+					<Show when={releaseHasCredits(props.release)}>
+						<Tab.Trigger value="Credits">{t`Credits`}</Tab.Trigger>
+					</Show>
 					<EntityCommentsTabTrigger
 						count={props.comments.activeCommentCount()}
-						styles={styles.tabTrigger}
 					/>
-					<Tab.Trigger
-						value="Collections"
-						styles={styles.tabTrigger}
-					>
-						{t`Collections`}
-					</Tab.Trigger>
+					<Tab.Trigger value="Collections">{t`Collections`}</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
 			</Tab.ScrollArea>
 			<Tab.Content
 				value="Tracks"
-				{...stylex.attrs(styles.tabPanel, styles.trackPanel)}
+				{...stylex.attrs(styles.tabPanel)}
 			>
 				<ReleaseInfoTracks
 					discs={props.release.discs}
 					tracks={props.release.tracks}
 					credits={props.release.credits}
 				/>
-				<ReleaseInfoCredits credits={props.release.credits} />
 			</Tab.Content>
+			<Show when={releaseHasCredits(props.release)}>
+				<Tab.Content
+					value="Credits"
+					{...stylex.attrs(styles.creditsPanel)}
+				>
+					<ReleaseInfoCredits credits={props.release.credits} />
+				</Tab.Content>
+			</Show>
 			<Tab.Content
 				value="Comments"
 				{...stylex.attrs(styles.tabPanel)}
