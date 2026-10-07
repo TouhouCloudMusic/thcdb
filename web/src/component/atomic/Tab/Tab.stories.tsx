@@ -21,7 +21,6 @@ const styles = stylex.create({
 		display: "flex",
 		alignItems: "center",
 		gap: px[8],
-		paddingBlock: px[12],
 	},
 	badge: {
 		borderRadius: radius.full,

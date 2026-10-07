@@ -301,9 +301,6 @@ const styles = stylex.create({
 	tabs: { display: "flex", flexDirection: "column", gap: px[20] },
 	tab: {
 		width: "100%",
-		paddingBlock: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 	},
 	emptySection: {
 		borderWidth: "1px",

@@ -52,9 +52,6 @@ const styles = stylex.create({
 	},
 	tabTrigger: {
 		paddingInline: px[12],
-		paddingBlock: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 		color: palette.slate[800],
 	},
 	releases: {

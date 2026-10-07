@@ -6,7 +6,7 @@ import { createContext, createSignal, Show } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { PageLayout } from "~/layout/PageLayout"
-import { fontSizes, lineHeights, px } from "~/style/tokens.stylex"
+import { px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
@@ -49,11 +49,6 @@ const styles = stylex.create({
 		flexBasis: px[288],
 		flexDirection: "column",
 		rowGap: px[16],
-	},
-	tabTrigger: {
-		paddingBlock: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 	},
 	tabContent: {
 		padding: px[16],
@@ -170,46 +165,20 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 		>
 			<Tab.ScrollArea>
 				<Tab.List styles={[Tab.containerStyles]}>
-					<Tab.Trigger
-						value="Release"
-						styles={[styles.tabTrigger]}
-					>
-						{t`Release`}
-					</Tab.Trigger>
+					<Tab.Trigger value="Release">{t`Release`}</Tab.Trigger>
 					<Show when={hasCredits()}>
-						<Tab.Trigger
-							value="Credits"
-							styles={[styles.tabTrigger]}
-						>
-							{t`Credits`}
-						</Tab.Trigger>
+						<Tab.Trigger value="Credits">{t`Credits`}</Tab.Trigger>
 					</Show>
 					<Show when={hasLyrics()}>
-						<Tab.Trigger
-							value="Lyrics"
-							styles={[styles.tabTrigger]}
-						>
-							{t`Lyrics`}
-						</Tab.Trigger>
+						<Tab.Trigger value="Lyrics">{t`Lyrics`}</Tab.Trigger>
 					</Show>
 					<Show when={hasRelations()}>
-						<Tab.Trigger
-							value="Relations"
-							styles={[styles.tabTrigger]}
-						>
-							{t`Relations`}
-						</Tab.Trigger>
+						<Tab.Trigger value="Relations">{t`Relations`}</Tab.Trigger>
 					</Show>
 					<EntityCommentsTabTrigger
 						count={props.comments.activeCommentCount()}
-						styles={[styles.tabTrigger]}
 					/>
-					<Tab.Trigger
-						value="Collections"
-						styles={[styles.tabTrigger]}
-					>
-						{t`Collections`}
-					</Tab.Trigger>
+					<Tab.Trigger value="Collections">{t`Collections`}</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
 			</Tab.ScrollArea>
