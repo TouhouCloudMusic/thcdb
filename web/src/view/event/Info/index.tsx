@@ -114,7 +114,7 @@ function EventInfoHeader() {
 	return (
 		<>
 			<header>
-				<h1 {...stylex.attrs(typography.heading.lg, styles.title)}>
+				<h1 {...stylex.attrs(typography.heading.md, styles.title)}>
 					{ctx.event.name}
 				</h1>
 				<p {...stylex.attrs(styles.shortDescription)}>

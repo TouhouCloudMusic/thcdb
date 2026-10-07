@@ -103,7 +103,7 @@ function LabelInfoHeader() {
 	const ctx = assertContext(LabelInfoPageContext)
 	return (
 		<header>
-			<h1 {...stylex.attrs(typography.heading.lg)}>{ctx.label.name}</h1>
+			<h1 {...stylex.attrs(typography.heading.md)}>{ctx.label.name}</h1>
 		</header>
 	)
 }

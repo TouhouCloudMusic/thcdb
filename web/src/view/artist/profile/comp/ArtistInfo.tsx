@@ -63,7 +63,7 @@ export function ArtistInfo() {
 
 	return (
 		<div {...stylex.attrs(styles.root)}>
-			<h1 {...stylex.attrs(typography.heading.lg, styles.name)}>
+			<h1 {...stylex.attrs(typography.heading.md, styles.name)}>
 				{context.artist.name}
 			</h1>
 			<div {...stylex.attrs(styles.fields)}>

@@ -57,7 +57,7 @@ export function ReleaseInfoTitleAndArtist() {
 	return (
 		<div>
 			<div {...stylex.attrs(styles.sectionSpacing)}>
-				<h1 {...stylex.attrs(typography.heading.lg, styles.title)}>
+				<h1 {...stylex.attrs(typography.heading.md, styles.title)}>
 					{ctx.release.title}
 				</h1>
 
