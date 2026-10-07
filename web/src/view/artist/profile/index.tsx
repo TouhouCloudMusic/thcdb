@@ -19,6 +19,7 @@ import { px, radius } from "~/style/tokens.stylex"
 import type { InfiniteQuery } from "~/type/query"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { entityDetailStyles } from "~/view/entity/detailStyles"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
 
 import type { ArtistCreditsModel } from "./comp/ArtistCredits"
@@ -98,11 +99,7 @@ const styles = stylex.create({
 	},
 	tags: {
 		gridColumn: "1 / -1",
-		width: "fit-content",
-		minWidth: `min(${px[384]}, 100%)`,
-		maxWidth: "100%",
 		justifySelf: "start",
-		overflowWrap: "anywhere",
 	},
 	section: {
 		gridColumn: "1 / -1",
@@ -187,7 +184,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 							<div {...stylex.attrs(styles.details)}>
 								<ArtistInfo />
 								<EntityTags
-									styles={styles.tags}
+									styles={[entityDetailStyles.tags, styles.tags]}
 									entityType="artist"
 									entityId={props.artist.id}
 								/>

@@ -55,6 +55,14 @@ const styles = stylex.create({
 		alignItems: "center",
 		columnGap: px[16],
 	},
+	values: {
+		display: "grid",
+		minWidth: 0,
+		gridColumn: "2 / -1",
+		gridTemplateColumns: "minmax(0,1fr) auto",
+		alignItems: "center",
+		columnGap: px[16],
+	},
 	status: {
 		fontSize: fontSizes.xs,
 		lineHeight: lineHeights.xs,
@@ -310,92 +318,96 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 	return (
 		<div {...stylex.attrs(styles.root, props.styles)}>
 			<div {...stylex.attrs(infoStyles.label)}>{t`Tags`}</div>
-			<Switch>
-				<Match when={props.isLoading}>
-					<div>
-						<span {...stylex.attrs(styles.status)}>{t`Loading...`}</span>
-					</div>
-				</Match>
-				<Match when={props.tags.length === 0}>
-					<div>
-						<span {...stylex.attrs(styles.status)}>{t`No tags yet`}</span>
-					</div>
-				</Match>
-				<Match when={props.tags.length > 0}>
-					<div {...stylex.attrs(styles.tagLists)}>
-						<Show when={primaryTags().length > 0}>
-							<div {...stylex.attrs(styles.primaryTags)}>
-								<Intersperse
-									of={primaryTags()}
-									with=", "
-								>
-									{(tag) => (
-										<Link
-											class={stylex.attrs(link.base, link.withUnderline).class}
-											to="/tag/$id"
-											params={{ id: tag.id.toString() }}
-										>
-											{tag.name}
-										</Link>
-									)}
-								</Intersperse>
-							</div>
-						</Show>
+			<div {...stylex.attrs(styles.values)}>
+				<Switch>
+					<Match when={props.isLoading}>
+						<div>
+							<span {...stylex.attrs(styles.status)}>{t`Loading...`}</span>
+						</div>
+					</Match>
+					<Match when={props.tags.length === 0}>
+						<div>
+							<span {...stylex.attrs(styles.status)}>{t`No tags yet`}</span>
+						</div>
+					</Match>
+					<Match when={props.tags.length > 0}>
+						<div {...stylex.attrs(styles.tagLists)}>
+							<Show when={primaryTags().length > 0}>
+								<div {...stylex.attrs(styles.primaryTags)}>
+									<Intersperse
+										of={primaryTags()}
+										with=", "
+									>
+										{(tag) => (
+											<Link
+												class={
+													stylex.attrs(link.base, link.withUnderline).class
+												}
+												to="/tag/$id"
+												params={{ id: tag.id.toString() }}
+											>
+												{tag.name}
+											</Link>
+										)}
+									</Intersperse>
+								</div>
+							</Show>
 
-						<Show when={secondaryTags().length > 0}>
-							<div
-								{...stylex.attrs(
-									primaryTags().length > 0
-										? styles.secondaryWithPrimary
-										: styles.secondaryOnly,
-									styles.secondaryTags,
-								)}
-							>
-								<Intersperse
-									of={secondaryTags()}
-									with=", "
-								>
-									{(tag) => (
-										<Link
-											to="/tag/$id"
-											params={{ id: tag.id.toString() }}
-											class={
-												stylex.attrs(
-													link.base,
-													link.withUnderline,
-													styles.secondaryTags,
-												).class
-											}
-										>
-											{tag.name}
-										</Link>
+							<Show when={secondaryTags().length > 0}>
+								<div
+									{...stylex.attrs(
+										primaryTags().length > 0
+											? styles.secondaryWithPrimary
+											: styles.secondaryOnly,
+										styles.secondaryTags,
 									)}
-								</Intersperse>
-							</div>
-						</Show>
-					</div>
-				</Match>
-			</Switch>
-			<Show when={!props.isLoading && props.isSignedIn}>
-				<ManageTagsDialog
-					tags={props.tags}
-					isSignedIn={props.isSignedIn}
-					dataFilter={props.dataFilter}
-					pendingKey={props.pendingKey}
-					onVote={props.onVote}
-					onRemoveVote={props.onRemoveVote}
-					trigger={
-						<Dialog.Trigger
-							as={Button}
-							appearance="ghost"
-							tone="gray"
-							styles={styles.trigger}
-						>
-							{props.tags.length ? <Pencil1Icon /> : <PlusIcon />}
-						</Dialog.Trigger>
-					}
-				/>
-			</Show>
+								>
+									<Intersperse
+										of={secondaryTags()}
+										with=", "
+									>
+										{(tag) => (
+											<Link
+												to="/tag/$id"
+												params={{ id: tag.id.toString() }}
+												class={
+													stylex.attrs(
+														link.base,
+														link.withUnderline,
+														styles.secondaryTags,
+													).class
+												}
+											>
+												{tag.name}
+											</Link>
+										)}
+									</Intersperse>
+								</div>
+							</Show>
+						</div>
+					</Match>
+				</Switch>
+				<Show when={!props.isLoading && props.isSignedIn}>
+					<ManageTagsDialog
+						tags={props.tags}
+						isSignedIn={props.isSignedIn}
+						dataFilter={props.dataFilter}
+						pendingKey={props.pendingKey}
+						onVote={props.onVote}
+						onRemoveVote={props.onRemoveVote}
+						trigger={
+							<Dialog.Trigger
+								as={Button}
+								appearance="ghost"
+								tone="gray"
+								styles={styles.trigger}
+							>
+								{props.tags.length ? <Pencil1Icon /> : <PlusIcon />}
+							</Dialog.Trigger>
+						}
+					/>
+				</Show>
+			</div>
 		</div>
 	)
 }

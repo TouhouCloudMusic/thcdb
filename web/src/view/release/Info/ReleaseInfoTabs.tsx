@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { Release } from "@thc/api"
-import { createSignal, Show, untrack } from "solid-js"
+import { createMemo, createSignal, Show, untrack } from "solid-js"
 
 import { Tab } from "~/component/atomic"
 import { px } from "~/style/tokens.stylex"
@@ -38,16 +38,24 @@ function releaseHasCredits(release: Release) {
 	return release.credits?.some((credit) => credit.on === null) ?? false
 }
 
+function defaultActiveTab(release: Release) {
+	return releaseHasTracks(release)
+		? "Tracks"
+		: releaseHasCredits(release)
+			? "Credits"
+			: "Comments"
+}
+
 export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
-	const [activeTab, setActiveTab] = createSignal(
-		untrack(() =>
-			releaseHasTracks(props.release)
-				? "Tracks"
-				: releaseHasCredits(props.release)
-					? "Credits"
-					: "Comments",
-		),
+	const [selectedTab, setSelectedTab] = createSignal(
+		untrack(() => defaultActiveTab(props.release)),
 	)
+	const activeTab = createMemo(() => {
+		const selected = selectedTab()
+		return selected === "Credits" && !releaseHasCredits(props.release)
+			? defaultActiveTab(props.release)
+			: selected
+	})
 	const comments = useEntityComments(() => ({
 		entityType: "release",
 		entityId: props.release.id,
@@ -59,7 +67,7 @@ export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 			release={props.release}
 			activeTab={activeTab()}
 			comments={comments}
-			onActiveTabChange={setActiveTab}
+			onActiveTabChange={setSelectedTab}
 		/>
 	)
 }
