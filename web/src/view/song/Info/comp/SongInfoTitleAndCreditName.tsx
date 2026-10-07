@@ -64,7 +64,7 @@ export function SongInfoTitleAndCreditName() {
 	return (
 		<header>
 			<div {...stylex.attrs(styles.section)}>
-				<h1 {...stylex.attrs(typography.heading.lg)}>{context.song.title}</h1>
+				<h1 {...stylex.attrs(typography.heading.md)}>{context.song.title}</h1>
 				<Show when={localizedTitle()}>
 					<div {...stylex.attrs(styles.creditName)}>
 						{localizedTitle()!.title}

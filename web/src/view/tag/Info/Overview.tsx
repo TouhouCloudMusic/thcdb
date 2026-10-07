@@ -107,7 +107,7 @@ function TagInfoHeader() {
 
 	return (
 		<header {...stylex.attrs(headerStyles.header)}>
-			<h1 {...stylex.attrs(typography.heading.lg)}>{ctx.tag.name}</h1>
+			<h1 {...stylex.attrs(typography.heading.md)}>{ctx.tag.name}</h1>
 			<Show when={ctx.tag.short_description}>
 				<p {...stylex.attrs(headerStyles.shortDescription)}>
 					{ctx.tag.short_description}
