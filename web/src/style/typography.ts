@@ -25,9 +25,18 @@ const styles = stylex.create({
 		fontSize: fontSizes.xl,
 		lineHeight: lineHeights.xl,
 	},
+	xs: {
+		fontSize: fontSizes.lg,
+		lineHeight: lineHeights.lg,
+	},
+	subtle: {
+		color: colors.textTertiary,
+	},
 })
 
 export const heading = {
+	xs: [styles.base, styles.xs],
+	subtle: styles.subtle,
 	sm: [styles.base, styles.sm],
 	md: [styles.base, styles.md],
 	lg: [styles.base, styles.lg],

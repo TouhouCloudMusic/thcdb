@@ -12,13 +12,7 @@ import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release"
 import type { ReleaseListItem } from "~/hey-api"
 import { palette } from "~/style/color/palette.stylex"
-import {
-	radius,
-	colors,
-	fontSizes,
-	lineHeights,
-	px,
-} from "~/style/tokens.stylex"
+import { radius, colors, px } from "~/style/tokens.stylex"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
@@ -88,9 +82,6 @@ const styles = stylex.create({
 		borderRadius: radius.md,
 		paddingInline: px[12],
 		textAlign: "center",
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		fontWeight: 400,
 		color: colors.textSecondary,
 		outlineWidth: 2,
 		outlineStyle: "solid",

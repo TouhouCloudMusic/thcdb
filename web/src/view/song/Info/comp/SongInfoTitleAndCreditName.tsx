@@ -3,6 +3,7 @@ import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
 
+import { infoStyles } from "~/style/primitives"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
@@ -19,13 +20,6 @@ const styles = stylex.create({
 		lineHeight: 1.5,
 		fontWeight: 300,
 		letterSpacing: "0.025em",
-		color: colors.textTertiary,
-	},
-	label: {
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
-		fontWeight: 500,
-		letterSpacing: "0.05em",
 		color: colors.textTertiary,
 	},
 	values: {
@@ -77,7 +71,7 @@ export function SongInfoTitleAndCreditName() {
 				<Match when={context.song.artists?.length}>
 					<div {...stylex.attrs(styles.section)}>
 						{/* TODO: use Info.Label */}
-						<div {...stylex.attrs(styles.label)}>Artist</div>
+						<div {...stylex.attrs(infoStyles.label)}>Artist</div>
 						<ul {...stylex.attrs(styles.values)}>
 							<For each={context.song.artists}>
 								{(artist) => (

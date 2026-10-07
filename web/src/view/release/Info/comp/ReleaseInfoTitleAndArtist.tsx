@@ -1,21 +1,16 @@
-import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
 import { createMemo, Show } from "solid-js"
 
 import { Intersperse } from "~/component/data/Intersperse"
 import { getPreferredLocalizedTitle } from "~/domain/localized_title"
-import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+import { colors, lineHeights, fontSizes } from "~/style/tokens.stylex"
 import * as typography from "~/style/typography"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { ReleaseInfoPageContext } from "../context"
 
 const styles = stylex.create({
-	sectionSpacing: {
-		marginBlockStart: 0,
-		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
-	},
 	title: {
 		overflowWrap: "break-word",
 	},
@@ -30,10 +25,9 @@ const styles = stylex.create({
 		flexWrap: "wrap",
 		alignItems: "center",
 	},
-	artistPrefix: { marginRight: px[8], color: colors.textTertiary },
 	separator: { whiteSpace: "pre" },
 	artistLink: {
-		color: colors.textPrimary,
+		color: "inherit",
 		textUnderlineOffset: "4px",
 		transitionProperty:
 			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
@@ -47,7 +41,6 @@ const styles = stylex.create({
 })
 
 export function ReleaseInfoTitleAndArtist() {
-	const { t } = useLingui()
 	const ctx = assertContext(ReleaseInfoPageContext)
 
 	const preferredLocalizedTitle = createMemo(() =>
@@ -56,7 +49,7 @@ export function ReleaseInfoTitleAndArtist() {
 
 	return (
 		<div>
-			<div {...stylex.attrs(styles.sectionSpacing)}>
+			<div>
 				<h1 {...stylex.attrs(typography.heading.md, styles.title)}>
 					{ctx.release.title}
 				</h1>
@@ -67,8 +60,13 @@ export function ReleaseInfoTitleAndArtist() {
 					</p>
 				</Show>
 			</div>
-			<div {...stylex.attrs(styles.sectionSpacing, styles.artists)}>
-				<span {...stylex.attrs(styles.artistPrefix)}>{t`by`}</span>
+			<div
+				{...stylex.attrs(
+					typography.heading.xs,
+					typography.heading.subtle,
+					styles.artists,
+				)}
+			>
 				<Intersperse
 					of={ctx.release.artists}
 					with={<span {...stylex.attrs(styles.separator)}>, </span>}
