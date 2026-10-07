@@ -50,7 +50,12 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		lineHeight: lineHeights.sm,
 	},
-	tags: { gridColumn: "1 / -1" },
+	tags: {
+		gridColumn: "1 / -1",
+		gridTemplateColumns: "subgrid",
+		justifySelf: "stretch",
+		width: "100%",
+	},
 })
 
 type ReleaseInfoPageProps = {
@@ -78,7 +83,7 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 								<div {...stylex.attrs(styles.details)}>
 									<ReleaseInfoDetails />
 									<EntityTags
-										styles={styles.tags}
+										styles={[entityDetailStyles.tags, styles.tags]}
 										entityType="release"
 										entityId={props.release.id}
 									/>

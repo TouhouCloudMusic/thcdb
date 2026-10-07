@@ -114,6 +114,7 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 								</div>
 							</Show>
 							<EntityTags
+								styles={entityDetailStyles.tags}
 								entityType="song"
 								entityId={props.song.id}
 							/>

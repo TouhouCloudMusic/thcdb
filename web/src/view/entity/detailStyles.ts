@@ -4,6 +4,12 @@ import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
 
 export const entityDetailStyles = stylex.create({
+	tags: {
+		width: "fit-content",
+		minWidth: `min(${px[384]}, 100%)`,
+		maxWidth: "100%",
+		overflowWrap: "anywhere",
+	},
 	collectionActions: {
 		borderTopWidth: "1px",
 		borderTopStyle: "solid",
