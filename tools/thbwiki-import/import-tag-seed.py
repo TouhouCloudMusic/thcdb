@@ -262,14 +262,14 @@ def get_relations(tag: dict[str, Any]) -> list[dict[str, Any]]:
 
 def validate_seed(seed: Any) -> None:
     if not isinstance(seed, dict):
-        raise RuntimeError("seed file must be a JSON object")
+        raise TypeError("seed file must be a JSON object")
     if not isinstance(seed.get("tags"), list):
-        raise RuntimeError("seed.tags must be an array")
+        raise TypeError("seed.tags must be an array")
 
     seen_names: set[str] = set()
     for tag in seed["tags"]:
         if not isinstance(tag, dict):
-            raise RuntimeError("tag item must be an object")
+            raise TypeError("tag item must be an object")
 
         name = normalize_optional_text(tag.get("name"))
         if name is None:
@@ -319,9 +319,7 @@ def validate_seed(seed: Any) -> None:
             seen_relations: set[tuple[str, str]] = set()
             for relation in relations:
                 if not isinstance(relation, dict):
-                    raise RuntimeError(
-                        f"tag relation must be an object for name={name}"
-                    )
+                    raise TypeError(f"tag relation must be an object for name={name}")
                 related_tag_name = normalize_optional_text(
                     relation.get("related_tag_name")
                 )
@@ -701,7 +699,7 @@ async def process_tag_create(
             entity_id=entity_id,
             stderr_text=f"[info] [tag][created] name={name} tag_id={entity_id}",
         )
-    except Exception as err:
+    except (RuntimeError, TypeError) as err:
         return ImportTaskResult(
             status="failed",
             item_key=name,
