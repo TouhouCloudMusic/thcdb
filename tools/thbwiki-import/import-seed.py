@@ -249,18 +249,18 @@ def build_release_date_payload(
 
 def validate_seed(seed: Any) -> None:
     if not isinstance(seed, dict):
-        raise RuntimeError("seed file must be a JSON object")
+        raise TypeError("seed file must be a JSON object")
     if not isinstance(seed.get("artists"), list):
-        raise RuntimeError("seed.artists must be an array")
+        raise TypeError("seed.artists must be an array")
     if not isinstance(seed.get("songs"), list):
-        raise RuntimeError("seed.songs must be an array")
+        raise TypeError("seed.songs must be an array")
     if not isinstance(seed.get("releases"), list):
-        raise RuntimeError("seed.releases must be an array")
+        raise TypeError("seed.releases must be an array")
 
     artist_names: set[str] = set()
     for artist in seed["artists"]:
         if not isinstance(artist, dict):
-            raise RuntimeError("artist item must be an object")
+            raise TypeError("artist item must be an object")
         name = artist.get("name")
         if not isinstance(name, str) or not name.strip():
             raise RuntimeError("artist.name must be a non-empty string")
@@ -272,7 +272,7 @@ def validate_seed(seed: Any) -> None:
     song_ids: set[int] = set()
     for song in seed["songs"]:
         if not isinstance(song, dict):
-            raise RuntimeError("song item must be an object")
+            raise TypeError("song item must be an object")
         thb_song_id = song.get("thb_song_id")
         if not is_int(thb_song_id):
             raise RuntimeError("song.thb_song_id must be integer")
@@ -286,7 +286,7 @@ def validate_seed(seed: Any) -> None:
     release_ids: set[int] = set()
     for release in seed["releases"]:
         if not isinstance(release, dict):
-            raise RuntimeError("release item must be an object")
+            raise TypeError("release item must be an object")
 
         thb_album_id = release.get("thb_album_id")
         if not is_int(thb_album_id):
@@ -859,7 +859,9 @@ def release_expected_title_signature(
             raise RuntimeError("release has invalid track.thb_song_id")
         song_title = song_title_by_thb_song_id.get(thb_song_id)
         if not isinstance(song_title, str):
-            raise RuntimeError(f"missing song title for thb_song_id={thb_song_id}")
+            raise TypeError(
+                f"missing or invalid song title for thb_song_id={thb_song_id}"
+            )
 
         disc_no = track.get("disc_no")
         if not is_int(disc_no) or disc_no <= 0:
@@ -1100,7 +1102,7 @@ async def process_artist(
             entity_id=entity_id,
             stdout_text=f"[info] [artist][created] circle={name} artist_id={entity_id}",
         )
-    except Exception as err:
+    except (RuntimeError, TypeError) as err:
         return ImportTaskResult(
             status="failed",
             item_key=name,
@@ -1163,7 +1165,7 @@ async def process_song(
                 f"title={title} song_id={entity_id}"
             ),
         )
-    except Exception as err:
+    except (RuntimeError, TypeError) as err:
         return ImportTaskResult(
             status="failed",
             item_key=thb_song_id,
@@ -1245,7 +1247,7 @@ async def process_release(
                 f"title={title} release_id={entity_id}"
             ),
         )
-    except Exception as err:
+    except (RuntimeError, TypeError) as err:
         return ImportTaskResult(
             status="failed",
             item_key=thb_album_id,
