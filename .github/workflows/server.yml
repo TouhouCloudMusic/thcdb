@@ -56,7 +56,9 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-rust-${{ hashFiles('server/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-rust-
 
       - name: Check format
         run: cargo fmt --all -- --check
@@ -64,8 +66,8 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --quiet
 
-  integration-test:
-    name: Integration Test
+  test:
+    name: Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -114,7 +116,12 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('server/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-test-
 
-      - name: Run integration test
-        run: cargo test --workspace --quiet --features integration-test
+      - name: Compile tests
+        run: cargo test --workspace --features integration-test --no-run
+
+      - name: Run tests
+        run: cargo test --workspace --features integration-test
