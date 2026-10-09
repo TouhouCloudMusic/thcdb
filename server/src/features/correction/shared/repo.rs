@@ -486,7 +486,12 @@ async fn snapshot_release(
         .all(db)
         .await?
         .into_iter()
-        .map(|model| model.catalog_number)
+        .map(|model| {
+            json!({
+                "catalog_number": model.catalog_number,
+                "label_id": model.label_id,
+            })
+        })
         .collect::<Vec<_>>();
 
     let discs = release_disc_history::Entity::find()
@@ -822,4 +827,108 @@ async fn snapshot_credit_role(
         "description": history.description,
         "inherits": inherits,
     }))
+}
+
+#[cfg(all(test, feature = "integration-test"))]
+mod tests {
+    use entity::enums::EntityType;
+    use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
+    use entity::{label, release_catalog_number_history, release_history};
+    use sea_orm::ActiveValue::{NotSet, Set};
+    use sea_orm::{ConnectionTrait, EntityTrait};
+    use serde_json::{Value, json};
+
+    use super::{diff_snapshots, snapshot_for_history};
+    use crate::infra::integration_test::test_connection;
+
+    async fn insert_release_history(
+        conn: &impl ConnectionTrait,
+    ) -> anyhow::Result<i32> {
+        let history =
+            release_history::Entity::insert(release_history::ActiveModel {
+                id: NotSet,
+                title: Set("Snapshot test release".to_owned()),
+                release_type: Set(ReleaseType::Album),
+                release_date: Set(None),
+                release_date_precision: Set(DatePrecision::Day),
+                recording_date_start: Set(None),
+                recording_date_start_precision: Set(DatePrecision::Day),
+                recording_date_end: Set(None),
+                recording_date_end_precision: Set(DatePrecision::Day),
+            })
+            .exec_with_returning(conn)
+            .await?;
+
+        Ok(history.id)
+    }
+
+    #[tokio::test]
+    async fn changing_only_a_catalog_number_label_appears_in_the_release_diff()
+    -> anyhow::Result<()> {
+        let conn = test_connection().await?;
+        let label = label::Entity::insert(label::ActiveModel {
+            id: NotSet,
+            name: Set("Snapshot test label".to_owned()),
+            founded_date: Set(None),
+            founded_date_precision: Set(DatePrecision::Day),
+            dissolved_date: Set(None),
+            dissolved_date_precision: Set(DatePrecision::Day),
+        })
+        .exec_with_returning(&conn)
+        .await?;
+        let before_history_id = insert_release_history(&conn).await?;
+        let after_history_id = insert_release_history(&conn).await?;
+
+        release_catalog_number_history::Entity::insert(
+            release_catalog_number_history::ActiveModel {
+                id: NotSet,
+                history_id: Set(before_history_id),
+                catalog_number: Set("CAT-001".to_owned()),
+                label_id: Set(None),
+            },
+        )
+        .exec(&conn)
+        .await?;
+        release_catalog_number_history::Entity::insert(
+            release_catalog_number_history::ActiveModel {
+                id: NotSet,
+                history_id: Set(after_history_id),
+                catalog_number: Set("CAT-001".to_owned()),
+                label_id: Set(Some(label.id)),
+            },
+        )
+        .exec(&conn)
+        .await?;
+
+        let before =
+            snapshot_for_history(&conn, EntityType::Release, before_history_id)
+                .await?;
+        let after =
+            snapshot_for_history(&conn, EntityType::Release, after_history_id)
+                .await?;
+        let diff = diff_snapshots(&before, &after);
+
+        assert_eq!(diff.len(), 1);
+        assert_eq!(diff[0].path, "catalog_numbers");
+        assert_eq!(
+            serde_json::from_str::<Value>(
+                diff[0].before.as_deref().expect("before value"),
+            )?,
+            json!([{
+                "catalog_number": "CAT-001",
+                "label_id": null,
+            }]),
+        );
+        assert_eq!(
+            serde_json::from_str::<Value>(
+                diff[0].after.as_deref().expect("after value"),
+            )?,
+            json!([{
+                "catalog_number": "CAT-001",
+                "label_id": label.id,
+            }]),
+        );
+
+        Ok(())
+    }
 }

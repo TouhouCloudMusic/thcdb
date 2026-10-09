@@ -52,8 +52,11 @@ describe("release form initialization", () => {
 				{ language: { id: 2, code: "ja", name: "Japanese" }, title: "JP" },
 			],
 			catalog_nums: [
-				{ catalog_number: "CAT-001", label_id: 1 },
-				{ catalog_number: "CAT-002", label_id: undefined },
+				{
+					catalog_number: "CAT-001",
+					label: { id: 1, name: "Label A" },
+				},
+				{ catalog_number: "CAT-002", label: null },
 			],
 			discs: [
 				{ id: 1, name: "Disc A" },
@@ -70,6 +73,7 @@ describe("release form initialization", () => {
 					],
 					duration: 123000,
 					disc_id: 2,
+					display_title: "Opening theme",
 				},
 				{
 					id: 102,
@@ -127,7 +131,7 @@ describe("release form initialization", () => {
 				{
 					artists: [10, 20],
 					disc_index: 1,
-					display_title: undefined,
+					display_title: "Opening theme",
 					duration: 123000,
 					song_id: 1001,
 					track_number: "A1",
