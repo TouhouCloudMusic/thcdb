@@ -511,6 +511,10 @@ const profileStyles = stylex.create({
 		display: "inline-grid",
 		width: "fit-content",
 		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		/* Work around Firefox subpixel snapping differences
+		   between the list border and transformed indicator.
+		   See https://bugzilla.mozilla.org/show_bug.cgi?id=1852291 */
+		transform: "translateY(0px)",
 	},
 	search: {
 		width: "100%",
