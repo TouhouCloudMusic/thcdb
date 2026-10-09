@@ -109,16 +109,10 @@ const tabsStyles = stylex.create({
 		gridTemplateColumns: "minmax(0, 1fr) auto",
 		columnGap: px[8],
 		alignItems: "stretch",
-		height: px[32],
+		height: "calc(2rem + 1px)",
 		borderBottomWidth: "1px",
 		borderBottomStyle: "solid",
 		borderColor: palette.slate[300],
-	},
-	indicator: {
-		// Because the border is on container instead of the list,
-		// override it to make the indicator appears above the border instead of below.
-		bottom: 0,
-		height: "1px",
 	},
 	content: {
 		paddingTop: px[8],
@@ -248,7 +242,7 @@ export function TagInfoPage(props: Props) {
 							>
 								<div {...stylex.attrs(tabsStyles.root)}>
 									<Tab.ScrollArea>
-										<Tab.List>
+										<Tab.List styles={Tab.containerStyles}>
 											<Tab.Trigger value="release">{t`Releases`}</Tab.Trigger>
 
 											<Tab.Trigger value="song">{t`Songs`}</Tab.Trigger>
@@ -257,7 +251,7 @@ export function TagInfoPage(props: Props) {
 												{t`Collections`}
 											</Tab.Trigger>
 
-											<Tab.Indicator styles={tabsStyles.indicator} />
+											<Tab.Indicator />
 										</Tab.List>
 									</Tab.ScrollArea>
 

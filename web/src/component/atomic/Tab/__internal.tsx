@@ -6,7 +6,7 @@ import type { ParentProps } from "solid-js"
 import { createMemo, splitProps } from "solid-js"
 
 import { palette } from "~/style/color/palette.stylex"
-import { radius, colors, fontSizes, px } from "~/style/tokens.stylex"
+import { colors, fontSizes, px } from "~/style/tokens.stylex"
 import { createHorizontalFocusScroll } from "~/utils/solid/createHorizontalFocusScroll"
 import { createScrollEdges } from "~/utils/solid/createScrollEdges"
 
@@ -201,7 +201,6 @@ const indicatorStyles = stylex.create({
 	indicator: {
 		pointerEvents: "none",
 		position: "absolute",
-		borderRadius: radius.full,
 		backgroundColor: palette.reimu[600],
 		transitionProperty: {
 			default: "all",
@@ -211,10 +210,10 @@ const indicatorStyles = stylex.create({
 		transitionDuration: "150ms",
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
-	bottom: { bottom: "-1px", height: px[2] },
-	top: { top: 0, height: px[2] },
-	left: { left: 0, width: px[2] },
-	right: { right: 0, width: px[2] },
+	bottom: { bottom: "-1px", height: "1px" },
+	top: { top: 0, height: "1px" },
+	left: { left: 0, width: "1px" },
+	right: { right: 0, width: "1px" },
 })
 
 export function Indicator(props: IndicatorProps) {
