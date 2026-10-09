@@ -52,7 +52,11 @@ export function useReleaseFormInitialValues(
 						})) ?? [],
 					artists: props.release.artists?.map((a) => a.id) ?? [],
 					events: props.release.events?.map((e) => e.id) ?? [],
-					catalog_nums: props.release.catalog_nums ?? [],
+					catalog_nums:
+						props.release.catalog_nums?.map((catalogNum) => ({
+							catalog_number: catalogNum.catalog_number,
+							label_id: catalogNum.label?.id,
+						})) ?? [],
 					credits:
 						props.release.credits?.map((c) => ({
 							role_id: c.role.id,
@@ -77,7 +81,7 @@ export function useReleaseFormInitialValues(
 									typeof t.disc_id === "number"
 										? (indexById.get(t.disc_id) ?? 0)
 										: 0,
-								display_title: undefined,
+								display_title: t.display_title ?? undefined,
 								duration: t.duration ?? undefined,
 								song_id: t.song.id,
 								track_number: t.track_number ?? undefined,

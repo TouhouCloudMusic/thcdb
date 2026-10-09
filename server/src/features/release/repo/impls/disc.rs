@@ -1,11 +1,12 @@
 use entity::{
-    release_disc, release_disc_history, release_track, release_track_history,
+    release_disc, release_disc_history, release_track, release_track_artist,
+    release_track_artist_history, release_track_history,
 };
 use itertools::Itertools;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
-    QueryOrder,
+    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, LoaderTrait,
+    QueryFilter, QueryOrder,
 };
 use vecmap::VecMap;
 
@@ -66,6 +67,21 @@ pub(crate) async fn update_release_track_and_disc(
     history_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
+    let existing_tracks = release_track::Entity::find()
+        .filter(release_track::Column::ReleaseId.eq(release_id))
+        .all(db)
+        .await?;
+
+    if !existing_tracks.is_empty() {
+        release_track_artist::Entity::delete_many()
+            .filter(
+                release_track_artist::Column::TrackId
+                    .is_in(existing_tracks.iter().map(|track| track.id)),
+            )
+            .exec(db)
+            .await?;
+    }
+
     release_track::Entity::delete_many()
         .filter(release_track::Column::ReleaseId.eq(release_id))
         .exec(db)
@@ -85,6 +101,9 @@ pub(crate) async fn update_release_track_and_disc(
         .filter(release_track_history::Column::HistoryId.eq(history_id))
         .order_by_asc(release_track_history::Column::Id)
         .all(db)
+        .await?;
+    let track_artist_histories = track_histories
+        .load_many(release_track_artist_history::Entity, db)
         .await?;
 
     let id_idx_map = disc_histories
@@ -127,9 +146,33 @@ pub(crate) async fn update_release_track_and_disc(
         })
         .collect_vec();
 
-    release_track::Entity::insert_many(track_models)
-        .exec(db)
-        .await?;
+    let inserted_tracks = if track_models.is_empty() {
+        vec![]
+    } else {
+        release_track::Entity::insert_many(track_models)
+            .exec_with_returning_many(db)
+            .await?
+    };
+
+    let track_artist_models = track_artist_histories
+        .into_iter()
+        .zip_eq(inserted_tracks)
+        .flat_map(|(artist_histories, inserted_track)| {
+            let track_id = inserted_track.id;
+            artist_histories.into_iter().map(move |artist_history| {
+                release_track_artist::ActiveModel {
+                    track_id: Set(track_id),
+                    artist_id: Set(artist_history.artist_id),
+                }
+            })
+        })
+        .collect_vec();
+
+    if !track_artist_models.is_empty() {
+        release_track_artist::Entity::insert_many(track_artist_models)
+            .exec(db)
+            .await?;
+    }
 
     Ok(())
 }
