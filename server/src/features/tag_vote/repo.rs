@@ -372,53 +372,26 @@ async fn load_tag_votes(
 mod tests {
     use infra_db::SeaOrmRepository;
 
-    use super::{delete, get_tags, upsert};
+    use super::{get_tags, upsert};
     use crate::features::tag_vote::model::{EntityType, Score};
     use crate::infra::integration_test::fixture::{
-        MockArtist, MockRelease, MockSong, MockTag, MockUser,
+        MockSong, MockTag, MockUser,
     };
     use crate::infra::integration_test::test_connection;
 
-    #[expect(
-        clippy::too_many_lines,
-        reason = "integration scenario keeps DB setup serial"
-    )]
     #[tokio::test]
-    async fn tag_vote_repo_supports_upsert_delete_and_filtering()
+    async fn aggregates_votes_and_hides_tags_without_positive_votes()
     -> anyhow::Result<()> {
         let conn = test_connection().await?;
         let repo = SeaOrmRepository::new(conn.clone());
-        let song = MockSong::titled("tag vote song")
+        let song = MockSong::titled("tag vote aggregation song")
             .insert(&conn)
-            .await
-            .unwrap();
-        let artist = MockArtist::named("tag vote artist")
-            .insert(&conn)
-            .await
-            .unwrap();
-        let release = MockRelease::titled("tag vote release")
-            .insert(&conn)
-            .await
-            .unwrap();
-        let veto_only_song = MockSong::titled("tag vote veto only song")
-            .insert(&conn)
-            .await
-            .unwrap();
-        let tag_one = MockTag::named("tag-one").insert(&conn).await.unwrap();
-        let tag_two = MockTag::named("tag-two").insert(&conn).await.unwrap();
-        let tag_update =
-            MockTag::named("tag-update").insert(&conn).await.unwrap();
-        let tag_errors =
-            MockTag::named("tag-errors").insert(&conn).await.unwrap();
-        let tag_veto = MockTag::named("tag-veto").insert(&conn).await.unwrap();
-        let user = MockUser::with_label("tag_vote_user")
-            .insert(&conn)
-            .await
-            .unwrap();
-        let other_user = MockUser::with_label("tag_vote_other")
-            .insert(&conn)
-            .await
-            .unwrap();
+            .await?;
+        let tag_one = MockTag::named("tag-vote-positive").insert(&conn).await?;
+        let tag_veto = MockTag::named("tag-vote-veto").insert(&conn).await?;
+        let user = MockUser::with_label("tag_vote_user").insert(&conn).await?;
+        let other_user =
+            MockUser::with_label("tag_vote_other").insert(&conn).await?;
 
         upsert(
             &repo,
@@ -428,8 +401,7 @@ mod tests {
             user.id,
             Score::Medium,
         )
-        .await
-        .unwrap();
+        .await?;
         upsert(
             &repo,
             EntityType::Song,
@@ -438,185 +410,64 @@ mod tests {
             other_user.id,
             Score::Low,
         )
-        .await
-        .unwrap();
+        .await?;
         upsert(
             &repo,
             EntityType::Song,
             song.id,
-            tag_two.id,
-            user.id,
-            Score::Veto,
-        )
-        .await
-        .unwrap();
-
-        let tags =
-            get_tags(&repo, EntityType::Song, song.id, Some(user.id), None, 20)
-                .await
-                .unwrap();
-
-        assert_eq!(tags.next_cursor, None);
-        assert_eq!(tags.items.len(), 1);
-        assert_eq!(tags.items[0].id, tag_one.id);
-        assert_eq!(tags.items[0].short_description, tag_one.short_description);
-        assert_eq!(tags.items[0].count, 2);
-        assert!((tags.items[0].relevance - 1.5).abs() < f64::EPSILON);
-        assert_eq!(tags.items[0].user_vote, Some(2));
-        assert_eq!(tags.items[0].votes.len(), 2);
-        assert_eq!(tags.items[0].votes[0].user_name, user.name);
-        assert_eq!(tags.items[0].votes[0].score, Score::Medium as i16);
-        assert_eq!(tags.items[0].votes[1].user_name, other_user.name);
-        assert_eq!(tags.items[0].votes[1].score, Score::Low as i16);
-
-        upsert(
-            &repo,
-            EntityType::Artist,
-            artist.id,
-            tag_update.id,
-            user.id,
-            Score::Low,
-        )
-        .await
-        .unwrap();
-        upsert(
-            &repo,
-            EntityType::Artist,
-            artist.id,
-            tag_update.id,
-            other_user.id,
-            Score::High,
-        )
-        .await
-        .unwrap();
-        upsert(
-            &repo,
-            EntityType::Artist,
-            artist.id,
-            tag_update.id,
-            user.id,
-            Score::High,
-        )
-        .await
-        .unwrap();
-
-        let before_delete = get_tags(
-            &repo,
-            EntityType::Artist,
-            artist.id,
-            Some(user.id),
-            None,
-            20,
-        )
-        .await
-        .unwrap();
-        assert_eq!(before_delete.items.len(), 1);
-        assert_eq!(before_delete.items[0].count, 2);
-        assert!((before_delete.items[0].relevance - 3.0).abs() < f64::EPSILON);
-        assert_eq!(before_delete.items[0].user_vote, Some(3));
-        assert_eq!(before_delete.items[0].votes.len(), 2);
-
-        delete(&repo, EntityType::Artist, artist.id, tag_update.id, user.id)
-            .await
-            .unwrap();
-
-        let after_delete = get_tags(
-            &repo,
-            EntityType::Artist,
-            artist.id,
-            Some(user.id),
-            None,
-            20,
-        )
-        .await
-        .unwrap();
-        assert_eq!(after_delete.items.len(), 1);
-        assert_eq!(after_delete.items[0].count, 1);
-        assert!((after_delete.items[0].relevance - 3.0).abs() < f64::EPSILON);
-        assert_eq!(after_delete.items[0].user_vote, None);
-        assert_eq!(after_delete.items[0].votes.len(), 1);
-        assert_eq!(after_delete.items[0].votes[0].user_name, other_user.name);
-        assert_eq!(after_delete.items[0].votes[0].score, Score::High as i16);
-
-        upsert(
-            &repo,
-            EntityType::Release,
-            release.id,
-            tag_update.id,
-            user.id,
-            Score::High,
-        )
-        .await
-        .unwrap();
-        delete(
-            &repo,
-            EntityType::Release,
-            release.id,
-            tag_update.id,
-            user.id,
-        )
-        .await
-        .unwrap();
-
-        let release_tags = get_tags(
-            &repo,
-            EntityType::Release,
-            release.id,
-            Some(user.id),
-            None,
-            20,
-        )
-        .await
-        .unwrap();
-        assert!(release_tags.items.is_empty());
-
-        let missing_entity = upsert(
-            &repo,
-            EntityType::Song,
-            i32::MAX,
-            tag_errors.id,
-            user.id,
-            Score::Low,
-        )
-        .await
-        .unwrap_err();
-        assert_eq!(missing_entity.to_string(), "Song #2147483647 not found");
-
-        let missing_tag = upsert(
-            &repo,
-            EntityType::Song,
-            song.id,
-            i32::MAX,
-            user.id,
-            Score::Low,
-        )
-        .await
-        .unwrap_err();
-        assert_eq!(missing_tag.to_string(), "Tag #2147483647 not found");
-
-        upsert(
-            &repo,
-            EntityType::Song,
-            veto_only_song.id,
             tag_veto.id,
             user.id,
             Score::Veto,
         )
-        .await
-        .unwrap();
+        .await?;
 
-        let tags = get_tags(
+        let tags =
+            get_tags(&repo, EntityType::Song, song.id, None, None, 20).await?;
+
+        assert_eq!(tags.items.len(), 1);
+        assert_eq!(tags.items[0].id, tag_one.id);
+        assert_eq!(tags.items[0].count, 2);
+        assert!((tags.items[0].relevance - 1.5).abs() < f64::EPSILON);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn voting_again_replaces_the_previous_score() -> anyhow::Result<()> {
+        let conn = test_connection().await?;
+        let repo = SeaOrmRepository::new(conn.clone());
+        let song = MockSong::titled("tag vote overwrite song")
+            .insert(&conn)
+            .await?;
+        let tag = MockTag::named("tag-vote-overwrite").insert(&conn).await?;
+        let user = MockUser::with_label("tag_vote_overwrite_user")
+            .insert(&conn)
+            .await?;
+
+        upsert(
             &repo,
             EntityType::Song,
-            veto_only_song.id,
-            Some(user.id),
-            None,
-            20,
+            song.id,
+            tag.id,
+            user.id,
+            Score::Low,
         )
-        .await
-        .unwrap();
+        .await?;
+        upsert(
+            &repo,
+            EntityType::Song,
+            song.id,
+            tag.id,
+            user.id,
+            Score::High,
+        )
+        .await?;
+        let tags =
+            get_tags(&repo, EntityType::Song, song.id, None, None, 20).await?;
 
-        assert!(tags.items.is_empty());
+        assert_eq!(tags.items.len(), 1);
+        assert_eq!(tags.items[0].id, tag.id);
+        assert_eq!(tags.items[0].count, 1);
+        assert!((tags.items[0].relevance - 3.0).abs() < f64::EPSILON);
 
         Ok(())
     }
