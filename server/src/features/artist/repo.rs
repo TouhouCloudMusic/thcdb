@@ -1,6 +1,7 @@
 use chrono::NaiveDate;
 use domain::shared::{
     DateWithPrecision, EntityIdent, HttpUrl, Location, NewLocalizedName,
+    SimpleArtist,
 };
 use entity::enums::{ArtistType, DatePrecision};
 use entity::{
@@ -18,7 +19,8 @@ use sea_orm::ActiveValue::{
 };
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityTrait, LoaderTrait, QueryFilter, QueryOrder, TryInsertResult,
+    DerivePartialModel, EntityTrait, LoaderTrait, QueryFilter, QueryOrder,
+    TryInsertResult,
 };
 use sea_query::{OnConflict, any};
 
@@ -26,6 +28,22 @@ use crate::features::artist::model::{NewArtist, NewMembership};
 use crate::infra::database::error::{
     BrokenEntityReference, DatabaseError, DatabaseResultExt,
 };
+
+#[derive(DerivePartialModel)]
+#[sea_orm(entity = "entity::artist::Entity", from_query_result)]
+pub(crate) struct ArtistReferenceRow {
+    pub(crate) id: i32,
+    pub(crate) name: String,
+}
+
+impl From<ArtistReferenceRow> for SimpleArtist {
+    fn from(artist: ArtistReferenceRow) -> Self {
+        Self {
+            id: artist.id,
+            name: artist.name,
+        }
+    }
+}
 
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
@@ -436,13 +454,19 @@ async fn create_artist_artist_membership(
             })
             .collect_vec();
 
-        artist_membership_role::Entity::insert_many(role_models)
-            .exec(db)
-            .await?;
+        // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+        if !role_models.is_empty() {
+            artist_membership_role::Entity::insert_many(role_models)
+                .exec(db)
+                .await?;
+        }
 
-        artist_membership_tenure::Entity::insert_many(tenure_models)
-            .exec(db)
-            .await?;
+        // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+        if !tenure_models.is_empty() {
+            artist_membership_tenure::Entity::insert_many(tenure_models)
+                .exec(db)
+                .await?;
+        }
     }
 
     Ok(())
@@ -454,6 +478,11 @@ async fn create_artist_artist_membership_history(
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
+        // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+        if members.is_empty() {
+            return Ok(());
+        }
+
         let membership_history_models = members
             .iter()
             .map(|member| artist_membership_history::ActiveModel {
@@ -541,7 +570,10 @@ async fn update_artist_aliases(
         })
         .collect_vec();
 
-    artist_alias::Entity::insert_many(models).exec(db).await?;
+    // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+    if !models.is_empty() {
+        artist_alias::Entity::insert_many(models).exec(db).await?;
+    }
 
     Ok(())
 }
@@ -605,9 +637,12 @@ async fn update_artist_localized_names(
         })
         .collect::<Vec<_>>();
 
-    artist_localized_name::Entity::insert_many(models)
-        .exec(db)
-        .await?;
+    // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+    if !models.is_empty() {
+        artist_localized_name::Entity::insert_many(models)
+            .exec(db)
+            .await?;
+    }
 
     Ok(())
 }
@@ -635,6 +670,11 @@ async fn update_artist_artist_membership(
         .filter(artist_membership_history::Column::HistoryId.eq(history_id))
         .all(db)
         .await?;
+
+    if artist_membership.is_empty() {
+        // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+        return Ok(());
+    }
 
     let artist_membership_role = artist_membership
         .load_many(artist_membership_role_history::Entity, db)
@@ -674,11 +714,15 @@ async fn update_artist_artist_membership(
                     role_id: Set(role.role_id),
                 }
             })
-        });
+        })
+        .collect_vec();
 
-    artist_membership_role::Entity::insert_many(role_models)
-        .exec(db)
-        .await?;
+    // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+    if !role_models.is_empty() {
+        artist_membership_role::Entity::insert_many(role_models)
+            .exec(db)
+            .await?;
+    }
 
     let tenure_models = new_memberships
         .iter()
@@ -692,11 +736,15 @@ async fn update_artist_artist_membership(
                     leave_year: Set(tenure.leave_year),
                 }
             })
-        });
+        })
+        .collect_vec();
 
-    artist_membership_tenure::Entity::insert_many(tenure_models)
-        .exec(db)
-        .await?;
+    // TODO: Remove this guard after upgrading to SeaORM 2.0 (sea-orm#2628).
+    if !tenure_models.is_empty() {
+        artist_membership_tenure::Entity::insert_many(tenure_models)
+            .exec(db)
+            .await?;
+    }
 
     Ok(())
 }

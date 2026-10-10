@@ -1,7 +1,9 @@
+import type { DeepPartial } from "@formisch/solid"
 import type { Label } from "@thc/api"
 
-import type { NewLabelCorrection } from "~/domain/label"
 import { DateWithPrecision } from "~/domain/shared"
+
+import type { LabelFormInput } from "../schema"
 
 export type LabelFormInitProps =
 	| {
@@ -14,16 +16,12 @@ export type LabelFormInitProps =
 
 export function toLabelFormInitValue(
 	input: LabelFormInitProps,
-): NewLabelCorrection {
+): DeepPartial<LabelFormInput> {
 	if (input.type === "new") {
 		return {
 			type: "Create",
-			description: "",
 			data: {
-				name: "",
 				localized_names: [],
-				founded_date: undefined,
-				dissolved_date: undefined,
 				founders: [],
 				links: [],
 			},
@@ -32,13 +30,9 @@ export function toLabelFormInitValue(
 
 	return {
 		type: "Update",
-		description: "",
 		data: {
 			name: input.label.name,
-			localized_names: input.label.localized_names.map((item) => ({
-				language_id: item.language.id,
-				name: item.name,
-			})),
+			localized_names: input.label.localized_names,
 			founded_date: DateWithPrecision.toInput(input.label.founded_date),
 			dissolved_date: DateWithPrecision.toInput(input.label.dissolved_date),
 			founders: input.label.founders,

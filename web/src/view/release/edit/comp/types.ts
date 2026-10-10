@@ -1,5 +1,5 @@
 import type { FormStore } from "@formisch/solid"
 
-import type { NewReleaseCorrection } from "~/domain/release"
+import type { ReleaseFormSchema } from "../schema"
 
-export type ReleaseFormStore = FormStore<typeof NewReleaseCorrection>
+export type ReleaseFormStore = FormStore<typeof ReleaseFormSchema>

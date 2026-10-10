@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@formisch/solid@1.1.0': 0dec5accb00326954bbdd99f75680b437b3976408fbc948980e677f7c3576070
   '@kobalte/core@0.13.14': 1791149a31f484ddaee74f17d9d103aee505f39c93ad3171c4b52b127b7ba563
 
 importers:
@@ -12,8 +13,8 @@ importers:
   .:
     dependencies:
       '@formisch/solid':
-        specifier: ^0.9.5
-        version: 0.9.5(solid-js@1.9.12)(typescript@5.9.3)(valibot@1.4.2(typescript@5.9.3))
+        specifier: ^1.1.0
+        version: 1.1.0(patch_hash=0dec5accb00326954bbdd99f75680b437b3976408fbc948980e677f7c3576070)(solid-js@1.9.12)(typescript@5.9.3)(valibot@1.4.2(typescript@5.9.3))
       '@kobalte/core':
         specifier: ^0.13.14
         version: 0.13.14(patch_hash=1791149a31f484ddaee74f17d9d103aee505f39c93ad3171c4b52b127b7ba563)(solid-js@1.9.12)
@@ -831,12 +832,12 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@formisch/solid@0.9.5':
-    resolution: {integrity: sha512-XKsBuwVHUYXH45p02gWj+i/H+GSS5/J80J3pqqnTRplqHJmrBvlnFCeEQ9LosG7CCGFwZQCiKo+EfCXydeIWQg==}
+  '@formisch/solid@1.1.0':
+    resolution: {integrity: sha512-US/EQTQ2SwO74o5BD7oTMjtkz1riX+cCrWV1rleHJJRAhvlSgViVSJ7578vvZue7VnmZDf9i2stUUPUba6BTsw==}
     peerDependencies:
-      solid-js: ^1.6.0
-      typescript: '>=5'
-      valibot: ^1.0.0
+      solid-js: '>=1.6 <2'
+      typescript: '>=5 <8'
+      valibot: '>=1.4.1 <2'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -5631,7 +5632,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@formisch/solid@0.9.5(solid-js@1.9.12)(typescript@5.9.3)(valibot@1.4.2(typescript@5.9.3))':
+  '@formisch/solid@1.1.0(patch_hash=0dec5accb00326954bbdd99f75680b437b3976408fbc948980e677f7c3576070)(solid-js@1.9.12)(typescript@5.9.3)(valibot@1.4.2(typescript@5.9.3))':
     dependencies:
       solid-js: 1.9.12
       valibot: 1.4.2(typescript@5.9.3)

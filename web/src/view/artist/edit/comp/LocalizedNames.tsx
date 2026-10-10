@@ -1,22 +1,14 @@
-import {
-	Field,
-	FieldArray,
-	insert,
-	remove,
-	reset,
-	setInput,
-} from "@formisch/solid"
+import { insert, remove, useField, useFieldArray } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
-import type { Language } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { For } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
+import { Intersperse } from "~/component/data/Intersperse"
 import { FieldArrayFallback } from "~/component/form"
-import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
+import { LanguageSelect } from "~/component/form/stateful/LanguageSelect"
 import { dividerStyles, formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
@@ -53,6 +45,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	entry: {
 		display: "grid",
 		gridTemplateColumns: "1fr auto",
@@ -68,19 +63,64 @@ const styles = stylex.create({
 	},
 })
 
+function LocalizedNameRow(props: { index: number }) {
+	const { t } = useLingui()
+	const { formStore } = useArtistForm()
+
+	const name = useField(formStore, () => ({
+		path: ["data", "localized_names", props.index, "name"],
+	}))
+	const language = useField(formStore, () => ({
+		path: ["data", "localized_names", props.index, "language"],
+	}))
+
+	const removeLocalizedName = () =>
+		remove(formStore, {
+			path: ["data", "localized_names"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.entry)}>
+			<InputField.Root styles={[rowStyles.nameField]}>
+				<InputField.Input
+					{...name.props}
+					id={name.path.join(".")}
+					placeholder={t`Name`}
+					value={name.input ?? ""}
+				/>
+				<InputField.Error>{name.errors?.[0]}</InputField.Error>
+			</InputField.Root>
+
+			<LanguageSelect
+				value={language.input}
+				onChange={language.onInput}
+			/>
+			<Button
+				onClick={removeLocalizedName}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+				styles={rowStyles.removeButton}
+			>
+				<Cross1Icon />
+			</Button>
+		</li>
+	)
+}
+
 export function ArtistFormLocalizedNames(props: { styles?: StyleXStyles }) {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
+	const localizedNames = useFieldArray(formStore, {
+		path: ["data", "localized_names"],
+	})
+
 	const addLocalizedName = () => {
 		insert(formStore, {
-			path: ["data", "localized_names"],
-			initialInput: { language_id: undefined, name: "" },
+			path: localizedNames.path,
 		})
-	}
-
-	const removeLocalizedNameAt = (index: number) => () => {
-		remove(formStore, { path: ["data", "localized_names"], at: index })
 	}
 
 	return (
@@ -99,72 +139,20 @@ export function ArtistFormLocalizedNames(props: { styles?: StyleXStyles }) {
 				</Button>
 			</div>
 
-			<FieldArray
-				of={formStore}
-				path={["data", "localized_names"]}
-			>
-				{(fieldArray) => (
-					<ul {...stylex.attrs(styles.entries)}>
-						<For
-							each={fieldArray.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<li {...stylex.attrs(styles.entry)}>
-									<Field
-										of={formStore}
-										path={["data", "localized_names", idx(), "name"]}
-									>
-										{(field) => (
-											<InputField.Root styles={[styles.nameField]}>
-												<InputField.Input
-													{...field.props}
-													id={field.path.join(".")}
-													placeholder={t`Name`}
-													value={field.input ?? ""}
-												/>
-												<InputField.Error>{field.errors?.[0]}</InputField.Error>
-											</InputField.Root>
-										)}
-									</Field>
-
-									{/* TODO: form init value */}
-									<LanguageCombobox onChange={createOnLangChange(idx())} />
-									<Button
-										onClick={removeLocalizedNameAt(idx())}
-										appearance="ghost"
-										tone="gray"
-										size="sm"
-										styles={styles.removeButton}
-									>
-										<Cross1Icon />
-									</Button>
-									{idx() < fieldArray.items.length - 1 && (
-										<span {...stylex.attrs(dividerStyles.horizontal)}></span>
-									)}
-								</li>
-							)}
-						</For>
-					</ul>
-				)}
-			</FieldArray>
+			<ul {...stylex.attrs(styles.entries)}>
+				<Intersperse
+					of={localizedNames.items}
+					with={
+						<li
+							aria-hidden="true"
+							{...stylex.attrs(dividerStyles.horizontal)}
+						></li>
+					}
+					fallback={<FieldArrayFallback />}
+				>
+					{(_, index) => <LocalizedNameRow index={index()} />}
+				</Intersperse>
+			</ul>
 		</div>
 	)
-}
-
-function createOnLangChange(index: number) {
-	const { formStore } = useArtistForm()
-	const onChange = (v: Language | null) => {
-		if (v) {
-			setInput(formStore, {
-				path: ["data", "localized_names", index, "language_id"],
-				input: v.id,
-			})
-		} else {
-			reset(formStore, {
-				path: ["data", "localized_names", index, "language_id"],
-			})
-		}
-	}
-	return onChange
 }

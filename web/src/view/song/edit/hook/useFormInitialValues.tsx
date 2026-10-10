@@ -1,6 +1,7 @@
+import type { DeepPartial } from "@formisch/solid"
 import type { Song } from "@thc/api"
 
-import type { NewSongCorrection } from "~/domain/song"
+import type { SongFormInput } from "../schema"
 
 export type SongFormInitialValueProps =
 	| { type: "new" }
@@ -8,45 +9,34 @@ export type SongFormInitialValueProps =
 
 export function useSongFormInitialValues(
 	input: SongFormInitialValueProps,
-): NewSongCorrection {
+): DeepPartial<SongFormInput> {
 	return input.type === "new"
 		? {
 				type: "Create",
-				description: "",
 				data: {
-					title: "",
-					artists: [],
-					languages: [],
-					localized_titles: [],
-					credits: [],
-					relations: [],
 					links: [],
 				},
 			}
 		: {
 				type: "Update",
-				description: "",
 				data: {
 					title: input.song.title,
-					artists: input.song.artists?.map((artist) => artist.id) ?? [],
-					languages: input.song.languages?.map((lang) => lang.id) ?? [],
-					localized_titles:
-						input.song.localized_titles?.map((lt) => ({
-							language_id: lt.language.id,
-							name: lt.title,
-						})) ?? [],
-					credits:
-						input.song.credits?.map((credit) => ({
-							artist_id: credit.artist.id,
-							role_id: credit.role?.id ?? undefined,
-						})) ?? [],
-					relations:
-						input.song.relations?.map((relation) => ({
-							related_song_id: relation.song.id,
-							direction: relation.direction,
-							relation_type: relation.type,
-							description: relation.description,
-						})) ?? [],
+					artists: input.song.artists,
+					languages: input.song.languages,
+					localized_titles: input.song.localized_titles?.map((lt) => ({
+						language: lt.language,
+						name: lt.title,
+					})),
+					credits: input.song.credits?.map((credit) => ({
+						artist: credit.artist,
+						role: credit.role ?? undefined,
+					})),
+					relations: input.song.relations?.map((relation) => ({
+						song: relation.song,
+						direction: relation.direction,
+						relation_type: relation.type,
+						description: relation.description,
+					})),
 					links: input.song.links ?? [],
 				},
 			}

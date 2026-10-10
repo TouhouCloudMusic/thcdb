@@ -1,5 +1,5 @@
 import type { FormStore } from "@formisch/solid"
 
-import type { NewTagCorrection } from "~/domain/tag"
+import type { TagFormSchema } from "../schema"
 
-export type TagFormStore = FormStore<typeof NewTagCorrection>
+export type TagFormStore = FormStore<typeof TagFormSchema>

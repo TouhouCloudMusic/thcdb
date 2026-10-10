@@ -2,6 +2,7 @@ import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { Nil } from "@thc/toolkit/data"
 import { Show } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
@@ -14,7 +15,7 @@ import {
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
 import { TAG_TYPES } from "~/domain/tag/constants"
-import type { TagListItem } from "~/hey-api"
+import type { TagType, SortDirection } from "~/hey-api"
 import { exploreTagOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { palette } from "~/style/color/palette.stylex"
 import { dividerStyles } from "~/style/primitives"
@@ -73,52 +74,52 @@ const styles = stylex.create({
 const route = getRouteApi("/tag/explore")
 
 type TagExploreSearch = {
-	tag_type?: TagListItem["type"][]
-	order_by?: "asc" | "desc"
+	tag_type?: TagType[]
+	order_by?: SortDirection
 	limit: number
 	page: number
 }
 
 type TagExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
-	tagTypeValue: "" | TagListItem["type"]
-	orderBy: "asc" | "desc" | undefined
-	onTagTypeChange: (value: "" | TagListItem["type"]) => void
-	onOrderByChange: (value: "asc" | "desc") => void
+	tagTypeValue: TagType | undefined
+	orderBy: SortDirection | undefined
+	onTagTypeChange: (value: TagType | undefined) => void
+	onOrderByChange: (value: SortDirection) => void
+}
+
+type TagTypeOption = {
+	value: TagType | undefined
+	label: string
 }
 
 function TagExploreFilterBar(props: TagExploreFilterBarProps) {
 	const { t } = useLingui()
-	const tagTypeLabel = (value: "" | TagListItem["type"]) =>
-		value === "" ? t`All` : value
+	const tagTypeOptions = (): TagTypeOption[] => [
+		{ value: undefined, label: t`All` },
+		...TAG_TYPES.map((value) => ({ value, label: value })),
+	]
+
+	const selectedTagType = () =>
+		tagTypeOptions().find((option) => option.value === props.tagTypeValue)
+
+	const changeTagType = (option: TagTypeOption | undefined) =>
+		props.onTagTypeChange(option?.value)
 
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div {...stylex.attrs(styles.filters)}>
 				<div {...stylex.attrs(styles.filter)}>
 					<span {...stylex.attrs(styles.filterLabel)}>{t`Type`}</span>
-					<Select.Root<"" | TagListItem["type"]>
-						options={["", ...TAG_TYPES]}
-						value={props.tagTypeValue}
-						onChange={(value) => props.onTagTypeChange(value ?? "")}
-						placeholder={t`All`}
-						itemComponent={(optionProps) => (
-							<Select.Item item={optionProps.item}>
-								{tagTypeLabel(optionProps.item.rawValue)}
-							</Select.Item>
-						)}
+					<Select.Root
+						options={tagTypeOptions()}
+						value={selectedTagType()}
+						onChange={changeTagType}
+						optionValue="label"
+						optionTextValue="label"
 					>
-						<Select.Trigger>
-							<Select.Value<"" | TagListItem["type"]>>
-								{(state) => tagTypeLabel(state.selectedOption())}
-							</Select.Value>
-							<Select.Icon />
-						</Select.Trigger>
-						<Select.Portal>
-							<Select.Content>
-								<Select.Listbox />
-							</Select.Content>
-						</Select.Portal>
+						<Select.Trigger aria-label={t`Type`} />
+						<Select.Content />
 					</Select.Root>
 				</div>
 
@@ -150,7 +151,7 @@ export function TagExplore() {
 
 	const tags = () => tagsQuery.data?.data.items ?? []
 	const totalPages = () => tagsQuery.data?.data.total_pages ?? 0
-	const tagTypeValue = () => search().tag_type?.[0] ?? ""
+	const tagTypeValue = () => search().tag_type?.[0]
 
 	const applyFilterPatch = (patch: Partial<TagExploreSearch>) => {
 		void navigate({
@@ -166,6 +167,13 @@ export function TagExplore() {
 		})
 	}
 
+	const changeTagType = (value: TagType | undefined) => {
+		applyFilterPatch({ tag_type: Nil.map((selected) => [selected], value) })
+	}
+
+	const changeOrderBy = (value: SortDirection) =>
+		applyFilterPatch({ order_by: value })
+
 	return (
 		<ExplorePageLayout
 			title={t`Explore Tags`}
@@ -175,12 +183,8 @@ export function TagExplore() {
 				scrollDirection={scrollDirection}
 				tagTypeValue={tagTypeValue()}
 				orderBy={search().order_by}
-				onTagTypeChange={(value) => {
-					applyFilterPatch({
-						tag_type: value === "" ? undefined : [value],
-					})
-				}}
-				onOrderByChange={(value) => applyFilterPatch({ order_by: value })}
+				onTagTypeChange={changeTagType}
+				onOrderByChange={changeOrderBy}
 			/>
 
 			<Show

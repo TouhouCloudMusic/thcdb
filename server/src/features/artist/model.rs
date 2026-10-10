@@ -34,8 +34,8 @@ pub struct Artist {
     /// Profile image of artist
     pub profile_image_url: Option<String>,
 
-    /// List of id of artist aliases
-    pub aliases: Vec<i32>,
+    /// Artists with their own page that are aliases of this artist
+    pub aliases: Vec<SimpleArtist>,
     pub links: Vec<String>,
     pub localized_names: Vec<LocalizedName>,
 

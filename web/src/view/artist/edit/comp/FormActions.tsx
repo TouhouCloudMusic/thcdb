@@ -68,7 +68,7 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 			</Field>
 
 			<div {...stylex.attrs(styles.column, props.styles)}>
-				<For each={formStore.errors ?? []}>
+				<For each={formStore.errors}>
 					{(error) => <FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>}
 				</For>
 

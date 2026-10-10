@@ -42,13 +42,13 @@ const styles = stylex.create({
 
 type TagSearchDialogProps = {
 	onSelect: (tag: Tag) => void
-	dataFilter?: (tag: Tag) => boolean
+	filter?: (tag: Tag) => boolean
 	trigger: JSX.Element
 }
 
 export function TagSearchDialog(props: TagSearchDialogProps): JSX.Element {
 	const { t } = useLingui()
-	const { searchKeyword, onInput, items } = useTagSearch(() => props.dataFilter)
+	const { searchKeyword, onInput, items } = useTagSearch(() => props.filter)
 
 	return (
 		<EntitySearchDialog

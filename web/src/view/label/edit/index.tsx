@@ -9,7 +9,7 @@ import { Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
-import { NewLabelCorrection } from "~/domain/label"
+import { useArrayField } from "~/component/form/useArrayField"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
@@ -24,6 +24,7 @@ import { LabelNameField } from "./comp/LabelNameField"
 import { LabelFormProvider } from "./context"
 import { toLabelFormInitValue } from "./hook/init"
 import { createLabelFormSubmission } from "./hook/submit"
+import { LabelFormSchema } from "./schema"
 
 const styles = stylex.create({
 	page: { display: "grid", gridTemplateRows: "auto 1fr auto" },
@@ -59,15 +60,6 @@ type Props =
 			pendingCorrectionId?: number
 	  }
 
-export function EditLabelPage(props: Props): JSX.Element {
-	return (
-		<PageLayout styles={styles.page}>
-			<PageHeader type={props.type} />
-			<FormContent {...props} />
-		</PageLayout>
-	)
-}
-
 function PageHeader(props: { type: Props["type"] }) {
 	const { t } = useLingui()
 	return (
@@ -86,16 +78,18 @@ function PageHeader(props: { type: Props["type"] }) {
 	)
 }
 
-function FormContent(props: Props) {
+export function EditLabelPage(props: Props): JSX.Element {
 	const { t } = useLingui()
 	const initialValues = toLabelFormInitValue(props)
 	const { handleSubmit, mutation, pendingCorrectionId } =
 		createLabelFormSubmission(props)
 
 	const form = createForm({
-		schema: NewLabelCorrection,
+		schema: LabelFormSchema,
 		initialInput: initialValues,
 	})
+
+	const links = useArrayField(form, { path: ["data", "links"] })
 
 	useBlocker({
 		shouldBlockFn() {
@@ -114,48 +108,42 @@ function FormContent(props: Props) {
 	const isSubmitting = () => mutation.isPending || form.isSubmitting
 
 	return (
-		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
-			<LabelFormProvider
-				value={{
-					get label() {
-						if (props.type === "edit") return props.label
-					},
-					formStore: form,
-				}}
-			>
-				<Form
-					of={form}
-					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-					onSubmit={(output, _) => handleSubmit(output)}
+		<PageLayout styles={styles.page}>
+			<PageHeader type={props.type} />
+			<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
+				<LabelFormProvider
+					value={{
+						get label() {
+							if (props.type === "edit") return props.label
+						},
+						formStore: form,
+					}}
 				>
-					<div {...stylex.attrs(styles.form)}>
-						<LabelNameField styles={styles.fieldPlacement} />
-						<LabelDateFields styles={styles.fieldPlacement} />
-						<LabelLocalizedNamesField
-							styles={styles.fieldPlacement}
-							initLocalizedNames={
-								props.type === "edit" ? props.label.localized_names : undefined
-							}
+					<Form
+						of={form}
+						onSubmit={handleSubmit}
+					>
+						<div {...stylex.attrs(styles.form)}>
+							<LabelNameField styles={styles.fieldPlacement} />
+							<LabelDateFields styles={styles.fieldPlacement} />
+							<LabelLocalizedNamesField styles={styles.fieldPlacement} />
+							<LabelFoundersField styles={styles.fieldPlacement} />
+							<ExternalLinksField
+								field={links}
+								styles={styles.fieldPlacement}
+							/>
+							<LabelFormDesc
+								styles={styles.fieldPlacement}
+								mutation={mutation}
+							/>
+						</div>
+						<FormActionBar
+							submitting={isSubmitting()}
+							disabled={isSubmitting()}
 						/>
-						<LabelFoundersField
-							styles={styles.fieldPlacement}
-							initFounderIds={props.type === "edit" ? props.label.founders : []}
-						/>
-						<ExternalLinksField
-							of={form}
-							styles={styles.fieldPlacement}
-						/>
-						<LabelFormDesc
-							styles={styles.fieldPlacement}
-							mutation={mutation}
-						/>
-					</div>
-					<FormActionBar
-						submitting={isSubmitting()}
-						disabled={isSubmitting()}
-					/>
-				</Form>
-			</LabelFormProvider>
-		</PendingCorrectionBoundary>
+					</Form>
+				</LabelFormProvider>
+			</PendingCorrectionBoundary>
+		</PageLayout>
 	)
 }

@@ -1,23 +1,21 @@
 import {
-	Field,
-	FieldArray,
-	getErrors,
+	useField,
 	getInput,
 	insert,
 	remove,
-	setInput,
+	useFieldArray,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import type { Language } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { createMemo, For } from "solid-js"
+import { For } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { FieldArrayFallback } from "~/component/form"
-import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
+import { LanguageSelect } from "~/component/form/stateful/LanguageSelect"
+import type { Language } from "~/hey-api"
 import { formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
@@ -52,6 +50,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	entry: {
 		display: "grid",
 		gridTemplateColumns: "minmax(0,1fr) auto",
@@ -65,39 +66,66 @@ const styles = stylex.create({
 	},
 })
 
+function LanguageRow(props: { of: SongFormStore; index: number }) {
+	const field = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "languages", props.index],
+		}),
+	)
+
+	const isAvailableLanguage = (language: Language) =>
+		!getInput(props.of, { path: ["data", "languages"] }).some(
+			(selected, index) =>
+				index !== props.index && selected?.id === language.id,
+		)
+
+	const selectLanguage = (language: Language | undefined) => {
+		if (language !== undefined && !isAvailableLanguage(language)) return
+		field.onInput(language)
+	}
+
+	const removeLanguage = () =>
+		remove(props.of, {
+			path: ["data", "languages"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.entry)}>
+			<LanguageSelect
+				value={field.input}
+				onChange={selectLanguage}
+				filter={isAvailableLanguage}
+			/>
+			<Button
+				onClick={removeLanguage}
+				appearance="ghost"
+				tone="gray"
+				styles={rowStyles.removeButton}
+			>
+				<Cross1Icon {...stylex.attrs(rowStyles.removeIcon)} />
+			</Button>
+			<ul>
+				<FormComp.ErrorList errors={field.errors} />
+			</ul>
+		</li>
+	)
+}
+
 export function SongLanguagesField(props: {
 	of: SongFormStore
-	initLanguages?: Language[]
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
-	const selectedLanguages = createMemo(() => {
-		return getInput(props.of, { path: ["data", "languages"] })
-	})
-	const selectedLanguageIds = createMemo(() => new Set(selectedLanguages()))
-	const languageFilter = createMemo(() => {
-		const ids = selectedLanguageIds()
-		return (lang: Language) => !ids.has(lang.id)
+
+	const languages = useFieldArray(() => props.of, {
+		path: ["data", "languages"],
 	})
 
 	const addLanguage = () => {
 		insert(props.of, {
-			path: ["data", "languages"],
-		})
-	}
-
-	const removeLanguageAt = (index: number) => {
-		remove(props.of, { path: ["data", "languages"], at: index })
-	}
-
-	const setLanguageAt = (index: number, lang: Language | null) => {
-		if (!lang) return
-		const alreadySelected = selectedLanguageIds().has(lang.id)
-		if (alreadySelected) return
-
-		setInput(props.of, {
-			path: ["data", "languages", index],
-			input: lang.id,
+			path: languages.path,
 		})
 	}
 
@@ -116,57 +144,20 @@ export function SongLanguagesField(props: {
 					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
-			<FormComp.ErrorList
-				errors={getErrors(props.of, { path: ["data", "languages"] })}
-			/>
-			<FieldArray
-				of={props.of}
-				path={["data", "languages"]}
-			>
-				{(fieldArray) => (
-					<ul {...stylex.attrs(styles.entries)}>
-						<For
-							each={fieldArray.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<li {...stylex.attrs(styles.entry)}>
-									<Field
-										of={props.of}
-										path={["data", "languages", idx()]}
-									>
-										{(field) => (
-											<>
-												<LanguageCombobox
-													onChange={(lang) => setLanguageAt(idx(), lang)}
-													filter={languageFilter()}
-												/>
-												<input
-													{...field.props}
-													type="number"
-													hidden
-													value={field.input ?? undefined}
-												/>
-												<Button
-													onClick={() => removeLanguageAt(idx())}
-													appearance="ghost"
-													tone="gray"
-													styles={styles.removeButton}
-												>
-													<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
-												</Button>
-												<ul>
-													<FormComp.ErrorList errors={field.errors} />
-												</ul>
-											</>
-										)}
-									</Field>
-								</li>
-							)}
-						</For>
-					</ul>
-				)}
-			</FieldArray>
+			<FormComp.ErrorList errors={languages.errors} />
+			<ul {...stylex.attrs(styles.entries)}>
+				<For
+					each={languages.items}
+					fallback={<FieldArrayFallback />}
+				>
+					{(_, index) => (
+						<LanguageRow
+							of={props.of}
+							index={index()}
+						/>
+					)}
+				</For>
+			</ul>
 		</div>
 	)
 }

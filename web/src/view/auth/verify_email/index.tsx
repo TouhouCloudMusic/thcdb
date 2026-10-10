@@ -54,7 +54,7 @@ function VerifyEmailForm(props: { session: VerificationSession }) {
 	const { t } = useLingui()
 	const nav = useNavigate()
 	const userCtx = useCurrentUser()
-	const form = createForm({ schema: FormSchema, initialInput: { code: "" } })
+	const form = createForm({ schema: FormSchema })
 	const [submitError, setSubmitError] = createSignal<string>()
 	const [submitInfo, setSubmitInfo] = createSignal<string>()
 	const [now, setNow] = createSignal(Date.now())

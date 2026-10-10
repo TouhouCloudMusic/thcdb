@@ -43,7 +43,7 @@ const styles = stylex.create({
 type SongSearchDialogProps = {
 	onSelect: (song: Song) => void
 	disabled?: boolean
-	dataFilter?: (song: Song) => boolean
+	filter?: (song: Song) => boolean
 	icon: JSX.Element
 }
 
@@ -68,8 +68,8 @@ export function SongSearchDialog(props: SongSearchDialogProps): JSX.Element {
 
 	const items = createMemo(() => {
 		if (!songsQuery.isSuccess) return [] as Song[]
-		if (!props.dataFilter) return songsQuery.data
-		return songsQuery.data.filter(props.dataFilter)
+		if (!props.filter) return songsQuery.data
+		return songsQuery.data.filter(props.filter)
 	})
 
 	return (

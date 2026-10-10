@@ -4,8 +4,8 @@ import type { Tag } from "@thc/api"
 import type { TagMutation } from "@thc/query"
 import { onMount } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
+import * as v from "valibot"
 
-import { NewTagCorrection } from "~/domain/tag"
 import { withEntityDetailStoryState } from "~/storybook/entityDetail"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
@@ -13,6 +13,7 @@ import { EditTagPage } from "."
 import { TagFormDesc } from "./comp/TagFormActions"
 import { TagFormProvider } from "./context"
 import { toTagFormInitValue } from "./hook/init"
+import { TagFormSchema } from "./schema"
 
 const TAG: Tag = {
 	id: 72,
@@ -38,7 +39,7 @@ export const Default: Story = {}
 
 function SubmissionErrorSection() {
 	const initialInput = toTagFormInitValue({ type: "edit", tag: TAG })
-	const form = createForm({ schema: NewTagCorrection, initialInput })
+	const form = createForm({ schema: TagFormSchema, initialInput })
 	type Mutation = ReturnType<typeof TagMutation.getInstance>
 	const mutation = useMutation<
 		NonNullable<Mutation["data"]>,
@@ -49,7 +50,11 @@ function SubmissionErrorSection() {
 			Promise.reject(new Error("Failed to save the correction.")),
 	}))
 	onMount(() =>
-		mutation.mutate({ type: "Update", id: TAG.id, data: initialInput }),
+		mutation.mutate({
+			type: "Update",
+			id: TAG.id,
+			data: v.parse(TagFormSchema, initialInput),
+		}),
 	)
 	return (
 		<TagFormProvider value={{ formStore: form, tag: TAG }}>

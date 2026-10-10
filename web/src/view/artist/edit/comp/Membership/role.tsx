@@ -1,5 +1,10 @@
-// @refresh-reload
-import { Field, insert, remove } from "@formisch/solid"
+import {
+	getInput,
+	insert,
+	remove,
+	useField,
+	useFieldArray,
+} from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
@@ -7,9 +12,8 @@ import type { CreditRoleRef } from "@thc/api"
 import { CheckIcon, Cross1Icon } from "@thc/icons/radix"
 import { CreditRoleQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
-import { createMemo, createSignal, For, Suspense, untrack } from "solid-js"
+import { createMemo, createSignal, For, Suspense } from "solid-js"
 import type { JSX } from "solid-js"
-import { createStore, produce } from "solid-js/store"
 
 import { Combobox } from "~/component/atomic/Combobox"
 import { palette } from "~/style/color/palette.stylex"
@@ -32,6 +36,9 @@ const styles = stylex.create({
 		flex: "1",
 		paddingLeft: px[4],
 	},
+})
+
+const badgeStyles = stylex.create({
 	role: {
 		display: "flex",
 		alignItems: "center",
@@ -55,13 +62,48 @@ const styles = stylex.create({
 	},
 })
 
+function RoleBadge(props: { membershipIndex: number; index: number }) {
+	const { t } = useLingui()
+	const { formStore } = useArtistForm()
+
+	const field = useField(formStore, () => ({
+		path: ["data", "memberships", props.membershipIndex, "roles", props.index],
+	}))
+
+	const removeRole = () =>
+		remove(formStore, {
+			path: ["data", "memberships", props.membershipIndex, "roles"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(badgeStyles.role)}>
+			<span {...stylex.attrs(badgeStyles.roleName)}>{field.input?.name}</span>
+			<button
+				type="button"
+				{...stylex.attrs(badgeStyles.removeIcon)}
+				aria-label={t`Remove role`}
+				title={t`Remove role`}
+				onClick={removeRole}
+			>
+				<Cross1Icon {...stylex.attrs(badgeStyles.icon)} />
+			</button>
+		</li>
+	)
+}
+
 export function MembershipRoleField(props: {
-	index: number
-	initialRoles?: CreditRoleRef[]
+	membershipIndex: number
 }): JSX.Element {
 	const { t } = useLingui()
+
 	const SEARCH_DEBOUNCE_MS = 300
+
 	const { formStore } = useArtistForm()
+
+	const roles = useFieldArray(formStore, () => ({
+		path: ["data", "memberships", props.membershipIndex, "roles"],
+	}))
 
 	const [searchTerm, setSearchTerm] = createSignal("")
 
@@ -70,16 +112,15 @@ export function MembershipRoleField(props: {
 		return kw.length > 1 ? kw : undefined
 	})
 
-	const setSearchTermDebounced = debounce(SEARCH_DEBOUNCE_MS, (val: string) =>
-		setSearchTerm(val),
-	)
+	const setSearchTermDebounced = debounce(SEARCH_DEBOUNCE_MS, setSearchTerm)
 
-	const [roles, setRoles] = createStore<CreditRoleRef[]>(
-		untrack(() => [...(props.initialRoles ?? [])]),
-	)
+	const isAvailableRole = (role: CreditRoleRef) =>
+		!getInput(formStore, { path: roles.path }).some(
+			(selected) => selected.id === role.id,
+		)
 
 	const rolesQuery = useQuery(() => ({
-		...CreditRoleQueryOption.findByKeyword(searchTermTrimmed()!),
+		...CreditRoleQueryOption.findByKeyword(searchTermTrimmed() ?? ""),
 		placeholderData: id,
 		enabled: Boolean(searchTermTrimmed()?.length),
 	}))
@@ -87,31 +128,15 @@ export function MembershipRoleField(props: {
 	const options = createMemo(() => {
 		const data = rolesQuery.data ?? []
 
-		return data.filter((role) => !roles.some((x) => x.id === role.id))
+		return data.filter(isAvailableRole)
 	})
 
 	const addRole = (role: CreditRoleRef) => {
-		setRoles(
-			produce((prev) => {
-				prev.push(role)
-			}),
-		)
+		if (!isAvailableRole(role)) return
 
 		insert(formStore, {
-			path: ["data", "memberships", props.index, "roles"],
-			initialInput: role.id,
-		})
-	}
-
-	const removeRole = (index: number) => {
-		setRoles(
-			produce((s) => {
-				s.splice(index, 1)
-			}),
-		)
-		remove(formStore, {
-			path: ["data", "memberships", props.index, "roles"],
-			at: index,
+			path: roles.path,
+			initialInput: role,
 		})
 	}
 
@@ -141,13 +166,11 @@ export function MembershipRoleField(props: {
 				>
 					<Combobox.Control>
 						<Combobox.MultiInputContainer styles={[styles.roleInput]}>
-							<For each={roles}>
-								{(role, index) => (
+							<For each={roles.items}>
+								{(_, index) => (
 									<RoleBadge
-										membershipIndex={props.index}
-										role={role}
+										membershipIndex={props.membershipIndex}
 										index={index()}
-										removeRole={() => removeRole(index())}
 									/>
 								)}
 							</For>
@@ -169,48 +192,5 @@ export function MembershipRoleField(props: {
 				</Combobox.Root>
 			</Suspense>
 		</div>
-	)
-}
-
-function RoleBadge(props: {
-	membershipIndex: number
-	index: number
-	role: CreditRoleRef
-	removeRole: () => void
-}) {
-	const { t } = useLingui()
-	const { formStore } = useArtistForm()
-	return (
-		<Field
-			of={formStore}
-			path={[
-				"data",
-				"memberships",
-				props.membershipIndex,
-				"roles",
-				props.index,
-			]}
-		>
-			{(field) => (
-				<li {...stylex.attrs(styles.role)}>
-					<input
-						{...field.props}
-						type="number"
-						hidden
-						value={field.input ?? props.role.id}
-					/>
-					<span {...stylex.attrs(styles.roleName)}>{props.role.name}</span>
-					<button
-						type="button"
-						{...stylex.attrs(styles.removeIcon)}
-						aria-label={t`Remove role`}
-						title={t`Remove role`}
-						onClick={() => props.removeRole()}
-					>
-						<Cross1Icon {...stylex.attrs(styles.icon)} />
-					</button>
-				</li>
-			)}
-		</Field>
 	)
 }

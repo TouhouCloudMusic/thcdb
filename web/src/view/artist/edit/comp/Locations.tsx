@@ -1,4 +1,4 @@
-import { setInput } from "@formisch/solid"
+import { useField } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 
@@ -9,24 +9,26 @@ import { useArtistForm } from "../context"
 export function ArtistFormLocationFields(props: { styles?: StyleXStyles }) {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
+	const startLocation = useField(formStore, {
+		path: ["data", "start_location"],
+	})
+	const currentLocation = useField(formStore, {
+		path: ["data", "current_location"],
+	})
 
 	return (
 		<>
 			<Location
 				styles={props.styles}
 				label={t`Start Location`}
-				setValue={(v) => {
-					// @ts-expect-error formisch inference still treats optional input as null-only.
-					setInput(formStore, { path: ["data", "start_location"], input: v })
-				}}
+				value={startLocation.input}
+				setValue={startLocation.onInput}
 			/>
 			<Location
 				styles={props.styles}
 				label={t`Current Location`}
-				setValue={(v) => {
-					// @ts-expect-error formisch inference still treats optional input as null-only.
-					setInput(formStore, { path: ["data", "current_location"], input: v })
-				}}
+				value={currentLocation.input}
+				setValue={currentLocation.onInput}
 			/>
 		</>
 	)

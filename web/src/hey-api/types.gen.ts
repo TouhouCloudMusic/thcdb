@@ -24,9 +24,9 @@ export type Artist = {
 	 */
 	profile_image_url?: string | null
 	/**
-	 * List of id of artist aliases
+	 * Artists with their own page that are aliases of this artist
 	 */
-	aliases?: Array<number>
+	aliases?: Array<SimpleArtist>
 	links?: Array<string>
 	localized_names?: Array<LocalizedName>
 	start_location?: Location
@@ -978,7 +978,7 @@ export type Label = {
 	name: string
 	founded_date?: null | DateWithPrecision
 	dissolved_date?: null | DateWithPrecision
-	founders: Array<number>
+	founders: Array<SimpleArtist>
 	localized_names: Array<LocalizedName>
 	links: Array<string>
 }

@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker"
 import type { Release } from "@thc/api"
 
 import { RELEASE_TYPES } from "~/domain/release/constants"
+import type { NewRelease } from "~/domain/release/schema"
 import type { ReleaseListItem } from "~/hey-api"
 
 const RELEASE_COVER_URL = "/img/cover/release/1.png"
@@ -44,6 +45,30 @@ export function createMockReleaseListItem(
 				.slice(0, 10),
 		},
 		catalog_numbers: [`THC-${id}`],
+		...override,
+	}
+}
+
+export function createMockNewRelease(
+	id: number,
+	override?: Partial<NewRelease>,
+): NewRelease {
+	faker.seed(id)
+
+	return {
+		title: faker.music.album(),
+		release_type: faker.helpers.arrayElement(RELEASE_TYPES),
+		artists: [faker.number.int({ min: 1, max: 1000 })],
+		release_date: undefined,
+		recording_date_start: undefined,
+		recording_date_end: undefined,
+		localized_titles: [],
+		events: [],
+		catalog_nums: [],
+		credits: [],
+		discs: [{}],
+		tracks: [],
+		links: [],
 		...override,
 	}
 }

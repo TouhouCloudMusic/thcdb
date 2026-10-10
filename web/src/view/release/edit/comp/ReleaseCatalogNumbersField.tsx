@@ -1,11 +1,9 @@
-import { Field, FieldArray, insert, remove, setInput } from "@formisch/solid"
+import { useField, useFieldArray, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import type { Label, SimpleLabel } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
-import { For, Show, createMemo, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For, Show } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
@@ -14,7 +12,7 @@ import { LabelSearchDialog } from "~/component/form/SearchDialog"
 import { formStyles } from "~/style/primitives"
 import { colors, px } from "~/style/tokens.stylex"
 
-import { LabelInfo } from "./EntityInfo"
+import { entityInfoStyles } from "./entityInfo.stylex"
 import type { ReleaseFormStore } from "./types"
 
 const styles = stylex.create({
@@ -39,6 +37,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	item: {
 		display: "grid",
 		gridTemplateColumns: "repeat(2,minmax(0,1fr)) auto auto",
@@ -49,36 +50,81 @@ const styles = stylex.create({
 	removeButton: { padding: px[8] },
 })
 
+function CatalogNumberRow(props: { of: ReleaseFormStore; index: number }) {
+	const { t } = useLingui()
+
+	const catalogNumber = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "catalog_nums", props.index, "catalog_number"],
+		}),
+	)
+
+	const label = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "catalog_nums", props.index, "label"],
+		}),
+	)
+	const removeCatalogNumber = () =>
+		remove(props.of, {
+			path: ["data", "catalog_nums"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.item)}>
+			<InputField.Root>
+				<InputField.Input
+					{...catalogNumber.props}
+					placeholder={t`Catalog No.`}
+					value={catalogNumber.input}
+				/>
+				<InputField.Error>{catalogNumber.errors?.[0]}</InputField.Error>
+			</InputField.Root>
+			<Show
+				when={label.input}
+				fallback={
+					<span
+						{...stylex.attrs(rowStyles.placeholder)}
+					>{t`No label selected`}</span>
+				}
+			>
+				<span {...stylex.attrs(entityInfoStyles.name)}>
+					{label.input?.name}
+				</span>
+			</Show>
+			<LabelSearchDialog
+				onSelect={label.onInput}
+				icon={<Pencil1Icon />}
+			/>
+			<Button
+				onClick={removeCatalogNumber}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+				styles={rowStyles.removeButton}
+			>
+				<Cross1Icon />
+			</Button>
+		</li>
+	)
+}
+
 export function ReleaseCatalogNumbersField(props: {
 	of: ReleaseFormStore
-	initCatalogLabels?: (SimpleLabel | undefined)[]
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
-	const formStore = createMemo(() => props.of)
-	const [labels, setLabels] = createStore<(SimpleLabel | undefined)[]>(
-		untrack(() => [...(props.initCatalogLabels ?? [])]),
-	)
+
+	const catalogNumbers = useFieldArray(() => props.of, {
+		path: ["data", "catalog_nums"],
+	})
 
 	const addCatalogNumber = () => {
-		insert(formStore(), {
-			path: ["data", "catalog_nums"],
-			initialInput: { catalog_number: "", label_id: undefined },
+		insert(props.of, {
+			path: catalogNumbers.path,
 		})
-		setLabels(labels.length, undefined)
-	}
-
-	const removeCatalogNumberAt = (idx: number) => {
-		remove(formStore(), { path: ["data", "catalog_nums"], at: idx })
-		setLabels((list) => list.toSpliced(idx, 1))
-	}
-
-	const setCatalogLabelAt = (idx: number, label: Label) => {
-		setInput(formStore(), {
-			path: ["data", "catalog_nums", idx, "label_id"],
-			input: label.id,
-		})
-		setLabels(idx, label)
 	}
 
 	return (
@@ -97,82 +143,17 @@ export function ReleaseCatalogNumbersField(props: {
 				</Button>
 			</div>
 			<ul {...stylex.attrs(styles.list)}>
-				<FieldArray
-					of={props.of}
-					path={["data", "catalog_nums"]}
+				<For
+					each={catalogNumbers.items}
+					fallback={<FieldArrayFallback />}
 				>
-					{(fa) => (
-						<For
-							each={fa.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<li {...stylex.attrs(styles.item)}>
-									<Field
-										of={props.of}
-										path={["data", "catalog_nums", idx(), "catalog_number"]}
-									>
-										{(field) => (
-											<InputField.Root>
-												<InputField.Input
-													{...field.props}
-													placeholder={t`Catalog No.`}
-													value={field.input}
-												/>
-												<InputField.Error>
-													{field.errors ? field.errors[0] : undefined}
-												</InputField.Error>
-											</InputField.Root>
-										)}
-									</Field>
-
-									<Field
-										of={props.of}
-										path={["data", "catalog_nums", idx(), "label_id"]}
-									>
-										{(field) => (
-											<>
-												<input
-													{...field.props}
-													type="number"
-													hidden
-													value={field.input ?? undefined}
-												/>
-												<div>
-													<Show
-														when={labels[idx()]}
-														fallback={
-															<span {...stylex.attrs(styles.placeholder)}>
-																No label selected
-															</span>
-														}
-													>
-														{(lbl) => <LabelInfo value={lbl()} />}
-													</Show>
-												</div>
-
-												<LabelSearchDialog
-													onSelect={(label) => setCatalogLabelAt(idx(), label)}
-													icon={<Pencil1Icon />}
-												/>
-											</>
-										)}
-									</Field>
-
-									<Button
-										onClick={() => removeCatalogNumberAt(idx())}
-										appearance="ghost"
-										tone="gray"
-										size="sm"
-										styles={styles.removeButton}
-									>
-										<Cross1Icon />
-									</Button>
-								</li>
-							)}
-						</For>
+					{(_, index) => (
+						<CatalogNumberRow
+							of={props.of}
+							index={index()}
+						/>
 					)}
-				</FieldArray>
+				</For>
 			</ul>
 		</div>
 	)

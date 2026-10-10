@@ -1,11 +1,9 @@
-import { Field, getErrors, insert, remove, setInput } from "@formisch/solid"
+import { useFieldArray, insert, remove, useField } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import type { CreditRoleRef, SimpleArtist, SongCredit } from "@thc/api"
 import { Cross1Icon, PlusIcon, Pencil1Icon } from "@thc/icons/radix"
-import { For, Show, createMemo, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For, Show } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
@@ -49,6 +47,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	entry: {
 		display: "grid",
 		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
@@ -79,48 +80,79 @@ const styles = stylex.create({
 	},
 })
 
+function CreditRow(props: { of: SongFormStore; index: number }) {
+	const { t } = useLingui()
+
+	const artist = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "credits", props.index, "artist"],
+		}),
+	)
+
+	const role = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "credits", props.index, "role"],
+		}),
+	)
+	const removeCredit = () =>
+		remove(props.of, {
+			path: ["data", "credits"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.entry)}>
+			<div {...stylex.attrs(rowStyles.selection)}>
+				<CreditEntityLabel
+					placeholder={t`Select artist`}
+					value={artist.input?.name}
+				/>
+				<ArtistSearchDialog
+					onSelect={artist.onInput}
+					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
+				/>
+			</div>
+			<div {...stylex.attrs(rowStyles.selection)}>
+				<CreditEntityLabel
+					placeholder={t`Select role`}
+					value={role.input?.name}
+				/>
+				<CreditRoleSearchDialog
+					onSelect={role.onInput}
+					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
+				/>
+			</div>
+			<Button
+				onClick={removeCredit}
+				appearance="ghost"
+				tone="gray"
+				styles={rowStyles.removeButton}
+			>
+				<Cross1Icon {...stylex.attrs(rowStyles.removeIcon)} />
+			</Button>
+			<ul {...stylex.attrs(rowStyles.errors)}>
+				<FormComp.ErrorList errors={artist.errors} />
+			</ul>
+			<ul {...stylex.attrs(rowStyles.errors)}>
+				<FormComp.ErrorList errors={role.errors} />
+			</ul>
+		</li>
+	)
+}
+
 export function SongCreditsField(props: {
 	of: SongFormStore
-	initCredits?: SongCredit[]
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
-	const formStore = createMemo(() => props.of)
-	const [meta, setMeta] = createStore<CreditMeta[]>(
-		untrack(
-			() =>
-				props.initCredits?.map((credit) => ({
-					artist: credit.artist,
-					role: credit.role ?? undefined,
-				})) ?? [],
-		),
-	)
+
+	const credits = useFieldArray(() => props.of, { path: ["data", "credits"] })
 
 	const addCredit = () => {
-		insert(formStore(), {
-			path: ["data", "credits"],
-		})
-		setMeta(meta.length, {})
-	}
-
-	const removeCreditAt = (idx: number) => {
-		remove(formStore(), { path: ["data", "credits"], at: idx })
-		setMeta((list) => list.toSpliced(idx, 1))
-	}
-
-	const setArtistAt = (idx: number, artist: SimpleArtist) => {
-		setMeta(idx, (entry) => ({ ...entry, artist }))
-		setInput(formStore(), {
-			path: ["data", "credits", idx, "artist_id"],
-			input: artist.id,
-		})
-	}
-
-	const setRoleAt = (idx: number, role: CreditRoleRef) => {
-		setMeta(idx, (entry) => ({ ...entry, role }))
-		setInput(formStore(), {
-			path: ["data", "credits", idx, "role_id"],
-			input: role.id,
+		insert(props.of, {
+			path: credits.path,
 		})
 	}
 
@@ -139,22 +171,16 @@ export function SongCreditsField(props: {
 					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
-			<FormComp.ErrorList
-				errors={getErrors(props.of, { path: ["data", "credits"] })}
-			/>
+			<FormComp.ErrorList errors={credits.errors} />
 			<ul {...stylex.attrs(styles.entries)}>
 				<For
-					each={meta}
+					each={credits.items}
 					fallback={<FieldArrayFallback />}
 				>
-					{(_, idx) => (
+					{(_, index) => (
 						<CreditRow
 							of={props.of}
-							entry={meta[idx()]}
-							index={idx()}
-							onSelectArtist={(artist) => setArtistAt(idx(), artist)}
-							onSelectRole={(role) => setRoleAt(idx(), role)}
-							onRemove={() => removeCreditAt(idx())}
+							index={index()}
 						/>
 					)}
 				</For>
@@ -163,99 +189,17 @@ export function SongCreditsField(props: {
 	)
 }
 
-function CreditRow(props: {
-	of: SongFormStore
-	entry: CreditMeta | undefined
-	index: number
-	onSelectArtist: (artist: SimpleArtist) => void
-	onSelectRole: (role: CreditRoleRef) => void
-	onRemove: () => void
-}) {
-	const { t } = useLingui()
-	return (
-		<li {...stylex.attrs(styles.entry)}>
-			<div {...stylex.attrs(styles.selection)}>
-				<CreditEntityLabel
-					placeholder={t`Select artist`}
-					value={props.entry?.artist?.name}
-				/>
-				<ArtistSearchDialog
-					onSelect={props.onSelectArtist}
-					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
-				/>
-			</div>
-			<div {...stylex.attrs(styles.selection)}>
-				<CreditEntityLabel
-					placeholder={t`Select role`}
-					value={props.entry?.role?.name}
-				/>
-				<CreditRoleSearchDialog
-					onSelect={props.onSelectRole}
-					icon={<Pencil1Icon {...stylex.attrs(styles.icon)} />}
-				/>
-			</div>
-			<Button
-				onClick={props.onRemove}
-				appearance="ghost"
-				tone="gray"
-				styles={styles.removeButton}
-			>
-				<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
-			</Button>
-			<Field
-				of={props.of}
-				path={["data", "credits", props.index, "artist_id"]}
-			>
-				{(field) => (
-					<>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? undefined}
-						/>
-						<ul {...stylex.attrs(styles.errors)}>
-							<FormComp.ErrorList errors={field.errors} />
-						</ul>
-					</>
-				)}
-			</Field>
-			<Field
-				of={props.of}
-				path={["data", "credits", props.index, "role_id"]}
-			>
-				{(field) => (
-					<>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? undefined}
-						/>
-						<ul {...stylex.attrs(styles.errors)}>
-							<FormComp.ErrorList errors={field.errors} />
-						</ul>
-					</>
-				)}
-			</Field>
-		</li>
-	)
-}
-
-type CreditMeta = {
-	artist?: SimpleArtist
-	role?: CreditRoleRef
-}
-
 function CreditEntityLabel(props: { value?: string; placeholder: string }) {
 	return (
 		<Show
 			when={props.value}
 			fallback={
-				<span {...stylex.attrs(styles.placeholder)}>{props.placeholder}</span>
+				<span {...stylex.attrs(rowStyles.placeholder)}>
+					{props.placeholder}
+				</span>
 			}
 		>
-			{(val) => <span {...stylex.attrs(styles.value)}>{val()}</span>}
+			{(val) => <span {...stylex.attrs(rowStyles.value)}>{val()}</span>}
 		</Show>
 	)
 }

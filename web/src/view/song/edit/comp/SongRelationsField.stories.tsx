@@ -4,11 +4,11 @@ import type { SongRelation } from "@thc/api"
 import { untrack } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { NewSongCorrection } from "~/domain/song"
 import { TanStackProvider } from "~/state/tanstack"
 import { px } from "~/style/tokens.stylex"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
+import { SongFormSchema } from "../schema"
 import { SongRelationsField } from "./SongRelationsField"
 
 const styles = stylex.create({
@@ -66,7 +66,7 @@ type StoryProps = {
 function StoryRoot(props: StoryProps) {
 	const relations = untrack(() => props.relations)
 	const form = createForm({
-		schema: NewSongCorrection,
+		schema: SongFormSchema,
 		initialInput: {
 			type: "Update",
 			description: "",
@@ -77,7 +77,7 @@ function StoryRoot(props: StoryProps) {
 				localized_titles: [],
 				credits: [],
 				relations: relations.map((relation) => ({
-					related_song_id: relation.song.id,
+					song: relation.song,
 					direction: relation.direction,
 					relation_type: relation.type,
 					description: relation.description,
@@ -92,7 +92,6 @@ function StoryRoot(props: StoryProps) {
 				<SongRelationsField
 					of={form}
 					currentSongId={props.currentSongId}
-					initRelations={relations}
 				/>
 			</div>
 		</TanStackProvider>

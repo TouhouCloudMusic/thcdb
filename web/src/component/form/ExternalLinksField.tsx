@@ -1,10 +1,8 @@
-import type { FormStore } from "@formisch/solid"
-import { insert, remove, useField, useFieldArray } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import type { GenericSchema } from "valibot"
+import { createMemo, untrack } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
@@ -13,14 +11,9 @@ import { FieldArrayFallback } from "~/component/form"
 import { formStyles, dividerStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
+import type { ArrayField } from "./types"
+
 const styles = stylex.create({
-	row: {
-		display: "grid",
-		gridTemplateColumns: "minmax(0,1fr) auto",
-		columnGap: px[8],
-	},
-	error: { gridColumnStart: "1" },
-	remove: { gridColumnStart: "2", gridRow: "1 / span 2", width: "fit-content" },
 	root: { display: "flex", minHeight: px[128], flexDirection: "column" },
 	header: {
 		marginBottom: px[16],
@@ -39,21 +32,29 @@ const styles = stylex.create({
 		gap: px[8],
 	},
 })
-type ExternalLinksFormStore = FormStore<
-	GenericSchema<{ data: { links?: string[] | null } }, unknown>
->
 
-function ExternalLinkRow(props: { of: ExternalLinksFormStore; index: number }) {
+const rowStyles = stylex.create({
+	row: {
+		display: "grid",
+		gridTemplateColumns: "minmax(0,1fr) auto",
+		columnGap: px[8],
+	},
+	error: { gridColumnStart: "1" },
+	remove: { gridColumnStart: "2", gridRow: "1 / span 2", width: "fit-content" },
+})
+
+function ExternalLinkRow(props: { field: ArrayField<string>; index: number }) {
 	const { t } = useLingui()
-	const field = useField(
-		() => props.of,
-		() => ({ path: ["data", "links", props.index] }),
-	)
+
+	const index = createMemo(() => props.index)
+	const field = untrack(() => props.field.fieldAt(index))
+
+	const removeLink = () => props.field.remove(props.index)
 
 	return (
 		<InputField.Root
 			as="li"
-			styles={styles.row}
+			styles={rowStyles.row}
 		>
 			<InputField.Input
 				{...field.props}
@@ -62,17 +63,15 @@ function ExternalLinkRow(props: { of: ExternalLinksFormStore; index: number }) {
 				placeholder={t`URL`}
 				value={field.input ?? ""}
 			/>
-			<InputField.Error styles={styles.error}>
+			<InputField.Error styles={rowStyles.error}>
 				{field.errors?.[0]}
 			</InputField.Error>
 			<Button
-				onClick={() =>
-					remove(props.of, { path: ["data", "links"], at: props.index })
-				}
+				onClick={removeLink}
 				appearance="ghost"
 				tone="gray"
 				size="sm"
-				styles={styles.remove}
+				styles={rowStyles.remove}
 			>
 				<Cross1Icon />
 			</Button>
@@ -81,11 +80,10 @@ function ExternalLinkRow(props: { of: ExternalLinksFormStore; index: number }) {
 }
 
 export function ExternalLinksField(props: {
-	of: ExternalLinksFormStore
+	field: ArrayField<string>
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
-	const links = useFieldArray(() => props.of, { path: ["data", "links"] })
 
 	return (
 		<div {...stylex.attrs(styles.root, props.styles)}>
@@ -94,9 +92,7 @@ export function ExternalLinksField(props: {
 					{...stylex.attrs(formStyles.label, styles.label)}
 				>{t`Links`}</label>
 				<Button
-					onClick={() =>
-						insert(props.of, { path: ["data", "links"], initialInput: "" })
-					}
+					onClick={props.field.append}
 					appearance="ghost"
 					tone="gray"
 					styles={styles.add}
@@ -107,13 +103,13 @@ export function ExternalLinksField(props: {
 
 			<ul {...stylex.attrs(styles.list)}>
 				<Intersperse
-					of={links.items}
+					of={props.field.items}
 					with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					fallback={<FieldArrayFallback />}
 				>
 					{(_, index) => (
 						<ExternalLinkRow
-							of={props.of}
+							field={props.field}
 							index={index()}
 						/>
 					)}

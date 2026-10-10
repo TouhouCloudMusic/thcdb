@@ -11,7 +11,10 @@ const LABEL: Label = {
 	id: 9,
 	name: "Rolling Contact",
 	links: [],
-	founders: [18, 41],
+	founders: [
+		{ id: 18, name: "Rolling Contact" },
+		{ id: 41, name: "天音" },
+	],
 	localized_names: [],
 	founded_date: { precision: "Month", value: "2008-01-01" },
 	dissolved_date: null,
@@ -24,19 +27,7 @@ const meta = {
 		withEntityDetailStoryState,
 		withStoryRouter,
 		withStoryApi({
-			"/api/artist/18": Response.json({
-				status: "Ok",
-				data: {
-					id: 18,
-					name: "Rolling Contact",
-					artist_type: "Group",
-					links: [],
-				},
-			}),
-			"/api/artist/41": Response.json({
-				status: "Ok",
-				data: { id: 41, name: "天音", artist_type: "Solo", links: [] },
-			}),
+			"/api/languages": Response.json({ status: "Ok", data: [] }),
 		}),
 	],
 	parameters: { layout: StoryLayout.FullScreen },

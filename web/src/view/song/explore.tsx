@@ -2,6 +2,7 @@ import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { Nil } from "@thc/toolkit/data"
 import { Show } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
@@ -15,7 +16,7 @@ import {
 	ExplorePageLayout,
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
-import type { SongListing } from "~/hey-api"
+import type { SongListing, SortDirection } from "~/hey-api"
 import { exploreSongOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { palette } from "~/style/color/palette.stylex"
 import { dividerStyles } from "~/style/primitives"
@@ -87,54 +88,41 @@ function SongItemSkeleton() {
 }
 
 type SongExploreFilterBarProps = {
-	languageId: string
+	languageId: number | undefined
 	sortBy: "created_at" | "updated_at" | undefined
-	orderBy: "asc" | "desc" | undefined
-	onLanguageChange: (value: string) => void
+	orderBy: SortDirection | undefined
+	onLanguageChange: (value: number | undefined) => void
 	onSortByChange: (value: "created_at" | "updated_at") => void
-	onOrderByChange: (value: "asc" | "desc") => void
+	onOrderByChange: (value: SortDirection) => void
 }
 
 function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 	const { t } = useLingui()
 	const languageOptions = () => [
-		"",
-		...LANGUAGE_OPTIONS.map((lang) => lang.id.toString()),
+		{ value: undefined, label: t`All` },
+		...LANGUAGE_OPTIONS.map((language) => ({
+			value: language.id,
+			label: language.label,
+		})),
 	]
-
-	const languageLabel = (value: string) => {
-		if (value === "") return t`All`
-		return (
-			LANGUAGE_OPTIONS.find((lang) => lang.id.toString() === value)?.label
-			?? value
-		)
-	}
 
 	return (
 		<ExploreFilterBar>
 			<ExploreFilterField label={t`Language`}>
-				<Select.Root<string>
+				<Select.Root
 					options={languageOptions()}
-					value={props.languageId}
-					onChange={(value) => props.onLanguageChange(value ?? "")}
-					placeholder={t`All`}
-					itemComponent={(optionProps) => (
-						<Select.Item item={optionProps.item}>
-							{languageLabel(optionProps.item.rawValue)}
-						</Select.Item>
+					value={languageOptions().find(
+						(option) => option.value === props.languageId,
 					)}
+					onChange={(option) => props.onLanguageChange(option?.value)}
+					optionValue={(option) => option.value ?? "all"}
+					optionTextValue="label"
 				>
-					<Select.Trigger styles={[styles.filterTrigger]}>
-						<Select.Value<string>>
-							{(state) => languageLabel(state.selectedOption())}
-						</Select.Value>
-						<Select.Icon />
-					</Select.Trigger>
-					<Select.Portal>
-						<Select.Content>
-							<Select.Listbox />
-						</Select.Content>
-					</Select.Portal>
+					<Select.Trigger
+						styles={styles.filterTrigger}
+						aria-label={t`Language`}
+					/>
+					<Select.Content />
 				</Select.Root>
 			</ExploreFilterField>
 
@@ -255,7 +243,7 @@ export const SongExplore = () => {
 		})
 	}
 
-	const setOrderBy = (value: "asc" | "desc") => {
+	const setOrderBy = (value: SortDirection) => {
 		updateFilter("order_by", value)
 	}
 
@@ -263,13 +251,12 @@ export const SongExplore = () => {
 		updateFilter("sort_by", value)
 	}
 
-	const updateLanguageId = (value: string) => {
-		const parsed = Number.parseInt(value, 10)
+	const updateLanguageId = (value: number | undefined) => {
 		void navigate({
 			to: "/song/explore",
 			search: {
 				...search(),
-				language_id: Number.isNaN(parsed) ? undefined : [parsed],
+				language_id: Nil.map((selected) => [selected], value),
 				page: 1,
 			},
 		})
@@ -281,7 +268,7 @@ export const SongExplore = () => {
 			action={{ to: "/song/new", label: t`Create song` }}
 		>
 			<SongExploreFilterBar
-				languageId={search().language_id?.[0]?.toString() ?? ""}
+				languageId={search().language_id?.[0]}
 				sortBy={search().sort_by}
 				orderBy={search().order_by}
 				onLanguageChange={updateLanguageId}

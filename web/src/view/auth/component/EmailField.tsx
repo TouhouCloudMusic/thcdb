@@ -5,7 +5,6 @@ import type { JSX } from "solid-js"
 import { createSignal } from "solid-js"
 
 import { InputField } from "~/component/atomic/form/Input"
-import { callHandlerUnion } from "~/utils/dom/event"
 
 import { authStyles } from "../styles"
 import { FieldLayout } from "./FieldLayout"
@@ -41,18 +40,18 @@ export function EmailField(props: EmailFieldProps) {
 				id="email"
 				value={props.field.input ?? ""}
 				disabled={props.disabled}
-				onFocus={(e) => {
+				onFocus={() => {
 					setIsEditing(true)
-					callHandlerUnion(e, props.field.props.onFocus)
+					props.field.props.onFocus()
 				}}
 				onChange={(e) => {
 					setIsEditing(true)
-					callHandlerUnion(e, props.field.props.onChange)
+					props.field.props.onChange(e)
 					props.onChange?.(e)
 				}}
-				onBlur={(e) => {
+				onBlur={() => {
 					setIsEditing(false)
-					callHandlerUnion(e, props.field.props.onBlur)
+					props.field.props.onBlur()
 				}}
 				onKeyDown={(e) => {
 					props.onKeyDown?.(e)

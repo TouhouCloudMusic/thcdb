@@ -465,18 +465,7 @@ function buildStoryState(options: StoryRootProps): {
 
 function StoryRoot(props: StoryRootProps) {
 	const [tab, setTab] = createSignal<"activity" | "collections">("collections")
-	const state = createMemo(() =>
-		buildStoryState({
-			scenario: props.scenario,
-			isSignedIn: props.isSignedIn,
-			hasBanner: props.hasBanner,
-			hasBio: props.hasBio,
-			hasRoles: props.hasRoles,
-			statsPreset: props.statsPreset,
-			highlightsPreset: props.highlightsPreset,
-			activityPreset: props.activityPreset,
-		}),
-	)
+	const state = createMemo(() => buildStoryState(props))
 
 	return (
 		<Profile

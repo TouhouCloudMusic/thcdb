@@ -203,8 +203,7 @@ export function ForgotPasswordPage() {
 		validate: "submit",
 		revalidate: "input",
 		initialInput: {
-			email: untrack(() => getResetPasswordEmail() ?? ""),
-			code: "",
+			email: untrack(() => getResetPasswordEmail()),
 		},
 	})
 

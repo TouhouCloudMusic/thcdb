@@ -20,6 +20,7 @@ use sea_query::{ExprTrait, Func, SimpleExpr, any};
 use super::{CommonFilter, FindManyFilter};
 use crate::features::artist::list::{self, ArtistListItem};
 use crate::features::artist::model::{Artist, Membership, Tenure};
+use crate::features::artist::repo::ArtistReferenceRow;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
 
@@ -99,6 +100,22 @@ pub(super) async fn find_many_impl(
         .await
         .db_operation("load artist aliases")?;
 
+    let alias_artists_by_id = artist::Entity::find()
+        .filter(
+            artist::Column::Id.is_in(
+                aliases
+                    .iter()
+                    .flat_map(|alias| [alias.first_id, alias.second_id]),
+            ),
+        )
+        .into_partial_model::<ArtistReferenceRow>()
+        .all(db)
+        .await
+        .db_operation("load artist alias names")?
+        .into_iter()
+        .map(|artist| (artist.id, SimpleArtist::from(artist)))
+        .collect::<HashMap<_, _>>();
+
     let artist_images = artist_image::Entity::find()
         .filter(artist_image::Column::ArtistId.is_in(ids.iter().copied()))
         .find_also_related(image::Entity)
@@ -159,6 +176,7 @@ pub(super) async fn find_many_impl(
                     .unique(),
             ),
         )
+        .into_partial_model::<ArtistReferenceRow>()
         .all(db)
         .await
         .db_operation("load membership artists")?
@@ -220,6 +238,7 @@ pub(super) async fn find_many_impl(
                         x.first_id
                     }
                 })
+                .map(|id| alias_artists_by_id[&id].clone())
                 .collect();
 
             let localized_names = localized_names

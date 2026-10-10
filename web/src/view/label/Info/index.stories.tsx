@@ -3,6 +3,7 @@ import type { Label } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { MOCK_CORRECTION_HISTORY } from "~/mock/correction"
+import { createMockNamedReference } from "~/mock/reference"
 import { withEntityDetailStoryState } from "~/storybook/entityDetail"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
@@ -38,7 +39,7 @@ const LABEL: Label = {
 			name: "滚动接触唱片",
 		},
 	],
-	founders: [18, 41, 42],
+	founders: [18, 41, 42].map(createMockNamedReference),
 }
 
 function StoryRoot() {

@@ -1,11 +1,16 @@
-import { Field, getErrors, insert, remove } from "@formisch/solid"
+import {
+	useFieldArray,
+	getInput,
+	useField,
+	insert,
+	remove,
+} from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import type { SimpleArtist } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { For, createMemo, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For, createMemo } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
@@ -15,7 +20,7 @@ import { palette } from "~/style/color/palette.stylex"
 import { formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
-import { ArtistInfo } from "./EntityInfo"
+import { entityInfoStyles } from "./entityInfo.stylex"
 import type { ReleaseFormStore } from "./types"
 
 const styles = stylex.create({
@@ -40,6 +45,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	item: {
 		display: "grid",
 		height: "fit-content",
@@ -47,33 +55,55 @@ const styles = stylex.create({
 	},
 })
 
+function ArtistRow(props: { of: ReleaseFormStore; index: number }) {
+	const field = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "artists", props.index],
+		}),
+	)
+
+	const removeArtist = () =>
+		remove(props.of, {
+			path: ["data", "artists"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.item)}>
+			<span {...stylex.attrs(entityInfoStyles.name)}>{field.input?.name}</span>
+			<For each={field.errors}>
+				{(error) => <FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>}
+			</For>
+			<Button
+				onClick={removeArtist}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+			>
+				<Cross1Icon />
+			</Button>
+		</li>
+	)
+}
+
 export function ReleaseArtistsField(props: {
 	of: ReleaseFormStore
-	initArtists?: SimpleArtist[]
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
-	const [artists, setArtists] = createStore<SimpleArtist[]>(
-		untrack(() => [...(props.initArtists ?? [])]),
-	)
 
-	const contain = (artist: SimpleArtist) =>
-		artists.some((a) => a.id === artist.id)
+	const artists = useFieldArray(() => props.of, { path: ["data", "artists"] })
 
-	const dataFilter = createMemo(() => {
-		const ids = new Set(artists.map((artist) => artist.id))
-		return (artist: SimpleArtist) => !ids.has(artist.id)
-	})
+	const selected = createMemo(() => getInput(props.of, { path: artists.path }))
 
-	const addArtist = (artist: SimpleArtist) => {
-		if (contain(artist)) return
-		insert(props.of, { path: ["data", "artists"], initialInput: artist.id })
-		setArtists(artists.length, { id: artist.id, name: artist.name })
-	}
+	const isAvailableArtist = (value: SimpleArtist) =>
+		!selected().some((reference) => reference.id === value.id)
 
-	const removeArtistAt = (idx: number) => {
-		remove(props.of, { path: ["data", "artists"], at: idx })
-		setArtists((list) => list.toSpliced(idx, 1))
+	const addArtist = (value: SimpleArtist) => {
+		if (!isAvailableArtist(value)) return
+
+		insert(props.of, { path: artists.path, initialInput: value })
 	}
 
 	return (
@@ -85,52 +115,22 @@ export function ReleaseArtistsField(props: {
 				<div {...stylex.attrs(styles.actions)}>
 					<ArtistSearchDialog
 						onSelect={addArtist}
-						dataFilter={dataFilter()}
+						filter={isAvailableArtist}
 						icon={<PlusIcon {...stylex.attrs(styles.icon)} />}
 					/>
 				</div>
 			</div>
-			<FormComp.ErrorList
-				errors={getErrors(props.of, { path: ["data", "artists"] })}
-			/>
+			<FormComp.ErrorList errors={artists.errors} />
 			<ul {...stylex.attrs(styles.list)}>
 				<For
-					each={artists}
+					each={artists.items}
 					fallback={<FieldArrayFallback />}
 				>
-					{(artist, idx) => (
-						<li {...stylex.attrs(styles.item)}>
-							<ArtistInfo value={{ id: artist.id, name: artist.name }} />
-
-							<Field
-								of={props.of}
-								path={["data", "artists", idx()]}
-							>
-								{(field) => (
-									<>
-										<input
-											{...field.props}
-											type="number"
-											hidden
-											value={field.input}
-										/>
-										<For each={field.errors}>
-											{(error) => (
-												<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
-											)}
-										</For>
-									</>
-								)}
-							</Field>
-							<Button
-								onClick={() => removeArtistAt(idx())}
-								appearance="ghost"
-								tone="gray"
-								size="sm"
-							>
-								<Cross1Icon />
-							</Button>
-						</li>
+					{(_, index) => (
+						<ArtistRow
+							of={props.of}
+							index={index()}
+						/>
 					)}
 				</For>
 			</ul>

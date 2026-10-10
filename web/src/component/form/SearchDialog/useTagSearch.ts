@@ -7,7 +7,7 @@ import { createMemo, createSignal } from "solid-js"
 
 type TagFilter = ((tag: Tag) => boolean) | undefined
 
-export function useTagSearch(dataFilter: Accessor<TagFilter>) {
+export function useTagSearch(filter: Accessor<TagFilter>) {
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
 	const onInput = debounce(300, (value: string) => {
@@ -22,17 +22,17 @@ export function useTagSearch(dataFilter: Accessor<TagFilter>) {
 	const tagsQuery = useQuery(() => ({
 		...TagQueryOption.findByKeyword(searchTerm()!),
 		placeholderData: (previous) => {
-			const filter = dataFilter()
+			const pred = filter()
 
-			return filter ? previous?.filter(filter) : previous
+			return pred ? previous?.filter(pred) : previous
 		},
 		enabled: Boolean(searchTerm()),
 	}))
 
 	const items = createMemo(() => {
-		const filter = dataFilter()
-		const filteredTags = filter
-			? tagsQuery.data?.filter(filter)
+		const tagFilter = filter()
+		const filteredTags = tagFilter
+			? tagsQuery.data?.filter(tagFilter)
 			: tagsQuery.data
 
 		return filteredTags ?? []

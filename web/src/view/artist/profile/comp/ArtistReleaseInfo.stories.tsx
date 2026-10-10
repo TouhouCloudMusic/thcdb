@@ -74,7 +74,7 @@ function createDiscographyItem(
 		title,
 		release_type: releaseType,
 		release_date: null,
-		artist: [{ id: STORY_ARTIST.id, name: STORY_ARTIST.name }],
+		artist: [STORY_ARTIST],
 		cover_url: null,
 	}
 }
@@ -85,7 +85,7 @@ const DISCOGRAPHY_ITEMS: Discography[] = [
 		title: "幻想郷 Groove Station",
 		release_type: "Album",
 		release_date: { precision: "Day", value: "2024-08-12" },
-		artist: [{ id: STORY_ARTIST.id, name: STORY_ARTIST.name }],
+		artist: [STORY_ARTIST],
 		cover_url: "/img/cover/release/1.png",
 	},
 	{
@@ -93,7 +93,7 @@ const DISCOGRAPHY_ITEMS: Discography[] = [
 		title: "Lunatic Night Drive",
 		release_type: "Album",
 		release_date: { precision: "Month", value: "2023-11-01" },
-		artist: [{ id: STORY_ARTIST.id, name: STORY_ARTIST.name }],
+		artist: [STORY_ARTIST],
 		cover_url: null,
 	},
 ]
@@ -104,10 +104,7 @@ const APPEARANCE_ITEMS: Discography[] = [
 		title: "Scarlet Session",
 		release_type: "Compilation",
 		release_date: { precision: "Day", value: "2025-05-05" },
-		artist: [
-			{ id: 88, name: "ShibayanRecords" },
-			{ id: STORY_ARTIST.id, name: STORY_ARTIST.name },
-		],
+		artist: [{ id: 88, name: "ShibayanRecords" }, STORY_ARTIST],
 		cover_url: "/img/cover/release/1.png",
 	},
 ]
@@ -199,7 +196,7 @@ export const WithAllTabs: Story = {
 					title: "Dream Layer EP",
 					release_type: "Ep",
 					release_date: { precision: "Day", value: "2021-10-24" },
-					artist: [{ id: STORY_ARTIST.id, name: STORY_ARTIST.name }],
+					artist: [STORY_ARTIST],
 					cover_url: null,
 				},
 			],

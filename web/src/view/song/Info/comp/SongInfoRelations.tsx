@@ -42,26 +42,12 @@ function RelationFilter<T extends string>(props: {
 				optionValue="value"
 				optionTextValue="label"
 				value={props.options.find((option) => option.value === props.value)}
-				onChange={(option) => {
-					if (option !== null) props.onChange(option.value)
-				}}
-				itemComponent={(itemProps) => (
-					<Select.Item item={itemProps.item}>
-						{itemProps.item.rawValue.label}
-					</Select.Item>
-				)}
+				onChange={(option) =>
+					option !== undefined && props.onChange(option.value)
+				}
 			>
-				<Select.Trigger aria-label={props.label}>
-					<Select.Value<RelationFilterOption<T>>>
-						{(state) => state.selectedOption().label}
-					</Select.Value>
-					<Select.Icon />
-				</Select.Trigger>
-				<Select.Portal>
-					<Select.Content>
-						<Select.Listbox />
-					</Select.Content>
-				</Select.Portal>
+				<Select.Trigger aria-label={props.label} />
+				<Select.Content />
 			</Select.Root>
 		</div>
 	)

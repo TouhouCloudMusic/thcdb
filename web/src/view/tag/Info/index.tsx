@@ -131,41 +131,35 @@ function EntitySortSelect(props: {
 				value === "popular" ? t`Popular` : t`Release date`
 			}
 			value={props.store.sortBy}
-			onChange={(value) => {
-				if (value !== null) props.store.setSortBy(value)
-			}}
+			onChange={(value) => value !== undefined && props.store.setSortBy(value)}
 			placeholder={t`Sort`}
-			itemComponent={(itemProps) => (
+			itemComponent={(option) => (
 				<Select.Item
-					item={itemProps.item}
+					item={option.item}
 					styles={[underlineSelectStyles.item, sortStyles.text]}
 				>
-					{itemProps.item.rawValue === "popular" ? t`Popular` : t`Release date`}
+					{option.item.rawValue === "popular" ? t`Popular` : t`Release date`}
 				</Select.Item>
 			)}
 		>
 			<Select.Trigger
-				aria-label={props.label}
 				styles={[
 					underlineSelectStyles.trigger,
 					sortStyles.trigger,
 					sortStyles.text,
 				]}
+				aria-label={props.label}
 			>
-				<Select.Value<TagEntitySort>>
-					{(state) =>
-						state.selectedOption() === "popular"
-							? t`Sort: Popular`
-							: t`Sort: Release date`
-					}
+				<Select.Value>
+					{props.store.sortBy === "popular"
+						? t`Sort: Popular`
+						: t`Sort: Release date`}
 				</Select.Value>
 				<Select.Icon />
 			</Select.Trigger>
-			<Select.Portal>
-				<Select.Content styles={underlineSelectStyles.content}>
-					<Select.Listbox styles={underlineSelectStyles.listbox} />
-				</Select.Content>
-			</Select.Portal>
+			<Select.Content styles={underlineSelectStyles.content}>
+				<Select.Listbox styles={underlineSelectStyles.listbox} />
+			</Select.Content>
 		</Select.Root>
 	)
 }
@@ -179,43 +173,37 @@ function CollectionSortSelect(props: { store: TagCollectionsStore }) {
 				value === "collected_at" ? t`Collected time` : t`Follow count`
 			}
 			value={props.store.sortBy}
-			onChange={(value) => {
-				if (value !== null) props.store.setSortBy(value)
-			}}
+			onChange={(value) => value !== undefined && props.store.setSortBy(value)}
 			placeholder={t`Sort`}
-			itemComponent={(itemProps) => (
+			itemComponent={(option) => (
 				<Select.Item
-					item={itemProps.item}
+					item={option.item}
 					styles={[underlineSelectStyles.item, sortStyles.text]}
 				>
-					{itemProps.item.rawValue === "collected_at"
+					{option.item.rawValue === "collected_at"
 						? t`Collected time`
 						: t`Follow count`}
 				</Select.Item>
 			)}
 		>
 			<Select.Trigger
-				aria-label={t`Sort collections`}
 				styles={[
 					underlineSelectStyles.trigger,
 					sortStyles.trigger,
 					sortStyles.text,
 				]}
+				aria-label={t`Sort collections`}
 			>
-				<Select.Value<EntityUserCollectionSort>>
-					{(state) =>
-						state.selectedOption() === "collected_at"
-							? t`Sort: Collected time`
-							: t`Sort: Follow count`
-					}
+				<Select.Value>
+					{props.store.sortBy === "collected_at"
+						? t`Sort: Collected time`
+						: t`Sort: Follow count`}
 				</Select.Value>
 				<Select.Icon />
 			</Select.Trigger>
-			<Select.Portal>
-				<Select.Content styles={underlineSelectStyles.content}>
-					<Select.Listbox styles={underlineSelectStyles.listbox} />
-				</Select.Content>
-			</Select.Portal>
+			<Select.Content styles={underlineSelectStyles.content}>
+				<Select.Listbox styles={underlineSelectStyles.listbox} />
+			</Select.Content>
 		</Select.Root>
 	)
 }

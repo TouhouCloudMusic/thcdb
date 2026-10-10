@@ -6,7 +6,7 @@ import type {
 	DateWithPrecision as TDateWithPrecision,
 } from "~/domain/shared"
 
-const THIS_YEAR = new Date().getFullYear()
+const THIS_YEAR = new Date().getUTCFullYear()
 
 function createNumericInputSchema(maxDigits: number) {
 	return v.pipe(
@@ -91,8 +91,8 @@ export function setDay(store: Store, raw: string): Store {
 	})
 }
 
-export function valueToStore(value?: TDateWithPrecision.In): Store {
-	if (!value) return {}
+export function valueToStore(value?: Partial<TDateWithPrecision.In>): Store {
+	if (!value?.value || !value.precision) return {}
 
 	const year = value.value.getUTCFullYear()
 	const month =

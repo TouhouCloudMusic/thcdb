@@ -1,6 +1,8 @@
-use domain::shared::{DateWithPrecision, LocalizedName};
+use std::collections::HashMap;
+
+use domain::shared::{DateWithPrecision, LocalizedName, SimpleArtist};
 use entity::{
-    label, label_founder, label_link, label_localized_name, language,
+    artist, label, label_founder, label_link, label_localized_name, language,
 };
 use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
@@ -11,6 +13,7 @@ use sea_orm::{
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
+use crate::features::artist::repo::ArtistReferenceRow;
 use crate::features::label::list::{self, LabelListItem};
 use crate::features::label::model::Label;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
@@ -148,6 +151,18 @@ async fn find_many_impl(
         .await
         .db_operation("load label founders")?;
 
+    let founders_by_id = artist::Entity::find()
+        .filter(artist::Column::Id.is_in(founders.iter().flat_map(
+            |founders| founders.iter().map(|founder| founder.artist_id),
+        )))
+        .into_partial_model::<ArtistReferenceRow>()
+        .all(db)
+        .await
+        .db_operation("load label founder names")?
+        .into_iter()
+        .map(|artist| (artist.id, SimpleArtist::from(artist)))
+        .collect::<HashMap<_, _>>();
+
     let localized_names = labels
         .load_many(label_localized_name::Entity, db)
         .await
@@ -190,7 +205,10 @@ async fn find_many_impl(
                     _ => None,
                 };
 
-            let founders = founders.into_iter().map(|x| x.artist_id).collect();
+            let founders = founders
+                .into_iter()
+                .map(|founder| founders_by_id[&founder.artist_id].clone())
+                .collect();
 
             let localized_names = names
                 .into_iter()

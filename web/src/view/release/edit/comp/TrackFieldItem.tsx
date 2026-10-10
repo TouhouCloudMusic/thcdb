@@ -1,10 +1,9 @@
-import { Field, setInput } from "@formisch/solid"
+import { useField } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
-import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
+import type { SimpleArtist, SongRef } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
-import { For, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For, Show } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
@@ -18,7 +17,8 @@ import { formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
 import { removeTrack } from "../model"
-import { ArtistInfo, SongInfo } from "./EntityInfo"
+import type { ReleaseTracksModel } from "../model"
+import { entityInfoStyles } from "./entityInfo.stylex"
 import type { ReleaseFormStore } from "./types"
 
 const styles = stylex.create({
@@ -62,185 +62,127 @@ const styles = stylex.create({
 export function TrackItem(props: {
 	index: number
 	of: ReleaseFormStore
-	initTrack?: ReleaseTrack
+	model: ReleaseTracksModel
 }) {
-	const [track, setTrack] = createStore(
-		untrack(() => ({
-			song: props.initTrack?.song,
-			artists: props.initTrack?.artists ?? [],
-		})),
+	const { t } = useLingui()
+	const trackNumber = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "tracks", props.index, "track_number"],
+		}),
+	)
+
+	const duration = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "tracks", props.index, "duration"],
+		}),
+	)
+
+	const displayTitle = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "tracks", props.index, "display_title"],
+		}),
+	)
+
+	const song = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "tracks", props.index, "song"],
+		}),
+	)
+
+	const artists = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "tracks", props.index, "artists"],
+		}),
 	)
 
 	const onRemoveTrack = () => removeTrack(props.of, props.index)
-	const onSelectSong = (s: Song) => {
-		setTrack("song", s)
-		setInput(props.of, {
-			path: ["data", "tracks", props.index, "song_id"],
-			input: s.id,
-		})
-	}
-	const hasArtist = (a: SimpleArtist) =>
-		track.artists.some((x) => x.id === a.id)
-	const onAddArtist = (a: SimpleArtist) => {
-		if (hasArtist(a)) return
-		setTrack("artists", track.artists.length, a)
-		const nextIds = [...track.artists.map((x) => x.id), a.id]
-		setInput(props.of, {
-			path: ["data", "tracks", props.index, "artists"],
-			input: nextIds,
-		})
-	}
-	const onRemoveArtistAt = (idx: number) => {
-		const next = track.artists.toSpliced(idx, 1)
-		setTrack("artists", next)
-		setInput(props.of, {
-			path: ["data", "tracks", props.index, "artists"],
-			input: next.map((x) => x.id),
-		})
-	}
+	const canAddArtist = (artist: SimpleArtist) =>
+		!props.model.hasArtist(artists, artist.id)
+	const onAddArtist = (artist: SimpleArtist) =>
+		props.model.addArtist(artists, artist)
+	const onRemoveArtist = (id: number) => props.model.removeArtist(artists, id)
 
 	return (
 		<>
 			<div {...stylex.attrs(styles.trackFields)}>
-				<TrackNumInput
-					index={props.index}
-					of={props.of}
-				/>
-				<DurationInput
-					index={props.index}
-					of={props.of}
-				/>
-				<RemoveTrackButton onRemove={onRemoveTrack} />
+				<InputField.Root>
+					<InputField.Input
+						{...trackNumber.props}
+						placeholder={t`Track number`}
+						value={trackNumber.input ?? undefined}
+					/>
+					<InputField.Error>{trackNumber.errors?.[0]}</InputField.Error>
+				</InputField.Root>
+				<InputField.Root>
+					<InputField.Input
+						{...duration.props}
+						styles={styles.trackNumber}
+						type="number"
+						placeholder={t`Duration (ms)`}
+						value={duration.input ?? undefined}
+					/>
+					<InputField.Error>{duration.errors?.[0]}</InputField.Error>
+				</InputField.Root>
+				<Button
+					onClick={onRemoveTrack}
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+				>
+					<Cross1Icon />
+				</Button>
 			</div>
-			<DisplayTitleInput
-				index={props.index}
-				of={props.of}
-			/>
+			<InputField.Root>
+				<InputField.Input
+					{...displayTitle.props}
+					placeholder={t`Display title`}
+					value={displayTitle.input ?? undefined}
+				/>
+				<InputField.Error>{displayTitle.errors?.[0]}</InputField.Error>
+			</InputField.Root>
 			<TrackSongPicker
-				index={props.index}
-				of={props.of}
-				song={() => track.song}
-				onSelect={onSelectSong}
+				song={song.input}
+				onSelect={song.onInput}
 			/>
+			<For each={song.errors}>
+				{(error) => <FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>}
+			</For>
 			<TrackArtistsField
-				artists={track.artists}
+				artists={artists.input}
 				onAdd={onAddArtist}
-				onRemoveAt={onRemoveArtistAt}
-				hasArtist={hasArtist}
+				onRemove={onRemoveArtist}
+				canAddArtist={canAddArtist}
 			/>
 		</>
 	)
 }
 
-function TrackNumInput(props: { index: number; of: ReleaseFormStore }) {
-	const { t } = useLingui()
-	return (
-		<Field
-			of={props.of}
-			path={["data", "tracks", props.index, "track_number"]}
-		>
-			{(field) => (
-				<InputField.Root>
-					<InputField.Input
-						{...field.props}
-						placeholder={t`Track number`}
-						value={field.input ?? undefined}
-					/>
-					<InputField.Error>
-						{field.errors ? field.errors[0] : undefined}
-					</InputField.Error>
-				</InputField.Root>
-			)}
-		</Field>
-	)
-}
-
-function DisplayTitleInput(props: { index: number; of: ReleaseFormStore }) {
-	const { t } = useLingui()
-	return (
-		<Field
-			of={props.of}
-			path={["data", "tracks", props.index, "display_title"]}
-		>
-			{(field) => (
-				<InputField.Root>
-					<InputField.Input
-						{...field.props}
-						placeholder={t`Display title`}
-						value={field.input ?? undefined}
-					/>
-					<InputField.Error>
-						{field.errors ? field.errors[0] : undefined}
-					</InputField.Error>
-				</InputField.Root>
-			)}
-		</Field>
-	)
-}
-
-function DurationInput(props: { index: number; of: ReleaseFormStore }) {
-	const { t } = useLingui()
-	return (
-		<Field
-			of={props.of}
-			path={["data", "tracks", props.index, "duration"]}
-		>
-			{(field) => (
-				<InputField.Root>
-					<InputField.Input
-						{...field.props}
-						styles={styles.trackNumber}
-						type="number"
-						placeholder={t`Duration (ms)`}
-						value={field.input ?? undefined}
-					/>
-					<InputField.Error>
-						{field.errors ? field.errors[0] : undefined}
-					</InputField.Error>
-				</InputField.Root>
-			)}
-		</Field>
-	)
-}
-
 function TrackSongPicker(props: {
-	index: number
-	of: ReleaseFormStore
-	song: () => Song | undefined
-	onSelect: (s: Song) => void
+	song?: SongRef
+	onSelect: (s: SongRef) => void
 }) {
 	const { t } = useLingui()
 	return (
 		<div {...stylex.attrs(styles.songPicker)}>
-			<Field
-				of={props.of}
-				path={["data", "tracks", props.index, "song_id"]}
-			>
-				{(field) => (
-					<>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? undefined}
-						/>
-						<div {...stylex.attrs(styles.songName)}>
-							{props.song() ? (
-								<SongInfo value={props.song()!} />
-							) : (
-								<span
-									{...stylex.attrs(styles.placeholder)}
-								>{t`No song selected`}</span>
-							)}
-						</div>
-						<For each={field.errors}>
-							{(error) => (
-								<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
-							)}
-						</For>
-					</>
-				)}
-			</Field>
+			<div {...stylex.attrs(styles.songName)}>
+				<Show
+					when={props.song}
+					fallback={
+						<span
+							{...stylex.attrs(styles.placeholder)}
+						>{t`No song selected`}</span>
+					}
+				>
+					<span {...stylex.attrs(entityInfoStyles.name)}>
+						{props.song?.title}
+					</span>
+				</Show>
+			</div>
 			<SongSearchDialog
 				onSelect={props.onSelect}
 				icon={<Pencil1Icon />}
@@ -249,24 +191,11 @@ function TrackSongPicker(props: {
 	)
 }
 
-function RemoveTrackButton(props: { onRemove: () => void }) {
-	return (
-		<Button
-			onClick={props.onRemove}
-			appearance="ghost"
-			tone="gray"
-			size="sm"
-		>
-			<Cross1Icon />
-		</Button>
-	)
-}
-
 function TrackArtistsField(props: {
 	artists: SimpleArtist[]
 	onAdd: (a: SimpleArtist) => void
-	onRemoveAt: (i: number) => void
-	hasArtist: (a: SimpleArtist) => boolean
+	onRemove: (id: number) => void
+	canAddArtist: (a: SimpleArtist) => boolean
 }) {
 	const { t } = useLingui()
 	return (
@@ -277,18 +206,20 @@ function TrackArtistsField(props: {
 				>{t`Track Artists`}</label>
 				<ArtistSearchDialog
 					onSelect={props.onAdd}
-					dataFilter={(a: SimpleArtist) => !props.hasArtist(a)}
+					filter={props.canAddArtist}
 					icon={<PlusIcon {...stylex.attrs(styles.icon)} />}
 				/>
 			</div>
 
 			<ul {...stylex.attrs(styles.list)}>
 				<For each={props.artists}>
-					{(artist, idx) => (
+					{(artist) => (
 						<li {...stylex.attrs(styles.artist)}>
-							<ArtistInfo value={artist} />
+							<span {...stylex.attrs(entityInfoStyles.name)}>
+								{artist.name}
+							</span>
 							<Button
-								onClick={() => props.onRemoveAt(idx())}
+								onClick={() => props.onRemove(artist.id)}
 								appearance="ghost"
 								tone="gray"
 								size="sm"

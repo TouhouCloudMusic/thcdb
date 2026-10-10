@@ -44,7 +44,7 @@ type ArtistSearchDialogProps = {
 	onSelect: (artist: Artist) => void
 	disabled?: boolean
 	queryFilter?: ArtistCommonFilter
-	dataFilter?: (artist: Artist) => boolean
+	filter?: (artist: Artist) => boolean
 	icon: JSX.Element
 }
 
@@ -64,14 +64,11 @@ export function ArtistSearchDialog(
 	})
 
 	const artistsQuery = useQuery(() => ({
-		...ArtistQueryOption.findByKeyword(searchTerm()!, {
-			artist_type: props.queryFilter?.artist_type,
-			exclusion: props.queryFilter?.exclusion,
-		}),
+		...ArtistQueryOption.findByKeyword(searchTerm()!, props.queryFilter),
 		placeholderData: (artist) => {
 			if (!artist) return
-			if (props.dataFilter) {
-				return artist.filter(props.dataFilter)
+			if (props.filter) {
+				return artist.filter(props.filter)
 			}
 			return artist
 		},
@@ -96,8 +93,8 @@ export function ArtistSearchDialog(
 			onInput={onInput}
 			items={
 				artistsQuery.isSuccess
-					? props.dataFilter
-						? artistsQuery.data.filter(props.dataFilter)
+					? props.filter
+						? artistsQuery.data.filter(props.filter)
 						: artistsQuery.data
 					: []
 			}

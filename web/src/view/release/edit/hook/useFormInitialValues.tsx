@@ -1,8 +1,10 @@
+import type { DeepPartial } from "@formisch/solid"
 /* eslint-disable solid/reactivity */
 import type { Release } from "@thc/api"
 
-import type { NewReleaseCorrection } from "~/domain/release"
 import { DateWithPrecision } from "~/domain/shared"
+
+import type { ReleaseFormInput } from "../schema"
 
 export type ReleaseFormInitialValueProps =
 	| { type: "new" }
@@ -10,31 +12,16 @@ export type ReleaseFormInitialValueProps =
 
 export function useReleaseFormInitialValues(
 	props: ReleaseFormInitialValueProps,
-): NewReleaseCorrection {
+): DeepPartial<ReleaseFormInput> {
 	return props.type === "new"
 		? {
 				type: "Create",
-				description: "",
 				data: {
-					title: "",
-					// @ts-expect-error init with undefined
-					release_type: undefined,
-					release_date: undefined,
-					recording_date_start: undefined,
-					recording_date_end: undefined,
-					localized_titles: [],
-					artists: [],
-					events: [],
-					catalog_nums: [],
-					credits: [],
 					discs: [{ name: "" }],
-					tracks: [],
-					links: [],
 				},
 			}
 		: {
 				type: "Update",
-				description: "",
 				data: {
 					title: props.release.title,
 					release_type: props.release.release_type,
@@ -45,49 +32,38 @@ export function useReleaseFormInitialValues(
 					recording_date_end: DateWithPrecision.toInput(
 						props.release.recording_date_end,
 					),
-					localized_titles:
-						props.release.localized_titles?.map((lt) => ({
-							language_id: lt.language.id,
-							title: lt.title,
-						})) ?? [],
-					artists: props.release.artists?.map((a) => a.id) ?? [],
-					events: props.release.events?.map((e) => e.id) ?? [],
-					catalog_nums:
-						props.release.catalog_nums?.map((catalogNum) => ({
-							catalog_number: catalogNum.catalog_number,
-							label_id: catalogNum.label?.id,
-						})) ?? [],
-					credits:
-						props.release.credits?.map((c) => ({
-							role_id: c.role.id,
-							on: c.on,
-							artist_id: c.artist.id,
-						})) ?? [],
-					discs:
-						props.release.discs?.map((d) => ({ name: d.name ?? undefined }))
-						?? [],
-					tracks:
-						(() => {
-							const discs = props.release.discs ?? []
-							const indexById = new Map<number, number>()
-							for (const [i, disc] of discs.entries()) {
-								indexById.set(disc.id, i)
-							}
-							const tracks = props.release.tracks
+					localized_titles: props.release.localized_titles,
+					artists: props.release.artists,
+					events: props.release.events,
+					catalog_nums: props.release.catalog_nums?.map((catalogNum) => ({
+						catalog_number: catalogNum.catalog_number,
+						label: catalogNum.label ?? undefined,
+					})),
+					credits: props.release.credits,
+					discs: props.release.discs?.map((d) => ({
+						name: d.name ?? undefined,
+					})),
+					tracks: (() => {
+						const discs = props.release.discs ?? []
+						const indexById = new Map<number, number>()
+						for (const [i, disc] of discs.entries()) {
+							indexById.set(disc.id, i)
+						}
+						const tracks = props.release.tracks
 
-							return tracks?.map((t) => ({
-								artists: (t.artists ?? []).map((a) => a.id),
-								disc_index:
-									typeof t.disc_id === "number"
-										? (indexById.get(t.disc_id) ?? 0)
-										: 0,
-								display_title: t.display_title ?? undefined,
-								duration: t.duration ?? undefined,
-								song_id: t.song.id,
-								track_number: t.track_number ?? undefined,
-							}))
-						})() ?? [],
-					links: props.release.links ?? [],
+						return tracks?.map((t) => ({
+							artists: t.artists,
+							disc_index:
+								typeof t.disc_id === "number"
+									? (indexById.get(t.disc_id) ?? 0)
+									: 0,
+							display_title: t.display_title ?? undefined,
+							duration: t.duration ?? undefined,
+							song: t.song,
+							track_number: t.track_number ?? undefined,
+						}))
+					})(),
+					links: props.release.links,
 				},
 			}
 }

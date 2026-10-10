@@ -1,10 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { Nil } from "@thc/toolkit/data"
 
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
-import { ARTIST_TYPES } from "~/domain/artist/constants"
-import type { ArtistListItem } from "~/hey-api"
+import type { ArtistType, SortDirection } from "~/hey-api"
 import { exploreArtistOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import {
 	ArtistExploreFilterBar,
@@ -14,21 +14,11 @@ import {
 const route = getRouteApi("/artist/explore")
 
 type ArtistExploreSearch = {
-	artist_type?: ArtistListItem["artist_type"][]
+	artist_type?: ArtistType[]
 	sort_by?: "created_at" | "updated_at"
-	order_by?: "asc" | "desc"
+	order_by?: SortDirection
 	limit: number
 	page: number
-}
-
-const isArtistType = (
-	value: string,
-): value is ArtistListItem["artist_type"] => {
-	return ARTIST_TYPES.some((artistType) => artistType === value)
-}
-
-const parseArtistTypeFilterValue = (value: string) => {
-	if (isArtistType(value)) return [value]
 }
 
 export const ArtistExplore = () => {
@@ -43,7 +33,7 @@ export const ArtistExplore = () => {
 		})
 	}
 
-	const artistTypeValue = () => search().artist_type?.[0] ?? ""
+	const artistTypeValue = () => search().artist_type?.[0]
 
 	const artistsQuery = useQuery(() => {
 		const snapshot = search()
@@ -68,6 +58,10 @@ export const ArtistExplore = () => {
 		})
 	}
 
+	const changeArtistType = (value: ArtistType | undefined) => {
+		applyFilterPatch({ artist_type: Nil.map((selected) => [selected], value) })
+	}
+
 	return (
 		<ExplorePageLayout
 			title={t`Explore Artists`}
@@ -75,11 +69,7 @@ export const ArtistExplore = () => {
 		>
 			<ArtistExploreFilterBar
 				artistTypeValue={artistTypeValue()}
-				onArtistTypeChange={(value) => {
-					applyFilterPatch({
-						artist_type: parseArtistTypeFilterValue(value),
-					})
-				}}
+				onArtistTypeChange={changeArtistType}
 				sortBy={search().sort_by}
 				onSortByChange={(value) => applyFilterPatch({ sort_by: value })}
 				orderBy={search().order_by}

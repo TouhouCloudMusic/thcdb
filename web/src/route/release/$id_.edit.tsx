@@ -6,6 +6,7 @@ import { createEffect, Show } from "solid-js"
 
 import { AuthGuard } from "~/component/route"
 import { EntityId_fromStr } from "~/domain/shared"
+import { languageListQueryOptions } from "~/state/language"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import {
 	ensurePendingCorrectionEditable,
@@ -20,6 +21,8 @@ export const Route = createFileRoute("/release/$id_/edit")({
 	validateSearch: pendingCorrectionEditSearchSchema,
 	loaderDeps: getEditSearchDeps,
 	loader: async ({ params: { id }, deps }) => {
+		void QUERY_CLIENT.prefetchQuery(languageListQueryOptions())
+
 		const parsedId = EntityId_fromStr(id)
 
 		const data = await QUERY_CLIENT.ensureQueryData(

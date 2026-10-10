@@ -1,7 +1,7 @@
-/* eslint-disable solid/reactivity */
+import type { DeepPartial } from "@formisch/solid"
 import type { Artist } from "@thc/api"
 
-import type { NewArtistCorrection } from "~/domain/artist"
+import type { ArtistFormInput } from "../schema"
 
 type Props =
 	| {
@@ -12,13 +12,13 @@ type Props =
 			artist: Artist
 	  }
 
-export function useArtistFormInitialValues(props: Props): NewArtistCorrection {
-	return props.type == "new"
+export function useArtistFormInitialValues(
+	input: Props,
+): DeepPartial<ArtistFormInput> {
+	return input.type == "new"
 		? {
 				type: "Create",
-				description: "",
 				data: {
-					name: "",
 					artist_type: "Unknown",
 					localized_names: [],
 					aliases: [],
@@ -29,36 +29,31 @@ export function useArtistFormInitialValues(props: Props): NewArtistCorrection {
 			}
 		: {
 				type: "Update",
-				description: "",
 				data: {
-					name: props.artist.name,
-					artist_type: props.artist.artist_type,
-					localized_names:
-						props.artist.localized_names?.map((ln) => ({
-							language_id: ln.language.id,
-							name: ln.name,
-						})) ?? [],
-					aliases: props.artist.aliases ?? [],
-					text_aliases: props.artist.text_aliases ?? [],
-					start_date: props.artist.start_date
+					name: input.artist.name,
+					artist_type: input.artist.artist_type,
+					localized_names: input.artist.localized_names ?? [],
+					aliases: input.artist.aliases ?? [],
+					text_aliases: input.artist.text_aliases ?? [],
+					start_date: input.artist.start_date
 						? {
-								value: new Date(props.artist.start_date.value),
-								precision: props.artist.start_date.precision,
+								value: new Date(input.artist.start_date.value),
+								precision: input.artist.start_date.precision,
 							}
 						: undefined,
-					end_date: props.artist.end_date
+					end_date: input.artist.end_date
 						? {
-								value: new Date(props.artist.end_date.value),
-								precision: props.artist.end_date.precision,
+								value: new Date(input.artist.end_date.value),
+								precision: input.artist.end_date.precision,
 							}
 						: undefined,
-					links: props.artist.links ?? [],
-					start_location: props.artist.start_location,
-					current_location: props.artist.current_location,
+					links: input.artist.links ?? [],
+					start_location: input.artist.start_location,
+					current_location: input.artist.current_location,
 					memberships:
-						props.artist.memberships?.map((m) => ({
-							artist_id: m.artist.id,
-							roles: m.roles?.map((r) => r.id) ?? [],
+						input.artist.memberships?.map((m) => ({
+							artist: m.artist,
+							roles: m.roles ?? [],
 							tenure: m.tenure ?? [],
 						})) ?? [],
 				},

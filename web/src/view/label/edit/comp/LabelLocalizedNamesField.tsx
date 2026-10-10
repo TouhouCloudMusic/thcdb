@@ -1,24 +1,15 @@
-import {
-	Field,
-	FieldArray,
-	getErrors,
-	insert,
-	remove,
-	setInput,
-} from "@formisch/solid"
+import { insert, remove, useField, useFieldArray } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import type { Language, LocalizedName } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { For, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FieldArrayFallback } from "~/component/form"
-import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
+import { LanguageSelect } from "~/component/form/stateful/LanguageSelect"
 import { formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
@@ -46,6 +37,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	item: {
 		display: "grid",
 		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
@@ -63,47 +57,70 @@ const styles = stylex.create({
 	},
 })
 
-type Props = {
-	styles?: StyleXStyles
-	initLocalizedNames?: LocalizedName[]
+function LocalizedNameRow(props: { index: number }) {
+	const { t } = useLingui()
+	const { formStore } = useLabelForm()
+
+	const name = useField(formStore, () => ({
+		path: ["data", "localized_names", props.index, "name"],
+	}))
+	const language = useField(formStore, () => ({
+		path: ["data", "localized_names", props.index, "language"],
+	}))
+
+	const removeLocalizedNameAt = (index: number) => () =>
+		remove(formStore, {
+			path: ["data", "localized_names"],
+			at: index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.item)}>
+			<InputField.Root>
+				<InputField.Input
+					{...name.props}
+					placeholder={t`Name`}
+					value={name.input ?? ""}
+				/>
+				<InputField.Error>{name.errors?.[0]}</InputField.Error>
+			</InputField.Root>
+			<LanguageSelect
+				onChange={language.onInput}
+				value={language.input}
+			/>
+			<div {...stylex.attrs(rowStyles.removeControl)}>
+				<Button
+					onClick={removeLocalizedNameAt(props.index)}
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+					styles={rowStyles.removeButton}
+				>
+					<Cross1Icon />
+				</Button>
+			</div>
+			<ul>
+				<FormComp.ErrorList errors={language.errors} />
+			</ul>
+		</li>
+	)
 }
 
-type LocalizedNameItemProps = {
-	index: number
-	language: Language | undefined
-	onSelectLanguage: (lang: Language | null) => void
-	onRemove: () => void
+type Props = {
+	styles?: StyleXStyles
 }
 
 export function LabelLocalizedNamesField(props: Props) {
 	const { t } = useLingui()
 	const { formStore } = useLabelForm()
 
-	const [languages, setLanguages] = createStore<(Language | undefined)[]>(
-		untrack(() =>
-			(props.initLocalizedNames ?? []).map((item) => item.language),
-		),
-	)
+	const localizedNames = useFieldArray(formStore, {
+		path: ["data", "localized_names"],
+	})
 
 	const addLocalizedName = () => {
 		insert(formStore, {
-			path: ["data", "localized_names"],
-		})
-		setLanguages(languages.length, undefined)
-	}
-
-	const removeLocalizedNameAt = (idx: number) => () => {
-		remove(formStore, { path: ["data", "localized_names"], at: idx })
-		setLanguages((list) => list.toSpliced(idx, 1))
-	}
-
-	const setLanguageAt = (idx: number) => (lang: Language | null) => {
-		if (!lang) return
-
-		setLanguages(idx, lang)
-		setInput(formStore, {
-			path: ["data", "localized_names", idx, "language_id"],
-			input: lang.id,
+			path: localizedNames.path,
 		})
 	}
 
@@ -122,96 +139,14 @@ export function LabelLocalizedNamesField(props: Props) {
 					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
-			<FieldArray
-				of={formStore}
-				path={["data", "localized_names"]}
-			>
-				{(fieldArray) => (
-					<ul {...stylex.attrs(styles.list)}>
-						<For
-							each={fieldArray.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<LocalizedNameItem
-									index={idx()}
-									language={languages[idx()]}
-									onSelectLanguage={setLanguageAt(idx())}
-									onRemove={removeLocalizedNameAt(idx())}
-								/>
-							)}
-						</For>
-					</ul>
-				)}
-			</FieldArray>
-		</div>
-	)
-}
-
-function LocalizedNameItem(props: LocalizedNameItemProps) {
-	const { t } = useLingui()
-	const { formStore } = useLabelForm()
-
-	return (
-		<li {...stylex.attrs(styles.item)}>
-			<Field
-				of={formStore}
-				path={["data", "localized_names", props.index, "name"]}
-			>
-				{(field) => (
-					<InputField.Root>
-						<InputField.Input
-							{...field.props}
-							placeholder={t`Name`}
-							value={field.input ?? ""}
-						/>
-					</InputField.Root>
-				)}
-			</Field>
-			<Field
-				of={formStore}
-				path={["data", "localized_names", props.index, "language_id"]}
-			>
-				{(field) => (
-					<>
-						<LanguageCombobox
-							onChange={props.onSelectLanguage}
-							value={props.language}
-						/>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? undefined}
-						/>
-					</>
-				)}
-			</Field>
-			<div {...stylex.attrs(styles.removeControl)}>
-				<Button
-					onClick={props.onRemove}
-					appearance="ghost"
-					tone="gray"
-					size="sm"
-					styles={styles.removeButton}
+			<ul {...stylex.attrs(styles.list)}>
+				<For
+					each={localizedNames.items}
+					fallback={<FieldArrayFallback />}
 				>
-					<Cross1Icon />
-				</Button>
-			</div>
-			<ul>
-				<FormComp.ErrorList
-					errors={getErrors(formStore, {
-						path: ["data", "localized_names", props.index, "name"],
-					})}
-				/>
+					{(_, index) => <LocalizedNameRow index={index()} />}
+				</For>
 			</ul>
-			<ul>
-				<FormComp.ErrorList
-					errors={getErrors(formStore, {
-						path: ["data", "localized_names", props.index, "language_id"],
-					})}
-				/>
-			</ul>
-		</li>
+		</div>
 	)
 }

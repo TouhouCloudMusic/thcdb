@@ -8,7 +8,6 @@ import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
-import { NewTagCorrection } from "~/domain/tag"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
@@ -25,6 +24,7 @@ import { TagFormTypeField } from "./comp/TagTypeField"
 import { TagFormProvider } from "./context"
 import { toTagFormInitValue } from "./hook/init"
 import { createTagFormSubmission } from "./hook/submit"
+import { TagFormSchema } from "./schema"
 
 const styles = stylex.create({
 	page: { display: "grid", gridTemplateRows: "auto 1fr auto" },
@@ -104,7 +104,7 @@ function FormContent(props: Props) {
 		createTagFormSubmission(props)
 
 	const form = createForm({
-		schema: NewTagCorrection,
+		schema: TagFormSchema,
 		initialInput: initialValues,
 	})
 
@@ -138,8 +138,7 @@ function FormContent(props: Props) {
 			>
 				<Form
 					of={form}
-					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-					onSubmit={(output, _) => handleSubmit(output)}
+					onSubmit={handleSubmit}
 				>
 					<div {...stylex.attrs(styles.form)}>
 						<TagFormNameField styles={styles.formField6} />

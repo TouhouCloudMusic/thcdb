@@ -1,5 +1,5 @@
 import type { FormStore } from "@formisch/solid"
 
-import type { NewSongCorrection } from "~/domain/song"
+import type { SongFormSchema } from "../schema"
 
-export type SongFormStore = FormStore<typeof NewSongCorrection>
+export type SongFormStore = FormStore<typeof SongFormSchema>

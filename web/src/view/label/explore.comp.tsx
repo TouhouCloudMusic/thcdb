@@ -10,7 +10,7 @@ import {
 	ExploreFilterBar,
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
-import type { LabelListItem } from "~/hey-api"
+import type { LabelListItem, SortDirection } from "~/hey-api"
 import { palette } from "~/style/color/palette.stylex"
 import { dividerStyles } from "~/style/primitives"
 import { radius, colors, px } from "~/style/tokens.stylex"
@@ -57,8 +57,8 @@ export function LabelItemSkeleton() {
 type LabelExploreFilterBarProps = {
 	sortBy: "created_at" | "updated_at" | undefined
 	onSortByChange: (value: "created_at" | "updated_at") => void
-	orderBy: "asc" | "desc" | undefined
-	onOrderByChange: (value: "asc" | "desc") => void
+	orderBy: SortDirection | undefined
+	onOrderByChange: (value: SortDirection) => void
 }
 
 export function LabelExploreFilterBar(props: LabelExploreFilterBarProps) {

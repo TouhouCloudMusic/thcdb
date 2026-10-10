@@ -1,3 +1,5 @@
+import { Nil } from "@thc/toolkit/data"
+
 import type { AppLocale } from "."
 
 export const DEFAULT_LOCALE: AppLocale = "en"
@@ -33,10 +35,7 @@ export function resolveBrowserLocale(
 		}
 	}
 
-	const fallbackLocale =
-		fallbackLanguage === undefined ? undefined : matchLocale(fallbackLanguage)
-
-	return fallbackLocale ?? DEFAULT_LOCALE
+	return Nil.map(matchLocale, fallbackLanguage) ?? DEFAULT_LOCALE
 }
 
 export function matchLocale(language: string): AppLocale | undefined {

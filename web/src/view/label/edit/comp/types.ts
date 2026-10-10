@@ -1,7 +1,5 @@
 import type { FormStore } from "@formisch/solid"
 
-import type { NewLabelCorrection } from "~/domain/label"
+import type { LabelFormSchema } from "../schema"
 
-type LabelFormSchema = typeof NewLabelCorrection
-
-export type LabelFormStore = FormStore<LabelFormSchema>
+export type LabelFormStore = FormStore<typeof LabelFormSchema>

@@ -1,11 +1,17 @@
-import { Field, getInput, insert, remove } from "@formisch/solid"
+import {
+	getInput,
+	insert,
+	remove,
+	useField,
+	useFieldArray,
+} from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
-import type { Artist, ArtistCommonFilter } from "@thc/api"
+import type { Artist } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { createMemo, untrack } from "solid-js"
-import { createStore, produce } from "solid-js/store"
+import { Nil } from "@thc/toolkit/data"
+import { createMemo } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { Intersperse } from "~/component/data/Intersperse"
@@ -49,6 +55,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	entry: {
 		display: "grid",
 		height: "fit-content",
@@ -56,51 +65,66 @@ const styles = stylex.create({
 	},
 })
 
-type ArtistRef = Pick<Artist, "id" | "name">
+function AliasRow(props: { index: number }) {
+	const { formStore } = useArtistForm()
 
-export function ArtistFormAliasesField(props: {
-	styles?: StyleXStyles
-	initAliasIds?: number[]
-}) {
+	const field = useField(formStore, () => ({
+		path: ["data", "aliases", props.index],
+	}))
+
+	const removeAlias = () =>
+		remove(formStore, {
+			path: ["data", "aliases"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.entry)}>
+			<div>{field.input?.name}</div>
+			<Button
+				onClick={removeAlias}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+			>
+				<Cross1Icon />
+			</Button>
+		</li>
+	)
+}
+
+export function ArtistFormAliasesField(props: { styles?: StyleXStyles }) {
 	const { t } = useLingui()
 	const context = useArtistForm()
 	const { formStore } = context
-	const [aliases, setAliases] = createStore<ArtistRef[]>(
-		untrack(() =>
-			(props.initAliasIds ?? []).map((id) => ({ id, name: `#${id}` })),
-		),
-	)
 
-	const handleSelect = (artist: Artist) => {
-		if (aliases.some((x) => x.id == artist.id)) return
+	const aliases = useFieldArray(formStore, {
+		path: ["data", "aliases"],
+	})
 
-		setAliases(
-			produce((s) => {
-				s.push(artist)
-			}),
+	const isAvailableArtist = (artist: Artist) =>
+		artist.id !== context.artistId
+		&& !getInput(formStore, { path: aliases.path }).some(
+			(alias) => alias.id === artist.id,
 		)
 
-		insert(formStore, { path: ["data", "aliases"], initialInput: artist.id })
+	const addAlias = (artist: Artist) => {
+		if (!isAvailableArtist(artist)) return
+
+		insert(formStore, { path: aliases.path, initialInput: artist })
 	}
 
-	const handleRemove = (idx: number) => {
-		setAliases(
-			produce((s) => {
-				s.splice(idx, 1)
-			}),
+	const artistSearchFilter = createMemo(() => {
+		const exclusion = getInput(formStore, { path: aliases.path }).map(
+			(alias) => alias.id,
 		)
-		remove(formStore, { path: ["data", "aliases"], at: idx })
-	}
 
-	const filter = createMemo<ArtistCommonFilter>(() => {
-		const exclusion = aliases.map((x) => x.id)
-		if (context.artistId !== undefined) {
-			exclusion.push(context.artistId)
-		}
-		const ty = getInput(formStore, { path: ["data", "artist_type"] })
-		const artist_type = ty ? [ty] : undefined
+		if (context.artistId !== undefined) exclusion.push(context.artistId)
+
+		const type = getInput(formStore, { path: ["data", "artist_type"] })
+
 		return {
-			artist_type,
+			artist_type: Nil.map((value) => [value], type),
 			exclusion,
 		}
 	})
@@ -113,67 +137,22 @@ export function ArtistFormAliasesField(props: {
 				>{t`Aliases`}</label>
 				<div {...stylex.attrs(styles.actions)}>
 					<ArtistSearchDialog
-						onSelect={handleSelect}
-						queryFilter={filter()}
+						onSelect={addAlias}
+						queryFilter={artistSearchFilter()}
+						filter={isAvailableArtist}
 						icon={<PlusIcon {...stylex.attrs(styles.actionIcon)} />}
 					/>
 				</div>
 			</div>
 			<ul {...stylex.attrs(styles.entries)}>
 				<Intersperse
-					of={aliases}
+					of={aliases.items}
 					with={<span {...stylex.attrs(dividerStyles.horizontal)}></span>}
 					fallback={<FieldArrayFallback />}
 				>
-					{(alias, idx) => (
-						<AliasListItem
-							index={idx()}
-							onRemove={() => handleRemove(idx())}
-							artist={alias}
-						/>
-					)}
+					{(_, index) => <AliasRow index={index()} />}
 				</Intersperse>
 			</ul>
 		</div>
-	)
-}
-
-type AliasListItemProps = {
-	index: number
-	onRemove: () => void
-	artist: ArtistRef
-}
-
-function AliasListItem(props: AliasListItemProps) {
-	const { formStore } = useArtistForm()
-
-	return (
-		<li {...stylex.attrs(styles.entry)}>
-			<Field
-				of={formStore}
-				path={["data", "aliases", props.index]}
-			>
-				{(field) => (
-					<>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? props.artist.id}
-						/>
-						<div>{props.artist.name}</div>
-					</>
-				)}
-			</Field>
-
-			<Button
-				onClick={props.onRemove}
-				appearance="ghost"
-				tone="gray"
-				size="sm"
-			>
-				<Cross1Icon />
-			</Button>
-		</li>
 	)
 }

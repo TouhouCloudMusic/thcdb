@@ -7,6 +7,7 @@ import { createEffect, Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
+import { useArrayField } from "~/component/form/useArrayField"
 import { NewEventCorrection } from "~/domain/event"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
@@ -99,6 +100,8 @@ function FormContent(props: Props) {
 		initialInput: initialValues,
 	})
 
+	const links = useArrayField(form, { path: ["data", "links"] })
+
 	if (import.meta.env.DEV) {
 		createEffect(() => {
 			const val = getInput(form)
@@ -136,8 +139,7 @@ function FormContent(props: Props) {
 			>
 				<Form
 					of={form}
-					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-					onSubmit={(output, _) => handleSubmit(output)}
+					onSubmit={handleSubmit}
 				>
 					<div {...stylex.attrs(styles.form)}>
 						<EventNameField styles={styles.formField7} />
@@ -147,7 +149,7 @@ function FormContent(props: Props) {
 						<EventDescriptionField styles={styles.formField7} />
 						<EventAlternativeNamesField styles={styles.formField7} />
 						<ExternalLinksField
-							of={form}
+							field={links}
 							styles={styles.formField7}
 						/>
 						<EventFormDesc

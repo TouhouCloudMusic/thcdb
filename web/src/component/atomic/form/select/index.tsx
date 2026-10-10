@@ -2,11 +2,14 @@ import * as K_Select from "@kobalte/core/select"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import { CaretSortIcon } from "@thc/icons/radix"
-import type { ComponentProps, JSX } from "solid-js"
-import { mergeProps, splitProps } from "solid-js"
+import { Nil } from "@thc/toolkit/data"
+import type { JSX } from "solid-js"
+import { createContext, For, Show, splitProps, useContext } from "solid-js"
+import * as v from "valibot"
 
 import { textStyles } from "~/style"
 import { palette } from "~/style/color/palette.stylex"
+import { formStyles } from "~/style/primitives"
 import {
 	radius,
 	colors,
@@ -16,6 +19,7 @@ import {
 } from "~/style/tokens.stylex"
 
 import { inputStyles } from "../../Input"
+import { ErrorMessage } from "../error_message"
 
 export const underlineSelectStyles = stylex.create({
 	trigger: {
@@ -77,6 +81,7 @@ export const underlineSelectStyles = stylex.create({
 })
 
 const selectStyles = stylex.create({
+	column: { display: "flex", flexDirection: "column" },
 	trigger: {
 		display: "grid",
 		gridTemplateColumns: `minmax(0, 1fr) ${px[32]}`,
@@ -132,119 +137,225 @@ const selectStyles = stylex.create({
 	},
 })
 
-function Root<Option, OptGroup = never>(
-	props: ComponentProps<typeof K_Select.Root<Option, OptGroup, "div">> & {
-		styles?: StyleXStyles
-	},
-) {
-	const [local, others] = splitProps(props, ["styles"])
+type TextValue<Option> =
+	| Extract<
+			{
+				[Key in keyof Option]: Option[Key] extends string ? Key : never
+			}[keyof Option],
+			string & keyof Option
+	  >
+	| ((option: Option) => string)
+
+type FieldProps = Pick<
+	JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+	"name" | "ref" | "onFocus" | "onBlur"
+>
+	& Pick<JSX.SelectHTMLAttributes<HTMLSelectElement>, "onChange">
+
+type SelectContextValue = {
+	fieldProps: FieldProps | undefined
+	errors: readonly string[] | null | undefined
+	valueText: () => JSX.Element
+}
+
+const SelectContext = createContext<SelectContextValue>()
+
+function useSelect() {
+	const context = useContext(SelectContext)
+
+	if (!context) throw new Error("Select parts must be used within Select.Root")
+
+	return context
+}
+
+type Props<Option extends string | object> = {
+	options: readonly Option[]
+	value: Option | undefined
+	onChange: (value: Option | undefined) => void
+	optionValue?: keyof Option | ((option: Option) => string | number)
+	itemComponent?: K_Select.SelectRootProps<Option>["itemComponent"]
+	children: JSX.Element
+	placeholder?: JSX.Element
+	errors?: readonly string[] | null
+	disabled?: boolean
+	name?: string
+	required?: boolean
+	readOnly?: boolean
+	fieldProps?: FieldProps
+	styles?: StyleXStyles
+} & ([Option] extends [string]
+	? { optionTextValue?: TextValue<Option> }
+	: { optionTextValue: TextValue<Option> })
+
+function SelectRoot<Option extends string | object>(props: Props<Option>) {
+	const optionText = (option: Option) => {
+		const textValue = props.optionTextValue
+
+		const text =
+			typeof textValue === "function"
+				? textValue(option)
+				: textValue === undefined
+					? option
+					: option[textValue]
+
+		v.assert(v.string(), text)
+
+		return text
+	}
+
 	return (
-		<K_Select.Root<Option, OptGroup>
-			{...others}
-			{...stylex.attrs(local.styles)}
-		/>
+		<SelectContext.Provider
+			value={{
+				get fieldProps() {
+					return props.fieldProps
+				},
+				get errors() {
+					return props.errors
+				},
+				valueText: () => Nil.map(optionText, props.value),
+			}}
+		>
+			<K_Select.Root<Option>
+				name={props.fieldProps?.name ?? props.name}
+				value={props.value ?? null}
+				onChange={(value) => props.onChange(value ?? undefined)}
+				options={[...props.options]}
+				optionValue={props.optionValue}
+				optionTextValue={props.optionTextValue}
+				placeholder={props.placeholder}
+				disabled={props.disabled}
+				required={props.required}
+				readOnly={props.readOnly}
+				validationState={props.errors?.length ? "invalid" : "valid"}
+				itemComponent={
+					props.itemComponent
+					?? ((itemProps) => (
+						<SelectItem item={itemProps.item}>
+							{optionText(itemProps.item.rawValue)}
+						</SelectItem>
+					))
+				}
+				{...stylex.attrs(selectStyles.column, props.styles)}
+			>
+				<Show when={props.fieldProps !== undefined || props.name !== undefined}>
+					<K_Select.HiddenSelect onChange={props.fieldProps?.onChange} />
+				</Show>
+				{props.children}
+			</K_Select.Root>
+		</SelectContext.Provider>
 	)
 }
 
-type TriggerProps = ComponentProps<typeof K_Select.Trigger> & {
-	styles?: StyleXStyles
-}
-function Trigger(props: TriggerProps) {
-	const [local, others] = splitProps(props, ["styles"])
-
+function SelectLabel(props: { children: JSX.Element; styles?: StyleXStyles }) {
 	return (
-		<K_Select.Trigger
-			{...others}
-			{...stylex.attrs(inputStyles.like, selectStyles.trigger, local.styles)}
-		/>
+		<K_Select.Label {...stylex.attrs(formStyles.label, props.styles)}>
+			{props.children}
+		</K_Select.Label>
 	)
 }
 
-type ValueProps<Option> = ComponentProps<typeof K_Select.Value<Option>> & {
-	styles?: StyleXStyles
-}
-function Value<Option>(props: ValueProps<Option>) {
-	const [local, others] = splitProps(props, ["styles"])
+function SelectValue(props: { children?: JSX.Element; styles?: StyleXStyles }) {
+	const context = useSelect()
 
 	return (
 		<K_Select.Value
-			{...others}
-			{...stylex.attrs(textStyles.ellipsis, selectStyles.value, local.styles)}
-		/>
+			{...stylex.attrs(textStyles.ellipsis, selectStyles.value, props.styles)}
+		>
+			{() => props.children ?? context.valueText()}
+		</K_Select.Value>
 	)
 }
 
-type IconProps = ComponentProps<typeof K_Select.Icon> & {
-	styles?: StyleXStyles
-}
-function Icon(props: IconProps): JSX.Element {
-	const [local, others] = splitProps(props, ["styles"])
+function SelectIcon() {
 	return (
-		<K_Select.Icon
-			{...others}
-			{...stylex.attrs(selectStyles.icon, local.styles)}
-		>
+		<K_Select.Icon {...stylex.attrs(selectStyles.icon)}>
 			<CaretSortIcon {...stylex.attrs(selectStyles.caret)} />
 		</K_Select.Icon>
 	)
 }
 
-type PortalProps = ComponentProps<typeof K_Select.Portal>
-function Portal(props: PortalProps): JSX.Element {
-	return <K_Select.Portal {...props} />
-}
-
-type ContentProps = ComponentProps<typeof K_Select.Content> & {
-	styles?: StyleXStyles
-}
-function Content(props: ContentProps): JSX.Element {
-	const [local, others] = splitProps(props, ["styles"])
-	const finalProps = mergeProps(others, { sameWidth: true })
+function SelectTrigger(
+	props: JSX.ButtonHTMLAttributes<HTMLButtonElement> & {
+		styles?: StyleXStyles
+	},
+) {
+	const context = useSelect()
+	const [local, others] = splitProps(props, ["children", "styles"])
 
 	return (
-		<K_Select.Content
-			{...finalProps}
-			{...stylex.attrs(selectStyles.content, local.styles)}
-		/>
-	)
-}
-
-type ListboxProps = ComponentProps<typeof K_Select.Listbox> & {
-	styles?: StyleXStyles
-}
-function Listbox(props: ListboxProps): JSX.Element {
-	const [local, others] = splitProps(props, ["styles"])
-
-	return (
-		<K_Select.Listbox
+		<K_Select.Trigger
+			{...{ ref: context.fieldProps?.ref }}
+			onFocus={context.fieldProps?.onFocus}
+			onBlur={context.fieldProps?.onBlur}
+			aria-invalid={context.errors?.length ? true : undefined}
 			{...others}
-			{...stylex.attrs(selectStyles.listbox, local.styles)}
-		/>
+			{...stylex.attrs(inputStyles.like, selectStyles.trigger, local.styles)}
+		>
+			{local.children ?? (
+				<>
+					<SelectValue />
+					<SelectIcon />
+				</>
+			)}
+		</K_Select.Trigger>
 	)
 }
 
-type ItemProps = ComponentProps<typeof K_Select.Item> & {
-	styles?: StyleXStyles
+function SelectListbox(props: { styles?: StyleXStyles }) {
+	return (
+		<K_Select.Listbox {...stylex.attrs(selectStyles.listbox, props.styles)} />
+	)
 }
-function Item(props: ItemProps): JSX.Element {
-	const [local, others] = splitProps(props, ["styles"])
 
+function SelectContent(props: {
+	children?: JSX.Element
+	styles?: StyleXStyles
+}) {
+	return (
+		<K_Select.Portal>
+			<K_Select.Content {...stylex.attrs(selectStyles.content, props.styles)}>
+				{props.children ?? <SelectListbox />}
+			</K_Select.Content>
+		</K_Select.Portal>
+	)
+}
+
+function SelectItem(
+	props: K_Select.SelectItemProps & {
+		styles?: StyleXStyles
+		children: JSX.Element
+	},
+) {
 	return (
 		<K_Select.Item
-			{...others}
-			{...stylex.attrs(selectStyles.item, local.styles)}
-		/>
+			item={props.item}
+			{...stylex.attrs(selectStyles.item, props.styles)}
+		>
+			{props.children}
+		</K_Select.Item>
 	)
 }
 
-export const Select = /*#__PURE__*/ Object.assign(Root, {
-	Root,
-	Trigger,
-	Value,
-	Icon,
-	Portal,
-	Content,
-	Listbox,
-	Item,
-	HiddenSelect: K_Select.HiddenSelect,
-})
+function SelectErrorList() {
+	const context = useSelect()
+
+	return (
+		<K_Select.ErrorMessage {...stylex.attrs(selectStyles.column)}>
+			<For each={context.errors}>
+				{(error) => <ErrorMessage>{error}</ErrorMessage>}
+			</For>
+		</K_Select.ErrorMessage>
+	)
+}
+
+export const Select = {
+	Root: SelectRoot,
+	Label: SelectLabel,
+	Trigger: SelectTrigger,
+	Value: SelectValue,
+	Icon: SelectIcon,
+	Content: SelectContent,
+	Listbox: SelectListbox,
+	Item: SelectItem,
+	ErrorList: SelectErrorList,
+}

@@ -761,6 +761,13 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		if (!moderateMutation.isError) return
 		return getErrorMessage(moderateMutation.error, t`Request failed.`)
 	})
+	const changeCompareId = (value: string | undefined) => {
+		const next =
+			value === undefined || value === COMPARE_BASELINE_VALUE
+				? undefined
+				: Number(value)
+		props.onCompareIdChange(next)
+	}
 
 	return (
 		<PageLayout styles={styles.pageLayout}>
@@ -829,35 +836,16 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 									<span {...stylex.attrs(styles.fieldLabel)}>{t`Compare`}</span>
 									<Select.Root<string>
 										options={compareSelectOptions()}
+										optionTextValue={getCompareLabel}
 										value={
 											activeCompareId()?.toString() ?? COMPARE_BASELINE_VALUE
 										}
-										onChange={(value) => {
-											const next =
-												value === COMPARE_BASELINE_VALUE
-													? undefined
-													: Number(value)
-											props.onCompareIdChange(next)
-										}}
-										itemComponent={(itemProps) => (
-											<Select.Item item={itemProps.item}>
-												{getCompareLabel(itemProps.item.rawValue)}
-											</Select.Item>
-										)}
+										onChange={changeCompareId}
 									>
 										<Select.Trigger
 											styles={[inputStyles.like, styles.compareSelect]}
-										>
-											<Select.Value<string>>
-												{(state) => getCompareLabel(state.selectedOption())}
-											</Select.Value>
-											<Select.Icon />
-										</Select.Trigger>
-										<Select.Portal>
-											<Select.Content>
-												<Select.Listbox />
-											</Select.Content>
-										</Select.Portal>
+										/>
+										<Select.Content />
 									</Select.Root>
 								</label>
 							</div>

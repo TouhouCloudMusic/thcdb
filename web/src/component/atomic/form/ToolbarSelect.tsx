@@ -51,38 +51,27 @@ export function ToolbarSelect<T extends string>(props: {
 		props.options.find((option) => option.value === props.value)
 
 	return (
-		<Select.Root<ToolbarSelectOption<T>>
+		<Select.Root
 			options={props.options}
 			optionValue="value"
 			optionTextValue="itemLabel"
 			value={selectedOption()}
 			placeholder={props.placeholder}
 			onChange={(option) => {
-				if (option === null) return
+				if (option === undefined) return
 				props.onChange(option.value)
 			}}
-			itemComponent={(itemProps) => (
-				<Select.Item item={itemProps.item}>
-					{itemProps.item.rawValue.itemLabel}
-				</Select.Item>
-			)}
 		>
 			<Select.Trigger
-				aria-label={props.ariaLabel}
 				styles={[toolbarStyles.control, toolbarStyles.select, props.styles]}
+				aria-label={props.ariaLabel}
 			>
-				<Select.Value<ToolbarSelectOption<T>>
-					styles={toolbarStyles.selectValue}
-				>
-					{(state) => state.selectedOption().label}
+				<Select.Value styles={toolbarStyles.selectValue}>
+					{selectedOption()?.label}
 				</Select.Value>
 				<Select.Icon />
 			</Select.Trigger>
-			<Select.Portal>
-				<Select.Content>
-					<Select.Listbox />
-				</Select.Content>
-			</Select.Portal>
+			<Select.Content />
 		</Select.Root>
 	)
 }
