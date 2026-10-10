@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { cleanup, renderHook } from "@solidjs/testing-library"
 import type { InfiniteData } from "@tanstack/solid-query"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"

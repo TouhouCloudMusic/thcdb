@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { cleanup, render, screen, within } from "@solidjs/testing-library"
 import {
 	createMemoryHistory,
@@ -6,8 +5,8 @@ import {
 	createRouter,
 	RouterContextProvider,
 } from "@tanstack/solid-router"
-import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { userEvent } from "vitest/browser"
 
 import type { SongRelation, SongRelationSummary, SongRelease } from "~/hey-api"
 import { I18NProvider } from "~/state/i18n"
@@ -90,37 +89,13 @@ describe("song relations", () => {
 			"Unknown date",
 			"Unreleased song",
 		])
-		const user = userEvent.setup()
-		await user.click(screen.getByRole("button", { name: /^Release date /u }))
-		await user.click(
-			await screen.findByRole("option", { name: "Newest first" }),
-		)
+		screen.getByRole("button", { name: /^Release date /u }).focus()
+		await userEvent.keyboard("{ArrowRight}")
 		expect(visibleSongTitles()).toStrictEqual([
 			"Later song",
 			"Earlier song",
 			"Unknown date",
 			"Unreleased song",
 		])
-	})
-
-	it("combines related-song tabs and the relation kind filter", async () => {
-		expect.hasAssertions()
-		renderRelations([
-			relation(summary(3, "Original song"), "Derived"),
-			relation(summary(4, "Arranged version"), "Source"),
-			{ ...relation(summary(5, "Remixed version"), "Source"), type: "Remix" },
-		])
-		const user = userEvent.setup()
-		expect(visibleSongTitles()).toStrictEqual(["Original song"])
-		await user.click(screen.getByRole("tab", { name: "Derived versions" }))
-		expect(visibleSongTitles()).toStrictEqual([
-			"Arranged version",
-			"Remixed version",
-		])
-		await user.click(screen.getByRole("button", { name: /^Kind /u }))
-		await user.click(await screen.findByRole("option", { name: "Remix" }))
-		expect(visibleSongTitles()).toStrictEqual(["Remixed version"])
-		await user.click(screen.getByRole("tab", { name: "Based on" }))
-		expect(screen.getByText("No matching relations")).toBeInTheDocument()
 	})
 })

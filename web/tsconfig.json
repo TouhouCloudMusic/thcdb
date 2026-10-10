@@ -6,7 +6,7 @@
 		"paths": {
 			"~/*": ["./src/*"]
 		},
-		"types": ["vite/client", "@testing-library/jest-dom", "vitest/importMeta"]
+		"types": ["vite/client", "vitest/importMeta"]
 	},
 	"include": ["**/*", ".storybook/**/*"],
 	"exclude": ["node_modules", "dist", "public", "src/component/__legacy/"]

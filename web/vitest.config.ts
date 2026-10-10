@@ -1,31 +1,49 @@
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import { playwright } from "@vitest/browser-playwright"
+import { msw } from "msw/vite"
 import path from "node:path"
-import { defineConfig } from "vitest/config"
+import { configDefaults, defineConfig } from "vitest/config"
+import type { BrowserConfigOptions } from "vitest/node"
 
 import { createSharedPlugins } from "./vite.shared"
 
 const dirname = import.meta.dirname
 const LINGUI_MACROS = ["@lingui/core/macro", "@lingui/solid/macro"]
+const browser: BrowserConfigOptions = {
+	enabled: true,
+	headless: true,
+	provider: playwright(),
+	instances: [{ browser: "chromium" }],
+}
 
 export default defineConfig({
 	plugins: createSharedPlugins(),
 	resolve: {
 		tsconfigPaths: true,
 	},
+	optimizeDeps: {
+		exclude: LINGUI_MACROS,
+	},
 	test: {
-		setupFiles: ["./src/test/vitest.setup.ts"],
 		projects: [
 			{
 				extends: true,
-				optimizeDeps: {
-					entries: ["src/**/*.test.{ts,tsx}"],
-					exclude: LINGUI_MACROS,
-				},
 				test: {
 					name: "unit",
+					environment: "node",
 					globals: true,
 					include: ["./src/**/*.test.{ts,tsx}"],
+					exclude: [...configDefaults.exclude, "**/*.browser.test.{ts,tsx}"],
+				},
+			},
+			{
+				extends: true,
+				plugins: [msw()],
+				test: {
+					name: "browser",
+					setupFiles: ["./src/test/vitest.setup.ts", "./src/test/msw.setup.ts"],
+					include: ["./src/**/*.browser.test.{ts,tsx}"],
+					browser,
 				},
 			},
 			{
@@ -38,8 +56,6 @@ export default defineConfig({
 					}),
 				],
 				optimizeDeps: {
-					entries: [".storybook/preview.tsx", "src/**/*.stories.{ts,tsx}"],
-					exclude: LINGUI_MACROS,
 					include: [
 						"@solid-primitives/memo",
 						"@tanstack/solid-devtools",
@@ -48,13 +64,10 @@ export default defineConfig({
 				},
 				test: {
 					name: "storybook",
-					exclude: ["src/component/__legacy/**"],
+					setupFiles: ["./src/test/vitest.setup.ts"],
 					browser: {
-						// Enable browser-based testing for UI components
-						enabled: true,
-						headless: true,
-						provider: playwright(),
-						instances: [{ browser: "chromium" }],
+						...browser,
+						instances: [{ browser: "chromium", name: "storybook (chromium)" }],
 					},
 				},
 			},

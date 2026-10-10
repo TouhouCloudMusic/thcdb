@@ -1,14 +1,15 @@
-// @vitest-environment jsdom
 import { cleanup, renderHook, waitFor } from "@solidjs/testing-library"
 import type { UserProfile } from "@thc/api"
+import { http, HttpResponse } from "msw/http"
 import type { ParentProps } from "solid-js"
 import * as v from "valibot"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import type { Comment } from "~/hey-api"
 import { vCreateEntityCommentRequest } from "~/hey-api/valibot.gen"
 import { QUERY_CLIENT, TanStackProvider } from "~/state/tanstack"
 import { UserContextProvider, useCurrentUser } from "~/state/user"
+import { worker } from "~/test/browser"
 
 import { useEntityComments } from "./useEntityComments"
 
@@ -46,10 +47,6 @@ function comment(id: number, content: string, authorId = 2): Comment {
 	}
 }
 
-function requestFrom(input: RequestInfo | URL): Request {
-	return input instanceof Request ? input : new Request(input)
-}
-
 function Providers(props: ParentProps) {
 	return (
 		<TanStackProvider>
@@ -75,7 +72,6 @@ describe("entity comments", () => {
 		QUERY_CLIENT.clear()
 		QUERY_CLIENT.setDefaultOptions(DEFAULT_QUERY_CLIENT_OPTIONS)
 		globalThis.localStorage.clear()
-		vi.restoreAllMocks()
 	})
 
 	it("posting twice does not advance the read boundary beyond loaded comments", async () => {
@@ -83,29 +79,27 @@ describe("entity comments", () => {
 		const readBoundaries: (number | null | undefined)[] = []
 		let createdCommentId = 100
 
-		vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
-			const request = requestFrom(input)
-			const url = new URL(request.url)
+		worker.use(
+			http.get("*/api/profile", () =>
+				HttpResponse.json({ status: "Ok", data: userProfile() }),
+			),
+			http.post(
+				`*/api/correction/${TARGET_ID}/comments`,
+				async ({ request }) => {
+					const json: unknown = await request.json()
+					const body = v.parse(vCreateEntityCommentRequest, json)
+					readBoundaries.push(body.read_through_comment_id)
+					const created = comment(
+						createdCommentId,
+						body.content,
+						CURRENT_USER_ID,
+					)
+					createdCommentId += 1
 
-			if (request.method === "GET" && url.pathname === "/api/profile") {
-				return Response.json({ status: "Ok", data: userProfile() })
-			}
-
-			if (
-				request.method === "POST"
-				&& url.pathname === `/api/correction/${TARGET_ID}/comments`
-			) {
-				const json: unknown = await request.json()
-				const body = v.parse(vCreateEntityCommentRequest, json)
-				readBoundaries.push(body.read_through_comment_id)
-				const created = comment(createdCommentId, body.content, CURRENT_USER_ID)
-				createdCommentId += 1
-
-				return Response.json({ status: "Ok", data: created })
-			}
-
-			throw new Error(`Unexpected request: ${request.method} ${url.href}`)
-		})
+					return HttpResponse.json({ status: "Ok", data: created })
+				},
+			),
+		)
 
 		const { result } = renderHook(
 			() => ({
