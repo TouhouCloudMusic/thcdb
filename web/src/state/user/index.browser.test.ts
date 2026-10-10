@@ -1,8 +1,10 @@
 import { cleanup, renderHook, waitFor } from "@solidjs/testing-library"
 import type { UserProfile } from "@thc/api"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { http, HttpResponse } from "msw/http"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { worker } from "~/test/browser"
 
 import { UserContextProvider, createUserStore, useCurrentUser } from "."
 import { broadcastSessionChange } from "./browserSession"
@@ -34,11 +36,6 @@ function failedProfile(status: number, message: string) {
 	return Response.json({ status: "Err", message }, { status })
 }
 
-function requestPath(input: Parameters<typeof fetch>[0]) {
-	const url = input instanceof Request ? input.url : input.toString()
-	return new URL(url, globalThis.location.href).pathname
-}
-
 function controlledProfileRequest() {
 	const result = Promise.withResolvers<ReturnType<typeof loadedProfile>>()
 	const started = Promise.withResolvers()
@@ -65,32 +62,19 @@ function dispatchSessionEventFromAnotherTab() {
 }
 
 describe("user session lifecycle", () => {
-	beforeEach(() => {
-		vi.stubGlobal("navigator", {
-			locks: {
-				request: vi.fn<
-					(name: string, operation: () => unknown) => Promise<unknown>
-				>((_name: string, operation: () => unknown) =>
-					Promise.resolve(operation()),
-				),
-			},
-		})
-	})
-
 	afterEach(() => {
 		cleanup()
 		QUERY_CLIENT.clear()
 		globalThis.localStorage.clear()
 		vi.restoreAllMocks()
-		vi.unstubAllGlobals()
 	})
 
 	it("loads the current user on startup", async () => {
 		expect.hasAssertions()
 
 		globalThis.localStorage.clear()
-		vi.spyOn(globalThis, "fetch").mockResolvedValue(
-			loadedProfile(userProfile(1, "reimu")),
+		worker.use(
+			http.get("*/api/profile", () => loadedProfile(userProfile(1, "reimu"))),
 		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
@@ -110,9 +94,16 @@ describe("user session lifecycle", () => {
 	it("signing out in another tab ends the current session", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockResolvedValueOnce(failedProfile(401, "Unauthorized"))
+		const responses = [
+			loadedProfile(userProfile(1, "reimu")),
+			failedProfile(401, "Unauthorized"),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -131,9 +122,16 @@ describe("user session lifecycle", () => {
 	it("rechecks the server after another tab changes the session", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockResolvedValueOnce(loadedProfile(userProfile(2, "marisa")))
+		const responses = [
+			loadedProfile(userProfile(1, "reimu")),
+			loadedProfile(userProfile(2, "marisa")),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -152,9 +150,13 @@ describe("user session lifecycle", () => {
 	it("unrelated tab data does not reload the current user", async () => {
 		expect.hasAssertions()
 
-		const requests = vi
-			.spyOn(globalThis, "fetch")
-			.mockResolvedValue(loadedProfile(userProfile(1, "reimu")))
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				return loadedProfile(userProfile(1, "reimu"))
+			}),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -170,7 +172,7 @@ describe("user session lifecycle", () => {
 		)
 
 		expect({
-			requests: requests.mock.calls.length,
+			requests: requestCount,
 			status: currentUser.session.status,
 		}).toStrictEqual({ requests: 1, status: "authenticated" })
 	})
@@ -178,9 +180,13 @@ describe("user session lifecycle", () => {
 	it("changes scoped to one tab do not reload the current user", async () => {
 		expect.hasAssertions()
 
-		const requests = vi
-			.spyOn(globalThis, "fetch")
-			.mockResolvedValue(loadedProfile(userProfile(1, "reimu")))
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				return loadedProfile(userProfile(1, "reimu"))
+			}),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -197,7 +203,7 @@ describe("user session lifecycle", () => {
 		)
 
 		expect({
-			requests: requests.mock.calls.length,
+			requests: requestCount,
 			status: currentUser.session.status,
 		}).toStrictEqual({ requests: 1, status: "authenticated" })
 	})
@@ -205,9 +211,13 @@ describe("user session lifecycle", () => {
 	it("malformed cross-tab session changes do not reload the current user", async () => {
 		expect.hasAssertions()
 
-		const requests = vi
-			.spyOn(globalThis, "fetch")
-			.mockResolvedValue(loadedProfile(userProfile(1, "reimu")))
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				return loadedProfile(userProfile(1, "reimu"))
+			}),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -222,7 +232,7 @@ describe("user session lifecycle", () => {
 		dispatchSessionEventFromAnotherTab()
 
 		expect({
-			requests: requests.mock.calls.length,
+			requests: requestCount,
 			status: currentUser.session.status,
 		}).toStrictEqual({ requests: 1, status: "authenticated" })
 	})
@@ -230,9 +240,16 @@ describe("user session lifecycle", () => {
 	it("losing authentication ends the current session", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockResolvedValueOnce(failedProfile(401, "Unauthorized"))
+		const responses = [
+			loadedProfile(userProfile(1, "reimu")),
+			failedProfile(401, "Unauthorized"),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -247,9 +264,16 @@ describe("user session lifecycle", () => {
 	it("an update from an ended session does not affect the current user", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockResolvedValueOnce(loadedProfile(userProfile(2, "marisa")))
+		const responses = [
+			loadedProfile(userProfile(1, "reimu")),
+			loadedProfile(userProfile(2, "marisa")),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 		const updateBio = store.bindCurrentSession((bio: string) => {
@@ -270,8 +294,8 @@ describe("user session lifecycle", () => {
 		expect.hasAssertions()
 
 		const failure = new Error("Sign-in failed")
-		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-			loadedProfile(userProfile(1, "reimu")),
+		worker.use(
+			http.get("*/api/profile", () => loadedProfile(userProfile(1, "reimu"))),
 		)
 		const store = createUserStore()
 		await store.refreshSession()
@@ -294,19 +318,24 @@ describe("user session lifecycle", () => {
 			["image.queue.manage"],
 			[{ id: 2, name: "Moderator" }],
 		)
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(user))
-			.mockResolvedValueOnce(
-				loadedProfile({
-					...userProfile(
-						1,
-						"hakurei",
-						["comment.manage"],
-						[{ id: 3, name: "Admin" }],
-					),
-					bio: "updated",
-				}),
-			)
+		const responses = [
+			loadedProfile(user),
+			loadedProfile({
+				...userProfile(
+					1,
+					"hakurei",
+					["comment.manage"],
+					[{ id: 3, name: "Admin" }],
+				),
+				bio: "updated",
+			}),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 
@@ -328,13 +357,16 @@ describe("user session lifecycle", () => {
 	it("replaces the session when a profile refresh returns another user", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(
-				loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
-			)
-			.mockResolvedValueOnce(
-				loadedProfile(userProfile(2, "marisa", ["comment.manage"])),
-			)
+		const responses = [
+			loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
+			loadedProfile(userProfile(2, "marisa", ["comment.manage"])),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 		const updateBio = store.bindCurrentSession((bio: string) => {
@@ -358,13 +390,16 @@ describe("user session lifecycle", () => {
 	it("refreshing permissions preserves edits from the signed-in user", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(
-				loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
-			)
-			.mockResolvedValueOnce(
-				loadedProfile(userProfile(1, "reimu", ["comment.manage"])),
-			)
+		const responses = [
+			loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
+			loadedProfile(userProfile(1, "reimu", ["comment.manage"])),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 		const updateBio = store.bindCurrentSession((bio: string) => {
@@ -392,14 +427,19 @@ describe("user session lifecycle", () => {
 			...userProfile(1, "reimu", ["image.queue.manage"]),
 			bio: "current",
 		}
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(current))
-			.mockResolvedValueOnce(
-				loadedProfile({
-					...userProfile(1, "reimu", ["comment.manage"]),
-					bio: "stale",
-				}),
-			)
+		const responses = [
+			loadedProfile(current),
+			loadedProfile({
+				...userProfile(1, "reimu", ["comment.manage"]),
+				bio: "stale",
+			}),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 
@@ -417,13 +457,16 @@ describe("user session lifecycle", () => {
 	it("replaces the session when an authorization refresh returns another user", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(
-				loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
-			)
-			.mockResolvedValueOnce(
-				loadedProfile(userProfile(2, "marisa", ["comment.manage"])),
-			)
+		const responses = [
+			loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
+			loadedProfile(userProfile(2, "marisa", ["comment.manage"])),
+		]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 		const updateBio = store.bindCurrentSession((bio: string) => {
@@ -448,13 +491,13 @@ describe("user session lifecycle", () => {
 		expect.hasAssertions()
 
 		const requests: string[] = []
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockImplementation((input) => {
-				requests.push(requestPath(input))
-
-				return Promise.resolve(Response.json({ status: "Ok", message: "" }))
-			})
+		worker.use(
+			http.get("*/api/profile", () => loadedProfile(userProfile(1, "reimu"))),
+			http.get("*/api/sign-out", ({ request }) => {
+				requests.push(new URL(request.url).pathname)
+				return HttpResponse.json({ status: "Ok", message: "" })
+			}),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 
@@ -469,9 +512,18 @@ describe("user session lifecycle", () => {
 	it("a failed sign-out still ends the local session", async () => {
 		expect.hasAssertions()
 
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockResolvedValueOnce(failedProfile(503, "Service unavailable"))
+		const responses = [loadedProfile(userProfile(1, "reimu"))]
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => responses.shift() ?? HttpResponse.error(),
+			),
+		)
+		worker.use(
+			http.get("*/api/sign-out", () =>
+				failedProfile(503, "Service unavailable"),
+			),
+		)
 		const store = createUserStore()
 		await store.refreshSession()
 
@@ -488,33 +540,24 @@ describe("user session lifecycle", () => {
 	it("signing in elsewhere while signing out preserves the newer session", async () => {
 		expect.hasAssertions()
 
-		const lockCompletions = new Map<string, Promise<void>>()
-		vi.stubGlobal("navigator", {
-			locks: {
-				request: vi.fn<
-					(name: string, operation: () => Promise<unknown>) => Promise<unknown>
-				>((name: string, operation: () => Promise<unknown>) => {
-					const currentLock = (
-						lockCompletions.get(name) ?? Promise.resolve()
-					).then(operation)
-					lockCompletions.set(
-						name,
-						currentLock.then(
-							() => undefined,
-							() => undefined,
-						),
-					)
-					return currentLock
-				}),
-			},
-		})
 		const signedInUser = Promise.withResolvers<UserProfile>()
 		const signInStarted = Promise.withResolvers()
-		const requests = vi
-			.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockResolvedValueOnce(loadedProfile(userProfile(2, "marisa")))
-			.mockResolvedValueOnce(loadedProfile(userProfile(2, "marisa")))
+		const profileResponses = [
+			loadedProfile(userProfile(1, "reimu")),
+			loadedProfile(userProfile(2, "marisa")),
+			loadedProfile(userProfile(2, "marisa")),
+		]
+		const signOutRequests: string[] = []
+		worker.use(
+			http.get(
+				"*/api/profile",
+				() => profileResponses.shift() ?? HttpResponse.error(),
+			),
+			http.get("*/api/sign-out", ({ request }) => {
+				signOutRequests.push(new URL(request.url).pathname)
+				return HttpResponse.json({ status: "Ok", message: "" })
+			}),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -538,19 +581,24 @@ describe("user session lifecycle", () => {
 		await waitFor(() => {
 			expect(currentUser.profile?.name).toBe("marisa")
 		})
-		expect(
-			requests.mock.calls.map(([input]) => requestPath(input)),
-		).not.toContain("/api/sign-out")
+		expect(signOutRequests).not.toContain("/api/sign-out")
 	})
 
 	it("a failed profile request does not sign out a user who signed in elsewhere", async () => {
 		expect.hasAssertions()
 
 		const profile = controlledProfileRequest()
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockImplementationOnce(profile.respond)
-			.mockResolvedValueOnce(loadedProfile(userProfile(2, "marisa")))
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				if (requestCount === 1) {
+					return loadedProfile(userProfile(1, "reimu"))
+				}
+				if (requestCount === 2) return profile.respond()
+				return loadedProfile(userProfile(2, "marisa"))
+			}),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -574,11 +622,16 @@ describe("user session lifecycle", () => {
 		expect.hasAssertions()
 
 		const profile = controlledProfileRequest()
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(
-				loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
-			)
-			.mockImplementationOnce(profile.respond)
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				if (requestCount === 1) {
+					return loadedProfile(userProfile(1, "reimu", ["image.queue.manage"]))
+				}
+				return profile.respond()
+			}),
+		)
 		const currentUser = createUserStore()
 		await currentUser.refreshSession()
 		const updateBio = currentUser.bindCurrentSession((bio: string) => {
@@ -612,19 +665,24 @@ describe("user session lifecycle", () => {
 		expect.hasAssertions()
 
 		const profile = controlledProfileRequest()
-		vi.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockImplementationOnce(profile.respond)
-			.mockResolvedValueOnce(
-				loadedProfile(
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				if (requestCount === 1) {
+					return loadedProfile(userProfile(1, "reimu"))
+				}
+				if (requestCount === 2) return profile.respond()
+				return loadedProfile(
 					userProfile(
 						2,
 						"marisa",
 						["comment.manage"],
 						[{ id: 3, name: "Admin" }],
 					),
-				),
-			)
+				)
+			}),
+		)
 		const { result: currentUser } = renderHook(useCurrentUser, {
 			wrapper: UserContextProvider,
 		})
@@ -657,48 +715,52 @@ describe("user session lifecycle", () => {
 	it("restores authorization after a network failure", async () => {
 		expect.hasAssertions()
 
-		vi.useFakeTimers()
-		try {
-			vi.spyOn(globalThis, "fetch")
-				.mockResolvedValueOnce(
-					loadedProfile(userProfile(1, "reimu", ["image.queue.manage"])),
-				)
-				.mockRejectedValueOnce(new TypeError("Failed to fetch"))
-				.mockResolvedValueOnce(
-					loadedProfile(userProfile(1, "reimu", ["comment.manage"])),
-				)
-			const currentUser = createUserStore()
-			await currentUser.refreshSession()
+		vi.spyOn(Math, "random").mockReturnValue(0)
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				if (requestCount === 1) {
+					return loadedProfile(userProfile(1, "reimu", ["image.queue.manage"]))
+				}
+				if (requestCount === 2) return HttpResponse.error()
+				return loadedProfile(userProfile(1, "reimu", ["comment.manage"]))
+			}),
+		)
+		const currentUser = createUserStore()
+		await currentUser.refreshSession()
 
-			const refresh = currentUser.refreshAuthorization()
-			expect(currentUser.authorization?.permissions).toStrictEqual([])
+		const refresh = currentUser.refreshAuthorization()
+		expect(currentUser.authorization?.permissions).toStrictEqual([])
+		await expect(refresh).resolves.toBe(true)
 
-			await vi.runAllTimersAsync()
-			await expect(refresh).resolves.toBe(true)
-
-			expect(currentUser.authorization?.permissions).toStrictEqual([
-				"comment.manage",
-			])
-		} finally {
-			vi.useRealTimers()
-		}
+		expect(currentUser.authorization?.permissions).toStrictEqual([
+			"comment.manage",
+		])
 	})
 
 	it("a forbidden permission refresh sends only one request", async () => {
 		expect.hasAssertions()
 
-		const request = vi
-			.spyOn(globalThis, "fetch")
-			.mockResolvedValueOnce(loadedProfile(userProfile(1, "reimu")))
-			.mockResolvedValueOnce(failedProfile(403, "Forbidden"))
+		let requestCount = 0
+		let sessionLoaded = false
+		worker.use(
+			http.get("*/api/profile", () => {
+				if (!sessionLoaded) {
+					sessionLoaded = true
+					return loadedProfile(userProfile(1, "reimu"))
+				}
+				requestCount += 1
+				return failedProfile(403, "Forbidden")
+			}),
+		)
 		const currentUser = createUserStore()
 		await currentUser.refreshSession()
-		request.mockClear()
 
 		await expect(currentUser.refreshAuthorization()).resolves.toBe(false)
 		expect({
 			authorization: currentUser.authorization,
-			requestCount: request.mock.calls.length,
+			requestCount,
 		}).toStrictEqual({
 			authorization: { permissions: [], roles: [] },
 			requestCount: 1,
@@ -708,30 +770,30 @@ describe("user session lifecycle", () => {
 	it("failed permission refreshes revoke access without signing out", async () => {
 		expect.hasAssertions()
 
-		vi.useFakeTimers()
-		try {
-			vi.spyOn(globalThis, "fetch")
-				.mockResolvedValueOnce(
-					loadedProfile(userProfile(1, "reimu", ["admin.user.read"])),
-				)
-				.mockRejectedValue(new TypeError("Failed to fetch"))
-			const currentUser = createUserStore()
-			await currentUser.refreshSession()
+		vi.spyOn(Math, "random").mockReturnValue(0)
+		let requestCount = 0
+		worker.use(
+			http.get("*/api/profile", () => {
+				requestCount += 1
+				if (requestCount === 1) {
+					return loadedProfile(userProfile(1, "reimu", ["admin.user.read"]))
+				}
+				return HttpResponse.error()
+			}),
+		)
+		const currentUser = createUserStore()
+		await currentUser.refreshSession()
 
-			const refresh = currentUser.refreshAuthorization()
-			expect(currentUser.authorization?.permissions).toStrictEqual([])
-			await vi.runAllTimersAsync()
-			await expect(refresh).resolves.toBe(false)
+		const refresh = currentUser.refreshAuthorization()
+		expect(currentUser.authorization?.permissions).toStrictEqual([])
+		await expect(refresh).resolves.toBe(false)
 
-			expect({
-				authorization: currentUser.authorization,
-				sessionStatus: currentUser.session.status,
-			}).toStrictEqual({
-				authorization: { permissions: [], roles: [] },
-				sessionStatus: "authenticated",
-			})
-		} finally {
-			vi.useRealTimers()
-		}
+		expect({
+			authorization: currentUser.authorization,
+			sessionStatus: currentUser.session.status,
+		}).toStrictEqual({
+			authorization: { permissions: [], roles: [] },
+			sessionStatus: "authenticated",
+		})
 	})
 })

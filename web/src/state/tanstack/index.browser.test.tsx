@@ -1,5 +1,4 @@
-// @vitest-environment jsdom
-import { cleanup, render, waitFor } from "@solidjs/testing-library"
+import { cleanup, render } from "@solidjs/testing-library"
 import { useQuery } from "@tanstack/solid-query"
 import { afterEach, describe, expect, it } from "vitest"
 
@@ -45,13 +44,13 @@ describe("query resets", () => {
 			</TanStackProvider>
 		))
 
-		await waitFor(() => expect(view.container.textContent).toBe("1"))
+		await expect.element(view.container).toHaveTextContent("1")
 		const sessionReset = resetSessionQueries()
-		await waitFor(() => expect(view.container.textContent).toBe("loading"))
+		await expect.element(view.container).toHaveTextContent("loading")
 
 		refreshedContent.resolve(2)
 		await sessionReset
-		await waitFor(() => expect(view.container.textContent).toBe("2"))
+		await expect.element(view.container).toHaveTextContent("2")
 	})
 
 	it("keeps the current session while resetting authorization-dependent data", async () => {
@@ -89,18 +88,18 @@ describe("query resets", () => {
 			</TanStackProvider>
 		))
 
-		await waitFor(() =>
-			expect(view.container.textContent).toBe("session:1;content:1"),
-		)
+		await expect
+			.element(view.container)
+			.toHaveTextContent("session:1;content:1")
 		const authorizationReset = resetAuthorizationQueries()
-		await waitFor(() =>
-			expect(view.container.textContent).toBe("session:1;content:loading"),
-		)
+		await expect
+			.element(view.container)
+			.toHaveTextContent("session:1;content:loading")
 
 		refreshedContent.resolve(2)
 		await authorizationReset
-		await waitFor(() =>
-			expect(view.container.textContent).toBe("session:1;content:2"),
-		)
+		await expect
+			.element(view.container)
+			.toHaveTextContent("session:1;content:2")
 	})
 })
