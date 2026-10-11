@@ -10,6 +10,9 @@ export default defineMain({
 			// },
 		},
 	},
+	features: {
+		experimentalDocgenServer: true,
+	},
 	core: {
 		builder: {
 			name: "@storybook/builder-vite",

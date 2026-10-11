@@ -2,7 +2,6 @@
 	"recommendations": [
 		"arktypeio.arkdark",
 		"bradlc.vscode-tailwindcss",
-		"dbaeumer.vscode-eslint",
 		"formulahendry.auto-close-tag",
 		"formulahendry.auto-rename-tag",
 		"oxc.oxc-vscode",

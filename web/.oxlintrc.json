@@ -8,7 +8,6 @@
 		"packages/api/**/gen.ts",
 		"vendor/**",
 		"src/orval/**",
-		"config/eslint/index.js",
 		"src/locales/main.loader.js",
 		"src/style/color/convert.ts",
 		"src/constant/server.ts",
@@ -24,11 +23,21 @@
 		"nursery": "warn"
 	},
 	"plugins": ["import", "jsx-a11y", "oxc", "promise", "typescript", "unicorn"],
-	"jsPlugins": ["eslint-plugin-solid", "@stylexjs/eslint-plugin"],
+	"jsPlugins": [
+		"eslint-plugin-solid",
+		"@stylexjs/eslint-plugin",
+		"@tanstack/eslint-plugin-query"
+	],
 	"settings": {
 		"jsx-a11y": {
 			"attributes": {
-				"for": ["for"]
+				"for": ["htmlFor", "for"]
+			},
+			"components": {
+				"CityInput": "input",
+				"CustomButton": "button",
+				"MyButton": "button",
+				"RoundButton": "button"
 			},
 			"polymorphicPropName": "as"
 		}
@@ -263,11 +272,39 @@
 	},
 	"overrides": [
 		{
+			"files": ["src/**/*.tsx"],
+			"rules": {
+				"solid/jsx-no-duplicate-props": "error",
+				"solid/jsx-no-undef": ["error", { "typescriptEnabled": true }],
+				"solid/jsx-uses-vars": "error",
+				"solid/no-innerhtml": "error",
+				"solid/jsx-no-script-url": "error",
+				"solid/components-return-once": "warn",
+				"solid/no-destructure": "error",
+				"solid/event-handlers": "warn",
+				"solid/imports": "warn",
+				"solid/style-prop": "warn",
+				"solid/no-react-deps": "warn",
+				"solid/no-react-specific-props": "warn"
+			}
+		},
+		{
+			"files": ["src/**/*.{ts,tsx}"],
+			"rules": {
+				"@tanstack/query/exhaustive-deps": "error",
+				"@tanstack/query/no-rest-destructuring": "warn",
+				"@tanstack/query/stable-query-client": "error",
+				"@tanstack/query/no-unstable-deps": "error",
+				"@tanstack/query/infinite-query-property-order": "error",
+				"@tanstack/query/no-void-query-fn": "error",
+				"@tanstack/query/mutation-property-order": "error"
+			}
+		},
+		{
 			"files": [
 				".storybook/*",
 				"plugins/*.ts",
 				"scripts/*.ts",
-				"config/eslint/index.js",
 				"*.stories.tsx",
 				"*.config.{js,ts}"
 			],

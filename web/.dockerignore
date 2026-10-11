@@ -1,6 +1,5 @@
 node_modules
 dist
 .tanstack
-.eslintcache
 .direnv
 

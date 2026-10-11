@@ -48,7 +48,7 @@ export const ARTIST_IMAGE_CREDITS = `Images: [IOSYS official logo](https://www.i
 
 [ZUN photo by 37419672D](https://commons.wikimedia.org/wiki/File:201673_Zun_at_anime_expo_LA.png), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), displayed with a circular crop.`
 
-export const SONG_INFO_RELATIONS: Song["relations"] = [
+export const SONG_INFO_RELATIONS: NonNullable<Song["relations"]> = [
 	{
 		song: {
 			id: 100,

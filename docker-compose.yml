@@ -86,7 +86,7 @@ services:
       - ./web:/app
       - node_modules:/app/node_modules
       - pnpm-store:/pnpm-store
-    command: sh -c "corepack enable && corepack prepare pnpm@10 --activate && pnpm install --frozen-lockfile --store-dir /pnpm-store && pnpm dev --host 0.0.0.0"
+    command: sh -c "corepack enable && corepack prepare pnpm@11.1.2 --activate && pnpm install --frozen-lockfile --store-dir /pnpm-store && pnpm dev --host 0.0.0.0"
     networks:
       - backend
 

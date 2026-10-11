@@ -15,19 +15,14 @@ fmt-check:
     pnpm exec oxfmt --check .
     just --fmt --check
 
-eslint +FLAGS="":
-    pnpm exec eslint --cache {{ FLAGS }}
-
-esfix: (eslint "--fix")
-
 oxlint +FLAGS="":
     pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives {{ FLAGS }}
 
 oxfix: (oxlint "--fix")
 
-lint: oxlint eslint
+lint: oxlint
 
-fix: oxfix esfix
+fix: oxfix
 
 quickfix: oxfix
 
