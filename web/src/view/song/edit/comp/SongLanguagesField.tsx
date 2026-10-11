@@ -75,10 +75,7 @@ export function SongLanguagesField(props: {
 		return getInput(props.of, { path: ["data", "languages"] })
 	})
 	const selectedLanguageIds = createMemo(() => new Set(selectedLanguages()))
-	const languageFilter = createMemo(() => {
-		const ids = selectedLanguageIds()
-		return (lang: Language) => !ids.has(lang.id)
-	})
+	const languageFilter = (lang: Language) => !selectedLanguageIds().has(lang.id)
 
 	const addLanguage = () => {
 		insert(props.of, {
@@ -139,7 +136,7 @@ export function SongLanguagesField(props: {
 											<>
 												<LanguageCombobox
 													onChange={(lang) => setLanguageAt(idx(), lang)}
-													filter={languageFilter()}
+													filter={languageFilter}
 												/>
 												<input
 													{...field.props}

@@ -6,7 +6,7 @@ ARG DEBIAN_VERSION=bookworm
 FROM node:${NODE_VERSION}-${DEBIAN_VERSION}-slim AS builder
 WORKDIR /app
 
-COPY .npmrc pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY .npmrc .pnpmfile.mjs pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY patches ./patches
 
 ENV CI=true
