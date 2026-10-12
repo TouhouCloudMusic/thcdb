@@ -29,7 +29,7 @@
 		"@thc/query": "workspace:*",
 		"@thc/toolkit": "workspace:*",
 		"@typescript/native-preview": "beta",
-		"@vitest/coverage-v8": "4.1.4",
+		"@vitest/coverage-v8": "5.0.2",
 		"arktype": "^2.2.0",
 		"cropperjs": "^2.1.1",
 		"dayjs": "^1.11.20",
@@ -74,8 +74,8 @@
 		"@tanstack/solid-query-devtools": "^5.91.3",
 		"@tanstack/solid-router-devtools": "^1.153.2",
 		"@testing-library/jest-dom": "^6.9.1",
-		"@vitest/browser": "^4.1.4",
-		"@vitest/browser-playwright": "^4.1.4",
+		"@vitest/browser": "^5.0.0",
+		"@vitest/browser-playwright": "^5.0.0",
 		"babel-plugin-macros": "^3.1.0",
 		"eslint-plugin-solid": "^0.18.1",
 		"knip": "^6.41.0",
@@ -91,7 +91,7 @@
 		"typescript": "^7.0.2",
 		"vite": "8.2.2",
 		"vite-plugin-solid": "^2.11.12",
-		"vitest": "^4.1.4"
+		"vitest": "^5.0.0"
 	},
 	"trustedDependencies": [
 		"esbuild"
