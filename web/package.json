@@ -48,7 +48,7 @@
 		"zxcvbn": "^4.4.2"
 	},
 	"devDependencies": {
-		"@ark/attest": "^0.56.0",
+		"@ark/attest": "^0.57.0",
 		"@effect/platform": "^0.96.0",
 		"@effect/platform-node": "^0.108.0",
 		"@faker-js/faker": "^10.4.0",
