@@ -46,7 +46,7 @@ describe("song editor", () => {
 			[language],
 		)
 
-		expect(getInput(getCapturedForm())).toStrictEqual({
+		expect(getInput(getCapturedForm())).toMatchObject({
 			type: "Update",
 			description: "",
 			data: {

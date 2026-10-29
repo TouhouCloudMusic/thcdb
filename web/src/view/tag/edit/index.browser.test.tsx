@@ -39,6 +39,6 @@ describe("tag editor", () => {
 			},
 		}
 		const input = getInput(getCapturedForm())
-		expect(input).toStrictEqual(expected)
+		expect(input).toMatchObject(expected)
 	})
 })

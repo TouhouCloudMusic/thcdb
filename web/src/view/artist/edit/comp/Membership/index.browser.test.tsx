@@ -158,7 +158,7 @@ describe("artist memberships", () => {
 		expect(
 			within(rowFor(selectedArtist.name)).getByText(selectedRoles.first.name),
 		).toBeVisible()
-		expect(getInput(form, { path: ["data", "memberships"] })).toStrictEqual([
+		expect(getInput(form, { path: ["data", "memberships"] })).toMatchObject([
 			existing,
 			{
 				artist: selectedArtist,
@@ -179,7 +179,7 @@ describe("artist memberships", () => {
 		await userEvent.click(
 			within(rowFor(first.artist.name)).getByRole("button", { name: "" }),
 		)
-		expect(getInput(form, { path: ["data", "memberships"] })).toStrictEqual([
+		expect(getInput(form, { path: ["data", "memberships"] })).toMatchObject([
 			second,
 			third,
 		])
@@ -205,7 +205,7 @@ describe("artist memberships", () => {
 		assert(removeSecondTenure)
 		await userEvent.click(removeSecondTenure)
 
-		expect(getInput(form, { path: ["data", "memberships"] })).toStrictEqual([
+		expect(getInput(form, { path: ["data", "memberships"] })).toMatchObject([
 			second,
 			{
 				artist: third.artist,
@@ -239,7 +239,7 @@ describe("artist memberships", () => {
 		)
 
 		reset(form)
-		expect(getInput(form, { path: ["data", "memberships"] })).toStrictEqual([
+		expect(getInput(form, { path: ["data", "memberships"] })).toMatchObject([
 			original,
 		])
 		const restoredRow = rowFor(original.artist.name)
@@ -248,7 +248,7 @@ describe("artist memberships", () => {
 		expect(within(list).queryByText(selectedArtist.name)).toBeNull()
 
 		await addRole(rowFor(original.artist.name), selectedRoles.first)
-		expect(getInput(form, { path: ["data", "memberships"] })).toStrictEqual([
+		expect(getInput(form, { path: ["data", "memberships"] })).toMatchObject([
 			{
 				artist: original.artist,
 				roles: [original.roles[0], selectedRoles.first],

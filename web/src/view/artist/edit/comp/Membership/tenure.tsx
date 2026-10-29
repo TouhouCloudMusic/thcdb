@@ -8,7 +8,6 @@ import {
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Cross1Icon } from "@thc/icons/radix"
-import type { JSX } from "solid-js"
 import { createMemo, For } from "solid-js"
 
 import { FormComp } from "~/component/atomic"
@@ -84,11 +83,8 @@ const entryStyles = stylex.create({
 	},
 })
 
-function computeTenureError(
-	tenures: Tenure[],
-	messages: TenureErrorMessages,
-): string[] {
-	const res: string[] = []
+function computeTenureError(tenures: Tenure[], messages: TenureErrorMessages) {
+	const res = []
 
 	for (const [index, tenure] of tenures.entries()) {
 		const joinYear = tenure.join_year
@@ -159,9 +155,9 @@ function TenureRow(props: {
 		<li {...stylex.attrs(entryStyles.tenure)}>
 			<div {...stylex.attrs(entryStyles.dates)}>
 				<InputField.Root styles={entryStyles.dateField}>
-					<InputField.Input
+					<InputField.NumberInput
 						{...joinYear.props}
-						type="number"
+						onInput={joinYear.onInput}
 						styles={entryStyles.dateInput}
 						placeholder={t`Join year`}
 						value={joinYear.input ?? undefined}
@@ -170,9 +166,9 @@ function TenureRow(props: {
 				</InputField.Root>
 				<span {...stylex.attrs(entryStyles.separator)}>-</span>
 				<InputField.Root styles={entryStyles.dateField}>
-					<InputField.Input
+					<InputField.NumberInput
 						{...leaveYear.props}
-						type="number"
+						onInput={leaveYear.onInput}
 						styles={entryStyles.dateInput}
 						placeholder={t`Leave year`}
 						value={leaveYear.input ?? undefined}
@@ -201,9 +197,7 @@ function TenureRow(props: {
 	)
 }
 
-export function TenureFieldArray(props: {
-	membershipIndex: number
-}): JSX.Element {
+export function TenureFieldArray(props: { membershipIndex: number }) {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 

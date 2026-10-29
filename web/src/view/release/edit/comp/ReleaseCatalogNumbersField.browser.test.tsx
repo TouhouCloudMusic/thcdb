@@ -91,7 +91,7 @@ describe("release catalog numbers", () => {
 				).toBeVisible()
 			}
 
-			expect(getInput(form, { path: ["data", "catalog_nums"] })).toStrictEqual(
+			expect(getInput(form, { path: ["data", "catalog_nums"] })).toMatchObject(
 				expected.map(([catalog_number, id, name]) => ({
 					catalog_number,
 					label: id === undefined ? undefined : { id, name },

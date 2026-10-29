@@ -1,4 +1,4 @@
-import { createForm } from "@formisch/solid"
+import { createForm, getInput } from "@formisch/solid"
 import { useMutation } from "@tanstack/solid-query"
 import type { Tag } from "@thc/api"
 import type { TagMutation } from "@thc/query"
@@ -53,7 +53,7 @@ function SubmissionErrorSection() {
 		mutation.mutate({
 			type: "Update",
 			id: TAG.id,
-			data: v.parse(TagFormSchema, initialInput),
+			data: v.parse(TagFormSchema, getInput(form)),
 		}),
 	)
 	return (

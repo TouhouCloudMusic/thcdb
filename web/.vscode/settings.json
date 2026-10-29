@@ -1,7 +1,4 @@
 {
-	"files.exclude": {
-		".eslintcache": true
-	},
 	// formatter
 	"[json][jsonc][typescript][typescriptreact]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
