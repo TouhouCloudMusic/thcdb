@@ -8,6 +8,7 @@ import { px } from "~/style/tokens.stylex"
 import { StoryLayout } from "~/utils/adapter/storybook"
 
 import { ExternalLinksField } from "./ExternalLinksField"
+import { useArrayField } from "./useArrayField"
 
 const styles = stylex.create({
 	root: { width: px[384] },
@@ -23,9 +24,11 @@ function StoryRoot() {
 		},
 	})
 
+	const links = useArrayField(form, { path: ["data", "links"] })
+
 	return (
 		<ExternalLinksField
-			of={form}
+			field={links}
 			styles={styles.root}
 		/>
 	)

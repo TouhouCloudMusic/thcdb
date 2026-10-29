@@ -1,0 +1,12 @@
+diff --git a/dist/internals.d.ts b/dist/internals.d.ts
+--- a/dist/internals.d.ts
++++ b/dist/internals.d.ts
+@@ -215,7 +215,7 @@
+ /**
+ * Field element type.
+ */
+-type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
++type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement;
+ /**
+ * Internal base store interface.
+ */

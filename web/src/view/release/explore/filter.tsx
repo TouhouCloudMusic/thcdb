@@ -9,17 +9,18 @@ import {
 } from "~/component/feature/entity_explore"
 import type { ViewMode } from "~/component/feature/entity_explore"
 import { RELEASE_TYPES } from "~/domain/release/constants"
+import type { SortDirection } from "~/hey-api"
 
 export type ReleaseSortField = "release_date" | "created_at" | "updated_at"
 
 export type ReleaseExploreFilterStore = {
 	releaseType: ReleaseType | undefined
 	sortBy: ReleaseSortField
-	orderBy: "asc" | "desc" | undefined
+	orderBy: SortDirection | undefined
 	displayType: ViewMode
 	setReleaseType: (value: ReleaseType | undefined) => void
 	setSortBy: (value: ReleaseSortField) => void
-	setOrderBy: (value: "asc" | "desc") => void
+	setOrderBy: (value: SortDirection) => void
 	setDisplayType: (value: ViewMode) => void
 }
 
@@ -74,8 +75,8 @@ function ReleaseSortFieldSelect(props: {
 
 function ReleaseTypeSelect(props: { store: ReleaseExploreFilterStore }) {
 	const { t } = useLingui()
-	const selectOptions: { value: ReleaseType | "All"; label: string }[] = [
-		{ value: "All", label: t`All` },
+	const selectOptions = () => [
+		{ value: undefined, label: t`All` },
 		...RELEASE_TYPES.map((value) => ({
 			value,
 			label: value,
@@ -85,16 +86,10 @@ function ReleaseTypeSelect(props: { store: ReleaseExploreFilterStore }) {
 	return (
 		<ExploreFilter
 			label={t`Type`}
-			options={selectOptions}
-			value={props.store.releaseType ?? "All"}
-			defaultValue="All"
-			onChange={(value) => {
-				if (value === "All") {
-					props.store.setReleaseType(undefined)
-				} else {
-					props.store.setReleaseType(value)
-				}
-			}}
+			options={selectOptions()}
+			value={props.store.releaseType}
+			defaultValue={undefined}
+			onChange={props.store.setReleaseType}
 		/>
 	)
 }

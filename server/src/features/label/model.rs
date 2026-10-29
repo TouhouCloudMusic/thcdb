@@ -1,5 +1,6 @@
 use domain::shared::{
     DateWithPrecision, EntityIdent, HttpUrl, LocalizedName, NewLocalizedName,
+    SimpleArtist,
 };
 use entity::enums::EntityType;
 use serde::{Deserialize, Serialize};
@@ -13,7 +14,7 @@ pub struct Label {
     pub name: String,
     pub founded_date: Option<DateWithPrecision>,
     pub dissolved_date: Option<DateWithPrecision>,
-    pub founders: Vec<i32>,
+    pub founders: Vec<SimpleArtist>,
     pub localized_names: Vec<LocalizedName>,
     pub links: Vec<String>,
 }

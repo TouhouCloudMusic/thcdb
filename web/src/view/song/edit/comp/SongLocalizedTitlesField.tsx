@@ -1,24 +1,15 @@
-import {
-	Field,
-	FieldArray,
-	insert,
-	remove,
-	setInput,
-	getErrors,
-} from "@formisch/solid"
+import { useFieldArray, useField, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import type { Language, LocalizedTitle } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { For, createMemo, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FieldArrayFallback } from "~/component/form"
-import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
+import { LanguageSelect } from "~/component/form/stateful/LanguageSelect"
 import { formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
@@ -54,6 +45,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	entry: {
 		display: "grid",
 		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
@@ -74,38 +68,76 @@ const styles = stylex.create({
 	},
 })
 
+function LocalizedTitleRow(props: { of: SongFormStore; index: number }) {
+	const { t } = useLingui()
+
+	const title = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "localized_titles", props.index, "name"],
+		}),
+	)
+
+	const language = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "localized_titles", props.index, "language"],
+		}),
+	)
+
+	const removeTitle = () =>
+		remove(props.of, {
+			path: ["data", "localized_titles"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.entry)}>
+			<InputField.Root>
+				<InputField.Input
+					{...title.props}
+					placeholder={t`Title`}
+					value={title.input}
+				/>
+			</InputField.Root>
+			<LanguageSelect
+				onChange={language.onInput}
+				value={language.input}
+			/>
+			<div {...stylex.attrs(rowStyles.removeControl)}>
+				<Button
+					onClick={removeTitle}
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+					styles={rowStyles.removeButton}
+				>
+					<Cross1Icon />
+				</Button>
+			</div>
+			<ul>
+				<FormComp.ErrorList errors={title.errors} />
+			</ul>
+			<ul>
+				<FormComp.ErrorList errors={language.errors} />
+			</ul>
+		</li>
+	)
+}
+
 export function SongLocalizedTitlesField(props: {
 	of: SongFormStore
-	initLocalizedTitles?: LocalizedTitle[]
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
-	const formStore = createMemo(() => props.of)
-	const [languages, setLanguages] = createStore<(Language | undefined)[]>(
-		untrack(() =>
-			(props.initLocalizedTitles ?? []).map((item) => item.language),
-		),
-	)
+
+	const localizedTitles = useFieldArray(() => props.of, {
+		path: ["data", "localized_titles"],
+	})
 
 	const addLocalizedTitle = () => {
-		insert(formStore(), {
-			path: ["data", "localized_titles"],
-		})
-		setLanguages(languages.length, undefined)
-	}
-
-	const removeLocalizedTitleAt = (index: number) => {
-		remove(formStore(), { path: ["data", "localized_titles"], at: index })
-		setLanguages((list) => list.toSpliced(index, 1))
-	}
-
-	const setLanguageAt = (index: number, lang: Language | null) => {
-		if (!lang) return
-
-		setLanguages(index, lang)
-		setInput(formStore(), {
-			path: ["data", "localized_titles", index, "language_id"],
-			input: lang.id,
+		insert(props.of, {
+			path: localizedTitles.path,
 		})
 	}
 
@@ -124,102 +156,19 @@ export function SongLocalizedTitlesField(props: {
 					<PlusIcon {...stylex.attrs(styles.icon)} />
 				</Button>
 			</div>
-			<FieldArray
-				of={props.of}
-				path={["data", "localized_titles"]}
-			>
-				{(fa) => (
-					<ul {...stylex.attrs(styles.entries)}>
-						<For
-							each={fa.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<LocalizedTitleItem
-									of={props.of}
-									index={idx()}
-									language={languages[idx()]}
-									onSelectLanguage={(lang) => setLanguageAt(idx(), lang)}
-									onRemove={() => removeLocalizedTitleAt(idx())}
-								/>
-							)}
-						</For>
-					</ul>
-				)}
-			</FieldArray>
-		</div>
-	)
-}
-
-function LocalizedTitleItem(props: {
-	of: SongFormStore
-	index: number
-	language: Language | undefined
-	onSelectLanguage: (lang: Language | null) => void
-	onRemove: () => void
-}) {
-	const { t } = useLingui()
-	return (
-		<li {...stylex.attrs(styles.entry)}>
-			<Field
-				of={props.of}
-				path={["data", "localized_titles", props.index, "name"]}
-			>
-				{(field) => (
-					<InputField.Root>
-						<InputField.Input
-							{...field.props}
-							placeholder={t`Title`}
-							value={field.input}
-						/>
-					</InputField.Root>
-				)}
-			</Field>
-			<Field
-				of={props.of}
-				path={["data", "localized_titles", props.index, "language_id"]}
-			>
-				{(field) => (
-					<>
-						<LanguageCombobox
-							onChange={props.onSelectLanguage}
-							value={props.language}
-						/>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? undefined}
-						/>
-					</>
-				)}
-			</Field>
-			<div {...stylex.attrs(styles.removeControl)}>
-				<Button
-					onClick={props.onRemove}
-					appearance="ghost"
-					tone="gray"
-					size="sm"
-					styles={styles.removeButton}
+			<ul {...stylex.attrs(styles.entries)}>
+				<For
+					each={localizedTitles.items}
+					fallback={<FieldArrayFallback />}
 				>
-					<Cross1Icon />
-				</Button>
-			</div>
-
-			<ul>
-				<FormComp.ErrorList
-					errors={getErrors(props.of, {
-						path: ["data", "localized_titles", props.index, "name"],
-					})}
-				/>
+					{(_, index) => (
+						<LocalizedTitleRow
+							of={props.of}
+							index={index()}
+						/>
+					)}
+				</For>
 			</ul>
-			<ul>
-				<FormComp.ErrorList
-					errors={getErrors(props.of, {
-						path: ["data", "localized_titles", props.index, "language_id"],
-					})}
-				/>
-			</ul>
-		</li>
+		</div>
 	)
 }

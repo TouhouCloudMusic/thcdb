@@ -206,7 +206,7 @@ const TAG_QUERY_LIMIT = 100
 type ManageTagsDialogProps = {
 	tags: EntityTagAggregate[]
 	isSignedIn: boolean
-	dataFilter?: (tag: Tag) => boolean
+	filter?: (tag: Tag) => boolean
 	pendingKey?: string
 	onVote: (tagId: number, score: EntityTagVoteValue) => Promise<void>
 	onRemoveVote: (tagId: number) => Promise<void>
@@ -240,7 +240,7 @@ export function EntityTags(props: EntityTagsProps) {
 	const tags = createMemo(() =>
 		sortEntityTags((tagsQuery.data?.data ?? { items: [] }).items),
 	)
-	const dataFilter = createMemo(() => createEntityTagFilter(tags()))
+	const filter = createMemo(() => createEntityTagFilter(tags()))
 
 	const vote = async (tagId: number, score: EntityTagVoteValue) => {
 		setPendingKey(`vote:${tagId}`)
@@ -277,7 +277,7 @@ export function EntityTags(props: EntityTagsProps) {
 			tags={tags()}
 			isSignedIn={userCtx.profile !== undefined}
 			isLoading={tagsQuery.isLoading}
-			dataFilter={dataFilter()}
+			filter={filter()}
 			pendingKey={pendingKey()}
 			onVote={vote}
 			onRemoveVote={removeVote}
@@ -290,7 +290,7 @@ export type EntityTagsViewProps = {
 	tags: EntityTagAggregate[]
 	isSignedIn: boolean
 	isLoading: boolean
-	dataFilter?: (tag: Tag) => boolean
+	filter?: (tag: Tag) => boolean
 	pendingKey?: string
 	onVote: (tagId: number, score: EntityTagVoteValue) => Promise<void>
 	onRemoveVote: (tagId: number) => Promise<void>
@@ -391,7 +391,7 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 					<ManageTagsDialog
 						tags={props.tags}
 						isSignedIn={props.isSignedIn}
-						dataFilter={props.dataFilter}
+						filter={props.filter}
 						pendingKey={props.pendingKey}
 						onVote={props.onVote}
 						onRemoveVote={props.onRemoveVote}
@@ -426,7 +426,7 @@ function ManageTagsDialog(props: ManageTagsDialogProps) {
 						<div {...stylex.attrs(styles.spacer)}></div>
 						<Show when={props.isSignedIn}>
 							<EntityTagAddDialog
-								dataFilter={props.dataFilter}
+								filter={props.filter}
 								pendingKey={props.pendingKey}
 								onVote={props.onVote}
 								trigger={

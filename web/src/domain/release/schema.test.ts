@@ -1,6 +1,8 @@
 import * as v from "valibot"
 import { describe, expect, it } from "vitest"
 
+import { createMockNewRelease } from "~/mock/release"
+
 import { NewCredit, NewRelease } from "./schema"
 
 describe("release credit scope", () => {
@@ -19,17 +21,9 @@ describe("release credit scope", () => {
 
 	it("allows the first track but rejects references outside the release", () => {
 		expect.hasAssertions()
-		const release = {
-			title: "Release",
-			release_type: "Album",
-			artists: [1],
-			catalog_nums: [],
-			discs: [{}],
-			events: [],
-			localized_titles: [],
-			links: [],
+		const release = createMockNewRelease(1, {
 			tracks: [{ song_id: 3, disc_index: 0, artists: [1] }],
-		}
+		})
 
 		expect(
 			v.parse(NewRelease, {

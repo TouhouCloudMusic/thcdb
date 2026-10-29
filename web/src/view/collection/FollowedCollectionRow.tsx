@@ -128,10 +128,7 @@ export function FollowedCollectionRow(props: {
 						<h3 {...stylex.attrs(styles.title)}>{props.item.name}</h3>
 						<span {...stylex.attrs(styles.owner)}>
 							<Avatar
-								user={{
-									name: props.item.owner.name,
-									avatar_url: props.item.owner.avatar_url,
-								}}
+								user={props.item.owner}
 								styles={styles.avatar}
 								fallbackStyles={styles.avatarFallback}
 							/>

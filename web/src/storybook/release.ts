@@ -170,7 +170,7 @@ export const CRADLE_RELEASE = {
 		"https://sepher.jp/circle/circle_09.htm",
 		"https://gensokyoradio.net/music/album/11094/",
 	],
-	discs: CRADLE_DISCS.map((disc) => ({ id: disc.id, name: disc.name })),
+	discs: CRADLE_DISCS,
 	tracks: CRADLE_TRACKS.map((track, index) => ({
 		id: index + 1,
 		disc_id: track.disc_id,

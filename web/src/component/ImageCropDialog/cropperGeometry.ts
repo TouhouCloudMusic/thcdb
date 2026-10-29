@@ -81,12 +81,7 @@ const clampPositionToBounds = (
 
 const createFallbackRect = (bounds: Rect, ratio: number | undefined): Rect => {
 	if (!ratio || ratio <= 0) {
-		return {
-			x: bounds.x,
-			y: bounds.y,
-			width: bounds.width,
-			height: bounds.height,
-		}
+		return bounds
 	}
 
 	const ratioWidth = bounds.height * ratio
@@ -131,12 +126,8 @@ export const clampRectToBounds = (
 		return clampRectToBounds(fallback, bounds, ratio)
 	}
 
-	const size = fitSizeToBounds(
-		{ width: rect.width, height: rect.height },
-		bounds,
-		ratio,
-	)
-	const position = clampPositionToBounds({ x: rect.x, y: rect.y }, size, bounds)
+	const size = fitSizeToBounds(rect, bounds, ratio)
+	const position = clampPositionToBounds(rect, size, bounds)
 
 	if (
 		!Number.isFinite(position.x)

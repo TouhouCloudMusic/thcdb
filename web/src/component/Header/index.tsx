@@ -437,27 +437,14 @@ function SearchBar() {
 							<Select.Root
 								options={ENTITY_FILTER_OPTIONS}
 								value={entity()}
+								optionTextValue={(value) => StrExt.capitalize(value)}
 								onChange={(value) => {
-									if (value === null) return
+									if (value === undefined) return
 									setEntity(value)
 								}}
-								itemComponent={(props) => (
-									<Select.Item item={props.item}>
-										{StrExt.capitalize(props.item.rawValue)}
-									</Select.Item>
-								)}
 							>
-								<Select.Trigger styles={styles.filterTrigger}>
-									<Select.Value<EntityFilter>>
-										{(state) => StrExt.capitalize(state.selectedOption())}
-									</Select.Value>
-									<Select.Icon />
-								</Select.Trigger>
-								<Select.Portal>
-									<Select.Content>
-										<Select.Listbox />
-									</Select.Content>
-								</Select.Portal>
+								<Select.Trigger styles={styles.filterTrigger} />
+								<Select.Content />
 							</Select.Root>
 						</div>
 					</div>

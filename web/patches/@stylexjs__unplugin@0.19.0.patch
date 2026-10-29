@@ -1,0 +1,32 @@
+diff --git a/lib/es/vite.mjs b/lib/es/vite.mjs
+index 0da6294e82f05d5a858f8b3740ecdfd8b2dd239c..29a5f00c6698ed435a44d05bc3986040935abd04 100644
+--- a/lib/es/vite.mjs
++++ b/lib/es/vite.mjs
+@@ -68,7 +68,11 @@ function attachViteHooks(plugin) {
+             } catch {}
+           }
+         }, 150);
++        if (typeof interval.unref === 'function') {
++          interval.unref();
++        }
+         server.httpServer?.once('close', () => clearInterval(interval));
++        server.__stylexSharedPollingInterval = interval;
+       }
+     },
+     resolveId(id) {
+diff --git a/lib/vite.js b/lib/vite.js
+index bf3df4c8b81574dafae3f626767706455f03854d..1bac5037f868bd1cc3b04ad115642326ac4b2703 100644
+--- a/lib/vite.js
++++ b/lib/vite.js
+@@ -75,7 +75,11 @@ function attachViteHooks(plugin) {
+             } catch {}
+           }
+         }, 150);
++        if (typeof interval.unref === 'function') {
++          interval.unref();
++        }
+         server.httpServer?.once('close', () => clearInterval(interval));
++        server.__stylexSharedPollingInterval = interval;
+       }
+     },
+     resolveId(id) {

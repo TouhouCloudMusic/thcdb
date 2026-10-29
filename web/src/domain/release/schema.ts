@@ -1,3 +1,4 @@
+import { Nil } from "@thc/toolkit/data"
 import * as v from "valibot"
 
 import { DateWithPrecision } from "~/domain/shared"
@@ -67,9 +68,9 @@ export const NewRelease = v.pipe(
 	v.object({
 		title: EntityIdent,
 		release_type: ReleaseType,
-		release_date: v.nullish(DateWithPrecision.Schema),
-		recording_date_start: v.nullish(DateWithPrecision.Schema),
-		recording_date_end: v.nullish(DateWithPrecision.Schema),
+		release_date: v.undefinedable(DateWithPrecision.Schema),
+		recording_date_start: v.undefinedable(DateWithPrecision.Schema),
+		recording_date_end: v.undefinedable(DateWithPrecision.Schema),
 		localized_titles: v.array(NewLocalizedTitle),
 		artists: v.pipe(
 			v.array(EntityId),
@@ -84,11 +85,13 @@ export const NewRelease = v.pipe(
 	}),
 	v.forward(
 		v.check(
-			(release) =>
-				release.credits.every(
-					(credit) =>
-						credit.on === null
-						|| credit.on.every((index) => index < release.tracks.length),
+			({ credits, tracks }) =>
+				credits.every(({ on }) =>
+					Nil.mapOr(
+						true,
+						(indices) => indices.every((index) => index < tracks.length),
+						on,
+					),
 				),
 			"Credit track index is out of bounds",
 		),

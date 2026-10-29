@@ -1,4 +1,4 @@
-import { Form, createForm, getAllErrors, getInput } from "@formisch/solid"
+import { Form, createForm, getDeepErrors, getInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { useBlocker } from "@tanstack/solid-router"
@@ -8,7 +8,7 @@ import { createEffect, Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
-import { NewSongCorrection } from "~/domain/song"
+import { useArrayField } from "~/component/form/useArrayField"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
@@ -23,6 +23,7 @@ import { SongRelationsField } from "./comp/SongRelationsField"
 import { SongTitleField } from "./comp/SongTitleField"
 import { useSongFormInitialValues } from "./hook/useFormInitialValues"
 import { useSongFormSubmission } from "./hook/useFormSubmission"
+import { SongFormSchema } from "./schema"
 
 const styles = stylex.create({
 	fieldSpacing: {
@@ -118,9 +119,11 @@ function FormContent(props: Props) {
 	const initialValues = useSongFormInitialValues(props)
 
 	const form = createForm({
-		schema: NewSongCorrection,
+		schema: SongFormSchema,
 		initialInput: initialValues,
 	})
+
+	const links = useArrayField(form, { path: ["data", "links"] })
 
 	if (import.meta.env.DEV) {
 		createEffect(() => {
@@ -149,8 +152,7 @@ function FormContent(props: Props) {
 		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
 			<Form
 				of={form}
-				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-				onSubmit={(out, _) => handleSubmit(out)}
+				onSubmit={handleSubmit}
 			>
 				<div {...stylex.attrs(styles.fields)}>
 					<SongTitleField
@@ -160,47 +162,32 @@ function FormContent(props: Props) {
 
 					<SongArtistsField
 						of={form}
-						initArtists={
-							props.type === "edit" ? (props.song.artists ?? []) : []
-						}
 						styles={[styles.artistsField, styles.fieldSpacing]}
 					/>
 
 					<SongLanguagesField
 						of={form}
-						initLanguages={
-							props.type === "edit" ? (props.song.languages ?? []) : []
-						}
 						styles={[styles.languagesField, styles.fieldSpacing]}
 					/>
 
 					<SongLocalizedTitlesField
 						of={form}
-						initLocalizedTitles={
-							props.type === "edit" ? (props.song.localized_titles ?? []) : []
-						}
 						styles={[styles.localizedTitlesField, styles.fieldSpacing]}
 					/>
 
 					<SongCreditsField
 						of={form}
-						initCredits={
-							props.type === "edit" ? (props.song.credits ?? []) : []
-						}
 						styles={[styles.creditsField, styles.fieldSpacing]}
 					/>
 
 					<ExternalLinksField
-						of={form}
+						field={links}
 						styles={[styles.linksField, styles.fieldSpacing]}
 					/>
 
 					<SongRelationsField
 						of={form}
 						currentSongId={props.type === "edit" ? props.song.id : undefined}
-						initRelations={
-							props.type === "edit" ? (props.song.relations ?? []) : []
-						}
 						styles={[styles.relationsField, styles.fieldSpacing]}
 					/>
 				</div>
@@ -208,7 +195,7 @@ function FormContent(props: Props) {
 					submitting={form.isSubmitting}
 					onSubmit={() => {
 						if (import.meta.env.DEV) {
-							const errs = getAllErrors(form)
+							const errs = getDeepErrors(form)
 							console.log(errs)
 						}
 					}}

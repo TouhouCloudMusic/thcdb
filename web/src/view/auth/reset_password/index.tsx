@@ -48,13 +48,7 @@ function ResetPasswordForm(props: { resetSession: ResetPasswordSession }) {
 	const nav = useNavigate()
 	const uiStore = createResetPasswordUiStore()
 	let expiryTimer: ReturnType<typeof globalThis.setTimeout> | undefined
-	const form = createForm({
-		schema: ResetPasswordSchema,
-		initialInput: {
-			password: "",
-			repeated_password: "",
-		},
-	})
+	const form = createForm({ schema: ResetPasswordSchema })
 
 	const clearExpiryTimer = () => {
 		if (expiryTimer === undefined) return

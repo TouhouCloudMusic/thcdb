@@ -54,7 +54,7 @@ const styles = stylex.create({
 
 type EntityTagAddDialogProps = {
 	trigger: JSX.Element
-	dataFilter?: (tag: Tag) => boolean
+	filter?: (tag: Tag) => boolean
 	pendingKey?: string
 	onVote: (tagId: number, score: EntityTagVoteValue) => Promise<void>
 }
@@ -88,7 +88,7 @@ export function EntityTagAddDialog(
 	const { t } = useLingui()
 	const [open, setOpen] = createSignal(false)
 	const { searchKeyword, onInput, items, reset } = useTagSearch(
-		() => props.dataFilter,
+		() => props.filter,
 	)
 
 	const handleOpenChange = (newOpen: boolean) => {

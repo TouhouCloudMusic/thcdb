@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest"
+import * as v from "valibot"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { DateWithPrecision } from "~/domain/shared"
 
@@ -34,4 +35,43 @@ describe("date with precision to input", () => {
 		expect(input.value.getUTCMonth()).toBe(0)
 		expect(input.value.getUTCDate()).toBe(1)
 	})
+})
+
+describe("date submission", () => {
+	afterEach(() => vi.unstubAllEnvs())
+
+	it.each([
+		{
+			precision: "Year",
+			expected: { value: "2024-01-01", precision: "Year" },
+		},
+		{
+			precision: "Month",
+			expected: { value: "2024-02-01", precision: "Month" },
+		},
+		{
+			precision: "Day",
+			expected: { value: "2024-02-29", precision: "Day" },
+		},
+	] as const)(
+		"$precision normalization is timezone independent",
+		({ precision, expected }) => {
+			expect.hasAssertions()
+
+			const input = {
+				value: new Date("2024-02-29T00:00:00Z"),
+				precision,
+			}
+
+			for (const timezone of ["UTC", "America/New_York"]) {
+				vi.stubEnv("TZ", timezone)
+
+				expect(v.parse(DateWithPrecision.Schema, input)).toStrictEqual(expected)
+				expect(input).toStrictEqual({
+					value: new Date("2024-02-29T00:00:00Z"),
+					precision,
+				})
+			}
+		},
+	)
 })

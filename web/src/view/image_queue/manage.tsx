@@ -317,7 +317,7 @@ export function ImageQueueManagePageContent(
 						<div {...stylex.attrs(styles.filter)}>
 							<span {...stylex.attrs(styles.label)}>{t`Type`}</span>
 							<Select.Root<TypeFilterOption>
-								{...stylex.attrs(styles.typeSelect)}
+								styles={styles.typeSelect}
 								options={typeFilterOptions()}
 								optionValue="value"
 								optionTextValue="label"
@@ -327,23 +327,9 @@ export function ImageQueueManagePageContent(
 								onChange={(option) =>
 									props.onTypeChange(option?.value ?? "all")
 								}
-								itemComponent={(itemProps) => (
-									<Select.Item item={itemProps.item}>
-										{itemProps.item.rawValue.label}
-									</Select.Item>
-								)}
 							>
-								<Select.Trigger styles={styles.selectTrigger}>
-									<Select.Value<TypeFilterOption>>
-										{(state) => state.selectedOption().label}
-									</Select.Value>
-									<Select.Icon />
-								</Select.Trigger>
-								<Select.Portal>
-									<Select.Content>
-										<Select.Listbox />
-									</Select.Content>
-								</Select.Portal>
+								<Select.Trigger styles={styles.selectTrigger} />
+								<Select.Content />
 							</Select.Root>
 						</div>
 
@@ -351,27 +337,14 @@ export function ImageQueueManagePageContent(
 							<span {...stylex.attrs(styles.label)}>{t`Status`}</span>
 							<Select.Root<StatusFilterKind>
 								options={STATUS_FILTER_OPTIONS}
+								optionTextValue={StrExt.capitalize}
 								value={props.filters.status}
 								onChange={(value) =>
 									props.onStatusChange(value ?? props.filters.status)
 								}
-								itemComponent={(itemProps) => (
-									<Select.Item item={itemProps.item}>
-										{StrExt.capitalize(itemProps.item.rawValue)}
-									</Select.Item>
-								)}
 							>
-								<Select.Trigger>
-									<Select.Value<StatusFilterKind>>
-										{(state) => StrExt.capitalize(state.selectedOption())}
-									</Select.Value>
-									<Select.Icon />
-								</Select.Trigger>
-								<Select.Portal>
-									<Select.Content>
-										<Select.Listbox />
-									</Select.Content>
-								</Select.Portal>
+								<Select.Trigger />
+								<Select.Content />
 							</Select.Root>
 						</div>
 					</div>

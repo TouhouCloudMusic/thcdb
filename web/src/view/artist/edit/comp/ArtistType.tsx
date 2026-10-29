@@ -1,22 +1,17 @@
-import { Field } from "@formisch/solid"
+import { useField } from "@formisch/solid"
 import { Trans, useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
 import type { ArtistType } from "@thc/api"
-import { createUniqueId } from "solid-js"
 
 import { Select } from "~/component/atomic/form/select"
+import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { palette } from "~/style/color/palette.stylex"
-import { formStyles } from "~/style/primitives"
 import { radius, px } from "~/style/tokens.stylex"
 
 import { useArtistForm } from "../context"
 
 const styles = stylex.create({
-	column: {
-		display: "flex",
-		flexDirection: "column",
-	},
 	typeControl: {
 		width: "fit-content",
 		borderRadius: radius.xs,
@@ -49,77 +44,48 @@ const styles = stylex.create({
 	},
 })
 
-const ARTIST_TYPE_OPTIONS: ("" | ArtistType)[] = [
-	"",
-	"Solo",
-	"Multiple",
-	"Unknown",
-]
+type ArtistTypeOption = {
+	value: ArtistType | undefined
+	label: string
+}
 
 export function ArtistFormArtistTypeField(props: { styles?: StyleXStyles }) {
-	const triggerId = createUniqueId()
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
+	const field = useField(formStore, { path: ["data", "artist_type"] })
+
+	const options = (): ArtistTypeOption[] => [
+		{ value: undefined, label: t`-- Please select artist type --` },
+		...ARTIST_TYPES.map((value) => ({ value, label: value })),
+	]
+
+	const selectedOption = () =>
+		options().find((option) => option.value === field.input)
+
+	const selectOption = (option: ArtistTypeOption | undefined) =>
+		field.onInput(option?.value)
+
 	return (
-		<Field
-			of={formStore}
-			path={["data", "artist_type"]}
+		<Select.Root
+			value={selectedOption()}
+			onChange={selectOption}
+			fieldProps={field.props}
+			errors={field.errors}
+			options={options()}
+			optionValue="label"
+			optionTextValue="label"
+			placeholder={t`-- Please select artist type --`}
+			styles={props.styles}
 		>
-			{(field) => (
-				<div {...stylex.attrs(styles.column, props.styles)}>
-					<label
-						for={triggerId}
-						{...stylex.attrs(formStyles.label)}
-					>
-						<Trans>Artist Type</Trans>
-					</label>
-					<div {...stylex.attrs(styles.typeControl)}>
-						<Select.Root<"" | ArtistType>
-							name={field.props.name}
-							value={field.input ?? ""}
-							onChange={(value) => {
-								const next = value ?? ""
-								field.onInput(next === "" ? undefined : next)
-							}}
-							options={ARTIST_TYPE_OPTIONS}
-							itemComponent={(itemProps) => (
-								<Select.Item item={itemProps.item}>
-									{itemProps.item.rawValue === ""
-										? t`-- Please select artist type --`
-										: itemProps.item.rawValue}
-								</Select.Item>
-							)}
-						>
-							<Select.HiddenSelect
-								onChange={field.props.onChange}
-								onInput={field.props.onInput}
-								onBlur={field.props.onBlur}
-								onFocus={field.props.onFocus}
-							/>
-							<Select.Trigger
-								id={triggerId}
-								styles={[styles.typeTrigger]}
-							>
-								<Select.Value<"" | ArtistType>>
-									{(state) => {
-										const selectedOption = state.selectedOption()
-										return selectedOption === ""
-											? t`-- Please select artist type --`
-											: selectedOption
-									}}
-								</Select.Value>
-								<Select.Icon />
-							</Select.Trigger>
-							<Select.Portal>
-								<Select.Content>
-									<Select.Listbox />
-								</Select.Content>
-							</Select.Portal>
-						</Select.Root>
-					</div>
-				</div>
-			)}
-		</Field>
+			<Select.Label>
+				<Trans>Artist Type</Trans>
+			</Select.Label>
+			<div {...stylex.attrs(styles.typeControl)}>
+				<Select.Trigger styles={styles.typeTrigger} />
+				<Select.Content />
+				<Select.ErrorList />
+			</div>
+		</Select.Root>
 	)
 }

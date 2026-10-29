@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker"
 import type { Label } from "@thc/api"
 
+import { createMockNamedReference } from "./reference"
+
 const LANG_JA = { id: 1, code: "ja", name: "Japanese" } as const
 
 export const createMockLabel = (
@@ -25,7 +27,9 @@ export const createMockLabel = (
 		id,
 		name: faker.company.name(),
 		localized_names: [{ language: LANG_JA, name: faker.company.name() }],
-		founders: [faker.number.int({ min: 1, max: 1000 })],
+		founders: [
+			createMockNamedReference(faker.number.int({ min: 1, max: 1000 })),
+		],
 		links: [],
 		founded_date: { precision: "Day", value: foundedDateValue },
 		dissolved_date: dissolvedDateValue

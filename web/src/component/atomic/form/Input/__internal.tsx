@@ -7,7 +7,13 @@ import type {
 } from "@kobalte/core/text-field"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import { createContext, createEffect, mergeProps, splitProps } from "solid-js"
+import {
+	createContext,
+	createEffect,
+	createMemo,
+	mergeProps,
+	splitProps,
+} from "solid-js"
 import { createStore, produce } from "solid-js/store"
 
 import { formStyles } from "~/style/primitives"
@@ -86,11 +92,11 @@ export function Root(props: RootProps) {
 	)
 }
 
-export function Input(
-	props: PolymorphicProps<"input", TextFieldInputProps<"input">> & {
-		styles?: StyleXStyles
-	},
-) {
+type InputProps = PolymorphicProps<"input", TextFieldInputProps<"input">> & {
+	styles?: StyleXStyles
+}
+
+export function Input(props: InputProps) {
 	const context = assertContext(Context)
 
 	createEffect(() => {
@@ -105,6 +111,30 @@ export function Input(
 		<K_TextField.Input
 			{...others}
 			{...stylex.attrs(inputStyles.like, inputStyles.input, local.styles)}
+		/>
+	)
+}
+
+type NumberInputProps = Omit<InputProps, "type" | "value" | "onInput"> & {
+	value?: number
+	onInput: (value: number | undefined) => void
+}
+
+export function NumberInput(props: NumberInputProps) {
+	const [local, others] = splitProps(props, ["value", "onInput"])
+	const value = createMemo<number | undefined>((previous) =>
+		Number.isNaN(local.value) ? previous : local.value,
+	)
+	const updateValue = (input: HTMLInputElement) => {
+		local.onInput(input.value === "" ? undefined : input.valueAsNumber)
+	}
+
+	return (
+		<Input
+			{...others}
+			type="number"
+			value={value() ?? ""}
+			onInput={(event) => updateValue(event.currentTarget)}
 		/>
 	)
 }

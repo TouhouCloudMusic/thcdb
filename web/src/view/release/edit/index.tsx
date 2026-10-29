@@ -2,10 +2,8 @@ import {
 	Field,
 	Form,
 	createForm,
-	getAllErrors,
-	getErrors,
+	getDeepErrors,
 	getInput,
-	setInput,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
@@ -19,7 +17,7 @@ import { InputField } from "~/component/atomic/form/Input"
 import { FormActionBar } from "~/component/form"
 import { DateWithPrecision } from "~/component/form/DateWithPrecision"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
-import { NewReleaseCorrection as NewReleaseCorrectionSchema } from "~/domain/release"
+import { useArrayField } from "~/component/form/useArrayField"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
 import { formStyles } from "~/style/primitives"
@@ -37,6 +35,7 @@ import { ReleaseTypeField } from "./comp/ReleaseTypeField"
 import { TitleField } from "./comp/TitleField"
 import { useReleaseFormInitialValues } from "./hook/useFormInitialValues"
 import { useReleaseFormSubmission } from "./hook/useFormSubmission"
+import { ReleaseFormSchema } from "./schema"
 
 const styles = stylex.create({
 	dateField: {
@@ -119,9 +118,11 @@ function FormContent(props: Props) {
 	const initialValues = useReleaseFormInitialValues(props)
 
 	const form = createForm({
-		schema: NewReleaseCorrectionSchema,
+		schema: ReleaseFormSchema,
 		initialInput: initialValues,
 	})
+
+	const links = useArrayField(form, { path: ["data", "links"] })
 
 	if (import.meta.env.DEV) {
 		createEffect(() => {
@@ -133,7 +134,7 @@ function FormContent(props: Props) {
 	const { handleSubmit, pendingCorrectionId } = useReleaseFormSubmission(props)
 	const handleSubmitClick = () => {
 		if (import.meta.env.DEV) {
-			const errs = getAllErrors(form)
+			const errs = getDeepErrors(form)
 			console.log(errs)
 		}
 	}
@@ -152,12 +153,35 @@ function FormContent(props: Props) {
 		},
 	})
 
+	const dateFields = [
+		{
+			key: "release_date",
+			get label() {
+				return t`Release date`
+			},
+			styles: styles.releaseDate,
+		},
+		{
+			key: "recording_date_start",
+			get label() {
+				return t`Recording start`
+			},
+			styles: styles.recordingStart,
+		},
+		{
+			key: "recording_date_end",
+			get label() {
+				return t`Recording end`
+			},
+			styles: styles.recordingEnd,
+		},
+	] as const
+
 	return (
 		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
 			<Form
 				of={form}
-				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-				onSubmit={(out, _) => handleSubmit(out)}
+				onSubmit={handleSubmit}
 			>
 				<div {...stylex.attrs(styles.form)}>
 					<TitleField
@@ -175,85 +199,61 @@ function FormContent(props: Props) {
 						styles={styles.localizedTitlesField}
 					/>
 
-					{(
-						[
-							{
-								key: "release_date",
-								label: t`Release date`,
-								styles: styles.releaseDate,
-							},
-							{
-								key: "recording_date_start",
-								label: t`Recording start`,
-								styles: styles.recordingStart,
-							},
-							{
-								key: "recording_date_end",
-								label: t`Recording end`,
-								styles: styles.recordingEnd,
-							},
-						] as const
-					).map((it) => {
-						return (
+					<For each={dateFields}>
+						{(it) => (
 							<div {...stylex.attrs(styles.dateField, it.styles)}>
 								<label {...stylex.attrs(formStyles.label, styles.dateLabel)}>
 									{it.label}
 								</label>
-								<DateWithPrecision
-									setValue={(v) =>
-										setInput(form, {
-											path: ["data", it.key],
-											// TODO: Upstream formisch error
-											input: v ?? null,
-										})
-									}
-								/>
-								<For each={getErrors(form, { path: ["data", it.key] })}>
-									{(error) => (
-										<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
+								<Field
+									of={form}
+									path={["data", it.key]}
+								>
+									{(field) => (
+										<>
+											<DateWithPrecision
+												value={field.input}
+												setValue={field.onInput}
+											/>
+											<For each={field.errors}>
+												{(error) => (
+													<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
+												)}
+											</For>
+										</>
 									)}
-								</For>
+								</Field>
 							</div>
-						)
-					})}
+						)}
+					</For>
 
 					<ReleaseArtistsField
 						of={form}
-						initArtists={props.type === "edit" ? props.release.artists : []}
 						styles={styles.artistsField}
 					/>
 
 					<ReleaseCatalogNumbersField
 						of={form}
-						initCatalogLabels={
-							props.type === "edit"
-								? (props.release.catalog_nums?.map((c) => c.label ?? undefined)
-									?? [])
-								: []
-						}
 						styles={styles.catalogsField}
 					/>
 
 					<ReleaseEventsField
 						of={form}
-						initEvents={props.type === "edit" ? props.release.events : []}
 						styles={styles.eventsField}
 					/>
 
 					<ReleaseTracksField
 						of={form}
-						initTracks={props.type === "edit" ? props.release.tracks : []}
 						styles={styles.tracksField}
 					/>
 
 					<ReleaseCreditsField
 						of={form}
-						initCredits={props.type === "edit" ? props.release.credits : []}
 						styles={styles.creditsField}
 					/>
 
 					<ExternalLinksField
-						of={form}
+						field={links}
 						styles={styles.linksField}
 					/>
 
@@ -266,7 +266,7 @@ function FormContent(props: Props) {
 								<InputField.Label>{t`Correction Description`}</InputField.Label>
 								<InputField.Textarea
 									{...field.props}
-									value={field.input ?? ""}
+									value={field.input}
 									styles={styles.correctionInput}
 								/>
 

@@ -1,7 +1,8 @@
-import { Field, getInput, setInput } from "@formisch/solid"
+import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
+import { Nil } from "@thc/toolkit/data"
 import { For } from "solid-js"
 
 import { InputField } from "~/component/atomic/form/Input"
@@ -28,11 +29,6 @@ const DESCRIPTORS: { key: LocationFieldKey; label: string }[] = [
 	{ key: "city", label: "City" },
 ]
 
-function sanitize(input: string): string | undefined {
-	const trimmed = input.trim()
-	return trimmed === "" ? undefined : trimmed
-}
-
 export function EventLocationField(props: Props) {
 	const { t } = useLingui()
 	const { formStore } = useEventForm()
@@ -47,40 +43,23 @@ export function EventLocationField(props: Props) {
 							of={formStore}
 							path={["data", "location", descriptor.key]}
 						>
-							{(field) => {
-								const handleInput: typeof field.props.onInput = (event) => {
-									field.props.onInput(event)
-									const nextValue = sanitize(event.currentTarget.value)
-									const currentLocation = getInput(formStore, {
-										path: ["data", "location"],
-									}) ?? {
-										country: undefined,
-										province: undefined,
-										city: undefined,
-									}
-									setInput(formStore, {
-										path: ["data", "location"],
-										input: {
-											...currentLocation,
-											[descriptor.key]: nextValue,
-										},
-									})
-								}
-
-								return (
-									<InputField.Root styles={styles.locationInput}>
-										<InputField.Input
-											{...field.props}
-											value={field.input ?? ""}
-											onInput={handleInput}
-											placeholder={descriptor.label}
-										/>
-										<InputField.Error>
-											{field.errors ? field.errors[0] : undefined}
-										</InputField.Error>
-									</InputField.Root>
-								)
-							}}
+							{(field) => (
+								<InputField.Root styles={styles.locationInput}>
+									<InputField.Input
+										{...field.props}
+										value={field.input ?? ""}
+										onInput={(event) =>
+											field.onInput(
+												Nil.filter(Boolean, event.currentTarget.value.trim()),
+											)
+										}
+										placeholder={descriptor.label}
+									/>
+									<InputField.Error>
+										{field.errors ? field.errors[0] : undefined}
+									</InputField.Error>
+								</InputField.Root>
+							)}
 						</Field>
 					)}
 				</For>

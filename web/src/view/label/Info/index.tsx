@@ -143,7 +143,9 @@ function LabelInfoDetails() {
 						of={ctx.label.founders}
 						with={<span {...stylex.attrs(styles.separator)}>, </span>}
 					>
-						{(id) => <li {...stylex.attrs(styles.detailText)}>#{id}</li>}
+						{(founder) => (
+							<li {...stylex.attrs(styles.detailText)}>{founder.name}</li>
+						)}
 					</Intersperse>
 				</ul>
 			</Show>

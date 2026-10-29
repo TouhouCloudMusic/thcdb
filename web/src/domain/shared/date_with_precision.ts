@@ -4,29 +4,28 @@ import type { nil } from "~/type"
 
 import { DatePrecision } from "./schema"
 
-export type In = {
-	value: Date
-	precision: DatePrecision
-}
+export const InputSchema = v.object({
+	value: v.date(),
+	precision: DatePrecision,
+})
+
+export type In = v.InferInput<typeof InputSchema>
 
 export type Out = v.InferOutput<typeof Schema>
 
 export const Schema = v.pipe(
-	v.object({
-		value: v.date(),
-		precision: DatePrecision,
-	}),
-	v.transform((value) => {
-		if (value.precision === "Year") {
-			value.value.setMonth(0)
-			value.value.setDate(1)
-		} else if (value.precision === "Month") {
-			value.value.setDate(1)
+	InputSchema,
+	v.transform(({ value, precision }) => {
+		const date = new Date(value)
+		if (precision === "Year") {
+			date.setUTCMonth(0, 1)
+		} else if (precision === "Month") {
+			date.setUTCDate(1)
 		}
 
 		return {
-			value: toPlainDate(value.value),
-			precision: value.precision,
+			value: toPlainDate(date),
+			precision,
 		}
 	}),
 )

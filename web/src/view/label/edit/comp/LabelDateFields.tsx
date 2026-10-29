@@ -1,8 +1,8 @@
-import { Field, setInput } from "@formisch/solid"
+import { Field } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import { For, createMemo } from "solid-js"
+import { For } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
 import { DateWithPrecision as DateWithPrecisionInput } from "~/component/form/DateWithPrecision"
@@ -34,8 +34,18 @@ export function LabelDateFields(props: Props) {
 	const { formStore } = useLabelForm()
 
 	const fields: DateFieldDescriptor[] = [
-		{ key: "founded_date", label: t`Founded date` },
-		{ key: "dissolved_date", label: t`Dissolved date` },
+		{
+			key: "founded_date",
+			get label() {
+				return t`Founded date`
+			},
+		},
+		{
+			key: "dissolved_date",
+			get label() {
+				return t`Dissolved date`
+			},
+		},
 	]
 
 	return (
@@ -45,38 +55,22 @@ export function LabelDateFields(props: Props) {
 					of={formStore}
 					path={["data", descriptor.key]}
 				>
-					{(field) => {
-						const currentValue = createMemo(() => {
-							const input = field.input
-							if (!input) return
-							const { value, precision } = input
-							if (!(value instanceof Date) || !precision) return
-							return { value, precision }
-						})
-
-						return (
-							<div {...stylex.attrs(styles.field, props.styles)}>
-								<label {...stylex.attrs(formStyles.label, styles.label)}>
-									{descriptor.label}
-								</label>
-								<DateWithPrecisionInput
-									value={currentValue()}
-									setValue={(value) =>
-										setInput(formStore, {
-											path: ["data", descriptor.key],
-											// @ts-expect-error upstream formisch typing
-											input: value,
-										})
-									}
-								/>
-								<For each={field.errors ?? []}>
-									{(error) => (
-										<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
-									)}
-								</For>
-							</div>
-						)
-					}}
+					{(field) => (
+						<div {...stylex.attrs(styles.field, props.styles)}>
+							<label {...stylex.attrs(formStyles.label, styles.label)}>
+								{descriptor.label}
+							</label>
+							<DateWithPrecisionInput
+								value={field.input}
+								setValue={field.onInput}
+							/>
+							<For each={field.errors}>
+								{(error) => (
+									<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
+								)}
+							</For>
+						</div>
+					)}
 				</Field>
 			)}
 		</For>

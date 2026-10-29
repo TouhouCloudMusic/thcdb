@@ -5,12 +5,12 @@ import { useBlocker } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import { ArrowLeftIcon } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
-import { Show, Suspense } from "solid-js"
+import { Show } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormActionBar } from "~/component/form"
 import { ExternalLinksField } from "~/component/form/ExternalLinksField"
-import { NewArtistCorrection } from "~/domain/artist/schema"
+import { useArrayField } from "~/component/form/useArrayField"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
 import { px } from "~/style/tokens.stylex"
@@ -29,6 +29,7 @@ import { ArtistFormTextAliases } from "./comp/TextAliases"
 import { ArtistFormProvider } from "./context"
 import { useArtistFormInitialValues } from "./hook/useFormInitialValues"
 import { useArtistFormSubmission } from "./hook/useFormSubmission"
+import { ArtistFormSchema } from "./schema"
 
 const styles = stylex.create({
 	page: {
@@ -82,18 +83,6 @@ type Props =
 			pendingCorrectionId?: number
 	  }
 
-export function EditArtistPage(props: Props): JSX.Element {
-	const { t } = useLingui()
-	return (
-		<PageLayout styles={[styles.page]}>
-			<PageHeader type={props.type} />
-			<Suspense fallback={<div>{t`Loading...`}</div>}>
-				<FormContent {...props} />
-			</Suspense>
-		</PageLayout>
-	)
-}
-
 function PageHeader(props: { type: Props["type"] }) {
 	const { t } = useLingui()
 	return (
@@ -123,16 +112,19 @@ function PageHeader(props: { type: Props["type"] }) {
 	)
 }
 
-function FormContent(props: Props) {
+export function EditArtistPage(props: Props): JSX.Element {
 	const { t } = useLingui()
 	const initialValues = useArtistFormInitialValues(props)
 	const { handleSubmit, mutation, pendingCorrectionId } =
 		useArtistFormSubmission(props)
 
 	const form = createForm({
-		schema: NewArtistCorrection,
+		schema: ArtistFormSchema,
 		initialInput: initialValues,
 	})
+
+	const links = useArrayField(form, { path: ["data", "links"] })
+
 	const isSubmitting = () => mutation.isPending || form.isSubmitting
 
 	useBlocker({
@@ -150,59 +142,55 @@ function FormContent(props: Props) {
 	})
 
 	return (
-		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
-			<ArtistFormProvider
-				value={{
-					get artistId() {
-						if (props.type == "edit") {
-							return props.artist.id
-						}
-					},
-					formStore: form,
-				}}
-			>
-				<Form
-					of={form}
-					{...stylex.attrs(styles.form)}
-					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-					onSubmit={(output, _) => handleSubmit(output)}
-				>
-					<div {...stylex.attrs(styles.fields)}>
-						<ArtistFormNameField />
-
-						<ArtistFormArtistTypeField />
-
-						<ArtistFormLocalizedNames />
-
-						<ArtistFormAliasesField
-							initAliasIds={props.type === "edit" ? props.artist.aliases : []}
-						/>
-
-						<ArtistFormTextAliases />
-
-						<ArtistFormDateFields />
-
-						<ArtistFormLocationFields />
-
-						<ArtistFormMembership
-							initMemberships={
-								props.type === "edit" ? props.artist.memberships : []
+		<PageLayout styles={[styles.page]}>
+			<PageHeader type={props.type} />
+			<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
+				<ArtistFormProvider
+					value={{
+						get artistId() {
+							if (props.type == "edit") {
+								return props.artist.id
 							}
-						/>
+						},
+						formStore: form,
+					}}
+				>
+					<Form
+						of={form}
+						{...stylex.attrs(styles.form)}
+						onSubmit={handleSubmit}
+					>
+						<div {...stylex.attrs(styles.fields)}>
+							<ArtistFormNameField />
 
-						<ExternalLinksField
-							of={form}
-							styles={styles.field}
-						/>
+							<ArtistFormArtistTypeField />
 
-						<ArtistFormActions mutation={mutation} />
-					</div>
-					<FormActionBar
-						submitting={isSubmitting()}
-						disabled={isSubmitting()}
-					/>
-				</Form>
-			</ArtistFormProvider>
-		</PendingCorrectionBoundary>
+							<ArtistFormLocalizedNames />
+
+							<ArtistFormAliasesField />
+
+							<ArtistFormTextAliases />
+
+							<ArtistFormDateFields />
+
+							<ArtistFormLocationFields />
+
+							<ArtistFormMembership />
+
+							<ExternalLinksField
+								field={links}
+								styles={styles.field}
+							/>
+
+							<ArtistFormActions mutation={mutation} />
+						</div>
+						<FormActionBar
+							submitting={isSubmitting()}
+							disabled={isSubmitting()}
+						/>
+					</Form>
+				</ArtistFormProvider>
+			</PendingCorrectionBoundary>
+		</PageLayout>
 	)
 }

@@ -1,12 +1,12 @@
-import { Field, FieldArray, insert, remove } from "@formisch/solid"
+import { insert, remove, useField, useFieldArray } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { For } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
+import { Intersperse } from "~/component/data/Intersperse"
 import { FieldArrayFallback } from "~/component/form"
 import { dividerStyles, formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
@@ -44,6 +44,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	actions: {
 		display: "flex",
 		gap: px[8],
@@ -57,16 +60,53 @@ const styles = stylex.create({
 	},
 })
 
+function TextAliasRow(props: { index: number }) {
+	const { t } = useLingui()
+	const { formStore } = useArtistForm()
+
+	const field = useField(formStore, () => ({
+		path: ["data", "text_aliases", props.index],
+	}))
+	const removeTextAlias = () =>
+		remove(formStore, {
+			path: ["data", "text_aliases"],
+			at: props.index,
+		})
+
+	return (
+		<li {...stylex.attrs(rowStyles.actions)}>
+			<InputField.Root styles={[rowStyles.input]}>
+				<InputField.Input
+					{...field.props}
+					id={field.path.join(".")}
+					placeholder={t`Name`}
+					value={field.input ?? ""}
+				/>
+				<InputField.Error>{field.errors?.[0]}</InputField.Error>
+			</InputField.Root>
+			<Button
+				onClick={removeTextAlias}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+				styles={rowStyles.removeButton}
+			>
+				<Cross1Icon />
+			</Button>
+		</li>
+	)
+}
+
 export function ArtistFormTextAliases(props: { styles?: StyleXStyles }) {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
-	const addTextAlias = () => {
-		insert(formStore, { path: ["data", "text_aliases"], initialInput: "" })
-	}
+	const textAliases = useFieldArray(formStore, {
+		path: ["data", "text_aliases"],
+	})
 
-	const removeTextAliasAt = (index: number) => () => {
-		remove(formStore, { path: ["data", "text_aliases"], at: index })
+	const addTextAlias = () => {
+		insert(formStore, { path: textAliases.path })
 	}
 
 	return (
@@ -85,56 +125,20 @@ export function ArtistFormTextAliases(props: { styles?: StyleXStyles }) {
 				</Button>
 			</div>
 
-			<FieldArray
-				of={formStore}
-				path={["data", "text_aliases"]}
-			>
-				{(fieldArray) => (
-					<ul {...stylex.attrs(styles.entries)}>
-						<For
-							each={fieldArray.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<>
-									<li {...stylex.attrs(styles.actions)}>
-										<Field
-											of={formStore}
-											path={["data", "text_aliases", idx()]}
-										>
-											{(field) => (
-												<InputField.Root styles={[styles.input]}>
-													<InputField.Input
-														{...field.props}
-														id={field.path.join(".")}
-														placeholder={t`Name`}
-														value={field.input ?? ""}
-													/>
-													<InputField.Error>
-														{field.errors?.[0]}
-													</InputField.Error>
-												</InputField.Root>
-											)}
-										</Field>
-										<Button
-											onClick={removeTextAliasAt(idx())}
-											appearance="ghost"
-											tone="gray"
-											size="sm"
-											styles={styles.removeButton}
-										>
-											<Cross1Icon />
-										</Button>
-									</li>
-									{idx() < fieldArray.items.length - 1 && (
-										<span {...stylex.attrs(dividerStyles.horizontal)}></span>
-									)}
-								</>
-							)}
-						</For>
-					</ul>
-				)}
-			</FieldArray>
+			<ul {...stylex.attrs(styles.entries)}>
+				<Intersperse
+					of={textAliases.items}
+					with={
+						<li
+							aria-hidden="true"
+							{...stylex.attrs(dividerStyles.horizontal)}
+						></li>
+					}
+					fallback={<FieldArrayFallback />}
+				>
+					{(_, index) => <TextAliasRow index={index()} />}
+				</Intersperse>
+			</ul>
 		</div>
 	)
 }

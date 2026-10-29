@@ -12,8 +12,8 @@ import {
 export const NewLabel = v.object({
 	name: EntityIdent,
 	localized_names: v.nullish(v.array(NewLocalizedName)),
-	founded_date: v.nullish(DateWithPrecision.Schema),
-	dissolved_date: v.nullish(DateWithPrecision.Schema),
+	founded_date: v.undefinedable(DateWithPrecision.Schema),
+	dissolved_date: v.undefinedable(DateWithPrecision.Schema),
 	founders: v.nullish(v.array(EntityId)),
 	links: v.nullish(v.array(HttpUrl)),
 })

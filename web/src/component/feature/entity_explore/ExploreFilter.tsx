@@ -8,12 +8,12 @@ const styles = stylex.create({
 	trigger: { height: px[40], width: "100%" },
 })
 
-type ExploreFilterOption<T extends string> = {
+type ExploreFilterOption<T extends string | undefined> = {
 	value: T
 	label: string
 }
 
-type ExploreFilterProps<T extends string> = {
+type ExploreFilterProps<T extends string | undefined> = {
 	label: string
 	value: T | undefined
 	defaultValue: T
@@ -21,7 +21,9 @@ type ExploreFilterProps<T extends string> = {
 	onChange: (value: T) => void
 }
 
-export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
+export function ExploreFilter<T extends string | undefined>(
+	props: ExploreFilterProps<T>,
+) {
 	const selectedOption = () => {
 		const option = props.options.find(
 			(candidate) => candidate.value === props.value,
@@ -38,33 +40,19 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 		<ExploreFilterField label={props.label}>
 			<Select.Root
 				options={props.options}
-				optionValue="value"
+				optionValue={(option) => option.value ?? "all"}
 				optionTextValue="label"
 				value={selectedOption()}
 				onChange={(option) => {
-					if (option === null) return
+					if (option === undefined) return
 					props.onChange(option.value)
 				}}
-				itemComponent={(optionProps) => (
-					<Select.Item item={optionProps.item}>
-						{optionProps.item.rawValue.label}
-					</Select.Item>
-				)}
 			>
 				<Select.Trigger
 					styles={styles.trigger}
 					aria-label={props.label}
-				>
-					<Select.Value<ExploreFilterOption<T>>>
-						{() => selectedOption()?.label ?? ""}
-					</Select.Value>
-					<Select.Icon />
-				</Select.Trigger>
-				<Select.Portal>
-					<Select.Content>
-						<Select.Listbox />
-					</Select.Content>
-				</Select.Portal>
+				/>
+				<Select.Content />
 			</Select.Root>
 		</ExploreFilterField>
 	)

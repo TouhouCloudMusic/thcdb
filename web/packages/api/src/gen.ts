@@ -1689,8 +1689,8 @@ export type components = {
             name: string;
         };
         Artist: {
-            /** @description List of id of artist aliases */
-            aliases?: number[];
+            /** @description Artists with their own page that are aliases of this artist */
+            aliases?: components["schemas"]["SimpleArtist"][];
             artist_type: components["schemas"]["ArtistType"];
             current_location?: components["schemas"]["Location"];
             end_date?: null | components["schemas"]["DateWithPrecision"];
@@ -2609,7 +2609,7 @@ export type components = {
         Label: {
             dissolved_date?: null | components["schemas"]["DateWithPrecision"];
             founded_date?: null | components["schemas"]["DateWithPrecision"];
-            founders: number[];
+            founders: components["schemas"]["SimpleArtist"][];
             /** Format: int32 */
             id: number;
             links: string[];

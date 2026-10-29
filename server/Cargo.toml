@@ -33,6 +33,7 @@ members = [
     "crates/infra/testing",
     "crates/infra/storage",
     "crates/infra/worker",
+    "crates/json_matcher",
     "crates/libfp",
     "crates/macros",
     "crates/migration",
@@ -46,6 +47,7 @@ visit_core                   = { package = "thcdb-feature-visit-core", path = "c
 popularity_core              = { package = "thcdb-feature-popularity-core", path = "crates/features/popularity/core" }
 rating_core                  = { package = "thcdb-feature-rating-core", path = "crates/features/rating/core" }
 futures-util                 = "0.3"
+googletest                   = "0.14.3"
 constants                    = { package = "thcdb-constants", path = "crates/constants" }
 domain                       = { package = "thcdb-domain", path = "crates/domain" }
 entity                       = { path = "crates/entity" }
@@ -56,6 +58,7 @@ infra_error                  = { package = "thcdb-infra-error", path = "crates/i
 infra_testing                = { package = "thcdb-infra-testing", path = "crates/infra/testing" }
 infra_storage                = { package = "thcdb-infra-storage", path = "crates/infra/storage" }
 infra_worker                 = { package = "thcdb-infra-worker", path = "crates/infra/worker" }
+json_matcher                 = { package = "thcdb-json-matcher", path = "crates/json_matcher" }
 libfp                        = { path = "crates/libfp" }
 macros                       = { path = "crates/macros" }
 migration                    = { path = "crates/migration" }
@@ -369,7 +372,9 @@ apalis-redis = { git = "https://github.com/Huliiiiii/apalis.git", rev = "5866341
 tempfile                = "3.27.0"
 anyhow.workspace        = true
 fake                    = { version = "5.1.0", features = [ "derive" ] }
+googletest.workspace    = true
 infra_testing.workspace = true
+json_matcher.workspace  = true
 proptest                = "1"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html

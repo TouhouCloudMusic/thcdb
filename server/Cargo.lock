@@ -2220,6 +2220,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
 
 [[package]]
+name = "googletest"
+version = "0.14.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6b5e2f2b556b7b90297a5a35c8267dd43a537923d2b329beefdba2b4ec19d94"
+dependencies = [
+ "googletest_macro",
+ "num-traits",
+ "regex",
+ "rustversion",
+]
+
+[[package]]
+name = "googletest_macro"
+version = "0.14.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ae6abc96141edd26bf5aeec0f119c129c44de3ced09e5073711a02cb74725d0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.118",
+]
+
+[[package]]
 name = "governor"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6121,6 +6144,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-json-matcher"
+version = "0.1.0"
+dependencies = [
+ "googletest",
+ "serde_json",
+]
+
+[[package]]
 name = "thcdb-rs"
 version = "0.1.0"
 dependencies = [
@@ -6155,6 +6186,7 @@ dependencies = [
  "fred",
  "futures-util",
  "garde",
+ "googletest",
  "governor",
  "headers",
  "image",
@@ -6215,6 +6247,7 @@ dependencies = [
  "thcdb-infra-storage",
  "thcdb-infra-testing",
  "thcdb-infra-worker",
+ "thcdb-json-matcher",
  "tokio",
  "tower",
  "tower-http",

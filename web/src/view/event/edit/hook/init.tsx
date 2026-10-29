@@ -1,3 +1,4 @@
+import type { DeepPartial } from "@formisch/solid"
 import type { Event } from "@thc/api"
 
 import type { NewEventCorrection } from "~/domain/event"
@@ -22,19 +23,12 @@ export type EventFormInitProps =
 
 export function toEventFormInitValue(
 	input: EventFormInitProps,
-): NewEventCorrection {
+): DeepPartial<NewEventCorrection> {
 	if (input.type === "new") {
 		return {
 			type: "Create",
-			description: "",
 			data: {
-				name: "",
-				short_description: undefined,
-				description: undefined,
-				start_date: undefined,
-				end_date: undefined,
 				alternative_names: [],
-				location: undefined,
 				links: [],
 			},
 		}
@@ -42,7 +36,6 @@ export function toEventFormInitValue(
 
 	return {
 		type: "Update",
-		description: "",
 		data: {
 			name: input.event.name,
 			short_description: input.event.short_description ?? undefined,

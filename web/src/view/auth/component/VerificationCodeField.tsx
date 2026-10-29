@@ -5,7 +5,6 @@ import type { JSX } from "solid-js"
 import { createSignal } from "solid-js"
 
 import { InputField } from "~/component/atomic/form/Input"
-import { callHandlerUnion } from "~/utils/dom/event"
 
 import { authStyles } from "../styles"
 import { FieldLayout } from "./FieldLayout"
@@ -49,7 +48,7 @@ export function VerificationCodeField(props: VerificationCodeFieldProps) {
 				value={props.field.input ?? ""}
 				onFocus={(e) => {
 					setIsEditing(true)
-					callHandlerUnion(e, props.field.props.onFocus)
+					props.field.props.onFocus()
 					props.onFocus?.(e)
 				}}
 				onInput={(e) => {
@@ -57,12 +56,12 @@ export function VerificationCodeField(props: VerificationCodeFieldProps) {
 					const el = e.currentTarget
 					const next = el.value.replaceAll(/\D/gu, "").slice(0, 6)
 					if (el.value !== next) el.value = next
-					callHandlerUnion(e, props.field.props.onInput)
+					props.field.props.onInput(e)
 					props.onInput?.(e)
 				}}
 				onBlur={(e) => {
 					setIsEditing(false)
-					callHandlerUnion(e, props.field.props.onBlur)
+					props.field.props.onBlur()
 					props.onBlur?.(e)
 				}}
 			/>

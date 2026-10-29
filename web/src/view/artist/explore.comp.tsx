@@ -13,14 +13,13 @@ import {
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
-import type { ArtistListItem } from "~/hey-api"
+import type { ArtistListItem, ArtistType, SortDirection } from "~/hey-api"
 import { palette } from "~/style/color/palette.stylex"
 import { dividerStyles } from "~/style/primitives"
 import { radius, colors, px } from "~/style/tokens.stylex"
 
 import { animationStyles } from "../../style/animations.stylex"
 import { ArtistItem } from "./ArtistItem"
-import { ArtistTypeLabel } from "./ArtistTypeLabel"
 
 const styles = stylex.create({
 	resultRow: {
@@ -84,42 +83,66 @@ export function ArtistItemSkeleton() {
 }
 
 type ArtistExploreFilterBarProps = {
-	artistTypeValue: "" | ArtistListItem["artist_type"]
-	onArtistTypeChange: (value: "" | ArtistListItem["artist_type"]) => void
+	artistTypeValue: ArtistType | undefined
+	onArtistTypeChange: (value: ArtistType | undefined) => void
 	sortBy: "created_at" | "updated_at" | undefined
 	onSortByChange: (value: "created_at" | "updated_at") => void
-	orderBy: "asc" | "desc" | undefined
-	onOrderByChange: (value: "asc" | "desc") => void
+	orderBy: SortDirection | undefined
+	onOrderByChange: (value: SortDirection) => void
+}
+
+type ArtistTypeOption = {
+	value?: ArtistType
+	key: string
+	label: string
 }
 
 export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 	const { t } = useLingui()
+	const artistTypeText = (value: ArtistType) => {
+		switch (value) {
+			case "Solo": {
+				return t`Solo Artist`
+			}
+			case "Multiple": {
+				return t`Group`
+			}
+			case "Unknown": {
+				return t`Unknown`
+			}
+		}
+	}
+
+	const artistTypeOptions = (): ArtistTypeOption[] => [
+		{ value: undefined, key: "all", label: t`All` },
+		...ARTIST_TYPES.map((value) => ({
+			value,
+			key: value,
+			label: artistTypeText(value),
+		})),
+	]
+
+	const selectedArtistType = () =>
+		artistTypeOptions().find((option) => option.value === props.artistTypeValue)
+
+	const changeArtistType = (option: ArtistTypeOption | undefined) =>
+		props.onArtistTypeChange(option?.value)
 
 	return (
 		<ExploreFilterBar>
 			<ExploreFilterField label={t`Type`}>
-				<Select.Root<"" | ArtistListItem["artist_type"]>
-					options={["", ...ARTIST_TYPES]}
-					value={props.artistTypeValue}
-					onChange={(value) => props.onArtistTypeChange(value ?? "")}
-					placeholder={t`All`}
-					itemComponent={(optionProps) => (
-						<Select.Item item={optionProps.item}>
-							<ArtistTypeLabel value={optionProps.item.rawValue} />
-						</Select.Item>
-					)}
+				<Select.Root
+					options={artistTypeOptions()}
+					value={selectedArtistType()}
+					optionValue="key"
+					optionTextValue="label"
+					onChange={changeArtistType}
 				>
-					<Select.Trigger styles={[styles.filterTrigger]}>
-						<Select.Value<"" | ArtistListItem["artist_type"]>>
-							{(state) => <ArtistTypeLabel value={state.selectedOption()} />}
-						</Select.Value>
-						<Select.Icon />
-					</Select.Trigger>
-					<Select.Portal>
-						<Select.Content>
-							<Select.Listbox />
-						</Select.Content>
-					</Select.Portal>
+					<Select.Trigger
+						styles={styles.filterTrigger}
+						aria-label={t`Type`}
+					/>
+					<Select.Content />
 				</Select.Root>
 			</ExploreFilterField>
 

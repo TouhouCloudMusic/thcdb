@@ -2,14 +2,13 @@ import type { FormStore } from "@formisch/solid"
 import { createContext } from "solid-js"
 import type { ParentProps } from "solid-js"
 
-import type { NewArtistCorrection } from "~/domain/artist"
 import { assertContext } from "~/utils/solid/assertContext"
 
-type ArtistFormSchema = typeof NewArtistCorrection
+import type { ArtistFormSchema } from "./schema"
 
 export type ArtistEditFormContextValue = {
 	artistId: number | undefined
-	formStore: FormStore<ArtistFormSchema>
+	formStore: FormStore<typeof ArtistFormSchema>
 }
 
 const ArtistEditFormContext = createContext<ArtistEditFormContextValue>()

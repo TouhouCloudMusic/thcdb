@@ -1,12 +1,16 @@
-// 事件字段（受控组件）
-import { Field, insert, remove } from "@formisch/solid"
+import {
+	useFieldArray,
+	getInput,
+	useField,
+	insert,
+	remove,
+} from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import type { SimpleEvent } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { For, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FieldArrayFallback } from "~/component/form"
@@ -15,7 +19,7 @@ import { palette } from "~/style/color/palette.stylex"
 import { formStyles } from "~/style/primitives"
 import { px } from "~/style/tokens.stylex"
 
-import { EventInfo } from "./EntityInfo"
+import { entityInfoStyles } from "./entityInfo.stylex"
 import type { ReleaseFormStore } from "./types"
 
 const styles = stylex.create({
@@ -40,6 +44,9 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const rowStyles = stylex.create({
 	item: {
 		display: "grid",
 		height: "fit-content",
@@ -47,26 +54,52 @@ const styles = stylex.create({
 	},
 })
 
+function EventRow(props: { of: ReleaseFormStore; index: number }) {
+	const field = useField(
+		() => props.of,
+		() => ({
+			path: ["data", "events", props.index],
+		}),
+	)
+
+	const removeEvent = () =>
+		remove(props.of, { path: ["data", "events"], at: props.index })
+
+	return (
+		<li {...stylex.attrs(rowStyles.item)}>
+			<span {...stylex.attrs(entityInfoStyles.name)}>{field.input?.name}</span>
+			<Button
+				onClick={removeEvent}
+				appearance="ghost"
+				tone="gray"
+				size="sm"
+			>
+				<Cross1Icon />
+			</Button>
+		</li>
+	)
+}
+
 export function ReleaseEventsField(props: {
 	of: ReleaseFormStore
-	initEvents?: SimpleEvent[]
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
-	const [events, setEvents] = createStore<SimpleEvent[]>(
-		untrack(() => [...(props.initEvents ?? [])]),
-	)
 
-	const addEvent = (e: SimpleEvent) => {
-		if (untrack(() => events.some((x) => x.id === e.id))) return
-		insert(props.of, { path: ["data", "events"], initialInput: e.id })
-		setEvents(events.length, e)
+	const events = useFieldArray(() => props.of, { path: ["data", "events"] })
+
+	const addEvent = (value: SimpleEvent) => {
+		if (
+			getInput(props.of, { path: events.path }).some(
+				(reference) => reference.id === value.id,
+			)
+		) {
+			return
+		}
+
+		insert(props.of, { path: events.path, initialInput: value })
 	}
 
-	const removeEventAt = (idx: number) => {
-		remove(props.of, { path: ["data", "events"], at: idx })
-		setEvents((list) => list.toSpliced(idx, 1))
-	}
 	return (
 		<div {...stylex.attrs(styles.field, props.styles)}>
 			<div {...stylex.attrs(styles.header)}>
@@ -82,35 +115,14 @@ export function ReleaseEventsField(props: {
 			</div>
 			<ul {...stylex.attrs(styles.list)}>
 				<For
-					each={events}
+					each={events.items}
 					fallback={<FieldArrayFallback />}
 				>
-					{(ev, idx) => (
-						<li {...stylex.attrs(styles.item)}>
-							<EventInfo value={{ id: ev.id, name: ev.name }} />
-
-							<Field
-								of={props.of}
-								path={["data", "events", idx()]}
-							>
-								{(field) => (
-									<input
-										{...field.props}
-										type="number"
-										hidden
-										value={field.input}
-									/>
-								)}
-							</Field>
-							<Button
-								onClick={() => removeEventAt(idx())}
-								appearance="ghost"
-								tone="gray"
-								size="sm"
-							>
-								<Cross1Icon />
-							</Button>
-						</li>
+					{(_, index) => (
+						<EventRow
+							of={props.of}
+							index={index()}
+						/>
 					)}
 				</For>
 			</ul>

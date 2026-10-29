@@ -1,30 +1,29 @@
 import {
-	Field,
-	FieldArray,
-	getErrors,
+	getInput,
 	insert,
 	remove,
-	setInput,
+	useField,
+	useFieldArray,
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
-import type { Tag, TagRef, TagRelationType } from "@thc/api"
+import type { Tag, TagRelationType } from "@thc/api"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
-import { For, Show, createMemo, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For, Show } from "solid-js"
 
-import { FormComp, Select } from "~/component/atomic"
+import { FormComp } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
+import { Select } from "~/component/atomic/form/select"
 import { Dialog } from "~/component/dialog"
 import { FieldArrayFallback } from "~/component/form"
 import { TagSearchDialog } from "~/component/form/SearchDialog"
-import { TagM } from "~/domain/tag"
+import type { FieldBinding } from "~/component/form/types"
+import type { TagRef } from "~/hey-api"
 import { formStyles } from "~/style/primitives"
 import { colors, px } from "~/style/tokens.stylex"
 
 import { useTagForm } from "../context"
-import type { TagFormStore } from "./types"
 
 const styles = stylex.create({
 	arrayField: {
@@ -49,6 +48,60 @@ const styles = stylex.create({
 		flexDirection: "column",
 		gap: px[8],
 	},
+})
+
+const TAG_RELATION_TYPES = ["Inherit", "Derive"] as const
+
+const typeStyles = stylex.create({
+	field: { display: "flex", flexDirection: "column" },
+	select: { width: "100%" },
+})
+
+type TagRelationTypeFieldProps = {
+	field: FieldBinding<TagRelationType>
+}
+
+type RelationTypeOption = {
+	value: TagRelationType | undefined
+	label: string
+}
+
+function TagRelationTypeField(props: TagRelationTypeFieldProps) {
+	const { t } = useLingui()
+
+	const options = (): RelationTypeOption[] => [
+		{ value: undefined, label: t`-- Select relation type --` },
+		...TAG_RELATION_TYPES.map((value) => ({ value, label: value })),
+	]
+
+	const selectedOption = () =>
+		options().find((option) => option.value === props.field.input)
+
+	const selectOption = (option: RelationTypeOption | undefined) =>
+		props.field.onInput(option?.value)
+
+	return (
+		<div {...stylex.attrs(typeStyles.field)}>
+			<Select.Root
+				value={selectedOption()}
+				onChange={selectOption}
+				fieldProps={props.field.props}
+				errors={props.field.errors}
+				options={options()}
+				optionValue="label"
+				optionTextValue="label"
+				placeholder={t`-- Select relation type --`}
+				styles={typeStyles.select}
+			>
+				<Select.Trigger aria-label={t`Relation type`} />
+				<Select.Content />
+				<Select.ErrorList />
+			</Select.Root>
+		</div>
+	)
+}
+
+const rowStyles = stylex.create({
 	relationRow: {
 		display: "grid",
 		gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) auto",
@@ -61,8 +114,8 @@ const styles = stylex.create({
 		alignItems: "center",
 		columnGap: px[8],
 	},
-	field: { display: "flex", flexDirection: "column" },
-	select: { width: "100%" },
+	editButton: { height: "max-content", padding: px[8] },
+	editIcon: { width: px[16], height: px[16] },
 	removeButton: { aspectRatio: "1 / 1" },
 	removeIcon: { marginInline: "auto" },
 	relationErrors: {
@@ -74,53 +127,75 @@ const styles = stylex.create({
 	primary: { color: colors.textPrimary },
 })
 
+type TagRelationRowProps = {
+	tag: FieldBinding<Pick<TagRef, "id" | "name">>
+	type: FieldBinding<TagRelationType>
+	filter: (tag: Tag) => boolean
+	onSelect: (tag: Tag) => void
+	onRemove: () => void
+}
+
+function TagRelationRow(props: TagRelationRowProps) {
+	const { t } = useLingui()
+
+	return (
+		<li {...stylex.attrs(rowStyles.relationRow)}>
+			<div {...stylex.attrs(rowStyles.tagSelection)}>
+				<Show
+					when={props.tag.input?.name}
+					fallback={
+						<span {...stylex.attrs(rowStyles.muted)}>{t`Select tag`}</span>
+					}
+				>
+					{(name) => <span {...stylex.attrs(rowStyles.primary)}>{name()}</span>}
+				</Show>
+				<TagSearchDialog
+					filter={props.filter}
+					onSelect={props.onSelect}
+					trigger={
+						<Dialog.Trigger
+							as={Button}
+							appearance="ghost"
+							tone="gray"
+							styles={rowStyles.editButton}
+						>
+							<Pencil1Icon {...stylex.attrs(rowStyles.editIcon)} />
+						</Dialog.Trigger>
+					}
+				/>
+			</div>
+			<TagRelationTypeField field={props.type} />
+			<Button
+				onClick={props.onRemove}
+				appearance="ghost"
+				tone="gray"
+				styles={rowStyles.removeButton}
+			>
+				<Cross1Icon {...stylex.attrs(rowStyles.removeIcon)} />
+			</Button>
+			<ul {...stylex.attrs(rowStyles.relationErrors)}>
+				<FormComp.ErrorList errors={props.tag.errors} />
+			</ul>
+		</li>
+	)
+}
+
 type Props = {
 	styles?: StyleXStyles
 }
-
-const TAG_RELATION_TYPES: TagRelationType[] = ["Inherit", "Derive"]
-
-const TAG_RELATION_TYPE_OPTIONS: ("" | TagRelationType)[] = [
-	"",
-	...TAG_RELATION_TYPES,
-]
 
 export function TagFormRelationsField(props: Props) {
 	const { t } = useLingui()
 	const { formStore, tag } = useTagForm()
 
-	const [tagRefs, setTagRefs] = createStore<(TagRef | undefined)[]>(
-		untrack(() => tag?.relations?.map((relation) => relation.tag) ?? []),
-	)
+	const relations = useFieldArray(formStore, {
+		path: ["data", "relations"],
+	})
 
-	const isRelationExists = (candidate: Tag, ignoreIndex?: number) => {
-		if (candidate.id === tag?.id) return true
-		return tagRefs.some((entry, idx) => {
-			if (!entry) return false
-			if (idx === ignoreIndex) return false
+	const addRelation = () => insert(formStore, { path: relations.path })
 
-			return entry.id === candidate.id
-		})
-	}
-
-	const addRelation = () => {
-		insert(formStore, { path: ["data", "relations"] })
-		setTagRefs(tagRefs.length, undefined)
-	}
-
-	const removeRelationAt = (index: number) => {
-		remove(formStore, { path: ["data", "relations"], at: index })
-		setTagRefs((list) => list.toSpliced(index, 1))
-	}
-
-	const setTagAt = (index: number, selected: Tag) => {
-		if (isRelationExists(selected, index)) return
-		setTagRefs(index, () => TagM.toTagRef(selected))
-		setInput(formStore, {
-			path: ["data", "relations", index, "related_tag_id"],
-			input: selected.id,
-		})
-	}
+	const removeRelationAt = (index: number) =>
+		remove(formStore, { path: relations.path, at: index })
 
 	return (
 		<div {...stylex.attrs(styles.arrayField, props.styles)}>
@@ -137,178 +212,46 @@ export function TagFormRelationsField(props: Props) {
 					<PlusIcon {...stylex.attrs(styles.editIcon)} />
 				</Button>
 			</div>
-			<FormComp.ErrorList
-				errors={getErrors(formStore, { path: ["data", "relations"] })}
-			/>
+			<FormComp.ErrorList errors={relations.errors} />
 			<ul {...stylex.attrs(styles.relations)}>
-				<FieldArray
-					of={formStore}
-					path={["data", "relations"]}
+				<For
+					each={relations.items}
+					fallback={<FieldArrayFallback />}
 				>
-					{(fieldArray) => (
-						<For
-							each={fieldArray.items}
-							fallback={<FieldArrayFallback />}
-						>
-							{(_, idx) => (
-								<RelationRow
-									index={idx()}
-									formStore={formStore}
-									tagRef={tagRefs[idx()]}
-									tagRefs={tagRefs}
-									tagId={tag?.id}
-									onSelectTag={(selectedTag) => setTagAt(idx(), selectedTag)}
-									onRemove={() => removeRelationAt(idx())}
-								/>
-							)}
-						</For>
-					)}
-				</FieldArray>
+					{(_, index) => {
+						const relatedTag = useField(formStore, () => ({
+							path: [...relations.path, index(), "tag"],
+						}))
+
+						const relationType = useField(formStore, () => ({
+							path: [...relations.path, index(), "type"],
+						}))
+
+						const canSelectTag = (candidate: Tag) =>
+							candidate.id !== tag?.id
+							&& !getInput(formStore, {
+								path: relations.path,
+							})?.some(
+								(entry, rowIndex) =>
+									rowIndex !== index() && entry.tag?.id === candidate.id,
+							)
+
+						const selectTag = (selectedTag: Tag) => {
+							if (canSelectTag(selectedTag)) relatedTag.onInput(selectedTag)
+						}
+
+						return (
+							<TagRelationRow
+								tag={relatedTag}
+								type={relationType}
+								filter={canSelectTag}
+								onSelect={selectTag}
+								onRemove={() => removeRelationAt(index())}
+							/>
+						)
+					}}
+				</For>
 			</ul>
 		</div>
-	)
-}
-
-type RelationRowProps = {
-	index: number
-	formStore: TagFormStore
-	tagRef: TagRef | undefined
-	tagRefs: (TagRef | undefined)[]
-	tagId: number | undefined
-	onSelectTag: (tag: Tag) => void
-	onRemove: () => void
-}
-
-function RelationRow(props: RelationRowProps) {
-	const { t } = useLingui()
-	const dataFilter = createMemo(() => {
-		const ignoreIndex = props.index
-		const relationIds = new Set(
-			props.tagRefs
-				.map((entry, idx) => (idx === ignoreIndex ? undefined : entry?.id))
-				.filter((id): id is number => typeof id === "number"),
-		)
-		const currentTagId = props.tagId
-		return (candidate: Tag) => {
-			if (currentTagId && candidate.id === currentTagId) return false
-			return !relationIds.has(candidate.id)
-		}
-	})
-	return (
-		<li {...stylex.attrs(styles.relationRow)}>
-			<div {...stylex.attrs(styles.tagSelection)}>
-				<RelationTagLabel
-					value={props.tagRef?.name}
-					placeholder={t`Select tag`}
-				/>
-				<TagSearchDialog
-					onSelect={props.onSelectTag}
-					dataFilter={dataFilter()}
-					trigger={
-						<Dialog.Trigger
-							as={Button}
-							appearance="ghost"
-							tone="gray"
-							styles={styles.editButton}
-						>
-							<Pencil1Icon {...stylex.attrs(styles.editIcon)} />
-						</Dialog.Trigger>
-					}
-				/>{" "}
-			</div>
-			<Field
-				of={props.formStore}
-				path={["data", "relations", props.index, "type"]}
-			>
-				{(field) => (
-					<div {...stylex.attrs(styles.field)}>
-						<Select.Root<"" | TagRelationType>
-							name={field.props.name}
-							{...stylex.attrs(styles.select)}
-							value={field.input ?? ""}
-							onChange={(value) => {
-								const next = value ?? ""
-								field.onInput(next === "" ? undefined : next)
-							}}
-							options={TAG_RELATION_TYPE_OPTIONS}
-							itemComponent={(itemProps) => (
-								<Select.Item item={itemProps.item}>
-									{itemProps.item.rawValue === ""
-										? t`-- Select relation type --`
-										: itemProps.item.rawValue}
-								</Select.Item>
-							)}
-						>
-							<Select.HiddenSelect
-								onChange={field.props.onChange}
-								onInput={field.props.onInput}
-								onBlur={field.props.onBlur}
-								onFocus={field.props.onFocus}
-							/>
-							<Select.Trigger styles={styles.select}>
-								<Select.Value<"" | TagRelationType>>
-									{(state) => {
-										const selectedOption = state.selectedOption()
-										return selectedOption === ""
-											? t`-- Select relation type --`
-											: selectedOption
-									}}
-								</Select.Value>
-								<Select.Icon />
-							</Select.Trigger>
-							<Select.Portal>
-								<Select.Content>
-									<Select.Listbox />
-								</Select.Content>
-							</Select.Portal>
-						</Select.Root>
-						<For each={field.errors}>
-							{(error) => (
-								<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
-							)}
-						</For>
-					</div>
-				)}
-			</Field>
-			<Button
-				onClick={props.onRemove}
-				appearance="ghost"
-				tone="gray"
-				styles={styles.removeButton}
-			>
-				<Cross1Icon {...stylex.attrs(styles.removeIcon)} />
-			</Button>
-			<Field
-				of={props.formStore}
-				path={["data", "relations", props.index, "related_tag_id"]}
-			>
-				{(field) => (
-					<>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? undefined}
-						/>
-						<ul {...stylex.attrs(styles.relationErrors)}>
-							<FormComp.ErrorList errors={field.errors} />
-						</ul>
-					</>
-				)}
-			</Field>
-		</li>
-	)
-}
-
-function RelationTagLabel(props: { value?: string; placeholder: string }) {
-	return (
-		<Show
-			when={props.value}
-			fallback={
-				<span {...stylex.attrs(styles.muted)}>{props.placeholder}</span>
-			}
-		>
-			{(value) => <span {...stylex.attrs(styles.primary)}>{value()}</span>}
-		</Show>
 	)
 }

@@ -36,30 +36,14 @@ export function LocaleSelect() {
 			optionTextValue="label"
 			optionValue="value"
 			value={LOCALE_OPTIONS[i18n.locale()]}
+			disabled={i18n.isSwitchingLocale()}
 			onChange={(option) => {
-				if (option === null) return
+				if (option === undefined) return
 				void i18n.setLocale(option.value)
 			}}
-			itemComponent={(optionProps) => (
-				<Select.Item item={optionProps.item}>
-					{optionProps.item.rawValue.label}
-				</Select.Item>
-			)}
 		>
-			<Select.Trigger
-				styles={styles.trigger}
-				disabled={i18n.isSwitchingLocale()}
-			>
-				<Select.Value<LocaleOption>>
-					{(state) => state.selectedOption().label}
-				</Select.Value>
-				<Select.Icon />
-			</Select.Trigger>
-			<Select.Portal>
-				<Select.Content>
-					<Select.Listbox />
-				</Select.Content>
-			</Select.Portal>
+			<Select.Trigger styles={styles.trigger} />
+			<Select.Content />
 		</Select.Root>
 	)
 }

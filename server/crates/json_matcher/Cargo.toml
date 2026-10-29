@@ -1,0 +1,15 @@
+[package]
+edition = "2024"
+name    = "thcdb-json-matcher"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "json_matcher"
+
+[dependencies]
+googletest.workspace = true
+serde_json.workspace = true

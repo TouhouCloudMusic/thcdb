@@ -15,7 +15,7 @@ import {
 	ExplorePageLayout,
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
-import type { EventListItem } from "~/hey-api"
+import type { EventListItem, SortDirection } from "~/hey-api"
 import { exploreEventOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { palette } from "~/style/color/palette.stylex"
 import { dividerStyles } from "~/style/primitives"
@@ -88,12 +88,12 @@ const EventItemSkeleton: Component = () => (
 type EventExploreFilterBarProps = {
 	startDateFrom: string | undefined
 	startDateTo: string | undefined
-	orderBy: "asc" | "desc" | undefined
+	orderBy: SortDirection | undefined
 	onChangeStartDate: (
 		key: "start_date_from" | "start_date_to",
 		value: string,
 	) => void
-	onChangeOrderBy: (value: "asc" | "desc") => void
+	onChangeOrderBy: (value: SortDirection) => void
 }
 
 function EventExploreFilterBar(props: EventExploreFilterBarProps) {
@@ -225,7 +225,7 @@ export const EventExplore = () => {
 		})
 	}
 
-	const updateOrderBy = (value: "asc" | "desc" | undefined) => {
+	const updateOrderBy = (value: SortDirection | undefined) => {
 		void navigate({
 			to: "/event/explore",
 			search: {
@@ -236,7 +236,7 @@ export const EventExplore = () => {
 		})
 	}
 
-	const setOrderBy = (value: "asc" | "desc") => {
+	const setOrderBy = (value: SortDirection) => {
 		updateOrderBy(value)
 	}
 

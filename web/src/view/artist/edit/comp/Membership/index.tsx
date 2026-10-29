@@ -1,13 +1,18 @@
-/* @refresh reload */
-import { Field, getInput, insert, remove } from "@formisch/solid"
+import {
+	getInput,
+	insert,
+	remove,
+	useField,
+	useFieldArray,
+} from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
-import type { Artist, ArtistCommonFilter, CreditRoleRef } from "@thc/api"
+import type { Artist } from "@thc/api"
 import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
-import { createMemo, untrack } from "solid-js"
+import { Nil } from "@thc/toolkit/data"
+import { createMemo } from "solid-js"
 import type { JSX } from "solid-js"
-import { createStore, produce } from "solid-js/store"
 
 import { Button } from "~/component/atomic/button"
 import { Intersperse } from "~/component/data/Intersperse"
@@ -57,6 +62,9 @@ const styles = stylex.create({
 	lastDivider: {
 		marginTop: px[8],
 	},
+})
+
+const itemStyles = stylex.create({
 	entry: {
 		display: "flex",
 		flexDirection: "column",
@@ -72,95 +80,83 @@ const styles = stylex.create({
 	},
 })
 
-type MembershipItem = Pick<Artist, "id" | "name"> & {
-	roles: CreditRoleRef[]
-}
+function MembershipRow(props: { membershipIndex: number }) {
+	const { formStore } = useArtistForm()
 
-type ArtistMembership = NonNullable<Artist["memberships"]>[number]
+	const artist = useField(formStore, () => ({
+		path: ["data", "memberships", props.membershipIndex, "artist"],
+	}))
 
-function createMembershipStore(initial: MembershipItem[]) {
-	const [membershipStore, setMembershipStore] =
-		createStore<MembershipItem[]>(initial)
+	const removeMembership = () =>
+		remove(formStore, {
+			path: ["data", "memberships"],
+			at: props.membershipIndex,
+		})
 
-	const has = (artistId: number) =>
-		membershipStore.some((membership) => membership.id === artistId)
-
-	return {
-		get inner() {
-			return membershipStore
-		},
-		has,
-		push: (artist: Artist): void => {
-			setMembershipStore(
-				produce((s) => {
-					s.push({ id: artist.id, name: artist.name, roles: [] })
-				}),
-			)
-		},
-		remove: (idx: number): void => {
-			setMembershipStore(
-				produce((s) => {
-					s.splice(idx, 1)
-				}),
-			)
-		},
-	}
+	return (
+		<li {...stylex.attrs(itemStyles.entry)}>
+			<div {...stylex.attrs(itemStyles.entryHeader)}>
+				<div>{artist.input?.name}</div>
+				<Button
+					onClick={removeMembership}
+					appearance="ghost"
+					tone="gray"
+					size="sm"
+					styles={itemStyles.removeButton}
+				>
+					<Cross1Icon />
+				</Button>
+			</div>
+			<MembershipRoleField membershipIndex={props.membershipIndex} />
+			<TenureFieldArray membershipIndex={props.membershipIndex} />
+		</li>
+	)
 }
 
 export function ArtistFormMembership(props: {
 	styles?: StyleXStyles
-	initMemberships?: ArtistMembership[]
 }): JSX.Element {
 	const { t } = useLingui()
 	const context = useArtistForm()
 	const { formStore } = context
 
-	const membership = createMembershipStore(
-		untrack(() =>
-			(props.initMemberships ?? []).map((m) => ({
-				id: m.artist.id,
-				name: m.artist.name,
-				roles: m.roles ?? [],
-			})),
-		),
-	)
-	const type = createMemo(() =>
-		getInput(formStore, { path: ["data", "artist_type"] }),
-	)
-
-	const isDisabled = createMemo(() => {
-		return !type() || type() === "Unknown"
+	const memberships = useFieldArray(formStore, {
+		path: ["data", "memberships"],
 	})
 
-	const exclusion = createMemo(() => {
-		const arr = membership.inner.map((x) => x.id)
-		if (context.artistId !== undefined) {
-			arr.push(context.artistId)
-		}
-		return arr
+	const artistType = useField(formStore, {
+		path: ["data", "artist_type"],
 	})
 
-	const filter = createMemo<ArtistCommonFilter>(() => {
-		const ty = type()
+	const selectedMemberships = () =>
+		getInput(formStore, { path: memberships.path })
+
+	const isAvailableArtist = (artist: Artist) =>
+		artist.id !== context.artistId
+		&& !selectedMemberships().some(
+			(membership) => membership.artist?.id === artist.id,
+		)
+
+	const isDisabled = () => !artistType.input || artistType.input === "Unknown"
+
+	const artistSearchFilter = createMemo(() => {
+		const exclusion = selectedMemberships().map(({ artist }) => artist!.id)
+
+		if (context.artistId !== undefined) exclusion.push(context.artistId)
+
 		return {
-			artist_type: ty ? [ty] : undefined,
-			exclusion: exclusion(),
+			artist_type: Nil.map((value) => [value], artistType.input),
+			exclusion,
 		}
 	})
 
 	const addMembership = (artist: Artist) => {
-		if (membership.has(artist.id)) return
+		if (!isAvailableArtist(artist)) return
 
-		membership.push(artist)
 		insert(formStore, {
-			path: ["data", "memberships"],
-			initialInput: { artist_id: artist.id, roles: [], tenure: [] },
+			path: memberships.path,
+			initialInput: { artist },
 		})
-	}
-
-	const removeMembershipAt = (index: number) => () => {
-		membership.remove(index)
-		remove(formStore, { path: ["data", "memberships"], at: index })
 	}
 
 	return (
@@ -172,8 +168,8 @@ export function ArtistFormMembership(props: {
 				<ArtistSearchDialog
 					onSelect={addMembership}
 					disabled={isDisabled()}
-					queryFilter={filter()}
-					dataFilter={(artist) => !membership.has(artist.id)}
+					queryFilter={artistSearchFilter()}
+					filter={isAvailableArtist}
 					icon={<PlusIcon {...stylex.attrs(styles.actionIcon)} />}
 				/>
 			</div>
@@ -182,7 +178,7 @@ export function ArtistFormMembership(props: {
 					{...stylex.attrs(dividerStyles.horizontal, styles.firstDivider)}
 				></span>
 				<Intersperse
-					of={membership.inner}
+					of={memberships.items}
 					with={
 						<span
 							{...stylex.attrs(dividerStyles.horizontal, styles.entryDivider)}
@@ -190,66 +186,12 @@ export function ArtistFormMembership(props: {
 					}
 					fallback={<FieldArrayFallback />}
 				>
-					{(artist, idx) => (
-						<MembershipListItem
-							index={idx()}
-							onRemove={removeMembershipAt(idx())}
-							artist={artist}
-						/>
-					)}
+					{(_, index) => <MembershipRow membershipIndex={index()} />}
 				</Intersperse>
 				<span
 					{...stylex.attrs(dividerStyles.horizontal, styles.lastDivider)}
 				></span>
 			</ul>
 		</div>
-	)
-}
-
-type MembershipListItemProps = {
-	index: number
-	onRemove: () => void
-	artist: MembershipItem
-}
-
-function MembershipListItem(props: MembershipListItemProps) {
-	const { formStore } = useArtistForm()
-	return (
-		<li {...stylex.attrs(styles.entry)}>
-			<Field
-				of={formStore}
-				path={["data", "memberships", props.index, "artist_id"]}
-			>
-				{(field) => (
-					<>
-						<input
-							{...field.props}
-							type="number"
-							hidden
-							value={field.input ?? props.artist.id}
-						/>
-						<div {...stylex.attrs(styles.entryHeader)}>
-							<div>{props.artist.name}</div>
-							<Button
-								onClick={props.onRemove}
-								appearance="ghost"
-								tone="gray"
-								size="sm"
-								styles={styles.removeButton}
-							>
-								<Cross1Icon />
-							</Button>
-						</div>
-					</>
-				)}
-			</Field>
-
-			<MembershipRoleField
-				index={props.index}
-				initialRoles={props.artist.roles}
-			/>
-
-			<TenureFieldArray index={props.index} />
-		</li>
 	)
 }

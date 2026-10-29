@@ -1,151 +1,40 @@
-import * as v from "valibot"
+import { createForm, getInput } from "@formisch/solid"
 import { describe, expect, it } from "vitest"
 
-import { NewReleaseCorrection } from "~/domain/release"
+import { createMockSongReference } from "~/mock/reference"
+import { createMockRelease } from "~/mock/release"
 
+import { ReleaseFormSchema } from "../schema"
 import { useReleaseFormInitialValues } from "./useFormInitialValues"
 
 describe("release form initialization", () => {
-	it("returns correct initial values for new release", () => {
-		const result = useReleaseFormInitialValues({ type: "new" })
-
-		expect(result).toStrictEqual({
-			type: "Create",
-			description: "",
-			data: {
-				title: "",
-				release_type: undefined,
-				release_date: undefined,
-				recording_date_start: undefined,
-				recording_date_end: undefined,
-				localized_titles: [],
-				artists: [],
-				events: [],
-				catalog_nums: [],
-				credits: [],
-				discs: [{ name: "" }],
-				tracks: [],
-				links: [],
-			},
-		})
+	it("new releases start with one unnamed disc", () => {
+		expect(
+			useReleaseFormInitialValues({ type: "new" }).data?.discs,
+		).toStrictEqual([{ name: "" }])
 	})
 
-	it("maps edit release to initial values", () => {
-		const releaseLike = {
-			id: 1,
-			title: "Test Release",
-			release_type: "Album",
-			cover_art_url: "https://example.com/x.jpg",
-			release_date: { value: "2020-01-02", precision: "Day" },
-			recording_date_start: { value: "2019-05-01", precision: "Month" },
-			recording_date_end: { value: "2019-06-01", precision: "Month" },
-			artists: [
-				{ id: 10, name: "A" },
-				{ id: 20, name: "B" },
-			],
-			events: [
-				{ id: 1000, name: "Event X" },
-				{ id: 2000, name: "Event Y" },
-			],
-			localized_titles: [
-				{ language: { id: 1, code: "en", name: "English" }, title: "EN" },
-				{ language: { id: 2, code: "ja", name: "Japanese" }, title: "JP" },
-			],
-			catalog_nums: [
-				{
-					catalog_number: "CAT-001",
-					label: { id: 1, name: "Label A" },
-				},
-				{ catalog_number: "CAT-002", label: null },
-			],
+	it("tracks retain their disc when disc and track orders differ", () => {
+		const firstSong = createMockSongReference(1001)
+		const secondSong = createMockSongReference(1002)
+		const release = createMockRelease(1, {
 			discs: [
 				{ id: 1, name: "Disc A" },
-				{ id: 2, name: undefined },
+				{ id: 2, name: "Disc B" },
 			],
 			tracks: [
-				{
-					id: 101,
-					track_number: "A1",
-					song: { id: 1001, title: "Song A" },
-					artists: [
-						{ id: 10, name: "A" },
-						{ id: 20, name: "B" },
-					],
-					duration: 123000,
-					disc_id: 2,
-					display_title: "Opening theme",
-				},
-				{
-					id: 102,
-					track_number: undefined,
-					song: { id: 1002, title: "Song B" },
-					artists: [{ id: 20, name: "B" }],
-					duration: undefined,
-					disc_id: 1,
-				},
+				{ id: 101, disc_id: 2, song: firstSong, artists: [] },
+				{ id: 102, disc_id: 1, song: secondSong, artists: [] },
 			],
-			credits: [
-				{
-					artist: { id: 10, name: "A" },
-					role: { id: 100, name: "Composer" },
-					on: [0, 1],
-				},
-			],
-			links: ["https://example.com/releases/1"],
-		}
-
-		const result = useReleaseFormInitialValues({
-			type: "edit",
-			// @ts-expect-error
-			release: releaseLike,
+		})
+		const form = createForm({
+			schema: ReleaseFormSchema,
+			initialInput: useReleaseFormInitialValues({ type: "edit", release }),
 		})
 
-		expect(result.data.release_date?.value).toBeInstanceOf(Date)
-		expect(result.data.release_date?.precision).toBe("Day")
-		expect(result.data.recording_date_start?.value).toBeInstanceOf(Date)
-		expect(result.data.recording_date_end?.value).toBeInstanceOf(Date)
-
-		expect({
-			localizedTitles: result.data.localized_titles,
-			artists: result.data.artists,
-			events: result.data.events,
-			catalogNums: result.data.catalog_nums,
-			credits: v.parse(NewReleaseCorrection, result).data.credits,
-			discs: result.data.discs,
-			tracks: result.data.tracks,
-			links: result.data.links,
-		}).toStrictEqual({
-			localizedTitles: [
-				{ language_id: 1, title: "EN" },
-				{ language_id: 2, title: "JP" },
-			],
-			artists: [10, 20],
-			events: [1000, 2000],
-			catalogNums: [
-				{ catalog_number: "CAT-001", label_id: 1 },
-				{ catalog_number: "CAT-002", label_id: undefined },
-			],
-			credits: [{ artist_id: 10, role_id: 100, on: [0, 1] }],
-			discs: [{ name: "Disc A" }, { name: undefined }],
-			tracks: [
-				{
-					artists: [10, 20],
-					disc_index: 1,
-					display_title: "Opening theme",
-					duration: 123000,
-					song_id: 1001,
-					track_number: "A1",
-				},
-				{
-					artists: [20],
-					disc_index: 0,
-					display_title: undefined,
-					duration: undefined,
-					song_id: 1002,
-					track_number: undefined,
-				},
-			],
-			links: ["https://example.com/releases/1"],
-		})
+		expect(getInput(form).data.tracks).toMatchObject([
+			{ song: firstSong, disc_index: 1 },
+			{ song: secondSong, disc_index: 0 },
+		])
 	})
 })

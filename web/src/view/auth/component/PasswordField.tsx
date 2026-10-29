@@ -22,7 +22,6 @@ import {
 	px,
 	radius,
 } from "~/style/tokens.stylex"
-import { callHandlerUnion } from "~/utils/dom/event"
 
 import { authStyles } from "../styles"
 import { FieldLayout } from "./FieldLayout"
@@ -240,8 +239,8 @@ export function PasswordField(props: PasswordFieldProps) {
 					onFocus={() => {
 						setRequirementsOpen(true)
 					}}
-					onBlur={(e) => {
-						callHandlerUnion(e, props.field.props.onBlur)
+					onBlur={() => {
+						props.field.props.onBlur()
 						setRequirementsOpen(false)
 					}}
 				/>

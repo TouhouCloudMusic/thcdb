@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use entity::enums::{CorrectionUserType, EntityType};
 use entity::{
@@ -333,7 +333,6 @@ async fn snapshot_artist(
                 })
                 .collect::<Vec<_>>();
             json!({
-                "id": membership.id,
                 "artist_id": membership.artist_id,
                 "roles": roles,
                 "tenures": tenures,
@@ -500,60 +499,41 @@ async fn snapshot_release(
         .all(db)
         .await?;
 
-    let tracks = discs
-        .load_many(
-            release_track_history::Entity::find()
-                .order_by_asc(release_track_history::Column::Id),
-            db,
-        )
+    let tracks = release_track_history::Entity::find()
+        .filter(release_track_history::Column::HistoryId.eq(history_id))
+        .order_by_asc(release_track_history::Column::Id)
+        .all(db)
         .await?;
-
-    let track_lengths = tracks.iter().map(Vec::len).collect::<Vec<_>>();
-
-    let flat_tracks = tracks.into_iter().flatten().collect::<Vec<_>>();
-    let flat_track_artists = flat_tracks
+    let track_artists = tracks
         .load_many(release_track_artist_history::Entity, db)
         .await?;
-
-    let mut track_iter = flat_tracks.into_iter();
-    let mut artist_iter = flat_track_artists.into_iter();
-
-    let tracks = track_lengths
+    let disc_indices = discs
         .iter()
-        .map(|len| track_iter.by_ref().take(*len).collect())
-        .collect::<Vec<Vec<_>>>();
-    let track_artists = track_lengths
-        .iter()
-        .map(|len| artist_iter.by_ref().take(*len).collect())
-        .collect::<Vec<Vec<_>>>();
+        .enumerate()
+        .map(|(index, disc)| (disc.id, index))
+        .collect::<BTreeMap<_, _>>();
 
-    let track_values = discs
+    let track_values = tracks
         .iter()
-        .zip(tracks)
         .zip(track_artists)
-        .map(|((disc, tracks), artists)| {
-            let track_values = tracks
+        .map(|(track, artists)| {
+            let artist_ids = artists
                 .iter()
-                .zip(artists)
-                .map(|(track, artist)| {
-                    let artist_ids = artist
-                        .iter()
-                        .map(|artist| artist.artist_id)
-                        .collect::<Vec<_>>();
-                    json!({
-                        "song_id": track.song_id,
-                        "track_number": track.track_number,
-                        "display_title": track.display_title,
-                        "duration": track.duration,
-                        "artists": artist_ids,
-                    })
-                })
+                .map(|artist| artist.artist_id)
                 .collect::<Vec<_>>();
             json!({
-                "name": disc.name,
-                "tracks": track_values,
+                "song_id": track.song_id,
+                "track_number": track.track_number,
+                "display_title": track.display_title,
+                "duration": track.duration,
+                "disc_index": disc_indices[&track.disc_history_id],
+                "artists": artist_ids,
             })
         })
+        .collect::<Vec<_>>();
+    let discs = discs
+        .into_iter()
+        .map(|disc| json!({ "name": disc.name }))
         .collect::<Vec<_>>();
 
     let release_events = release_event_history::Entity::find()
@@ -588,7 +568,8 @@ async fn snapshot_release(
             history.recording_date_end,
             Some(history.recording_date_end_precision),
         ),
-        "discs": track_values,
+        "discs": discs,
+        "tracks": track_values,
         "release_events": release_events,
         "credits": credits,
         "artists": artists,
@@ -824,6 +805,7 @@ async fn snapshot_credit_role(
 
     Ok(json!({
         "name": history.name,
+        "short_description": history.short_description,
         "description": history.description,
         "inherits": inherits,
     }))
@@ -833,12 +815,20 @@ async fn snapshot_credit_role(
 mod tests {
     use entity::enums::EntityType;
     use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
-    use entity::{label, release_catalog_number_history, release_history};
+    use entity::{
+        credit_role, label, release_catalog_number_history,
+        release_credit_history, release_disc_history, release_history,
+        release_track_history,
+    };
+    use googletest::assert_that;
+    use googletest::matchers::{elements_are, pat};
+    use json_matcher::matches_json;
     use sea_orm::ActiveValue::{NotSet, Set};
-    use sea_orm::{ConnectionTrait, EntityTrait};
+    use sea_orm::{ConnectionTrait, EntityTrait, TransactionTrait};
     use serde_json::{Value, json};
 
-    use super::{diff_snapshots, snapshot_for_history};
+    use super::{CorrectionDiffEntry, diff_snapshots, snapshot_for_history};
+    use crate::infra::integration_test::fixture::{MockArtist, MockSong};
     use crate::infra::integration_test::test_connection;
 
     async fn insert_release_history(
@@ -860,6 +850,106 @@ mod tests {
             .await?;
 
         Ok(history.id)
+    }
+
+    #[tokio::test]
+    async fn track_references_are_preserved_in_snapshots() -> anyhow::Result<()>
+    {
+        let conn = test_connection().await?;
+        let tx = conn.begin().await?;
+        let artist = MockArtist::named("Snapshot credit artist")
+            .insert(&tx)
+            .await?;
+        let role = credit_role::Entity::insert(credit_role::ActiveModel {
+            id: NotSet,
+            name: Set("Snapshot credit role".to_owned()),
+            short_description: Set("Role summary".to_owned()),
+            description: Set("Role description".to_owned()),
+        })
+        .exec_with_returning(&tx)
+        .await?;
+        let song_a = MockSong::titled("Track A").insert(&tx).await?;
+        let song_b = MockSong::titled("Track B").insert(&tx).await?;
+        let tracks = [(song_a.id, 0), (song_b.id, 1)];
+        let mut reordered_tracks = tracks;
+        reordered_tracks.reverse();
+        let before_history_id = insert_release_history(&tx).await?;
+        let after_history_id = insert_release_history(&tx).await?;
+
+        for (history_id, tracks) in [
+            (before_history_id, &tracks),
+            (after_history_id, &reordered_tracks),
+        ] {
+            let discs = release_disc_history::Entity::insert_many(
+                [None, None].map(|name| release_disc_history::ActiveModel {
+                    id: NotSet,
+                    history_id: Set(history_id),
+                    name: Set(name),
+                }),
+            )
+            .exec_with_returning_many(&tx)
+            .await?;
+            release_track_history::Entity::insert_many(tracks.iter().map(
+                |&(song_id, disc_index)| release_track_history::ActiveModel {
+                    id: NotSet,
+                    history_id: Set(history_id),
+                    song_id: Set(song_id),
+                    track_number: Set(None),
+                    display_title: Set(None),
+                    duration: Set(None),
+                    disc_history_id: Set(discs[disc_index].id),
+                },
+            ))
+            .exec(&tx)
+            .await?;
+            release_credit_history::Entity::insert(
+                release_credit_history::ActiveModel {
+                    id: NotSet,
+                    history_id: Set(history_id),
+                    artist_id: Set(artist.id),
+                    role_id: Set(role.id),
+                    on: Set(Some(vec![0])),
+                },
+            )
+            .exec(&tx)
+            .await?;
+        }
+
+        let before =
+            snapshot_for_history(&tx, EntityType::Release, before_history_id)
+                .await?;
+        let after =
+            snapshot_for_history(&tx, EntityType::Release, after_history_id)
+                .await?;
+        let diff = diff_snapshots(&before, &after);
+
+        assert_that!(
+            &before,
+            matches_json!({
+                "credits": [{"on": [0]}],
+                "tracks": [
+                    {"song_id": song_a.id, "disc_index": 0},
+                    {"song_id": song_b.id, "disc_index": 1},
+                ],
+            }),
+        );
+
+        let mut expected_after = before.clone();
+        expected_after["tracks"] =
+            json!([before["tracks"][1], before["tracks"][0]]);
+        assert_eq!(after, expected_after);
+
+        assert_that!(
+            &diff,
+            elements_are![pat!(CorrectionDiffEntry {
+                path: "tracks",
+                before: &Some(serde_json::to_string_pretty(&before["tracks"])?),
+                after: &Some(serde_json::to_string_pretty(&after["tracks"])?),
+            })],
+        );
+
+        tx.rollback().await?;
+        Ok(())
     }
 
     #[tokio::test]

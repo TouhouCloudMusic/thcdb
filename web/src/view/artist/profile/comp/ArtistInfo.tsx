@@ -150,7 +150,10 @@ function StartInfo() {
 function Aliases() {
 	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
-	const aliases = createMemo(() => getInfoAliases(context.artist))
+	const aliases = createMemo(() => [
+		...(context.artist.aliases ?? []),
+		...(context.artist.text_aliases ?? []).map((name) => ({ name })),
+	])
 	return (
 		<Show when={aliases().length > 0}>
 			<div {...stylex.attrs(styles.infoCell)}>
@@ -161,14 +164,7 @@ function Aliases() {
 						with=", "
 					>
 						{(alias) => (
-							<li {...stylex.attrs(styles.inlineListItem)}>
-								<Show
-									when={alias.id}
-									fallback={alias.name}
-								>
-									{alias.id}
-								</Show>
-							</li>
+							<li {...stylex.attrs(styles.inlineListItem)}>{alias.name}</li>
 						)}
 					</Intersperse>
 				</ul>
@@ -270,33 +266,4 @@ function LocationValue(props: { location: ArtistLocation }) {
 			{props.location.city && <>, {props.location.city}</>}
 		</span>
 	)
-}
-
-// Data utils
-
-type InfoAlias = {
-	id?: number
-	name?: string
-}
-
-function getInfoAliases(artist: Artist): InfoAlias[] {
-	const arr: InfoAlias[] = []
-
-	if (artist.aliases) {
-		for (const aliasId of artist.aliases) {
-			arr.push({
-				id: aliasId,
-			})
-		}
-	}
-
-	if (artist.text_aliases) {
-		for (const alias of artist.text_aliases) {
-			arr.push({
-				name: alias,
-			})
-		}
-	}
-
-	return arr
 }

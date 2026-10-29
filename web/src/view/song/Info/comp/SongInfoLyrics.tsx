@@ -17,10 +17,12 @@ const styles = stylex.create({
 		marginBlockStart: 0,
 		marginBlockEnd: px[32],
 		display: "flex",
+		flexDirection: "row",
 		alignItems: "baseline",
 		gap: px[24],
 	},
 	label: {
+		marginBottom: 0,
 		fontSize: fontSizes.xs,
 		lineHeight: lineHeights.xs,
 		fontWeight: 500,
@@ -55,40 +57,33 @@ export function SongInfoLyrics() {
 
 	return (
 		<div {...stylex.attrs(styles.lyrics)}>
-			<label {...stylex.attrs(styles.languageField)}>
-				<span {...stylex.attrs(styles.label)}>Language</span>
-				<Select.Root<string>
-					options={langOptions()}
-					value={selectedLangId().toString()}
-					onChange={(value) => {
-						if (value === null) return
-						setActiveLang(Number.parseInt(value, 10))
-					}}
-					itemComponent={(props) => (
-						<Select.Item
-							item={props.item}
-							styles={underlineSelectStyles.item}
-						>
-							{getLangName(props.item.rawValue)}
-						</Select.Item>
-					)}
-				>
-					<Select.Trigger
-						aria-label={t`Language`}
-						styles={underlineSelectStyles.trigger}
+			<Select.Root<string>
+				styles={styles.languageField}
+				options={langOptions()}
+				optionTextValue={getLangName}
+				value={selectedLangId().toString()}
+				onChange={(value) => {
+					if (value === undefined) return
+					setActiveLang(Number.parseInt(value, 10))
+				}}
+				itemComponent={(option) => (
+					<Select.Item
+						item={option.item}
+						styles={underlineSelectStyles.item}
 					>
-						<Select.Value<string>>
-							{(state) => getLangName(state.selectedOption())}
-						</Select.Value>
-						<Select.Icon />
-					</Select.Trigger>
-					<Select.Portal>
-						<Select.Content styles={underlineSelectStyles.content}>
-							<Select.Listbox styles={underlineSelectStyles.listbox} />
-						</Select.Content>
-					</Select.Portal>
-				</Select.Root>
-			</label>
+						{getLangName(option.item.rawValue)}
+					</Select.Item>
+				)}
+			>
+				<Select.Label styles={styles.label}>{"Language"}</Select.Label>
+				<Select.Trigger
+					styles={underlineSelectStyles.trigger}
+					aria-label={t`Language`}
+				/>
+				<Select.Content styles={underlineSelectStyles.content}>
+					<Select.Listbox styles={underlineSelectStyles.listbox} />
+				</Select.Content>
+			</Select.Root>
 
 			<div>
 				<div {...stylex.attrs(styles.text)}>

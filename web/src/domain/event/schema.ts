@@ -12,8 +12,8 @@ export const NewEvent = v.object({
 	name: v.message(EntityIdent, "Name is required and must be non-empty"),
 	short_description: v.optional(v.string()),
 	description: v.optional(v.string()),
-	start_date: v.nullish(DateWithPrecision.Schema),
-	end_date: v.nullish(DateWithPrecision.Schema),
+	start_date: v.undefinedable(DateWithPrecision.Schema),
+	end_date: v.undefinedable(DateWithPrecision.Schema),
 	alternative_names: v.optional(
 		v.array(v.message(EntityIdent, "Name is required and must be non-empty")),
 	),

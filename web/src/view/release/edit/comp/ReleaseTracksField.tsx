@@ -1,15 +1,14 @@
-import { FieldArray, getInput, insert, setInput } from "@formisch/solid"
+import { useField, useFieldArray, getInput, insert } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import type { ReleaseTrack } from "@thc/api"
 import {
 	PlusIcon,
 	Pencil1Icon,
 	ArrowLeftIcon,
 	ArrowRightIcon,
 } from "@thc/icons/radix"
-import { For, createMemo, createSignal } from "solid-js"
+import { For, Show, createMemo, createSignal, untrack } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
@@ -25,6 +24,7 @@ import {
 	px,
 } from "~/style/tokens.stylex"
 
+import { createReleaseTracksModel } from "../model"
 import { TrackItem } from "./TrackFieldItem"
 import type { ReleaseFormStore } from "./types"
 
@@ -108,184 +108,166 @@ const styles = stylex.create({
 
 export function ReleaseTracksField(props: {
 	of: ReleaseFormStore
-	initTracks?: ReleaseTrack[]
 	styles?: StyleXStyles
 }) {
 	const { t } = useLingui()
+
 	const [selectedDisc, setSelectedDisc] = createSignal(0)
 
-	return (
-		<div {...stylex.attrs(styles.field, props.styles)}>
-			<TrackHeader
-				of={props.of}
-				selectedDisc={selectedDisc}
-				setSelectedDisc={setSelectedDisc}
-			/>
-			<FieldArray
-				of={props.of}
-				path={["data", "tracks"]}
-			>
-				{(fa) => {
-					const visibleTrackIndices = createMemo(() => {
-						const items = fa.items
-						return items
-							.map((_, i) => i)
-							.filter((i) => {
-								const di = getInput(props.of, {
-									path: ["data", "tracks", i, "disc_index"],
-								})
-								return di === selectedDisc()
-							})
-					})
+	const model = untrack(() => createReleaseTracksModel(props.of))
 
-					return (
-						<ul {...stylex.attrs(styles.list)}>
-							<For
-								each={visibleTrackIndices()}
-								fallback={
-									<li {...stylex.attrs(styles.emptyTrack)}>
-										{t`No tracks under this disc.`}
-									</li>
-								}
-							>
-								{(trackIdx) => (
-									<li {...stylex.attrs(styles.track)}>
-										<TrackItem
-											index={trackIdx}
-											of={props.of}
-											initTrack={props.initTracks?.[trackIdx]}
-										/>
-									</li>
-								)}
-							</For>
-						</ul>
-					)
-				}}
-			</FieldArray>
-		</div>
+	const tracks = useFieldArray(() => props.of, { path: ["data", "tracks"] })
+
+	const visibleTracks = createMemo(() =>
+		tracks.items.filter(
+			(_, index) =>
+				getInput(props.of, { path: [...tracks.path, index, "disc_index"] })
+				=== selectedDisc(),
+		),
 	)
-}
 
-function TrackHeader(props: {
-	of: ReleaseFormStore
-	selectedDisc: () => number
-	setSelectedDisc: (n: number) => void
-}) {
-	const { t } = useLingui()
 	const discs = createMemo(() =>
 		getInput(props.of, { path: ["data", "discs"] }),
 	)
+
 	const discCount = createMemo(() => discs().length)
 
 	const onAddTrack = () => {
 		if (discCount() === 0) {
 			const initialDisc: NewDisc = { name: "" }
 			insert(props.of, { path: ["data", "discs"], initialInput: initialDisc })
-			props.setSelectedDisc(0)
+			setSelectedDisc(0)
 		}
-		insert(props.of, {
-			path: ["data", "tracks"],
-			initialInput: { disc_index: props.selectedDisc() },
-		})
+		model.addTrack(selectedDisc())
 	}
 
 	const currentDiscName = createMemo(() => {
-		const d = discs()[props.selectedDisc()]
+		const d = discs()[selectedDisc()]
 		if (d?.name && d.name.length > 0) return d.name
-		return `Disc ${props.selectedDisc() + 1}`
+		return `Disc ${selectedDisc() + 1}`
 	})
 
 	const isDefaultName = createMemo(() => {
-		return !discs()[props.selectedDisc()]?.name
+		return !discs()[selectedDisc()]?.name
 	})
 
 	const onPrevDisc = () => {
 		if (discCount() === 0) return
-		props.setSelectedDisc(
-			(props.selectedDisc() - 1 + discCount()) % discCount(),
-		)
+		setSelectedDisc((selectedDisc() - 1 + discCount()) % discCount())
 	}
 
 	const onNextDisc = () => {
 		if (discCount() === 0) return
-		props.setSelectedDisc((props.selectedDisc() + 1) % discCount())
+		setSelectedDisc((selectedDisc() + 1) % discCount())
 	}
 
 	const onAddDisc = () => {
 		const nextIndex = discCount()
+
 		const initial: NewDisc = { name: "" }
 		insert(props.of, { path: ["data", "discs"], initialInput: initial })
-		props.setSelectedDisc(nextIndex)
-	}
-
-	const onConfirmRename = (next: string) => {
-		if (currentDiscName() === next) return
-		setInput(props.of, {
-			path: ["data", "discs", props.selectedDisc(), "name"],
-			input: next,
-		})
+		setSelectedDisc(nextIndex)
 	}
 
 	return (
-		<div {...stylex.attrs(styles.header)}>
-			<div {...stylex.attrs(styles.heading)}>
-				<label
-					{...stylex.attrs(formStyles.label, styles.label)}
-				>{t`Tracks`}</label>
-				<Button
-					appearance="ghost"
-					tone="gray"
-					styles={styles.addTrackButton}
-					onClick={onAddTrack}
-					title={t`Add track`}
-				>
-					<PlusIcon {...stylex.attrs(styles.icon)} />
-				</Button>
-			</div>
-			<div {...stylex.attrs(styles.navigation)}>
-				<Button
-					appearance="ghost"
-					tone="gray"
-					styles={styles.previousDiscButton}
-					onClick={onPrevDisc}
-					title={t`Previous disc`}
-				>
-					<ArrowLeftIcon {...stylex.attrs(styles.icon)} />
-				</Button>
-				<div {...stylex.attrs(styles.discActions)}>
-					<div
-						{...stylex.attrs(
-							styles.discName,
-							isDefaultName() && styles.defaultDiscName,
-						)}
-					>
-						{currentDiscName()} {isDefaultName() && "(default)"}
-					</div>
-					<EditDiscNameDialog
-						currentName={currentDiscName}
-						onConfirm={onConfirmRename}
-					/>
+		<div {...stylex.attrs(styles.field, props.styles)}>
+			<div {...stylex.attrs(styles.header)}>
+				<div {...stylex.attrs(styles.heading)}>
+					<label
+						{...stylex.attrs(formStyles.label, styles.label)}
+					>{t`Tracks`}</label>
 					<Button
 						appearance="ghost"
 						tone="gray"
-						size="sm"
-						styles={styles.addDiscButton}
-						onClick={onAddDisc}
-						title={t`Add disc`}
+						styles={styles.addTrackButton}
+						onClick={onAddTrack}
+						title={t`Add track`}
 					>
 						<PlusIcon {...stylex.attrs(styles.icon)} />
 					</Button>
 				</div>
-				<Button
-					appearance="ghost"
-					tone="gray"
-					styles={styles.nextDiscButton}
-					onClick={onNextDisc}
-					title={t`Next disc`}
-				>
-					<ArrowRightIcon {...stylex.attrs(styles.icon)} />
-				</Button>
+				<div {...stylex.attrs(styles.navigation)}>
+					<Button
+						appearance="ghost"
+						tone="gray"
+						styles={styles.previousDiscButton}
+						onClick={onPrevDisc}
+						title={t`Previous disc`}
+					>
+						<ArrowLeftIcon {...stylex.attrs(styles.icon)} />
+					</Button>
+					<div {...stylex.attrs(styles.discActions)}>
+						<div
+							{...stylex.attrs(
+								styles.discName,
+								isDefaultName() && styles.defaultDiscName,
+							)}
+						>
+							{currentDiscName()} {isDefaultName() && "(default)"}
+						</div>
+						<Show when={discCount() > 0}>
+							{(_) => {
+								const name = useField(
+									() => props.of,
+									() => ({
+										path: ["data", "discs", selectedDisc(), "name"],
+									}),
+								)
+
+								const renameDisc = (next: string) => {
+									if (currentDiscName() !== next) name.onInput(next)
+								}
+
+								return (
+									<EditDiscNameDialog
+										currentName={currentDiscName}
+										onConfirm={renameDisc}
+									/>
+								)
+							}}
+						</Show>
+						<Button
+							appearance="ghost"
+							tone="gray"
+							size="sm"
+							styles={styles.addDiscButton}
+							onClick={onAddDisc}
+							title={t`Add disc`}
+						>
+							<PlusIcon {...stylex.attrs(styles.icon)} />
+						</Button>
+					</div>
+					<Button
+						appearance="ghost"
+						tone="gray"
+						styles={styles.nextDiscButton}
+						onClick={onNextDisc}
+						title={t`Next disc`}
+					>
+						<ArrowRightIcon {...stylex.attrs(styles.icon)} />
+					</Button>
+				</div>
 			</div>
+			<ul {...stylex.attrs(styles.list)}>
+				<For
+					each={visibleTracks()}
+					fallback={
+						<li
+							{...stylex.attrs(styles.emptyTrack)}
+						>{t`No tracks under this disc.`}</li>
+					}
+				>
+					{(trackId) => (
+						<li {...stylex.attrs(styles.track)}>
+							<TrackItem
+								index={tracks.items.indexOf(trackId)}
+								of={props.of}
+								model={model}
+							/>
+						</li>
+					)}
+				</For>
+			</ul>
 		</div>
 	)
 }
@@ -297,7 +279,9 @@ type DiscNameDialogProps = {
 
 function EditDiscNameDialog(props: DiscNameDialogProps) {
 	const { t } = useLingui()
+
 	const [open, setOpen] = createSignal(false)
+
 	const [name, setName] = createSignal("")
 
 	const syncOpen = (state: boolean) => {
@@ -368,5 +352,3 @@ function EditDiscNameDialog(props: DiscNameDialogProps) {
 		</Dialog.Root>
 	)
 }
-
-// Track item related components moved to ./TrackFieldItem

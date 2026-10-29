@@ -805,47 +805,6 @@ export const vLocalizedName = v.object({
 	name: v.string(),
 })
 
-export const vLabel = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	name: v.string(),
-	founded_date: v.nullish(vDateWithPrecision),
-	dissolved_date: v.nullish(vDateWithPrecision),
-	founders: v.array(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-	localized_names: v.array(vLocalizedName),
-	links: v.array(v.string()),
-})
-
-export const vDataOptionLabel = v.object({
-	status: v.string(),
-	data: v.nullable(vLabel),
-})
-
-export const vDataVecLabel = v.object({
-	status: v.string(),
-	data: v.array(vLabel),
-})
-
 export const vLocalizedTitle = v.object({
 	language: vLanguage,
 	title: v.string(),
@@ -2113,6 +2072,34 @@ export const vDataSearchSongPage = v.object({
 	data: vCursorResponseSearchResultSongListing,
 })
 
+export const vLabel = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	founded_date: v.nullish(vDateWithPrecision),
+	dissolved_date: v.nullish(vDateWithPrecision),
+	founders: v.array(vSimpleArtist),
+	localized_names: v.array(vLocalizedName),
+	links: v.array(v.string()),
+})
+
+export const vDataOptionLabel = v.object({
+	status: v.string(),
+	data: v.nullable(vLabel),
+})
+
+export const vDataVecLabel = v.object({
+	status: v.string(),
+	data: v.array(vLabel),
+})
+
 export const vLabelListItem = v.object({
 	id: v.pipe(
 		v.number(),
@@ -3269,22 +3256,7 @@ export const vArtist = v.object({
 	start_date: v.nullish(vDateWithPrecision),
 	end_date: v.nullish(vDateWithPrecision),
 	profile_image_url: v.nullish(v.string()),
-	aliases: v.optional(
-		v.array(
-			v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-		),
-	),
+	aliases: v.optional(v.array(vSimpleArtist)),
 	links: v.optional(v.array(v.string())),
 	localized_names: v.optional(v.array(vLocalizedName)),
 	start_location: v.optional(vLocation),

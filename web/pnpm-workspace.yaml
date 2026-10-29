@@ -28,4 +28,6 @@ packages:
   - "packages/*"
   - "."
 patchedDependencies:
+  "@formisch/solid@1.1.0": patches/@formisch__solid@1.1.0.patch
   "@kobalte/core@0.13.14": patches/@kobalte__core@0.13.14.patch
+  "@stylexjs/unplugin@0.19.0": patches/@stylexjs__unplugin@0.19.0.patch
