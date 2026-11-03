@@ -22,6 +22,7 @@ impl NewImageQueue {
     }
 }
 
+#[infra_db::observe("image_queue.create")]
 pub(crate) async fn create(
     repo: &SeaOrmTxRepo,
     queue: NewImageQueue,
@@ -29,10 +30,10 @@ pub(crate) async fn create(
     let model = db::Entity::insert(queue.into_active_model())
         .exec_with_returning(repo.conn())
         .await
-        .db_operation("create image queue")?;
+        .db_context("create image queue")?;
     image_queue_core::subscribe(repo.conn(), model.created_by, model.id)
         .await
-        .db_operation("subscribe image queue creator")?;
+        .db_context("subscribe image queue creator")?;
     Ok(model)
 }
 

@@ -1,9 +1,8 @@
 use domain::shared::NewLocalizedTitle;
 use entity::{release_localized_title, release_localized_title_history};
+use infra_db::DatabaseTransaction;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
-};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 
 pub(crate) async fn create_release_localized_title(
     release_id: i32,
@@ -60,27 +59,31 @@ pub(crate) async fn update_release_localized_title(
     history_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    release_localized_title::Entity::delete_many()
-        .filter(release_localized_title::Column::ReleaseId.eq(release_id))
-        .exec(db)
-        .await?;
+    infra_db::trace("release.update_localized_title", async {
+        release_localized_title::Entity::delete_many()
+            .filter(release_localized_title::Column::ReleaseId.eq(release_id))
+            .exec(db)
+            .await?;
 
-    let localized_titles = release_localized_title_history::Entity::find()
-        .filter(
-            release_localized_title_history::Column::HistoryId.eq(history_id),
-        )
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|x| NewLocalizedTitle {
-            language_id: x.language_id,
-            title: x.title,
-        })
-        .collect::<Vec<_>>();
+        let localized_titles = release_localized_title_history::Entity::find()
+            .filter(
+                release_localized_title_history::Column::HistoryId
+                    .eq(history_id),
+            )
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|x| NewLocalizedTitle {
+                language_id: x.language_id,
+                title: x.title,
+            })
+            .collect::<Vec<_>>();
 
-    if localized_titles.is_empty() {
-        return Ok(());
-    }
+        if localized_titles.is_empty() {
+            return Ok(());
+        }
 
-    create_release_localized_title(release_id, &localized_titles, db).await
+        create_release_localized_title(release_id, &localized_titles, db).await
+    })
+    .await
 }

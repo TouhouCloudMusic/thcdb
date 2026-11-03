@@ -40,7 +40,7 @@ async fn set_correction_subscription(
     let exists = correction::Entity::find_by_id(id)
         .one(conn)
         .await
-        .db_operation("check correction exists")?
+        .db_context("check correction exists")?
         .is_some();
     if !exists {
         return Err(AppError::not_found("Correction not found"));
@@ -48,11 +48,11 @@ async fn set_correction_subscription(
     if query.subscribed {
         correction_subscription::subscribe(conn, user.id, id)
             .await
-            .db_operation("subscribe to correction")?;
+            .db_context("subscribe to correction")?;
     } else {
         correction_subscription::unsubscribe(conn, user.id, id)
             .await
-            .db_operation("unsubscribe from correction")?;
+            .db_context("unsubscribe from correction")?;
     }
     Ok(Data::new(query))
 }

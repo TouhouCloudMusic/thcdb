@@ -4,7 +4,7 @@ use anyhow::{Context, ensure};
 use chrono::{Duration, Utc};
 use entity::enums::{CorrectionStatus, CorrectionType, EntityType, TagType};
 use entity::{correction, notification, tag};
-use infra_db::SeaOrmRepository;
+use infra_db::{DatabaseConnection, SeaOrmRepository};
 use infra_testing::MockUser;
 use notification_core::CreateNotificationsCommand;
 use notification_service::{
@@ -12,9 +12,7 @@ use notification_service::{
 };
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Uuid;
-use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, TransactionTrait,
-};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use sea_query::Expr;
 
 struct NotificationFixture {

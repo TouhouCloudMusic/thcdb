@@ -7,7 +7,7 @@ use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 
 use crate::features::credit_role::model::{CreditRole, CreditRoleSummary};
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::error::DatabaseError;
 
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
 pub struct CommonFilter {}
@@ -16,6 +16,7 @@ pub enum FindManyFilter {
     Name(String),
 }
 
+#[infra_db::observe("credit_role.find_by_id")]
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,
     id: i32,
@@ -23,53 +24,44 @@ pub(super) async fn find_one(
 ) -> Result<Option<CreditRole>, DatabaseError> {
     let _ = common;
 
-    credit_role::Entity::find_by_id(id)
-        .one(&repo.conn)
-        .await
-        .map(|role| role.map(Into::into))
-        .db_operation("find credit role by id")
+    let role = credit_role::Entity::find_by_id(id).one(&repo.conn).await?;
+    Ok(role.map(Into::into))
 }
 
+#[infra_db::observe("credit_role.load_summaries")]
 pub(super) async fn find_many_summary(
     repo: &SeaOrmRepository,
     filter: FindManyFilter,
     common: CommonFilter,
 ) -> Result<Vec<CreditRoleSummary>, DatabaseError> {
-    let result: Result<Vec<CreditRoleSummary>, DatabaseError> = async {
-        let _ = common;
+    let _ = common;
 
-        let roles = match filter {
-            FindManyFilter::Name(name) if name.is_empty() => {
-                credit_role::Entity::find()
-                    .order_by_asc(credit_role::Column::Name)
-                    .order_by_asc(credit_role::Column::Id)
-                    .all(&repo.conn)
-                    .await
-                    .db_operation("load credit role summaries")?
-            }
-            FindManyFilter::Name(name) => {
-                let search_term = Func::lower(name);
+    let roles = match filter {
+        FindManyFilter::Name(name) if name.is_empty() => {
+            credit_role::Entity::find()
+                .order_by_asc(credit_role::Column::Name)
+                .order_by_asc(credit_role::Column::Id)
+                .all(&repo.conn)
+                .await?
+        }
+        FindManyFilter::Name(name) => {
+            let search_term = Func::lower(name);
 
-                credit_role::Entity::find()
-                    .filter(
-                        Func::lower(credit_role::Column::Name.into_expr())
-                            .binary(PgBinOper::Similarity, search_term.clone()),
-                    )
-                    .order_by_asc(
-                        Func::lower(credit_role::Column::Name.into_expr())
-                            .binary(PgBinOper::SimilarityDistance, search_term),
-                    )
-                    .all(&repo.conn)
-                    .await
-                    .db_operation("load credit role summaries")?
-            }
-        };
+            credit_role::Entity::find()
+                .filter(
+                    Func::lower(credit_role::Column::Name.into_expr())
+                        .binary(PgBinOper::Similarity, search_term.clone()),
+                )
+                .order_by_asc(
+                    Func::lower(credit_role::Column::Name.into_expr())
+                        .binary(PgBinOper::SimilarityDistance, search_term),
+                )
+                .all(&repo.conn)
+                .await?
+        }
+    };
 
-        Ok(roles.into_iter().map(Into::into).collect())
-    }
-    .await;
-
-    result.db_operation("find credit role summaries")
+    Ok(roles.into_iter().map(Into::into).collect())
 }
 
 #[cfg(all(test, feature = "integration-test"))]

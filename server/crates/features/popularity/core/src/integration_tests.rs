@@ -4,11 +4,12 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use entity::{entity_popularity, release_tag_vote};
 use fred::prelude::*;
+use infra_db::DatabaseConnection;
 use sea_orm::ActiveValue::Set;
 use sea_orm::sqlx::postgres::PgPoolOptions;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseConnection,
-    EntityTrait, QueryFilter, SqlxPostgresConnector, TransactionTrait,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter,
+    SqlxPostgresConnector,
 };
 use visit_core::EntityType;
 
@@ -28,7 +29,9 @@ async fn isolated_snapshot() -> Result<DatabaseConnection> {
         .max_lifetime(None)
         .connect(&infra_testing::test_database_url())
         .await?;
-    let db = SqlxPostgresConnector::from_sqlx_postgres_pool(pool);
+    let db = DatabaseConnection::from(
+        SqlxPostgresConnector::from_sqlx_postgres_pool(pool),
+    );
 
     db.execute_unprepared(
         "CREATE TEMP TABLE entity_popularity (LIKE public.entity_popularity INCLUDING ALL);

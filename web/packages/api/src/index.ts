@@ -1,4 +1,5 @@
 export * from "./port"
+export { bindResponseTraceId, getResponseTraceId } from "./responseTrace"
 export type * from "./gen"
 export type * from "./type"
 

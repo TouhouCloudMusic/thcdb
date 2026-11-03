@@ -38,7 +38,7 @@ pub(crate) async fn load(
         .into_partial_model::<TagRow>()
         .all(db)
         .await
-        .db_operation("load tag list items")?;
+        .db_context("load tag list items")?;
 
     load_items(tags, db).await
 }
@@ -66,7 +66,7 @@ pub(crate) async fn load_items(
         .into_tuple::<(i32, i32, String, TagType)>()
         .all(db)
         .await
-        .db_operation("load tag list parents")?;
+        .db_context("load tag list parents")?;
     let mut parents: HashMap<i32, Vec<TagRef>> = HashMap::new();
     for (tag_id, id, name, r#type) in parent_rows {
         parents

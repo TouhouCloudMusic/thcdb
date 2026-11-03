@@ -2,7 +2,7 @@ use entity::{
     artist, comment_target, correction, event, image_queue, label, release,
     song, tag,
 };
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::{DatabaseError, DatabaseFailure, DatabaseResultExt};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, PaginatorTrait,
@@ -76,6 +76,7 @@ impl From<&comment_target::Model> for CommentTarget {
 }
 
 impl CommentTarget {
+    #[infra_db::observe("comment.target.find_existing_entity")]
     pub async fn find(
         conn: &impl ConnectionTrait,
         kind: CommentTargetKind,
@@ -85,36 +86,36 @@ impl CommentTarget {
             CommentTargetKind::Artist => artist::Entity::find_by_id(id)
                 .exists(conn)
                 .await
-                .db_operation("check comment artist target exists")?,
+                .db_context("check comment artist target exists")?,
             CommentTargetKind::Release => release::Entity::find_by_id(id)
                 .exists(conn)
                 .await
-                .db_operation("check comment release target exists")?,
+                .db_context("check comment release target exists")?,
             CommentTargetKind::Song => song::Entity::find_by_id(id)
                 .exists(conn)
                 .await
-                .db_operation("check comment song target exists")?,
+                .db_context("check comment song target exists")?,
             CommentTargetKind::Label => label::Entity::find_by_id(id)
                 .exists(conn)
                 .await
-                .db_operation("check comment label target exists")?,
+                .db_context("check comment label target exists")?,
             CommentTargetKind::Event => event::Entity::find_by_id(id)
                 .exists(conn)
                 .await
-                .db_operation("check comment event target exists")?,
+                .db_context("check comment event target exists")?,
             CommentTargetKind::Tag => tag::Entity::find_by_id(id)
                 .exists(conn)
                 .await
-                .db_operation("check comment tag target exists")?,
+                .db_context("check comment tag target exists")?,
             CommentTargetKind::Correction => correction::Entity::find_by_id(id)
                 .exists(conn)
                 .await
-                .db_operation("check comment correction target exists")?,
+                .db_context("check comment correction target exists")?,
             CommentTargetKind::ImageQueue => {
                 image_queue::Entity::find_by_id(id)
                     .exists(conn)
                     .await
-                    .db_operation("check comment image queue target exists")?
+                    .db_context("check comment image queue target exists")?
             }
         };
 
@@ -175,17 +176,19 @@ impl IntoActiveModel<comment_target::ActiveModel> for CommentTarget {
     }
 }
 
+#[infra_db::observe("comment.target.find_reference")]
 pub(crate) async fn find_target(
     conn: &impl ConnectionTrait,
     target: CommentTarget,
 ) -> Result<Option<comment_target::Model>, DatabaseError> {
-    comment_target::Entity::find()
+    let target = comment_target::Entity::find()
         .filter(target.column().eq(target.id))
         .one(conn)
-        .await
-        .db_operation("find comment target reference")
+        .await?;
+    Ok(target)
 }
 
+#[infra_db::observe("comment.target.get_or_create_reference")]
 pub(crate) async fn get_or_create_target(
     conn: &impl ConnectionTrait,
     target: CommentTarget,
@@ -198,7 +201,7 @@ pub(crate) async fn get_or_create_target(
             )
             .exec_with_returning_many(conn)
             .await
-            .db_operation("create comment target reference")?;
+            .db_context("create comment target reference")?;
 
     if let Some(target) = inserted.pop() {
         return Ok(target);
@@ -207,7 +210,7 @@ pub(crate) async fn get_or_create_target(
     find_target(conn, target)
         .await?
         .ok_or_else(|| {
-            DatabaseError::internal(format!(
+            DatabaseFailure::internal(format!(
                 "comment target reference for {:?} #{} missing after insert conflict",
                 target.kind, target.id,
             ))

@@ -1,0 +1,18 @@
+[package]
+edition = "2024"
+name    = "thcdb-infra-observability"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "infra_observability"
+path = "src/lib.rs"
+
+[dependencies]
+fastrace.workspace          = true
+futures-util.workspace      = true
+prometheus-client.workspace = true
+strum.workspace             = true

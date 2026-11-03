@@ -16,6 +16,7 @@ derive_more.workspace = true
 entity.workspace      = true
 infra_db.workspace    = true
 infra_error.workspace = true
+fastrace.workspace    = true
 sea-orm.workspace     = true
 sea-query.workspace   = true
 serde.workspace       = true

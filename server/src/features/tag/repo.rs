@@ -3,38 +3,35 @@ use entity::{
     tag_alternative_name_history, tag_history, tag_relation,
     tag_relation_history,
 };
-use infra_db::SeaOrmTxRepo;
+use infra_db::{DatabaseTransaction, SeaOrmTxRepo};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
-    IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveValue,
+    ModelTrait, QueryFilter, QueryOrder,
 };
 
 use crate::features::tag::model::{NewTag, NewTagRelation};
-use crate::infra::database::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
-};
+use crate::infra::database::error::{BrokenEntityReference, DatabaseError};
 
+#[infra_db::observe("tag.create")]
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
     data: &NewTag,
 ) -> Result<i32, DatabaseError> {
-    create_impl(data, repo.conn())
-        .await
-        .map(|tag| tag.id)
-        .db_operation("create tag")
+    Ok(create_impl(data, repo.conn()).await.map(|tag| tag.id)?)
 }
 
+#[infra_db::observe("tag.create_history")]
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
     data: &NewTag,
 ) -> Result<i32, DatabaseError> {
-    create_history_impl(data, repo.conn())
+    Ok(create_history_impl(data, repo.conn())
         .await
-        .map(|tag| tag.id)
-        .db_operation("create tag history")
+        .map(|tag| tag.id)?)
 }
 
+#[infra_db::observe("tag.apply_update")]
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
@@ -80,66 +77,72 @@ async fn create_impl(
     data: &NewTag,
     tx: &DatabaseTransaction,
 ) -> Result<tag::Model, DbErr> {
-    let tag_model = tag::ActiveModel {
-        id: NotSet,
-        name: data.name.to_string().into_active_value(),
-        r#type: Set(data.r#type),
-        short_description: data
-            .short_description
-            .clone()
-            .unwrap_or_default()
-            .into_active_value(),
-        description: data
-            .description
-            .clone()
-            .unwrap_or_default()
-            .into_active_value(),
-    };
+    infra_db::trace("tag.insert_with_relations", async {
+        let tag_model = tag::ActiveModel {
+            id: NotSet,
+            name: data.name.to_string().into_active_value(),
+            r#type: Set(data.r#type),
+            short_description: data
+                .short_description
+                .clone()
+                .unwrap_or_default()
+                .into_active_value(),
+            description: data
+                .description
+                .clone()
+                .unwrap_or_default()
+                .into_active_value(),
+        };
 
-    let tag = tag_model.insert(tx).await?;
+        let tag = tag_model.insert(tx).await?;
 
-    if let Some(alt_names) = &data.alt_names {
-        create_alt_name(tag.id, alt_names, tx).await?;
-    }
+        if let Some(alt_names) = &data.alt_names {
+            create_alt_name(tag.id, alt_names, tx).await?;
+        }
 
-    if let Some(relations) = &data.relations {
-        create_relation(tag.id, relations, tx).await?;
-    }
+        if let Some(relations) = &data.relations {
+            create_relation(tag.id, relations, tx).await?;
+        }
 
-    Ok(tag)
+        Ok(tag)
+    })
+    .await
 }
 
 async fn create_history_impl(
     data: &NewTag,
     tx: &DatabaseTransaction,
 ) -> Result<tag_history::Model, DbErr> {
-    let history_model = tag_history::ActiveModel {
-        id: NotSet,
-        name: data.name.to_string().into_active_value(),
-        r#type: Set(data.r#type),
-        short_description: data
-            .short_description
-            .clone()
-            .unwrap_or_default()
-            .into_active_value(),
-        description: data
-            .description
-            .clone()
-            .unwrap_or_default()
-            .into_active_value(),
-    };
+    infra_db::trace("tag.insert_history_with_relations", async {
+        let history_model = tag_history::ActiveModel {
+            id: NotSet,
+            name: data.name.to_string().into_active_value(),
+            r#type: Set(data.r#type),
+            short_description: data
+                .short_description
+                .clone()
+                .unwrap_or_default()
+                .into_active_value(),
+            description: data
+                .description
+                .clone()
+                .unwrap_or_default()
+                .into_active_value(),
+        };
 
-    let history = history_model.insert(tx).await?;
+        let history = history_model.insert(tx).await?;
 
-    if let Some(alt_names) = &data.alt_names {
-        create_alt_name_history(history.id, alt_names, tx).await?;
-    }
+        if let Some(alt_names) = &data.alt_names {
+            create_alt_name_history(history.id, alt_names, tx).await?;
+        }
 
-    if let Some(relations) = &data.relations {
-        create_relation_history(history.id, relations, tx).await?;
-    }
+        if let Some(relations) = &data.relations {
+            create_relation_history(history.id, relations, tx).await?;
+        }
 
-    Ok(history)
+        Ok(history)
+    })
+    .await
 }
 
 async fn create_alt_name(
@@ -248,36 +251,40 @@ async fn update_alt_names(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    tag_alternative_name::Entity::delete_many()
-        .filter(tag_alternative_name::Column::TagId.eq(tag_id))
-        .exec(tx)
-        .await?;
+    infra_db::trace("tag.update_alt_names", async {
+        tag_alternative_name::Entity::delete_many()
+            .filter(tag_alternative_name::Column::TagId.eq(tag_id))
+            .exec(tx)
+            .await?;
 
-    let alt_names = tag_alternative_name_history::Entity::find()
-        .filter(tag_alternative_name_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let alt_names = tag_alternative_name_history::Entity::find()
+            .filter(
+                tag_alternative_name_history::Column::HistoryId.eq(history_id),
+            )
+            .all(tx)
+            .await?;
 
-    if alt_names.is_empty() {
-        return Ok(());
-    }
+        if alt_names.is_empty() {
+            return Ok(());
+        }
 
-    let models =
-        alt_names
-            .iter()
-            .map(|alt_name| tag_alternative_name::ActiveModel {
+        let models = alt_names.iter().map(|alt_name| {
+            tag_alternative_name::ActiveModel {
                 id: NotSet,
                 tag_id: Set(tag_id),
                 name: Set(alt_name.name.clone()),
                 is_origin_language: Set(alt_name.is_origin_language),
                 language_id: Set(alt_name.language_id),
-            });
+            }
+        });
 
-    tag_alternative_name::Entity::insert_many(models)
-        .exec(tx)
-        .await?;
+        tag_alternative_name::Entity::insert_many(models)
+            .exec(tx)
+            .await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_relations(
@@ -285,27 +292,31 @@ async fn update_relations(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    tag_relation::Entity::delete_many()
-        .filter(tag_relation::Column::TagId.eq(tag_id))
-        .exec(tx)
-        .await?;
+    infra_db::trace("tag.update_relations", async {
+        tag_relation::Entity::delete_many()
+            .filter(tag_relation::Column::TagId.eq(tag_id))
+            .exec(tx)
+            .await?;
 
-    let relations = tag_relation_history::Entity::find()
-        .filter(tag_relation_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let relations = tag_relation_history::Entity::find()
+            .filter(tag_relation_history::Column::HistoryId.eq(history_id))
+            .all(tx)
+            .await?;
 
-    if relations.is_empty() {
-        return Ok(());
-    }
+        if relations.is_empty() {
+            return Ok(());
+        }
 
-    let models = relations.iter().map(|relation| tag_relation::ActiveModel {
-        tag_id: Set(tag_id),
-        related_tag_id: Set(relation.related_tag_id),
-        r#type: Set(relation.r#type),
-    });
+        let models =
+            relations.iter().map(|relation| tag_relation::ActiveModel {
+                tag_id: Set(tag_id),
+                related_tag_id: Set(relation.related_tag_id),
+                r#type: Set(relation.r#type),
+            });
 
-    tag_relation::Entity::insert_many(models).exec(tx).await?;
+        tag_relation::Entity::insert_many(models).exec(tx).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }

@@ -1,5 +1,5 @@
 use entity::{release, release_rating, song, song_rating};
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::{DatabaseError, DatabaseFailure, DatabaseResultExt};
 use infra_error::{BoxedError, EntityNotFound};
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
@@ -62,6 +62,7 @@ struct RatingSummaryRow {
     user_rating: Option<Rating>,
 }
 
+#[fastrace::trace(name = "rating.ensure_target_exists")]
 async fn ensure_target_exists(
     conn: &impl ConnectionTrait,
     target: RatingTarget,
@@ -70,11 +71,11 @@ async fn ensure_target_exists(
         RatingTargetKind::Release => release::Entity::find_by_id(target.id)
             .exists(conn)
             .await
-            .db_operation("check release rating target exists")?,
+            .db_context("check release rating target exists")?,
         RatingTargetKind::Song => song::Entity::find_by_id(target.id)
             .exists(conn)
             .await
-            .db_operation("check song rating target exists")?,
+            .db_context("check song rating target exists")?,
     };
 
     if exists {
@@ -91,6 +92,7 @@ async fn ensure_target_exists(
     }
 }
 
+#[fastrace::trace(name = "rating.get")]
 pub async fn get(
     conn: &impl ConnectionTrait,
     target: RatingTarget,
@@ -162,13 +164,15 @@ pub async fn get(
     )
     .one(conn)
     .await
-    .db_operation("load rating summary")?
+    .db_context("load rating summary")?
     .ok_or_else(|| {
-        DatabaseError::internal("rating aggregate returned no row")
+        DatabaseFailure::internal("rating aggregate returned no row")
+            .context("load rating summary")
     })?;
 
     let count = u64::try_from(row.count).map_err(|error| {
-        DatabaseError::internal(format!("invalid rating count: {error}"))
+        DatabaseFailure::internal(format!("invalid rating count: {error}"))
+            .context("decode rating count")
     })?;
 
     Ok(RatingSummary {
@@ -178,6 +182,7 @@ pub async fn get(
     })
 }
 
+#[fastrace::trace(name = "rating.set")]
 pub async fn set(
     conn: &impl ConnectionTrait,
     target: RatingTarget,
@@ -222,11 +227,12 @@ pub async fn set(
             .await
         }
     }
-    .db_operation("set rating")?;
+    .db_context("set rating")?;
 
     Ok(())
 }
 
+#[fastrace::trace(name = "rating.delete")]
 pub async fn delete(
     conn: &impl ConnectionTrait,
     target: RatingTarget,
@@ -250,7 +256,7 @@ pub async fn delete(
                 .await
         }
     }
-    .db_operation("delete rating")?;
+    .db_context("delete rating")?;
 
     Ok(())
 }

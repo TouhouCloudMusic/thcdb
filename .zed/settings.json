@@ -1,4 +1,7 @@
 {
+	"file_types": {
+		"Nginx": ["**/nginx/**/*.conf", "**/nginx*.conf"]
+	},
 	"terminal": {
 		"detect_venv": "off"
 	},

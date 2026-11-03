@@ -1,5 +1,8 @@
+import { bindResponseTraceId } from "@thc/api"
 /* @refresh reload */
 import { render } from "solid-js/web"
+
+import { client } from "~/hey-api/client.gen"
 
 import App from "./App"
 import "./index.css"
@@ -17,5 +20,6 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 const initialLocale = resolveInitialLocale()
 
 await loadLocale(initialLocale)
+client.interceptors.error.use(bindResponseTraceId)
 
 render(() => <App initialLocale={initialLocale} />, root!)

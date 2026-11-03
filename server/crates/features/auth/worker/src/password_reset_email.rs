@@ -11,13 +11,17 @@ use chrono::{DateTime, FixedOffset, Utc};
 use domain::email::Email;
 use fred::prelude::KeysInterface;
 use infra_email::{DeliveryFailure, Mailer};
+use infra_error::{ContextError, ResultExt};
 use infra_worker::{
-    Data, Monitor, RedisQueue, RedisQueueConfig, WorkerBuilder,
-    WorkerBuilderExt, WorkerError, WorkerFactoryFn, permanent_error,
-    retryable_error,
+    AttemptLayer, Data, Monitor, RedisQueue, RedisQueueConfig, RunLayer,
+    TaskOutcome, WorkerBuilder, WorkerBuilderExt, WorkerError, WorkerFactoryFn,
+    permanent_error, retryable_error,
 };
 
 pub type Queue = RedisQueue<PasswordResetEmailJob>;
+
+pub const JOB_NAME: &str = "password_reset_email";
+const RETRIES: usize = 2;
 
 pub async fn queue(redis_url: &str) -> Result<Queue, WorkerError> {
     infra_worker::redis_queue(
@@ -29,13 +33,7 @@ pub async fn queue(redis_url: &str) -> Result<Queue, WorkerError> {
 
 #[derive(Clone)]
 pub(super) struct Sender {
-    mailer: Mailer,
-}
-
-impl Sender {
-    pub(super) const fn new(mailer: Mailer) -> Self {
-        Self { mailer }
-    }
+    pub(super) mailer: Mailer,
 }
 
 impl EmailSender for Sender {
@@ -73,10 +71,13 @@ pub fn register_worker<S: EmailSender>(
     .make_backoff();
 
     monitor.register(
-        WorkerBuilder::new("password_reset_email")
+        WorkerBuilder::new(JOB_NAME)
             .data(state)
-            .retry(RetryPolicy::retries(2).with_backoff(retry_backoff))
-            .enable_tracing()
+            .layer(RunLayer)
+            .retry(RetryPolicy::retries(RETRIES).with_backoff(retry_backoff))
+            .layer(AttemptLayer::with_fields(|job: &PasswordResetEmailJob| {
+                [("user_id", job.user_id)]
+            }))
             .backend(queue)
             .build_fn(handle::<S>),
     )
@@ -91,26 +92,16 @@ struct WorkerState<S: EmailSender> {
 async fn handle<S: EmailSender>(
     job: PasswordResetEmailJob,
     state: Data<WorkerState<S>>,
-) -> Result<(), infra_worker::Error> {
+) -> Result<TaskOutcome, infra_worker::Error> {
     let now: DateTime<FixedOffset> = Utc::now().into();
     if job.code_expires_at <= now {
-        return Ok(());
+        return Ok(TaskOutcome::Skipped);
     }
 
-    let should_send = should_send_email(&state.redis_pool, &job)
-        .await
-        .map_err(|err| {
-            log::error!(
-                target: "features.auth.password_reset.email_worker",
-                user_id = job.user_id,
-                error:% = err;
-                "failed to load password reset state while processing email job"
-            );
-            retryable_error(err)
-        })?;
-
-    if !should_send {
-        return Ok(());
+    if let Some(disposition) =
+        should_send_email(&state.redis_pool, &job).await?
+    {
+        return Ok(disposition);
     }
 
     state
@@ -118,36 +109,34 @@ async fn handle<S: EmailSender>(
         .send(job.email, job.code)
         .await
         .map_err(|failure| {
-            log::error!(
-                target: "features.auth.password_reset.email_worker",
-                user_id = job.user_id,
-                error:% = failure;
-                "failed to send password reset email"
-            );
-
-            if failure.is_retryable() {
+            let retryable = failure.is_retryable();
+            let failure =
+                ContextError::new("send password reset email", failure);
+            if retryable {
                 retryable_error(failure)
             } else {
                 permanent_error(failure)
             }
         })?;
 
-    Ok(())
+    Ok(TaskOutcome::Completed)
 }
 
 async fn should_send_email(
     redis_pool: &fred::prelude::Pool,
     job: &PasswordResetEmailJob,
-) -> Result<bool, fred::error::Error> {
+) -> Result<Option<TaskOutcome>, infra_worker::Error> {
     let payload = redis_pool
         .get::<Option<String>, _>(password_reset_state_key(job.user_id))
-        .await?;
+        .await
+        .context("load password reset state")
+        .map_err(retryable_error)?;
 
     let Some(payload) = payload else {
-        return Ok(false);
+        return Ok(Some(TaskOutcome::Skipped));
     };
 
-    let state = match PasswordResetState::from_payload(&payload) {
+    let reset_state = match PasswordResetState::from_payload(&payload) {
         Ok(state) => state,
         Err(err) => {
             log::error!(
@@ -156,7 +145,7 @@ async fn should_send_email(
                 error:% = err;
                 "failed to deserialize password reset state while processing email job"
             );
-            return Ok(false);
+            return Ok(Some(TaskOutcome::Discarded));
         }
     };
 
@@ -164,15 +153,19 @@ async fn should_send_email(
         code_hash,
         code_expires_at,
         ..
-    } = state
+    } = reset_state
     else {
-        return Ok(false);
+        return Ok(Some(TaskOutcome::Skipped));
     };
 
-    Ok(code_hash == job.code_hash
+    let now: DateTime<FixedOffset> = Utc::now().into();
+    let should_send = code_hash == job.code_hash
         && code_expires_at == job.code_expires_at
-        && {
-            let now: DateTime<FixedOffset> = Utc::now().into();
-            now <= code_expires_at
-        })
+        && now <= code_expires_at;
+
+    Ok(if should_send {
+        None
+    } else {
+        Some(TaskOutcome::Skipped)
+    })
 }

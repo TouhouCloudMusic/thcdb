@@ -1,6 +1,8 @@
-use entity::{release, release_credit, release_track, song, song_credit};
+use entity::{
+    credit_role, release, release_credit, release_track, song, song_credit,
+};
 use infra_db::SeaOrmRepository;
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::{DatabaseError, DatabaseFailure};
 use sea_orm::prelude::*;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, JoinType, QueryOrder, QuerySelect,
@@ -20,6 +22,7 @@ pub(super) struct CreditReleasePage {
     pub(super) has_more: bool,
 }
 
+#[infra_db::observe("artist.credits.find_credit_releases")]
 pub(super) async fn find_credit_releases(
     mut select: Select<release::Entity>,
     cursor: Option<&CreditsCursor>,
@@ -54,8 +57,7 @@ pub(super) async fn find_credit_releases(
         .order_by_asc(release::Column::Id)
         .limit(u64::from(limit) + 1)
         .all(db)
-        .await
-        .db_operation("load artist releases")?;
+        .await?;
     let has_more = releases.len() > usize::from(limit);
     if has_more {
         releases.pop();
@@ -64,6 +66,7 @@ pub(super) async fn find_credit_releases(
     Ok(CreditReleasePage { items, has_more })
 }
 
+#[infra_db::observe("artist.credits.find_group_songs")]
 pub(super) async fn matching_group_songs(
     repo: &SeaOrmRepository,
     artist_id: i32,
@@ -94,7 +97,7 @@ pub(super) async fn matching_group_songs(
             Expr::col((song::Entity, song::Column::Id)).into(),
         )
     };
-    song::Entity::find()
+    let songs = song::Entity::find()
         .select_only()
         .column(song::Column::Id)
         .column_as(primary_release_id(), "primary_release_id")
@@ -104,10 +107,12 @@ pub(super) async fn matching_group_songs(
         .order_by_asc(song::Column::Id)
         .into_model::<SelectedSong>()
         .all(&repo.conn)
-        .await
-        .db_operation("load artist grouped song credits")
+        .await?;
+
+    Ok(songs)
 }
 
+#[infra_db::observe("artist.credits.find_artist_credit_songs")]
 pub(super) async fn find_artist_credit_songs(
     mut select: Select<song::Entity>,
     after: Option<&SongPosition>,
@@ -128,8 +133,7 @@ pub(super) async fn find_artist_credit_songs(
         .order_by_asc(song::Column::Id)
         .limit(u64::from(limit) + 1)
         .all(db)
-        .await
-        .db_operation("load artist song credits")?;
+        .await?;
     let has_more = songs.len() > usize::from(limit);
     if has_more {
         songs.pop();
@@ -145,6 +149,19 @@ pub(super) struct SongPageModels {
     pub(super) has_more: bool,
 }
 
+#[infra_db::observe("artist.credits.load_credit_roles")]
+pub(super) async fn load_credit_roles(
+    repo: &SeaOrmRepository,
+    role_ids: Vec<i32>,
+) -> Result<Vec<credit_role::Model>, DatabaseError> {
+    let roles = credit_role::Entity::find()
+        .filter(credit_role::Column::Id.is_in(role_ids))
+        .all(&repo.conn)
+        .await?;
+    Ok(roles)
+}
+
+#[infra_db::observe("artist.credits.has_orphan_songs")]
 pub(super) async fn has_orphan_songs(
     repo: &SeaOrmRepository,
     artist_id: i32,
@@ -154,7 +171,7 @@ pub(super) async fn has_orphan_songs(
         .limit(1)
         .one(&repo.conn)
         .await
-        .db_operation("check artist orphan song credits")
+        .map_err(|error| DatabaseFailure::new(error))
         .map(|song| song.is_some())
 }
 

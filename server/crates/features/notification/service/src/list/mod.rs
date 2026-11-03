@@ -1,7 +1,7 @@
 use std::num::NonZeroU8;
 
 use infra_db::error::DatabaseResultExt;
-use sea_orm::{AccessMode, IsolationLevel, TransactionTrait};
+use sea_orm::{AccessMode, IsolationLevel};
 
 use crate::inbox::InboxCutoff;
 use crate::model::{
@@ -29,7 +29,7 @@ impl Service {
                 Some(AccessMode::ReadOnly),
             )
             .await
-            .db_operation("begin notification list snapshot")?;
+            .db_context("begin notification list snapshot")?;
 
         let inbox_cutoff = match cursor {
             Some(cursor) => InboxCutoff::new(cursor.snapshot_inbox_seq),
@@ -91,7 +91,7 @@ impl Service {
 
         tx.commit()
             .await
-            .db_operation("commit notification list snapshot")?;
+            .db_context("commit notification list snapshot")?;
 
         Ok(page)
     }

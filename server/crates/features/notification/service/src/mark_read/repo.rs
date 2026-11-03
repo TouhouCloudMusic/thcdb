@@ -1,6 +1,7 @@
 use entity::{notification, notification_entry};
+use infra_db::DatabaseTransaction;
 use infra_db::error::{DatabaseError, DatabaseResultExt};
-use sea_orm::{ConnectionTrait, DatabaseTransaction, JoinType, Order};
+use sea_orm::{ConnectionTrait, JoinType, Order};
 use sea_query::{
     Alias, Expr, ExprTrait, Func, IntoIden, LockType, Query, SimpleExpr,
     TableRef,
@@ -8,6 +9,7 @@ use sea_query::{
 
 use crate::inbox::{InboxCutoff, entry_sequences_at_cutoff};
 
+#[infra_db::observe("notification.inbox.mark_all_read")]
 pub(super) async fn read_all(
     conn: &DatabaseTransaction,
     recipient_id: i32,
@@ -52,7 +54,7 @@ pub(super) async fn read_all(
 
     conn.execute(conn.get_database_backend().build(&lock_query))
         .await
-        .db_operation("lock notifications for mark all read")?;
+        .db_context("lock notifications for mark all read")?;
 
     let update_query = Query::update()
         .table(notification::Entity)
@@ -73,6 +75,6 @@ pub(super) async fn read_all(
 
     conn.execute(conn.get_database_backend().build(&update_query))
         .await
-        .db_operation("mark all notifications read")
-        .map(|_| ())
+        .db_context("mark all notifications read")?;
+    Ok(())
 }

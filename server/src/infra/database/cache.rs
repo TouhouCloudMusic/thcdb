@@ -23,24 +23,27 @@ impl LanguageCache {
         &self,
         conn: &impl ConnectionTrait,
     ) -> Result<&HashMap<i32, Language>, DbErr> {
-        if let Some(langs) = self.inner.get() {
-            Ok(langs)
-        } else {
-            let langs = language::Entity::find().all(conn).await?;
-            let langs = langs
-                .into_iter()
-                .map(|l| {
-                    (
-                        l.id,
-                        Language {
-                            id: l.id,
-                            name: l.name,
-                            code: l.code,
-                        },
-                    )
-                })
-                .collect();
-            Ok(self.inner.get_or_init(|| langs))
-        }
+        infra_db::trace("language.load_cache", async {
+            if let Some(langs) = self.inner.get() {
+                Ok(langs)
+            } else {
+                let langs = language::Entity::find().all(conn).await?;
+                let langs = langs
+                    .into_iter()
+                    .map(|l| {
+                        (
+                            l.id,
+                            Language {
+                                id: l.id,
+                                name: l.name,
+                                code: l.code,
+                            },
+                        )
+                    })
+                    .collect();
+                Ok(self.inner.get_or_init(|| langs))
+            }
+        })
+        .await
     }
 }

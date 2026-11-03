@@ -21,14 +21,14 @@ impl Service {
     ) -> Result<Option<Vec<CorrectionRevisionSummary>>, ReadError> {
         if !shared::repo::correction_exists(&self.repo.conn, correction_id)
             .await
-            .db_operation("find correction for revisions")?
+            .db_context("find correction for revisions")?
         {
             return Ok(None);
         }
 
         let revisions = repo::list_revisions(&self.repo.conn, correction_id)
             .await
-            .db_operation("find correction revisions")?;
+            .db_context("find correction revisions")?;
 
         Ok(Some(revisions))
     }

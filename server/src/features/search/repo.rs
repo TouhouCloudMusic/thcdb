@@ -54,6 +54,7 @@ fn match_name_select(keyword: &str, names: SelectStatement) -> SelectStatement {
         .to_owned()
 }
 
+#[infra_db::observe("search.find_matches")]
 async fn search_matches<
     E: EntityTrait,
     R: PartialModelTrait,
@@ -111,7 +112,7 @@ async fn search_matches<
     let mut rows = db
         .query_all(statement)
         .await
-        .db_operation("search list items")?;
+        .db_context("search list items")?;
 
     let next_cursor = if rows.len() > limit as usize {
         rows.truncate(limit as usize);
@@ -129,7 +130,7 @@ async fn search_matches<
             })
         })
         .collect::<Result<_, sea_orm::DbErr>>()
-        .db_operation("read search list items")?;
+        .db_context("read search list items")?;
 
     Ok(CursorResponse { items, next_cursor })
 }
@@ -221,6 +222,7 @@ define_search! {
     }
 }
 
+#[infra_db::observe("search.find_events")]
 pub async fn search_events(
     repo: &SeaOrmRepository,
     search_term: &str,

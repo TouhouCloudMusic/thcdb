@@ -7,19 +7,20 @@ use infra_storage::FsStorage;
 use lettre::message::Mailbox;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
-use sea_orm::DatabaseConnection;
 use snafu::{FromString, ResultExt, Whatever};
 
-use super::config::{Config, EmailSecurity};
-use super::database::{get_connection, init_database};
+use super::config::{Config, EmailSecurity, Middleware};
+use super::database::{DatabaseConnection, get_connection, init_database};
 use super::redis::Pool;
 use crate::features::thumbnail::ThumbnailCache;
 use crate::features::user_event::UserEventSender;
-use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 
 #[derive(Clone)]
 pub struct AppState {
     pub database: DatabaseConnection,
+
+    pub(crate) middleware: Middleware,
+    pub(crate) import_bypass_token: Option<String>,
 
     redis_pool: fred::prelude::Pool,
 
@@ -37,12 +38,10 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub async fn init(config: &Config) -> Result<Self, Whatever> {
-        let image_storage = FsStorage::new(FS_IMAGE_BASE_PATH.to_path_buf());
-        let image_storage = image_storage.with_whatever_context(|err| {
-            format!("Failed to initialize image storage: {err}")
-        })?;
-
+    pub async fn init(
+        config: &Config,
+        image_storage: FsStorage,
+    ) -> Result<Self, Whatever> {
         let conn = get_connection(&config.database_url).await;
         init_database(&conn).await;
 
@@ -106,6 +105,8 @@ impl AppState {
 
         Ok(Self {
             database: conn.clone(),
+            middleware: config.middleware.clone(),
+            import_bypass_token: config.import_bypass_token.clone(),
             redis_pool,
             mailer: Mailer::new(transport, from),
             sea_orm_repo: SeaOrmRepository::new(conn.clone()),

@@ -23,6 +23,7 @@ entity.workspace                  = true
 image_queue_core.workspace        = true
 infra_db.workspace                = true
 infra_error.workspace             = true
+fastrace.workspace                = true
 notification_core.workspace       = true
 sea-orm.workspace                 = true
 serde.workspace                   = true

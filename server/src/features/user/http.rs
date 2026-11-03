@@ -3,6 +3,7 @@ use axum::response::IntoResponse;
 use axum_typed_multipart::TypedMultipart;
 use constants::REQUEST_BODY_MAX_SIZE;
 use domain::markdown::Markdown;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Set};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -111,21 +112,17 @@ async fn update_bio(
     State(database): State<state::SeaOrmRepository>,
     text: String,
 ) -> Result<Message, Error> {
-    use entity::user;
-    use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Set};
-
     let markdown =
         Markdown::parse(text).map_err(|()| Error::InvalidBioFormat)?;
 
-    user::Entity::update_many()
-        .filter(user::Column::Id.eq(user.id))
-        .set(user::ActiveModel {
+    entity::user::Entity::update_many()
+        .filter(entity::user::Column::Id.eq(user.id))
+        .set(entity::user::ActiveModel {
             bio: Set(Some(markdown.to_string())),
             ..Default::default()
         })
         .exec(&database.conn)
         .await
-        .db_operation("update user bio")
-        .map(|_| Message::new("Bio updated successfully"))
-        .map_err(Into::into)
+        .db_context("user.update_bio")?;
+    Ok(Message::new("Bio updated successfully"))
 }

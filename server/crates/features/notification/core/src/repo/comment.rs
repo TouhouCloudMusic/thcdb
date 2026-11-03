@@ -3,13 +3,13 @@ use entity::{
     comment_thread_notification, notification, notification_entry,
     notification_event,
 };
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::DatabaseTransaction;
+use infra_db::error::{DatabaseError, DatabaseFailure, DatabaseResultExt};
 use sea_orm::ActiveValue::Set;
 use sea_orm::prelude::Uuid;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseTransaction, EntityTrait, JoinType,
-    QueryFilter, QueryOrder, QuerySelect, RelationTrait, TryInsert,
-    TryInsertResult,
+    ColumnTrait, ConnectionTrait, EntityTrait, JoinType, QueryFilter,
+    QueryOrder, QuerySelect, RelationTrait, TryInsert, TryInsertResult,
 };
 use sea_query::{Expr, OnConflict, Query};
 use sorted_vec::SortedSet;
@@ -22,6 +22,7 @@ use super::delivery::{
 use super::event::NotificationEventId;
 use crate::{NotificationAggregateKind, Seq};
 
+#[infra_db::observe("notification.comment.create_comment_notifications")]
 pub(super) async fn create_comment_notifications(
     conn: &DatabaseTransaction,
     command: &CreateNotificationsCommand,
@@ -73,6 +74,7 @@ pub(super) async fn create_comment_notifications(
     })
 }
 
+#[infra_db::observe("notification.comment.deliver_comment_thread_update")]
 async fn deliver_comment_thread_update(
     conn: &DatabaseTransaction,
     event_id: NotificationEventId,
@@ -94,11 +96,15 @@ async fn deliver_comment_thread_update(
         event_id,
         comment_id,
     )
-    .await
+    .await?;
+    Ok(())
 }
 
 /// Locking its parent row serializes sequence allocation with other appends and retention.
 /// Concurrent first deliveries race on the typed identity; the loser removes its unreferenced parent and retries.
+#[infra_db::observe(
+    "notification.comment.lock_or_create_comment_thread_notification"
+)]
 async fn lock_or_create_comment_thread_notification(
     conn: &DatabaseTransaction,
     recipient_id: i32,
@@ -116,7 +122,7 @@ async fn lock_or_create_comment_thread_notification(
             )
             .one(conn)
             .await
-            .db_operation("find comment thread notification")?
+            .db_context("find comment thread notification")?
         {
             if let Some(notification) = lock_notification(
                 conn,
@@ -156,7 +162,7 @@ async fn lock_or_create_comment_thread_notification(
             )
             .exec(conn)
             .await
-            .db_operation("insert comment thread notification identity")?;
+            .db_context("insert comment thread notification identity")?;
 
         match inserted {
             TryInsertResult::Inserted(_) => {
@@ -168,7 +174,7 @@ async fn lock_or_create_comment_thread_notification(
                 )
                 .await?
                 .ok_or_else(|| {
-                    DatabaseError::internal(
+                    DatabaseFailure::internal(
                         "new comment thread notification is missing",
                     )
                 });
@@ -177,7 +183,7 @@ async fn lock_or_create_comment_thread_notification(
                 notification::Entity::delete_by_id(notification_id)
                     .exec(conn)
                     .await
-                    .db_operation(
+                    .db_context(
                         "delete conflicted comment thread notification parent",
                     )?;
             }
@@ -188,6 +194,7 @@ async fn lock_or_create_comment_thread_notification(
     }
 }
 
+#[infra_db::observe("notification.comment.append_comment_thread_event")]
 async fn append_comment_thread_event(
     conn: &DatabaseTransaction,
     notification: &LockedNotification,
@@ -196,7 +203,9 @@ async fn append_comment_thread_event(
     comment_id: i32,
 ) -> Result<(), DatabaseError> {
     let next_seq = notification.last_seq.checked_add(1).ok_or_else(|| {
-        DatabaseError::internal("comment thread notification sequence overflow")
+        DatabaseFailure::internal(
+            "comment thread notification sequence overflow",
+        )
     })?;
     let event_id: i64 = event_id.into();
     let query = Query::insert()
@@ -233,14 +242,14 @@ async fn append_comment_thread_event(
     let Some(inserted) = conn
         .query_one(conn.get_database_backend().build(&query))
         .await
-        .db_operation("append comment thread notification entry")?
+        .db_context("append comment thread notification entry")?
     else {
         return Ok(());
     };
     let append_at: DateTime<FixedOffset> =
         inserted
             .try_get("", "created_at")
-            .db_operation("decode comment thread notification append time")?;
+            .db_context("decode comment thread notification append time")?;
 
     if notification.last_seq > 0 {
         let previous_comment_id = notification_entry::Entity::find()
@@ -257,16 +266,16 @@ async fn append_comment_thread_event(
             .into_tuple::<Option<i32>>()
             .one(conn)
             .await
-            .db_operation("load previous comment thread notification entry")?
+            .db_context("load previous comment thread notification entry")?
             .flatten()
             .ok_or_else(|| {
-                DatabaseError::internal(
+                DatabaseFailure::internal(
                     "comment thread notification has no latest comment",
                 )
             })?;
 
         if comment_id <= previous_comment_id {
-            return Err(DatabaseError::internal(
+            return Err(DatabaseFailure::internal(
                 "comment thread notifications must follow comment order",
             ));
         }
@@ -279,10 +288,10 @@ async fn append_comment_thread_event(
         .filter(notification::Column::LastSeq.eq(notification.last_seq))
         .exec(conn)
         .await
-        .db_operation("advance comment thread notification")?;
+        .db_context("advance comment thread notification")?;
 
     if updated.rows_affected != 1 {
-        return Err(DatabaseError::internal(
+        return Err(DatabaseFailure::internal(
             "locked comment thread notification changed during append",
         ));
     }
@@ -290,6 +299,7 @@ async fn append_comment_thread_event(
     Ok(())
 }
 
+#[infra_db::observe("notification.comment.mark_comment_thread_read_through")]
 pub async fn mark_comment_thread_read_through(
     conn: &impl ConnectionTrait,
     recipient_id: i32,
@@ -318,22 +328,23 @@ pub async fn mark_comment_thread_read_through(
         .into_tuple::<(Uuid, i64)>()
         .one(conn)
         .await
-        .db_operation("load comment thread read boundary")?;
+        .db_context("load comment thread read boundary")?;
 
     let Some((notification_id, seq)) = boundary else {
         return Ok(false);
     };
     let seq = Seq::new(seq).ok_or_else(|| {
-        DatabaseError::internal(
+        DatabaseFailure::internal(
             "comment thread read boundary has a non-positive sequence",
         )
     })?;
 
-    super::mark_notification_read_through_unchecked(
+    let changed = super::mark_notification_read_through_unchecked(
         conn,
         recipient_id,
         notification_id,
         seq,
     )
-    .await
+    .await?;
+    Ok(changed)
 }

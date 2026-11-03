@@ -250,12 +250,15 @@ impl FsStorage {
         .map_err(std::io::Error::other)?
     }
 
-    pub fn remove(
-        &self,
-        path: impl AsRef<std::path::Path>,
-    ) -> Result<(), std::io::Error> {
-        let path = self.prepend_prefix(path);
-        remove_file(&path)
+    // Keep deletion synchronous so cancellation can't release the GC transaction lock before the shared file is fully deleted.
+    pub fn remove(&self, path: impl AsRef<Path>) -> Result<(), std::io::Error> {
+        match std::fs::remove_file(self.prepend_prefix(path)) {
+            // If the file does not exist, it is already removed
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                Ok(())
+            }
+            result => result,
+        }
     }
 }
 
@@ -291,27 +294,6 @@ fn file_contents_match(
         };
 
         remaining = rest;
-    }
-}
-
-// Keep deletion synchronous so cancellation can't release the GC transaction lock before the shared file is fully deleted.
-fn remove_file(path: &Path) -> Result<(), std::io::Error> {
-    let res = std::fs::remove_file(path).inspect_err(|e| {
-        log::error!(
-            target: "infra.storage",
-            path:% = path.display(),
-            error:% = e;
-            "failed to remove file"
-        );
-    });
-
-    match res {
-        Ok(()) => Ok(()),
-        Err(e) => match e.kind() {
-            // If the file does not exist, it is already removed
-            std::io::ErrorKind::NotFound => Ok(()),
-            _ => Err(e),
-        },
     }
 }
 

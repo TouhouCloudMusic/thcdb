@@ -1,4 +1,3 @@
-use chrono::Utc;
 use domain::shared::CursorResponse;
 use entity::sea_orm_active_enums::ImageQueueStatus;
 use entity::{
@@ -8,20 +7,15 @@ use entity::{
     release_image_queue as release_image_queue_entity,
 };
 use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
-use notification_core::{ImageQueueModerationAction, NotificationRecipients};
 use sea_orm::ActiveValue::Set;
 use sea_orm::sea_query::{Expr, Query, SimpleExpr};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, FromQueryResult,
-    IntoActiveModel, JoinType, PaginatorTrait, QueryFilter, QueryOrder,
-    QuerySelect, QueryTrait, RelationTrait,
+    ColumnTrait, EntityTrait, FromQueryResult, JoinType, QueryFilter,
+    QueryOrder, QuerySelect, QueryTrait, RelationTrait,
 };
 
-use super::{Error, ImageQueueType};
-use crate::infra::database::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
-};
-use crate::shared::error::InternalError;
+use super::ImageQueueType;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub struct ImageQueueDetailModels {
     pub queue: image_queue_entity::Model,
@@ -40,11 +34,12 @@ struct ImageQueueDetailRow {
     next_id: Option<i32>,
 }
 
-enum QueueTarget {
+pub enum QueueTarget {
     Artist(artist_image_queue_entity::Model),
     Release(release_image_queue_entity::Model),
 }
 
+#[infra_db::observe("image_queue.manage.find_pending")]
 pub async fn find_pending(
     repo: &SeaOrmRepository,
     limit: u8,
@@ -78,7 +73,7 @@ pub async fn find_pending(
         .limit(u64::from(limit) + 1)
         .all(&repo.conn)
         .await
-        .db_operation("find pending image queue entries")?;
+        .db_context("find pending image queue entries")?;
 
     let has_next = models.len() > usize::from(limit);
     if has_next {
@@ -97,18 +92,7 @@ pub async fn find_pending(
     })
 }
 
-pub async fn count_pending(
-    repo: &SeaOrmRepository,
-) -> Result<u64, DatabaseError> {
-    image_queue_entity::Entity::find()
-        .filter(
-            image_queue_entity::Column::Status.eq(ImageQueueStatus::Pending),
-        )
-        .count(&repo.conn)
-        .await
-        .db_operation("count pending image queue entries")
-}
-
+#[infra_db::observe("image_queue.manage.find_detail")]
 pub async fn find_detail(
     repo: &SeaOrmRepository,
     id: i32,
@@ -146,7 +130,7 @@ pub async fn find_detail(
         .into_model::<ImageQueueDetailRow>()
         .one(&repo.conn)
         .await
-        .db_operation("find image queue entry detail")?
+        .db_context("find image queue entry detail")?
     else {
         return Ok(None);
     };
@@ -155,7 +139,7 @@ pub async fn find_detail(
         Some(image_id) => image_entity::Entity::find_by_id(image_id)
             .one(&repo.conn)
             .await
-            .db_operation("find queued image")?,
+            .db_context("find queued image")?,
         None => None,
     };
 
@@ -163,13 +147,13 @@ pub async fn find_detail(
         .filter(artist_image_queue_entity::Column::QueueId.eq(id))
         .one(&repo.conn)
         .await
-        .db_operation("find artist image queue target")?;
+        .db_context("find artist image queue target")?;
 
     let release = release_image_queue_entity::Entity::find()
         .filter(release_image_queue_entity::Column::QueueId.eq(id))
         .one(&repo.conn)
         .await
-        .db_operation("find release image queue target")?;
+        .db_context("find release image queue target")?;
 
     Ok(Some(ImageQueueDetailModels {
         queue,
@@ -181,25 +165,12 @@ pub async fn find_detail(
     }))
 }
 
-pub async fn approve(
-    repo: &SeaOrmRepository,
-    user_id: i32,
-    id: i32,
-) -> Result<NotificationRecipients, Error> {
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .db_operation("begin approve image queue transaction")?;
-
-    let model = lock_queue(&tx_repo, id).await?;
-
-    if model.status != ImageQueueStatus::Pending {
-        return Err(Error::InvalidOperation);
-    }
-
-    let image_id = model.image_id.ok_or(Error::InvalidEntry)?;
-    let target = find_queue_target(&tx_repo, id).await?;
-
+#[infra_db::observe("image_queue.manage.publish_image")]
+pub async fn publish_image(
+    tx_repo: &SeaOrmTxRepo,
+    target: QueueTarget,
+    image_id: i32,
+) -> Result<(), DatabaseError> {
     match target {
         QueueTarget::Artist(target) => {
             artist_image_entity::Entity::insert(
@@ -211,7 +182,7 @@ pub async fn approve(
             )
             .exec(tx_repo.conn())
             .await
-            .db_operation("publish artist image queue entry")?;
+            .db_context("publish artist image queue entry")?;
         }
         QueueTarget::Release(target) => {
             release_image_entity::Entity::insert(
@@ -223,105 +194,22 @@ pub async fn approve(
             )
             .exec(tx_repo.conn())
             .await
-            .db_operation("publish release image queue entry")?;
+            .db_context("publish release image queue entry")?;
         }
     }
 
-    let now = Utc::now().into();
-
-    let mut active = model.into_active_model();
-    active.status = Set(ImageQueueStatus::Approved);
-    active.handled_at = Set(Some(now));
-    active.handled_by = Set(Some(user_id));
-    active
-        .update(tx_repo.conn())
-        .await
-        .db_operation("mark image queue entry approved")?;
-
-    let notification_recipients =
-        image_queue_notification::create_moderated_notification(
-            tx_repo.conn(),
-            user_id,
-            id,
-            ImageQueueModerationAction::Approved,
-        )
-        .await?;
-
-    tx_repo
-        .commit()
-        .await
-        .map_err(crate::infra::database::error::DatabaseError::from)?;
-
-    Ok(notification_recipients)
+    Ok(())
 }
 
-pub async fn reject(
-    repo: &SeaOrmRepository,
-    user_id: i32,
-    id: i32,
-) -> Result<NotificationRecipients, Error> {
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .db_operation("begin reject image queue transaction")?;
-
-    let model = lock_queue(&tx_repo, id).await?;
-
-    if model.status != ImageQueueStatus::Pending {
-        return Err(Error::InvalidOperation);
-    }
-
-    model.image_id.ok_or(Error::InvalidEntry)?;
-    let now = Utc::now().into();
-
-    let mut active = model.into_active_model();
-    active.status = Set(ImageQueueStatus::Rejected);
-    active.handled_at = Set(Some(now));
-    active.handled_by = Set(Some(user_id));
-    active
-        .update(tx_repo.conn())
-        .await
-        .db_operation("mark image queue entry rejected")?;
-
-    let notification_recipients =
-        image_queue_notification::create_moderated_notification(
-            tx_repo.conn(),
-            user_id,
-            id,
-            ImageQueueModerationAction::Rejected,
-        )
-        .await?;
-
-    tx_repo
-        .commit()
-        .await
-        .map_err(crate::infra::database::error::DatabaseError::from)?;
-
-    Ok(notification_recipients)
-}
-
-pub async fn revert(
-    repo: &SeaOrmRepository,
-    user_id: i32,
-    id: i32,
-) -> Result<NotificationRecipients, Error> {
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .db_operation("begin revert image queue transaction")?;
-
-    let model = lock_queue(&tx_repo, id).await?;
-
-    if model.status != ImageQueueStatus::Approved {
-        return Err(Error::InvalidOperation);
-    }
-
-    let image_id = model.image_id.ok_or(Error::InvalidEntry)?;
-    let target = find_queue_target(&tx_repo, id).await?;
-
-    match target {
+#[infra_db::observe("image_queue.manage.delete_published_image")]
+pub async fn delete_published_image(
+    tx_repo: &SeaOrmTxRepo,
+    target: QueueTarget,
+    image_id: i32,
+) -> Result<u64, DatabaseError> {
+    let result = match target {
         QueueTarget::Artist(target) => {
-            let result = artist_image_entity::Entity::delete_many()
+            artist_image_entity::Entity::delete_many()
                 .filter(
                     artist_image_entity::Column::ArtistId.eq(target.artist_id),
                 )
@@ -329,18 +217,10 @@ pub async fn revert(
                 .filter(artist_image_entity::Column::Type.eq(target.r#type))
                 .exec(tx_repo.conn())
                 .await
-                .db_operation("delete published artist image queue entry")?;
-
-            if result.rows_affected == 0 {
-                return Err(InternalError::new(BrokenEntityReference {
-                    entity: "published artist image",
-                    id: image_id,
-                })
-                .into());
-            }
+                .db_context("delete published artist image queue entry")?
         }
         QueueTarget::Release(target) => {
-            let result = release_image_entity::Entity::delete_many()
+            release_image_entity::Entity::delete_many()
                 .filter(
                     release_image_entity::Column::ReleaseId
                         .eq(target.release_id),
@@ -349,79 +229,47 @@ pub async fn revert(
                 .filter(release_image_entity::Column::Type.eq(target.r#type))
                 .exec(tx_repo.conn())
                 .await
-                .db_operation("delete published release image queue entry")?;
-
-            if result.rows_affected == 0 {
-                return Err(InternalError::new(BrokenEntityReference {
-                    entity: "published release image",
-                    id: image_id,
-                })
-                .into());
-            }
+                .db_context("delete published release image queue entry")?
         }
-    }
+    };
 
-    let now = Utc::now().into();
-
-    let mut active = model.into_active_model();
-    active.status = Set(ImageQueueStatus::Reverted);
-    active.reverted_at = Set(Some(now));
-    active.reverted_by = Set(Some(user_id));
-    active
-        .update(tx_repo.conn())
-        .await
-        .db_operation("mark image queue entry reverted")?;
-
-    let notification_recipients =
-        image_queue_notification::create_moderated_notification(
-            tx_repo.conn(),
-            user_id,
-            id,
-            ImageQueueModerationAction::Reverted,
-        )
-        .await?;
-
-    tx_repo
-        .commit()
-        .await
-        .map_err(crate::infra::database::error::DatabaseError::from)?;
-
-    Ok(notification_recipients)
+    Ok(result.rows_affected)
 }
 
-async fn lock_queue(
+#[infra_db::observe("image_queue.manage.lock_queue")]
+pub async fn lock_queue(
     tx_repo: &SeaOrmTxRepo,
     id: i32,
-) -> Result<image_queue_entity::Model, Error> {
+) -> Result<Option<image_queue_entity::Model>, DatabaseError> {
     let model = image_queue_entity::Entity::find_by_id(id)
         .lock_exclusive()
         .one(tx_repo.conn())
-        .await
-        .db_operation("lock image queue entry")?;
-
-    model.ok_or(Error::NotFound)
+        .await?;
+    Ok(model)
 }
 
-async fn find_queue_target(
+#[infra_db::observe("image_queue.manage.find_queue_targets")]
+pub async fn find_queue_targets(
     tx_repo: &SeaOrmTxRepo,
     id: i32,
-) -> Result<QueueTarget, Error> {
+) -> Result<
+    (
+        Option<artist_image_queue_entity::Model>,
+        Option<release_image_queue_entity::Model>,
+    ),
+    DatabaseError,
+> {
     let artist_queue = artist_image_queue_entity::Entity::find()
         .filter(artist_image_queue_entity::Column::QueueId.eq(id))
         .one(tx_repo.conn())
         .await
-        .db_operation("find artist image queue target")?;
+        .db_context("find artist image queue target")?;
 
     let release_queue = release_image_queue_entity::Entity::find()
         .filter(release_image_queue_entity::Column::QueueId.eq(id))
         .one(tx_repo.conn())
         .await
-        .db_operation("find release image queue target")?;
+        .db_context("find release image queue target")?;
 
-    match (artist_queue, release_queue) {
-        (Some(artist_queue), None) => Ok(QueueTarget::Artist(artist_queue)),
-        (None, Some(release_queue)) => Ok(QueueTarget::Release(release_queue)),
-        (None, None) => Err(Error::UnknownTarget),
-        (Some(_), Some(_)) => Err(Error::AmbiguousTarget),
-    }
+    Ok((artist_queue, release_queue))
 }

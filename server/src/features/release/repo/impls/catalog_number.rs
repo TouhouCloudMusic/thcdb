@@ -1,10 +1,9 @@
 use entity::{release_catalog_number, release_catalog_number_history};
+use infra_db::DatabaseTransaction;
 use itertools::Itertools;
 use libfp::EmptyExt;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
-};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 
 use crate::features::release::model::NewCatalogNumber;
 
@@ -61,27 +60,31 @@ pub(crate) async fn update_release_catalog_number(
     history_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    release_catalog_number::Entity::delete_many()
-        .filter(release_catalog_number::Column::ReleaseId.eq(release_id))
-        .exec(db)
-        .await?;
+    infra_db::trace("release.update_catalog_number", async {
+        release_catalog_number::Entity::delete_many()
+            .filter(release_catalog_number::Column::ReleaseId.eq(release_id))
+            .exec(db)
+            .await?;
 
-    let catalog_nums = release_catalog_number_history::Entity::find()
-        .filter(
-            release_catalog_number_history::Column::HistoryId.eq(history_id),
-        )
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|x| NewCatalogNumber {
-            catalog_number: x.catalog_number,
-            label_id: x.label_id,
-        })
-        .collect_vec();
+        let catalog_nums = release_catalog_number_history::Entity::find()
+            .filter(
+                release_catalog_number_history::Column::HistoryId
+                    .eq(history_id),
+            )
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|x| NewCatalogNumber {
+                catalog_number: x.catalog_number,
+                label_id: x.label_id,
+            })
+            .collect_vec();
 
-    if catalog_nums.is_empty() {
-        return Ok(());
-    }
+        if catalog_nums.is_empty() {
+            return Ok(());
+        }
 
-    create_release_catalog_number(release_id, &catalog_nums, db).await
+        create_release_catalog_number(release_id, &catalog_nums, db).await
+    })
+    .await
 }

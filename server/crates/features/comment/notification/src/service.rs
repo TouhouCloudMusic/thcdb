@@ -1,8 +1,8 @@
 use comment_repo::CreatedComment;
 use entity::comment_target;
+use infra_db::DatabaseTransaction;
 use infra_db::error::DatabaseError;
 use notification_core::{CreateNotificationsCommand, NotificationRecipients};
-use sea_orm::DatabaseTransaction;
 
 use crate::repo;
 

@@ -27,7 +27,7 @@ impl Service {
     ) -> Result<Option<CorrectionDetail>, ReadError> {
         let Some(model) = repo::find_correction(&self.repo.conn, correction_id)
             .await
-            .db_operation("find correction detail")?
+            .db_context("find correction detail")?
         else {
             return Ok(None);
         };
@@ -38,12 +38,12 @@ impl Service {
             model.entity_id,
         )
         .await
-        .db_operation("find correction entity name")?
+        .db_context("find correction entity name")?
         .ok_or(ReadError::NotFound("Correction not found"))?;
 
         let author = repo::find_author(&self.repo.conn, correction_id)
             .await
-            .db_operation("find correction author")?;
+            .db_context("find correction author")?;
 
         let comments = CommentService::new(self.repo.clone())
             .list_comments(
@@ -65,7 +65,7 @@ impl Service {
                 ])
                 .one(&self.repo.conn)
                 .await
-                .db_operation("check correction subscription")?
+                .db_context("check correction subscription")?
                 .is_some(),
             None => false,
         };

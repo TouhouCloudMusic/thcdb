@@ -11,7 +11,10 @@ use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::features::user_profile::{
     Error, FollowResult, UnfollowResult, UserProfile, repo,
 };
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+
+#[cfg(all(test, feature = "integration-test"))]
+mod tests;
 
 #[derive(Clone)]
 pub struct Service {
@@ -48,6 +51,7 @@ impl Service {
         Ok(user)
     }
 
+    #[fastrace::trace(name = "user_profile.follow")]
     pub async fn follow(
         &self,
         current_user_id: i32,
@@ -61,9 +65,8 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin user follow transaction")?;
+            .db_context("begin user follow transaction")?;
         let conn = tx_repo.conn();
-
         if auth::repo::find_by_id(conn, target_user_id)
             .await?
             .as_ref()
@@ -87,60 +90,51 @@ impl Service {
         )
         .exec(conn)
         .await
-        .db_operation("create user follow relationship")?;
+        .db_context("create user follow relationship")?;
 
-        match inserted {
-            TryInsertResult::Inserted(_) => {
-                let notification_recipients =
-                    user_profile_notification::create_user_followed_notification(
-                        conn,
-                        user_profile_notification::FollowerId(current_user_id),
-                        user_profile_notification::FollowedUserId(target_user_id),
-                    )
-                    .await
-                    .map_err(
-                        crate::infra::database::error::DatabaseError::from,
-                    )?;
-
-                tx_repo.commit().await.map_err(
-                    crate::infra::database::error::DatabaseError::from,
-                )?;
-
-                self.user_events.publish(
-                    UserEvent::NotificationInboxUpdated,
-                    notification_recipients.user_ids,
-                );
-
-                Ok(FollowResult::Followed)
-            }
-            TryInsertResult::Conflicted => {
-                tx_repo.commit().await.map_err(
-                    crate::infra::database::error::DatabaseError::from,
-                )?;
-
-                Ok(FollowResult::AlreadyFollowing)
-            }
+        let notification_recipients = match inserted {
+            TryInsertResult::Inserted(_) => Some(
+                user_profile_notification::create_user_followed_notification(
+                    conn,
+                    user_profile_notification::FollowerId(current_user_id),
+                    user_profile_notification::FollowedUserId(target_user_id),
+                )
+                .await
+                .map_err(DatabaseError::from)?,
+            ),
+            TryInsertResult::Conflicted => None,
             TryInsertResult::Empty => {
                 unreachable!("TryInsert::one returned Empty")
             }
+        };
+        tx_repo.commit().await.map_err(DatabaseError::from)?;
+
+        if let Some(notification_recipients) = notification_recipients {
+            self.user_events.publish(
+                UserEvent::NotificationInboxUpdated,
+                notification_recipients.user_ids,
+            );
+            Ok(FollowResult::Followed)
+        } else {
+            Ok(FollowResult::AlreadyFollowing)
         }
     }
 
+    #[fastrace::trace(name = "user_profile.unfollow")]
     pub async fn unfollow(
         &self,
         current_user_id: i32,
         target_user_id: i32,
     ) -> Result<UnfollowResult, Error> {
-        let res = user_following::Entity::delete_many()
+        let deletion = user_following::Entity::delete_many()
             .filter(all![
                 user_following::Column::UserId.eq(current_user_id),
                 user_following::Column::FollowingId.eq(target_user_id),
             ])
             .exec(&self.repo.conn)
             .await
-            .db_operation("delete user follow relationship")?;
-
-        if res.rows_affected > 0 {
+            .db_context("delete user follow relationship")?;
+        if deletion.rows_affected > 0 {
             Ok(UnfollowResult::Unfollowed)
         } else {
             Ok(UnfollowResult::NotFollowing)

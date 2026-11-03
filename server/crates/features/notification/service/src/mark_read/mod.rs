@@ -1,6 +1,5 @@
 use infra_db::error::DatabaseResultExt;
 use notification_core::Seq;
-use sea_orm::TransactionTrait;
 use sea_orm::prelude::Uuid;
 
 use crate::inbox::InboxCutoff;
@@ -20,7 +19,7 @@ impl Service {
             .conn
             .begin()
             .await
-            .db_operation("begin mark notification read")?;
+            .db_context("begin mark notification read")?;
 
         let status = notification_core::mark_notification_read_through(
             &tx,
@@ -34,7 +33,7 @@ impl Service {
             notification_core::ReadStateUpdateStatus::Ok => {
                 tx.commit()
                     .await
-                    .db_operation("commit mark notification read")?;
+                    .db_context("commit mark notification read")?;
 
                 Ok(())
             }
@@ -60,7 +59,7 @@ impl Service {
             .conn
             .begin()
             .await
-            .db_operation("begin mark notification unread")?;
+            .db_context("begin mark notification unread")?;
 
         let status = notification_core::mark_notification_unread_from(
             &tx,
@@ -74,7 +73,7 @@ impl Service {
             notification_core::ReadStateUpdateStatus::Ok => {
                 tx.commit()
                     .await
-                    .db_operation("commit mark notification unread")?;
+                    .db_context("commit mark notification unread")?;
 
                 Ok(())
             }
@@ -98,14 +97,14 @@ impl Service {
             .conn
             .begin()
             .await
-            .db_operation("begin mark all notifications read")?;
+            .db_context("begin mark all notifications read")?;
 
         repo::read_all(&tx, user_id, InboxCutoff::new(inbox_cutoff_seq))
             .await?;
 
         tx.commit()
             .await
-            .db_operation("commit mark all notifications read")?;
+            .db_context("commit mark all notifications read")?;
 
         Ok(())
     }

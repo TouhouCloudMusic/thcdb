@@ -1,10 +1,11 @@
 use std::collections::BTreeSet;
 
 use entity::{user, user_role};
+use infra_db::DatabaseTransaction;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseTransaction, EntityTrait,
-    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
+    ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
+    QueryOrder, QuerySelect,
 };
 use sea_query::{ExprTrait, Func, LockType};
 
@@ -16,6 +17,7 @@ pub(super) struct UserPage {
     pub(super) users: Vec<(user::Model, Vec<user_role::Model>)>,
 }
 
+#[infra_db::observe("admin.list_users")]
 pub(super) async fn list_users(
     conn: &impl ConnectionTrait,
     keyword: Option<String>,
@@ -33,7 +35,7 @@ pub(super) async fn list_users(
         .clone()
         .count(conn)
         .await
-        .db_operation("count admin users")?;
+        .db_context("count admin users")?;
     let users = select
         .order_by_asc(user::Column::Id)
         .offset(offset)
@@ -41,37 +43,39 @@ pub(super) async fn list_users(
         .find_with_related(user_role::Entity)
         .all(conn)
         .await
-        .db_operation("find admin users")?;
+        .db_context("find admin users")?;
 
     Ok(UserPage { total_items, users })
 }
 
+#[infra_db::observe("admin.lock_user")]
 pub(super) async fn lock_user(
     conn: &DatabaseTransaction,
     user_id: i32,
 ) -> Result<bool, DatabaseError> {
-    user::Entity::find_by_id(user_id)
+    let locked_user = user::Entity::find_by_id(user_id)
         .select_only()
         .column(user::Column::Id)
         .lock(LockType::NoKeyUpdate)
         .into_tuple::<i32>()
         .one(conn)
-        .await
-        .db_operation("find user for role update")
-        .map(|user_id| user_id.is_some())
+        .await?;
+    Ok(locked_user.is_some())
 }
 
+#[infra_db::observe("admin.load_user_roles")]
 pub(super) async fn load_user_roles(
     conn: &impl ConnectionTrait,
     user_id: i32,
 ) -> Result<Vec<user_role::Model>, DatabaseError> {
-    user_role::Entity::find()
+    let roles = user_role::Entity::find()
         .filter(user_role::Column::UserId.eq(user_id))
         .all(conn)
-        .await
-        .db_operation("find user roles")
+        .await?;
+    Ok(roles)
 }
 
+#[infra_db::observe("admin.replace_editable_user_roles")]
 pub(super) async fn replace_editable_user_roles(
     conn: &DatabaseTransaction,
     user_id: i32,
@@ -84,7 +88,7 @@ pub(super) async fn replace_editable_user_roles(
         )
         .exec(conn)
         .await
-        .db_operation("delete old editable user roles")?;
+        .db_context("delete old editable user roles")?;
 
     let roles = roles.iter().copied().map(|role| user_role::ActiveModel {
         user_id: Set(user_id),
@@ -94,7 +98,7 @@ pub(super) async fn replace_editable_user_roles(
         .on_empty_do_nothing()
         .exec(conn)
         .await
-        .db_operation("insert new user roles")?;
+        .db_context("insert new user roles")?;
 
     Ok(())
 }

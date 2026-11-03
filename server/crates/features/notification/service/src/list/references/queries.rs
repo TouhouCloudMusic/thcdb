@@ -43,7 +43,7 @@ pub(super) async fn load_collections(
         .into_model::<ReferencedUserCollection>()
         .all(conn)
         .await
-        .db_operation("load notification collections")
+        .db_context("load notification collections")
         .map(|collections| {
             collections
                 .into_iter()
@@ -78,7 +78,7 @@ pub(super) async fn load_correction_targets(
         .into_model::<CorrectionTargetReference>()
         .all(conn)
         .await
-        .db_operation("load notification correction targets")
+        .db_context("load notification correction targets")
 }
 
 #[derive(FromQueryResult)]
@@ -215,7 +215,7 @@ pub(super) async fn load_entity_names(
     )
     .all(conn)
     .await
-    .db_operation("load notification entity names")?;
+    .db_context("load notification entity names")?;
     let mut names = EntityNames::default();
     for row in rows {
         names.insert(row);

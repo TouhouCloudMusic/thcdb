@@ -10,6 +10,7 @@ use sea_orm::{
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::{CorrectionSortField, PageQuery, PaginationQuery};
 
+#[infra_db::observe("correction.find_sorted_entity_ids")]
 pub async fn correction_sorted_entity_ids(
     db: &impl ConnectionTrait,
     entity_type: entity::enums::EntityType,
@@ -28,7 +29,7 @@ pub async fn correction_sorted_entity_ids(
             .order_by(sort_column, sort_direction.clone())
             .all(db)
             .await
-            .db_operation("load correction sort rows")?;
+            .db_context("load correction sort rows")?;
 
     let entity_ids = if matches!(sort_direction, sea_orm::Order::Asc) {
         // models are sorted oldest -> newest, order entities by their last occurrence.
@@ -125,9 +126,8 @@ where
     select = select.order_by_asc(id_column);
     select = select.limit(u64::from(limit) + 1);
 
-    let mut items = fetch(select)
-        .await
-        .db_operation("fetch cursor page items")?;
+    let mut items =
+        fetch(select).await.db_context("fetch cursor page items")?;
 
     let has_next = items.len() > limit as usize;
     if has_next {
@@ -143,6 +143,7 @@ where
     Ok(CursorResponse { items, next_cursor })
 }
 
+#[infra_db::observe("database.load_page")]
 pub async fn find_many_page<E, D, Fut>(
     db: &impl ConnectionTrait,
     mut select: Select<E>,
@@ -162,7 +163,7 @@ where
         .clone()
         .count(db)
         .await
-        .db_operation("count page items")?;
+        .db_context("count page items")?;
 
     // Ensure stable ordering for offset pagination.
     select = select.order_by_asc(id_column);
@@ -171,7 +172,7 @@ where
         .offset(pagination.offset())
         .limit(u64::from(pagination.limit()));
 
-    let items = fetch(select).await.db_operation("fetch page items")?;
+    let items = fetch(select).await.db_context("fetch page items")?;
 
     Ok(pagination.to_response(items, total_items))
 }

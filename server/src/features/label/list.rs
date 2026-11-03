@@ -38,7 +38,7 @@ pub(crate) async fn load(
         .into_partial_model::<LabelRow>()
         .all(db)
         .await
-        .db_operation("load label list items")?;
+        .db_context("load label list items")?;
 
     load_items(labels, db).await
 }
@@ -64,7 +64,7 @@ pub(crate) async fn load_items(
         .into_tuple::<(i32, i32, String)>()
         .all(db)
         .await
-        .db_operation("load label list founders")?;
+        .db_context("load label list founders")?;
     let mut founders: HashMap<i32, Vec<SimpleArtist>> = HashMap::new();
     for (label_id, id, name) in founder_rows {
         founders
@@ -81,7 +81,7 @@ pub(crate) async fn load_items(
         )
         .all(db)
         .await
-        .db_operation("load label list localized names")?;
+        .db_context("load label list localized names")?;
     let mut localized_names: HashMap<i32, Vec<LocalizedName>> = HashMap::new();
     for (name, language) in localized_name_rows {
         if let Some(language) = language {

@@ -3,9 +3,10 @@ use entity::{
     account_role_changed_notification_event,
     comment_created_notification_event, notification_event,
 };
+use infra_db::DatabaseTransaction;
 use infra_db::error::{DatabaseError, DatabaseResultExt};
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{DatabaseTransaction, EntityTrait, TryInsert, TryInsertResult};
+use sea_orm::{EntityTrait, TryInsert, TryInsertResult};
 use sea_query::{Expr, OnConflict};
 
 use super::delivery::CreateNotificationsCommand;
@@ -162,6 +163,7 @@ impl CreateNotificationsCommand {
         }
     }
 
+    #[infra_db::observe("notification.event.insert_data")]
     async fn insert_data(
         &self,
         conn: &DatabaseTransaction,
@@ -177,7 +179,7 @@ impl CreateNotificationsCommand {
                 )
                 .exec_without_returning(conn)
                 .await
-                .db_operation("insert comment created notification data")?;
+                .db_context("insert comment created notification data")?;
             }
             Self::AccountRoleChanged { new_roles, .. } => {
                 let models = new_roles.iter().copied().map(|role_id| {
@@ -192,9 +194,7 @@ impl CreateNotificationsCommand {
                 .on_empty_do_nothing()
                 .exec_without_returning(conn)
                 .await
-                .db_operation(
-                    "insert account role changed notification data",
-                )?;
+                .db_context("insert account role changed notification data")?;
             }
             Self::CorrectionReviewRequested { .. }
             | Self::CorrectionUpdated { .. }
@@ -211,6 +211,7 @@ impl CreateNotificationsCommand {
 
 impl CreateNotificationsCommand {
     /// Returns `None` when an event with the same idempotency key exists.
+    #[infra_db::observe("notification.event.create_event")]
     pub(super) async fn create_event(
         &self,
         conn: &DatabaseTransaction,
@@ -266,7 +267,7 @@ impl CreateNotificationsCommand {
             )
             .exec(conn)
             .await
-            .db_operation("insert notification event")?;
+            .db_context("insert notification event")?;
 
         match inserted {
             TryInsertResult::Inserted(result) => {

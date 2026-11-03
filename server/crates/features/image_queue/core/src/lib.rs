@@ -12,16 +12,18 @@ mod target;
 
 pub use target::{ImageQueueTarget, load_targets};
 
+#[infra_db::observe("image_queue.exists")]
 pub async fn exists(
     conn: &impl ConnectionTrait,
     image_queue_id: i32,
 ) -> Result<bool, DatabaseError> {
-    image_queue::Entity::find_by_id(image_queue_id)
+    let exists = image_queue::Entity::find_by_id(image_queue_id)
         .exists(conn)
-        .await
-        .db_operation("check image queue exists")
+        .await?;
+    Ok(exists)
 }
 
+#[infra_db::observe("image_queue.subscribe")]
 pub async fn subscribe(
     conn: &impl ConnectionTrait,
     user_id: i32,
@@ -42,12 +44,12 @@ pub async fn subscribe(
         .to_owned(),
     )
     .exec_without_returning(conn)
-    .await
-    .db_operation("subscribe to image queue")?;
+    .await?;
 
     Ok(())
 }
 
+#[infra_db::observe("image_queue.unsubscribe")]
 pub async fn unsubscribe(
     conn: &impl ConnectionTrait,
     user_id: i32,
@@ -59,12 +61,12 @@ pub async fn unsubscribe(
             image_queue_subscription::Column::ImageQueueId.eq(image_queue_id),
         )
         .exec(conn)
-        .await
-        .db_operation("unsubscribe from image queue")?;
+        .await?;
 
     Ok(())
 }
 
+#[infra_db::observe("image_queue.can_access")]
 pub async fn can_access(
     conn: &impl ConnectionTrait,
     user_id: i32,
@@ -76,7 +78,7 @@ pub async fn can_access(
         .into_tuple::<i32>()
         .one(conn)
         .await
-        .db_operation("load image queue access target")?
+        .db_context("load image queue access target")?
     else {
         return Ok(None);
     };
@@ -85,8 +87,9 @@ pub async fn can_access(
         return Ok(Some(true));
     }
 
-    user_has_permission(conn, user_id, Permission::ImageQueueManage)
-        .await
-        .db_operation("check image queue manage permission")
-        .map(Some)
+    let can_access =
+        user_has_permission(conn, user_id, Permission::ImageQueueManage)
+            .await
+            .db_context("check image queue manage permission")?;
+    Ok(Some(can_access))
 }

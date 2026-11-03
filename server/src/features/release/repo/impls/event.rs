@@ -1,8 +1,7 @@
 use entity::{release_event, release_event_history};
+use infra_db::DatabaseTransaction;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
-};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 
 pub(crate) async fn create_release_event(
     release_id: i32,
@@ -55,22 +54,25 @@ pub(crate) async fn update_release_event(
     history_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    release_event::Entity::delete_many()
-        .filter(release_event::Column::ReleaseId.eq(release_id))
-        .exec(db)
-        .await?;
+    infra_db::trace("release.update_event", async {
+        release_event::Entity::delete_many()
+            .filter(release_event::Column::ReleaseId.eq(release_id))
+            .exec(db)
+            .await?;
 
-    let events = release_event_history::Entity::find()
-        .filter(release_event_history::Column::HistoryId.eq(history_id))
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|x| x.event_id)
-        .collect::<Vec<_>>();
+        let events = release_event_history::Entity::find()
+            .filter(release_event_history::Column::HistoryId.eq(history_id))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|x| x.event_id)
+            .collect::<Vec<_>>();
 
-    if events.is_empty() {
-        return Ok(());
-    }
+        if events.is_empty() {
+            return Ok(());
+        }
 
-    create_release_event(release_id, &events, db).await
+        create_release_event(release_id, &events, db).await
+    })
+    .await
 }

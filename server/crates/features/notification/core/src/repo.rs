@@ -7,11 +7,11 @@ pub use delivery::{
     CreateNotificationsCommand, NotificationRecipients, create_notifications,
 };
 use entity::notification;
+use infra_db::DatabaseTransaction;
 use infra_db::error::{DatabaseError, DatabaseResultExt};
 use sea_orm::prelude::Uuid;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseTransaction, EntityTrait,
-    QueryFilter, QuerySelect,
+    ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, QuerySelect,
 };
 use sea_query::{Expr, Func, all};
 
@@ -26,6 +26,7 @@ pub enum ReadStateUpdateStatus {
 }
 
 /// Advances the recipient's read boundary without moving it backward.
+#[infra_db::observe("notification.mark_read_through")]
 pub async fn mark_notification_read_through(
     conn: &DatabaseTransaction,
     recipient_id: i32,
@@ -34,12 +35,9 @@ pub async fn mark_notification_read_through(
 ) -> Result<ReadStateUpdateStatus, DatabaseError> {
     let through_seq = i64::from(through_seq);
 
-    let Some(notification) = notification::Entity::find_by_id(notification_id)
-        .filter(notification::Column::RecipientId.eq(recipient_id))
-        .lock_exclusive()
-        .one(conn)
-        .await
-        .db_operation("load notification read boundary")?
+    let Some(notification) =
+        load_notification_for_update(conn, recipient_id, notification_id)
+            .await?
     else {
         return Ok(ReadStateUpdateStatus::NotificationNotFound);
     };
@@ -58,6 +56,7 @@ pub async fn mark_notification_read_through(
     Ok(ReadStateUpdateStatus::Ok)
 }
 
+#[infra_db::observe("notification.mark_unread_from")]
 pub async fn mark_notification_unread_from(
     conn: &DatabaseTransaction,
     recipient_id: i32,
@@ -66,12 +65,9 @@ pub async fn mark_notification_unread_from(
 ) -> Result<ReadStateUpdateStatus, DatabaseError> {
     let seq = i64::from(seq);
 
-    let Some(notification) = notification::Entity::find_by_id(notification_id)
-        .filter(notification::Column::RecipientId.eq(recipient_id))
-        .lock_exclusive()
-        .one(conn)
-        .await
-        .db_operation("load notification unread boundary")?
+    let Some(notification) =
+        load_notification_for_update(conn, recipient_id, notification_id)
+            .await?
     else {
         return Ok(ReadStateUpdateStatus::NotificationNotFound);
     };
@@ -89,7 +85,7 @@ pub async fn mark_notification_unread_from(
         .filter(notification::Column::RecipientId.eq(recipient_id))
         .exec(conn)
         .await
-        .db_operation("move notification read state backward")?;
+        .db_context("move notification read state backward")?;
 
     if result.rows_affected == 0 {
         Ok(ReadStateUpdateStatus::NotificationNotFound)
@@ -98,8 +94,23 @@ pub async fn mark_notification_unread_from(
     }
 }
 
+#[infra_db::observe("notification.lock_for_update")]
+async fn load_notification_for_update(
+    conn: &DatabaseTransaction,
+    recipient_id: i32,
+    notification_id: Uuid,
+) -> Result<Option<notification::Model>, DatabaseError> {
+    let notification = notification::Entity::find_by_id(notification_id)
+        .filter(notification::Column::RecipientId.eq(recipient_id))
+        .lock_exclusive()
+        .one(conn)
+        .await?;
+    Ok(notification)
+}
+
 /// Marks a server-resolved boundary without returning request-validation status.
 /// A boundary that no longer matches a notification is a no-op.
+#[infra_db::observe("notification.mark_read_through_unchecked")]
 pub(super) async fn mark_notification_read_through_unchecked(
     conn: &impl ConnectionTrait,
     recipient_id: i32,
@@ -117,13 +128,14 @@ pub(super) async fn mark_notification_read_through_unchecked(
     Ok(rows_affected != 0)
 }
 
+#[infra_db::observe("notification.update_read_through")]
 async fn update_notification_read_through(
     conn: &impl ConnectionTrait,
     recipient_id: i32,
     notification_id: Uuid,
     through_seq: i64,
 ) -> Result<u64, DatabaseError> {
-    notification::Entity::update_many()
+    let result = notification::Entity::update_many()
         .col_expr(
             notification::Column::ReadThroughSeq,
             Expr::expr(Func::greatest([
@@ -139,7 +151,6 @@ async fn update_notification_read_through(
             notification::Column::ReadThroughSeq.lt(through_seq),
         ])
         .exec(conn)
-        .await
-        .db_operation("advance notification read state")
-        .map(|result| result.rows_affected)
+        .await?;
+    Ok(result.rows_affected)
 }

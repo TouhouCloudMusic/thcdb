@@ -24,7 +24,7 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin set user roles transaction")?;
+            .db_context("begin set user roles transaction")?;
 
         if !repo::lock_user(tx_repo.conn(), target_id).await? {
             return Err(EntityNotFound::new("user", target_id).into());

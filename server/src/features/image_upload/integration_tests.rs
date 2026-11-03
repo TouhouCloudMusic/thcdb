@@ -39,7 +39,7 @@ fn png(seed: i32, variant: u8) -> Result<Vec<u8>> {
 }
 
 async fn upload(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &infra_db::DatabaseConnection,
     base_path: &Path,
     source: &[u8],
     parser: &Parser,

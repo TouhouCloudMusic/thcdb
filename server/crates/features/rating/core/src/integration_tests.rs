@@ -1,9 +1,7 @@
 use entity::{release, release_rating, song, song_rating};
 use infra_testing::MockUser;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{
-    ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, TransactionTrait,
-};
+use sea_orm::{ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter};
 
 use super::{Rating, RatingTarget, RatingTargetKind, get, set};
 

@@ -1,7 +1,7 @@
 use entity::enums::CommentState;
 use entity::{comment, comment_thread};
 use infra_db::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+    BrokenEntityReference, DatabaseError, DatabaseFailure, DatabaseResultExt,
 };
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
@@ -9,6 +9,7 @@ use sea_orm::{
     QuerySelect,
 };
 
+#[infra_db::observe("comment.thread.lock_for_delete")]
 async fn lock_thread(
     conn: &impl ConnectionTrait,
     thread_id: i32,
@@ -16,10 +17,9 @@ async fn lock_thread(
     comment_thread::Entity::find_by_id(thread_id)
         .lock_exclusive()
         .one(conn)
-        .await
-        .db_operation("lock comment thread")?
+        .await?
         .ok_or_else(|| {
-            DatabaseError::broken_reference(BrokenEntityReference {
+            DatabaseFailure::broken_reference(BrokenEntityReference {
                 entity: "comment thread",
                 id: thread_id,
             })
@@ -28,6 +28,7 @@ async fn lock_thread(
     Ok(())
 }
 
+#[infra_db::observe("comment.soft_delete")]
 pub async fn soft_delete_comment(
     conn: &impl ConnectionTrait,
     comment: comment::Model,
@@ -43,7 +44,7 @@ pub async fn soft_delete_comment(
     active
         .update(conn)
         .await
-        .db_operation("soft delete comment")?;
+        .db_context("soft delete comment")?;
 
     Ok(())
 }

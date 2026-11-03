@@ -25,7 +25,7 @@ pub async fn subscribe(
     )
     .exec_without_returning(conn)
     .await
-    .db_operation("subscribe to correction")?;
+    .db_context("subscribe to correction")?;
 
     Ok(())
 }
@@ -42,7 +42,7 @@ pub async fn unsubscribe(
         ])
         .exec(conn)
         .await
-        .db_operation("unsubscribe from correction")?;
+        .db_context("unsubscribe from correction")?;
 
     Ok(())
 }

@@ -14,6 +14,7 @@ pub(crate) mod image_queue;
 pub(crate) mod image_upload;
 pub mod label;
 pub mod notification;
+pub mod observability;
 pub mod popularity;
 pub mod rating;
 pub mod release;

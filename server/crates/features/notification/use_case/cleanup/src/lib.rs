@@ -1,7 +1,7 @@
 use std::num::NonZeroU16;
 
-use infra_db::error::DatabaseError;
-use sea_orm::DatabaseConnection;
+use infra_db::DatabaseConnection;
+use infra_db::error::{DatabaseError, DatabaseResultExt};
 
 use crate::repo::CleanupCounts;
 
@@ -15,7 +15,9 @@ pub async fn run(
     retention_days: NonZeroU16,
 ) -> Result<(), DatabaseError> {
     let mut counts = CleanupCounts::default();
-    let cutoff = repo::load_retention_cutoff(conn, retention_days).await?;
+    let cutoff = repo::load_retention_cutoff(conn, retention_days)
+        .await
+        .db_context("load notification retention cutoff")?;
 
     loop {
         let batch = repo::delete_expired_notification_batch(
@@ -24,7 +26,8 @@ pub async fn run(
             NOTIFICATION_CLAIM_LIMIT,
             ENTRY_DELETE_LIMIT,
         )
-        .await?;
+        .await
+        .db_context("delete expired notification batch")?;
         if !batch.is_empty() {
             counts += batch;
             continue;
@@ -36,7 +39,8 @@ pub async fn run(
             NOTIFICATION_CLAIM_LIMIT,
             ENTRY_DELETE_LIMIT,
         )
-        .await?;
+        .await
+        .db_context("purge expired notification entries")?;
         if batch.is_empty() {
             break;
         }

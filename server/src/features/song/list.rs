@@ -39,7 +39,7 @@ pub(crate) async fn load(
         .into_partial_model::<SongRow>()
         .all(db)
         .await
-        .db_operation("load song list items")?;
+        .db_context("load song list items")?;
 
     load_items(songs, db).await
 }
@@ -86,7 +86,7 @@ pub(crate) async fn load_items(
             .into_tuple::<(i32, i32, String)>()
             .all(db),
     )
-    .db_operation("load song list associations")?;
+    .db_context("load song list associations")?;
 
     let mut artists: HashMap<i32, Vec<SimpleArtist>> = HashMap::new();
     for (song_id, id, name) in artist_rows {

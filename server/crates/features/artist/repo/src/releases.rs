@@ -26,6 +26,7 @@ pub(crate) struct ArtistReleaseIR {
     pub(crate) cover_url: Option<String>,
 }
 
+#[infra_db::observe("artist.releases.list_appearances")]
 pub async fn appearance(
     repo: &SeaOrmRepository,
     query: AppearanceQuery,
@@ -37,8 +38,10 @@ pub async fn appearance(
     )
     .await
     .map(|x| x.map(Into::into))
+    .map_err(Into::into)
 }
 
+#[infra_db::observe("artist.releases.list_discography")]
 pub async fn discography(
     repo: &SeaOrmRepository,
     query: DiscographyQuery,
@@ -51,8 +54,10 @@ pub async fn discography(
     find_artist_releases(select, query.pagination, &repo.conn)
         .await
         .map(|x| x.map(Into::into))
+        .map_err(Into::into)
 }
 
+#[infra_db::observe("artist.releases.load_page")]
 async fn find_artist_releases(
     select: Select<release::Entity>,
     pagination: Cursor,
@@ -73,8 +78,7 @@ async fn find_artist_releases(
         .order_by_asc(release::Column::Id)
         .limit(u64::from(pagination.limit) + 1)
         .all(db)
-        .await
-        .db_operation("load artist releases")?;
+        .await?;
     let has_more = releases.len() > usize::from(pagination.limit);
     if has_more {
         releases.pop();
@@ -86,6 +90,7 @@ async fn find_artist_releases(
     Ok(CursorResponse { items, next_cursor })
 }
 
+#[infra_db::observe("artist.releases.load_details")]
 pub(crate) async fn hydrate_releases(
     releases: Vec<release::Model>,
     db: &impl ConnectionTrait,
@@ -96,7 +101,7 @@ pub(crate) async fn hydrate_releases(
     let release_artist = releases
         .load_many_to_many(artist::Entity::find(), release_artist::Entity, db)
         .await
-        .db_operation("load artist release artists")?;
+        .db_context("load artist release artists")?;
     let cover_urls = releases
         .load_many_to_many(
             entity::image::Entity::find()
@@ -108,7 +113,7 @@ pub(crate) async fn hydrate_releases(
             db,
         )
         .await
-        .db_operation("load artist release cover images")?
+        .db_context("load artist release cover images")?
         .into_iter()
         .map(|x| x.into_iter().next().map(|image| image.object_key))
         .collect_vec();

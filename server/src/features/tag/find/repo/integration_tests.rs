@@ -166,7 +166,9 @@ async fn tagged_entities_are_ranked_by_their_own_popularity_scores()
         .max_lifetime(None)
         .connect(&infra_testing::test_database_url())
         .await?;
-    let conn = SqlxPostgresConnector::from_sqlx_postgres_pool(pool);
+    let conn = infra_db::DatabaseConnection::from(
+        SqlxPostgresConnector::from_sqlx_postgres_pool(pool),
+    );
     conn.execute_unprepared(
         "CREATE TEMP TABLE entity_popularity (LIKE public.entity_popularity INCLUDING ALL)",
     ).await?;

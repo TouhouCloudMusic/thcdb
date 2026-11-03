@@ -1,14 +1,14 @@
 use entity::{user_collection, user_collection_follow};
+use infra_db::DatabaseTransaction;
 use infra_db::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+    BrokenEntityReference, DatabaseError, DatabaseFailure, DatabaseResultExt,
 };
 use notification_core::{CreateNotificationsCommand, NotificationRecipients};
 use sea_orm::sea_query::all;
-use sea_orm::{
-    ColumnTrait, DatabaseTransaction, EntityTrait, QueryFilter, QuerySelect,
-};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 
 /// Missing, private, and self-owned collections produce no recipients.
+#[infra_db::observe("user_collection.notification.create_followed")]
 pub async fn create_collection_followed_notification(
     conn: &DatabaseTransaction,
     follower_id: i32,
@@ -25,7 +25,7 @@ pub async fn create_collection_followed_notification(
             .into_tuple::<i32>()
             .one(conn)
             .await
-            .db_operation("load followed collection owner")?
+            .db_context("load followed collection owner")?
     else {
         return Ok(NotificationRecipients::default());
     };
@@ -39,8 +39,10 @@ pub async fn create_collection_followed_notification(
         },
     )
     .await
+    .map_err(Into::into)
 }
 
+#[infra_db::observe("user_collection.notification.create_item_added")]
 pub async fn create_collection_item_added_notification(
     conn: &DatabaseTransaction,
     owner_id: i32,
@@ -53,13 +55,15 @@ pub async fn create_collection_item_added_notification(
         .into_tuple::<i32>()
         .one(conn)
         .await
-        .db_operation("load collection item notification collection")?
+        .db_context("load collection item notification collection")?
         .is_some();
     if !collection_exists {
-        return Err(DatabaseError::broken_reference(BrokenEntityReference {
+        return Err(DatabaseFailure::broken_reference(BrokenEntityReference {
             entity: "user_collection",
             id: collection_id,
-        }));
+        })
+        .context("load collection item notification collection")
+        .into());
     }
 
     let recipients = user_collection_follow::Entity::find()
@@ -72,7 +76,7 @@ pub async fn create_collection_item_added_notification(
         .into_tuple::<i32>()
         .all(conn)
         .await
-        .db_operation("resolve collection item notification recipients")?;
+        .db_context("resolve collection item notification recipients")?;
 
     notification_core::create_notifications(
         conn,
@@ -84,4 +88,5 @@ pub async fn create_collection_item_added_notification(
         },
     )
     .await
+    .map_err(Into::into)
 }

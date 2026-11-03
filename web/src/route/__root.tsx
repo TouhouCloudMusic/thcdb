@@ -34,7 +34,12 @@ export const Route = createRootRouteWithContext<RouteContext>()({
 		],
 	}),
 	notFoundComponent: NotFound,
-	errorComponent: (e) => <InternalServerError msg={getErrorMessage(e.error)} />,
+	errorComponent: (e) => (
+		<InternalServerError
+			error={e.error}
+			msg={getErrorMessage(e.error)}
+		/>
+	),
 })
 
 function RouteTree() {

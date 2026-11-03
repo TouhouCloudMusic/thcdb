@@ -4,6 +4,10 @@ codegen-backend = true
 [profile.dev]
 codegen-backend = "cranelift"
 
+# TODO: Cranelift cannot lower zmij's _mm_mulhi_epu16 intrinsic.
+[profile.dev.package.zmij]
+codegen-backend = "llvm"
+
 [profile.test]
 codegen-backend = "llvm"
 

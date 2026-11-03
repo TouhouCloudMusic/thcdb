@@ -6489,28 +6489,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
         };
     };
     get_home: {

@@ -66,18 +66,3 @@ impl From<DatabaseError> for Error {
         Self::internal(source)
     }
 }
-
-impl From<comment_repo::CreateCommentError> for Error {
-    fn from(source: comment_repo::CreateCommentError) -> Self {
-        match source {
-            comment_repo::CreateCommentError::InvalidInReplyToComment => {
-                Self::invalid_request(
-                    "Replied-to comment is not active in this thread",
-                )
-            }
-            comment_repo::CreateCommentError::Database(source) => {
-                Self::internal(source)
-            }
-        }
-    }
-}

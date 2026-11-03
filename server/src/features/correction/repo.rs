@@ -8,13 +8,13 @@ use fastrace::prelude::LocalSpan;
 use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveEnum, ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
-    IntoActiveModel, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
-    QueryTrait,
+    ActiveEnum, ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
+    EntityTrait, IntoActiveModel, Order, PaginatorTrait, QueryFilter,
+    QueryOrder, QuerySelect, QueryTrait,
 };
-use sea_query::{Expr, OnConflict, Query, all};
+use sea_query::{Expr, NullOrdering, OnConflict, Query, all};
 
-use super::ModerationError;
+use crate::features;
 use crate::features::correction::{
     Correction, CorrectionEntity, CorrectionFilter, CorrectionFilterStatus,
     NewCorrectionMeta,
@@ -22,8 +22,7 @@ use crate::features::correction::{
 use crate::features::user::User;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
-pub(super) struct CorrectionApprover(pub User);
-
+#[infra_db::observe("correction.find_pending_history_id")]
 pub(crate) async fn find_pending_history_id(
     db: &impl ConnectionTrait,
     entity_id: i32,
@@ -37,7 +36,7 @@ pub(crate) async fn find_pending_history_id(
         .filter(correction_entity::Column::Status.eq(CorrectionStatus::Pending))
         .one(db)
         .await
-        .db_operation("find pending correction")?
+        .db_context("find pending correction")?
     else {
         return Ok(None);
     };
@@ -47,7 +46,7 @@ pub(crate) async fn find_pending_history_id(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(db)
         .await
-        .db_operation("find latest pending correction revision")?
+        .db_context("find latest pending correction revision")?
         .map(|revision| revision.entity_history_id)
         .ok_or_else(|| {
             crate::infra::database::error::BrokenEntityReference {
@@ -64,6 +63,7 @@ pub enum CreateResult {
     Conflict(i32),
 }
 
+#[infra_db::observe("correction.find_one")]
 pub async fn find_one(
     db: &impl ConnectionTrait,
     filter: CorrectionFilter,
@@ -84,17 +84,18 @@ pub async fn find_one(
         .order_by_desc(Column::CreatedAt)
         .one(db)
         .await
-        .db_operation("find correction")?
+        .db_context("find correction")?
         .map(Into::into);
     Ok(ret)
 }
 
+#[infra_db::observe("correction.lock_pending_correction")]
 pub async fn lock_pending_correction(
     tx_repo: &SeaOrmTxRepo,
     entity_id: i32,
     entity_type: EntityType,
 ) -> Result<Option<Correction>, DatabaseError> {
-    Entity::find()
+    let correction = Entity::find()
         .filter(all![
             Column::EntityId.eq(entity_id),
             Column::EntityType.eq(entity_type),
@@ -102,11 +103,11 @@ pub async fn lock_pending_correction(
         ])
         .lock_exclusive()
         .one(tx_repo.conn())
-        .await
-        .db_operation("lock pending correction")
-        .map(|model| model.map(Into::into))
+        .await?;
+    Ok(correction.map(Into::into))
 }
 
+#[infra_db::observe("correction.is_author")]
 pub async fn is_author(
     db: &impl ConnectionTrait,
     user: &User,
@@ -120,10 +121,11 @@ pub async fn is_author(
         ])
         .count(db)
         .await
-        .db_operation("check correction author")?;
+        .db_context("check correction author")?;
     Ok(count != 0)
 }
 
+#[infra_db::observe("correction.create_approved")]
 pub async fn create_approved(
     tx_repo: &SeaOrmTxRepo,
     meta: NewCorrectionMeta<impl CorrectionEntity>,
@@ -141,13 +143,14 @@ pub async fn create_approved(
     }
     .insert(tx_repo.conn())
     .await
-    .db_operation("insert approved correction")?;
+    .db_context("insert approved correction")?;
 
     insert_author_and_revision(tx_repo.conn(), correction.id, meta).await?;
 
     Ok(correction.id)
 }
 
+#[infra_db::observe("correction.create_pending")]
 pub async fn create_pending(
     conn: &impl ConnectionTrait,
     meta: NewCorrectionMeta<impl CorrectionEntity>,
@@ -188,11 +191,11 @@ pub async fn create_pending(
     let row = conn
         .query_one(statement)
         .await
-        .db_operation("insert correction")?
+        .db_context("insert correction")?
         .expect("INSERT ON CONFLICT DO UPDATE always returns a row");
     let (correction_id, previous_correction_id): (i32, Option<i32>) = row
         .try_get_many_by_index()
-        .db_operation("decode inserted correction")?;
+        .db_context("decode inserted correction")?;
 
     if let Some(previous_correction_id) = previous_correction_id {
         return Ok(CreateResult::Conflict(previous_correction_id));
@@ -203,6 +206,7 @@ pub async fn create_pending(
     Ok(CreateResult::Created(correction_id))
 }
 
+#[infra_db::observe("correction.insert_author_and_revision")]
 async fn insert_author_and_revision(
     conn: &impl ConnectionTrait,
     correction_id: i32,
@@ -217,7 +221,7 @@ async fn insert_author_and_revision(
     .into_active_model()
     .insert(conn)
     .await
-    .db_operation("insert correction author")?;
+    .db_context("insert correction author")?;
 
     correction_revision::Model {
         correction_id,
@@ -228,11 +232,12 @@ async fn insert_author_and_revision(
     .into_active_model()
     .insert(conn)
     .await
-    .db_operation("insert correction revision")?;
+    .db_context("insert correction revision")?;
 
     Ok(())
 }
 
+#[infra_db::observe("correction.update")]
 pub async fn update(
     tx_repo: &SeaOrmTxRepo,
     id: i32,
@@ -247,15 +252,18 @@ pub async fn update(
     .into_active_model()
     .insert(tx_repo.conn())
     .await
-    .db_operation("insert correction revision")?;
+    .db_context("insert correction revision")?;
 
     Ok(())
 }
 
-async fn lock_correction(
+#[infra_db::observe("correction.lock")]
+pub(super) async fn lock_correction(
     tx_repo: &SeaOrmTxRepo,
     correction_id: i32,
-) -> Result<correction_entity::Model, ModerationError> {
+) -> Result<Option<correction_entity::Model>, DatabaseError> {
+    LocalSpan::add_property(|| ("correction_id", correction_id.to_string()));
+
     let correction = correction_entity::Entity::find_by_id(correction_id)
         .lock_exclusive()
         .one(tx_repo.conn())
@@ -268,11 +276,12 @@ async fn lock_correction(
                 "correction repository operation failed"
             );
         })
-        .db_operation("lock correction")?;
+        .db_context("lock correction")?;
 
-    correction.ok_or(ModerationError::NotFound)
+    Ok(correction)
 }
 
+#[infra_db::observe("correction.insert_approver")]
 async fn insert_approver(
     tx_repo: &SeaOrmTxRepo,
     correction_id: i32,
@@ -293,11 +302,12 @@ async fn insert_approver(
             "correction repository operation failed"
         );
     })
-    .db_operation("insert correction approver")?;
+    .db_context("insert correction approver")?;
 
     Ok(())
 }
 
+#[infra_db::observe("correction.update_status")]
 async fn update_correction_status(
     tx_repo: &SeaOrmTxRepo,
     correction: correction_entity::Model,
@@ -318,11 +328,12 @@ async fn update_correction_status(
                 "correction repository operation failed"
             );
         })
-        .db_operation("update correction status")?;
+        .db_context("update correction status")?;
 
     Ok(correction)
 }
 
+#[infra_db::observe("correction.find_pending_id")]
 pub async fn find_pending_id(
     repo: &SeaOrmRepository,
     entity_id: i32,
@@ -352,64 +363,48 @@ pub async fn find_pending_id(
                 "correction repository operation failed"
             );
         })
-        .db_operation("find pending correction")?;
+        .db_context("find pending correction")?;
 
     Ok(model.map(|model| model.id))
 }
 
+#[infra_db::observe("correction.apply_update")]
 async fn apply_correction_update(
     tx_repo: &SeaOrmTxRepo,
     correction: correction_entity::Model,
-) -> Result<(), ModerationError> {
+) -> Result<(), DatabaseError> {
     let apply_update_res = match correction.entity_type {
         EntityType::Artist => {
-            crate::features::artist::repo::apply_update(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
-        }
-        EntityType::Label => {
-            crate::features::label::repo::apply_update(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
-        }
-        EntityType::Release => {
-            crate::features::release::repo::apply_update(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
-        }
-        EntityType::Song => {
-            crate::features::song::repo::apply_update(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
-        }
-        EntityType::Tag => {
-            crate::features::tag::repo::apply_update(correction, tx_repo.conn())
+            features::artist::repo::apply_update(correction, tx_repo.conn())
                 .await
         }
+        EntityType::Label => {
+            features::label::repo::apply_update(correction, tx_repo.conn())
+                .await
+        }
+        EntityType::Release => {
+            features::release::repo::apply_update(correction, tx_repo.conn())
+                .await
+        }
+        EntityType::Song => {
+            features::song::repo::apply_update(correction, tx_repo.conn()).await
+        }
+        EntityType::Tag => {
+            features::tag::repo::apply_update(correction, tx_repo.conn()).await
+        }
         EntityType::Event => {
-            crate::features::event::repo::apply_update(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
+            features::event::repo::apply_update(correction, tx_repo.conn())
+                .await
         }
         EntityType::SongLyrics => {
-            crate::features::song_lyrics::repo::apply_update(
+            features::song_lyrics::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
             .await
         }
         EntityType::CreditRole => {
-            crate::features::credit_role::repo::apply_update(
+            features::credit_role::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
@@ -417,35 +412,26 @@ async fn apply_correction_update(
         }
     };
 
-    apply_update_res.db_operation("apply correction update")?;
+    apply_update_res.db_context("apply correction update")?;
     Ok(())
 }
 
+#[infra_db::observe("correction.approve")]
 pub async fn approve(
     tx_repo: &SeaOrmTxRepo,
-    correction_id: i32,
-    CorrectionApprover(approver): CorrectionApprover,
-) -> Result<(), ModerationError> {
+    correction: correction_entity::Model,
+    approver_id: i32,
+) -> Result<(), DatabaseError> {
     LocalSpan::add_properties(|| {
         [
-            ("correction_id", correction_id.to_string()),
-            ("approver_id", approver.id.to_string()),
-        ]
-    });
-
-    let correction = lock_correction(tx_repo, correction_id).await?;
-    if correction.status != CorrectionStatus::Pending {
-        return Err(ModerationError::AlreadyHandled);
-    }
-
-    LocalSpan::add_properties(|| {
-        [
+            ("correction_id", correction.id.to_string()),
+            ("approver_id", approver_id.to_string()),
             ("entity_id", correction.entity_id.to_string()),
             ("entity_type", format!("{:?}", correction.entity_type)),
         ]
     });
 
-    insert_approver(tx_repo, correction_id, approver.id).await?;
+    insert_approver(tx_repo, correction.id, approver_id).await?;
 
     let correction = update_correction_status(
         tx_repo,
@@ -459,31 +445,22 @@ pub async fn approve(
     Ok(())
 }
 
+#[infra_db::observe("correction.reject")]
 pub async fn reject(
     tx_repo: &SeaOrmTxRepo,
-    correction_id: i32,
-    CorrectionApprover(approver): CorrectionApprover,
-) -> Result<(), ModerationError> {
+    correction: correction_entity::Model,
+    approver_id: i32,
+) -> Result<(), DatabaseError> {
     LocalSpan::add_properties(|| {
         [
-            ("correction_id", correction_id.to_string()),
-            ("approver_id", approver.id.to_string()),
-        ]
-    });
-
-    let correction = lock_correction(tx_repo, correction_id).await?;
-    if correction.status != CorrectionStatus::Pending {
-        return Err(ModerationError::AlreadyHandled);
-    }
-
-    LocalSpan::add_properties(|| {
-        [
+            ("correction_id", correction.id.to_string()),
+            ("approver_id", approver_id.to_string()),
             ("entity_id", correction.entity_id.to_string()),
             ("entity_type", format!("{:?}", correction.entity_type)),
         ]
     });
 
-    insert_approver(tx_repo, correction_id, approver.id).await?;
+    insert_approver(tx_repo, correction.id, approver_id).await?;
 
     let _ = update_correction_status(
         tx_repo,
@@ -510,11 +487,12 @@ mod tests {
     use entity::{
         correction, correction_revision, correction_user, song_history,
     };
+    use infra_db::DatabaseTransaction;
     use sea_orm::ActiveValue::{NotSet, Set};
     use sea_orm::{
-        ActiveModelTrait, ConnectionTrait, DatabaseTransaction, DbBackend,
-        DbErr, EntityTrait, ExecResult, IntoActiveModel, QueryResult,
-        QuerySelect, RuntimeErr, SqlxError, Statement, TransactionTrait,
+        ActiveModelTrait, ConnectionTrait, DbBackend, DbErr, EntityTrait,
+        ExecResult, IntoActiveModel, QueryResult, QuerySelect, RuntimeErr,
+        SqlxError, Statement,
     };
     use sea_query::{LockBehavior, LockType};
     use tokio::sync::Barrier;
@@ -810,4 +788,69 @@ mod tests {
 
         Ok(())
     }
+}
+
+pub(crate) async fn find_by_id(
+    db: &impl ConnectionTrait,
+    id: i32,
+) -> Result<Option<correction_entity::Model>, sea_orm::DbErr> {
+    infra_db::trace("correction.find_by_id", async {
+        correction_entity::Entity::find_by_id(id).one(db).await
+    })
+    .await
+}
+
+pub(crate) async fn latest_revision(
+    db: &impl ConnectionTrait,
+    correction_id: i32,
+) -> Result<Option<correction_revision::Model>, sea_orm::DbErr> {
+    infra_db::trace("correction.latest_revision", async {
+        correction_revision::Entity::find()
+            .filter(correction_revision::Column::CorrectionId.eq(correction_id))
+            .order_by_desc(correction_revision::Column::EntityHistoryId)
+            .one(db)
+            .await
+    })
+    .await
+}
+
+pub(crate) async fn find_base(
+    db: &impl ConnectionTrait,
+    current: &correction_entity::Model,
+) -> Result<Option<correction_entity::Model>, sea_orm::DbErr> {
+    infra_db::trace("correction.find_base", async {
+        let mut query = correction_entity::Entity::find()
+            .filter(correction_entity::Column::EntityId.eq(current.entity_id))
+            .filter(
+                correction_entity::Column::EntityType.eq(current.entity_type),
+            )
+            .filter(
+                correction_entity::Column::Status
+                    .eq(CorrectionStatus::Approved),
+            )
+            .filter(correction_entity::Column::Id.ne(current.id));
+        if let Some(handled_at) = current.handled_at {
+            query = query.filter(
+                Condition::any()
+                    .add(correction_entity::Column::HandledAt.lt(handled_at))
+                    .add(
+                        correction_entity::Column::HandledAt.is_null().and(
+                            correction_entity::Column::CreatedAt
+                                .lt(current.created_at),
+                        ),
+                    ),
+            );
+        }
+        query
+            .order_by_with_nulls(
+                correction_entity::Column::HandledAt,
+                Order::Desc,
+                NullOrdering::Last,
+            )
+            .order_by_desc(correction_entity::Column::CreatedAt)
+            .order_by_desc(correction_entity::Column::Id)
+            .one(db)
+            .await
+    })
+    .await
 }

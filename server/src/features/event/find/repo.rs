@@ -14,18 +14,18 @@ use crate::features::event::model::{AlternativeName, Event};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
 
+#[infra_db::observe("event.find_by_id")]
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
     id: i32,
 ) -> Result<Option<Event>, DatabaseError> {
     let select = event::Entity::find().filter(event::Column::Id.eq(id));
 
-    find_many_impl(select, &repo.conn)
-        .await
-        .map(|mut events| events.pop())
-        .db_operation("find event by id")
+    let mut events = find_many_impl(select, &repo.conn).await?;
+    Ok(events.pop())
 }
 
+#[infra_db::observe("event.find_by_keyword")]
 pub(super) async fn find_by_keyword(
     repo: &SeaOrmRepository,
     keyword: &str,
@@ -42,11 +42,11 @@ pub(super) async fn find_by_keyword(
                 .binary(PgBinOper::SimilarityDistance, search_term),
         );
 
-    find_many_impl(selector, &repo.conn)
-        .await
-        .db_operation("find events by keyword")
+    let items = find_many_impl(selector, &repo.conn).await?;
+    Ok(items)
 }
 
+#[infra_db::observe("event.find_by_filter")]
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::EventFilter,
@@ -55,29 +55,30 @@ pub(super) async fn find_by_filter(
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
-        return find_sorted_by_correction(
+        let page = find_sorted_by_correction(
             repo,
             filter,
             sort_field,
             sort_direction,
             pagination,
         )
-        .await
-        .db_operation("explore events");
+        .await?;
+        return Ok(page);
     }
 
     let select = filter.into_select();
-    utils::find_many_page(
+    let page = utils::find_many_page(
         &repo.conn,
         select,
         pagination,
         event::Column::Id,
         |select| list::load(select, &repo.conn),
     )
-    .await
-    .db_operation("explore events")
+    .await?;
+    Ok(page)
 }
 
+#[infra_db::observe("event.find_sorted_by_correction")]
 async fn find_sorted_by_correction(
     repo: &SeaOrmRepository,
     filter: super::EventFilter,
@@ -100,7 +101,7 @@ async fn find_sorted_by_correction(
             },
         )
         .await
-        .db_operation("list correction-sorted event ids")?;
+        .db_context("list correction-sorted event ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -127,21 +128,22 @@ async fn find_sorted_by_correction(
     Ok(utils::page_from_items(events, &pagination))
 }
 
+#[infra_db::observe("event.load_with_relations")]
 async fn find_many_impl(
     selector: sea_orm::Select<event::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Event>, DatabaseError> {
-    let events = selector.all(db).await.db_operation("load events")?;
+    let events = selector.all(db).await.db_context("load events")?;
 
     let alt_names = events
         .load_many(event_alternative_name::Entity, db)
         .await
-        .db_operation("load event alternative names")?;
+        .db_context("load event alternative names")?;
 
     let links = events
         .load_many(event_link::Entity, db)
         .await
-        .db_operation("load event links")?;
+        .db_context("load event links")?;
 
     Ok(izip!(events, alt_names, links)
         .map(|(event, alt_name, links)| Event {

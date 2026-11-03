@@ -1,6 +1,6 @@
 use entity::enums::CommentState;
 use entity::{comment, comment_target, comment_thread};
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::{DatabaseError, DatabaseFailure, DatabaseResultExt};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, QuerySelect,
@@ -37,6 +37,7 @@ pub struct CommentThread {
 }
 
 impl CommentThread {
+    #[infra_db::observe("comment.thread.lock_or_create")]
     pub async fn lock_or_create(
         conn: &impl ConnectionTrait,
         target: CommentTarget,
@@ -60,7 +61,7 @@ impl CommentThread {
                 )
                 .exec_with_returning_many(conn)
                 .await
-                .db_operation("create comment thread")?;
+                .db_context("create comment thread")?;
 
             if let Some(thread) = inserted.pop() {
                 thread
@@ -68,7 +69,7 @@ impl CommentThread {
                 lock_thread_by_target_id(conn, target.id)
                     .await?
                     .ok_or_else(|| {
-                        DatabaseError::internal(format!(
+                        DatabaseFailure::internal(format!(
                             "comment thread for target reference #{} missing after insert conflict",
                             target.id,
                         ))
@@ -86,24 +87,22 @@ impl CommentThread {
         self.model.id
     }
 
+    pub async fn find_active_reply(
+        &self,
+        conn: &impl ConnectionTrait,
+        comment_id: i32,
+    ) -> Result<Option<comment::Model>, DatabaseError> {
+        find_active_comment_in_thread(conn, comment_id, self.model.id).await
+    }
+
+    #[infra_db::observe("comment.create")]
     pub async fn create_comment(
         &self,
         conn: &impl ConnectionTrait,
         author_id: i32,
-        in_reply_to_comment_id: Option<i32>,
+        in_reply_to: Option<comment::Model>,
         content: String,
-    ) -> Result<CreatedComment, CreateCommentError> {
-        let in_reply_to = if let Some(comment_id) = in_reply_to_comment_id {
-            let comment =
-                find_active_comment_in_thread(conn, comment_id, self.model.id)
-                    .await?
-                    .ok_or(CreateCommentError::InvalidInReplyToComment)?;
-
-            Some(comment)
-        } else {
-            None
-        };
-
+    ) -> Result<CreatedComment, DatabaseError> {
         let comment = insert_comment(
             conn,
             self.model.id,
@@ -121,25 +120,20 @@ impl CommentThread {
     }
 }
 
-#[derive(Debug, derive_more::From)]
-pub enum CreateCommentError {
-    InvalidInReplyToComment,
-    #[from]
-    Database(DatabaseError),
-}
-
+#[infra_db::observe("comment.thread.lock_by_target_id")]
 async fn lock_thread_by_target_id(
     conn: &impl ConnectionTrait,
     target_id: i32,
 ) -> Result<Option<comment_thread::Model>, DatabaseError> {
-    comment_thread::Entity::find()
+    let thread = comment_thread::Entity::find()
         .filter(comment_thread::Column::TargetId.eq(target_id))
         .lock_exclusive()
         .one(conn)
-        .await
-        .db_operation("lock existing comment thread")
+        .await?;
+    Ok(thread)
 }
 
+#[infra_db::observe("comment.insert")]
 async fn insert_comment(
     conn: &impl ConnectionTrait,
     thread_id: i32,
@@ -147,7 +141,7 @@ async fn insert_comment(
     in_reply_to_comment_id: Option<i32>,
     content: String,
 ) -> Result<comment::Model, DatabaseError> {
-    comment::Entity::insert(comment::ActiveModel {
+    let comment = comment::Entity::insert(comment::ActiveModel {
         id: NotSet,
         content: Set(content),
         state: Set(CommentState::Visable),
@@ -158,6 +152,6 @@ async fn insert_comment(
         updated_at: NotSet,
     })
     .exec_with_returning(conn)
-    .await
-    .db_operation("insert comment")
+    .await?;
+    Ok(comment)
 }

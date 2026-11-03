@@ -1,5 +1,5 @@
 use entity::{permission, role_permission, user_role};
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::{DatabaseError, DatabaseFailure};
 use macroweave::splice;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, JoinType, PaginatorTrait,
@@ -67,6 +67,7 @@ pub const fn default_permissions(role: UserRoleEnum) -> &'static [Permission] {
     }
 }
 
+#[infra_db::observe("auth.permissions.check_user_permission")]
 pub async fn user_has_permission(
     conn: &impl ConnectionTrait,
     user_id: i32,
@@ -86,5 +87,5 @@ pub async fn user_has_permission(
         .filter(permission::Column::Name.eq(permission_name.as_str()))
         .exists(conn)
         .await
-        .db_operation("query user permission")
+        .map_err(|error| DatabaseFailure::new(error))
 }

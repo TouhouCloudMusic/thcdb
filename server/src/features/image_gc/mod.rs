@@ -5,23 +5,22 @@ use std::time::{Duration, SystemTime};
 use entity::enums::StorageBackend;
 use entity::image;
 use futures_util::TryStreamExt;
-use infra_db::SeaOrmRepository;
 use infra_db::error::DatabaseResultExt;
+use infra_db::{DatabaseConnection, SeaOrmRepository};
 use infra_storage::FsStorage;
 use infra_worker::{
-    CronStream, Data, Monitor, Schedule, WorkerBuilder, WorkerBuilderExt,
-    WorkerError, WorkerFactoryFn,
+    AttemptLayer, CronStream, Data, Error, Monitor, RunLayer, Schedule,
+    TaskOutcome, WorkerBuilder, WorkerError, WorkerFactoryFn,
 };
-use sea_orm::{
-    ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect,
-    TransactionTrait,
-};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use sea_query::{Alias, Expr, Func, LockBehavior, LockType};
 
 use crate::infra::storage::file::try_lock_objects;
 
 #[cfg(all(test, feature = "integration-test"))]
 mod integration_tests;
+
+pub(crate) const JOB_NAME: &str = "image_cleanup";
 
 const RETENTION: Duration = Duration::from_hours(90 * 24);
 const IMAGE_BATCH_SIZE: u64 = 100;
@@ -33,33 +32,37 @@ pub(crate) fn register_workers(
     storage: FsStorage,
 ) -> Monitor {
     monitor.register(
-        WorkerBuilder::new("image_cleanup")
+        WorkerBuilder::new(JOB_NAME)
             .data(repo)
             .data(storage)
-            .enable_tracing()
+            .layer(RunLayer)
+            .layer(AttemptLayer::new())
             .backend(CronStream::new(
                 Schedule::from_str("0 0 3 * * *")
                     .expect("image cleanup schedule"),
             ))
-            .build_fn(
-                |_job: (),
-                 repo: Data<SeaOrmRepository>,
-                 storage: Data<FsStorage>| async move {
-                    collect(&repo.conn, &storage).await
-                },
-            ),
+            .build_fn(handle),
     )
 }
 
+async fn handle(
+    _job: (),
+    repo: Data<SeaOrmRepository>,
+    storage: Data<FsStorage>,
+) -> Result<TaskOutcome, Error> {
+    collect(&repo.conn, &storage).await.map_err(Error::from)?;
+    Ok(TaskOutcome::Completed)
+}
+
 pub(crate) async fn collect(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
     storage: &FsStorage,
 ) -> Result<(), WorkerError> {
     loop {
         let tx = conn
             .begin()
             .await
-            .db_operation("begin image cleanup transaction")?;
+            .db_context("begin image cleanup transaction")?;
 
         let expired = image::Entity::find()
             .filter(image::Column::Backend.eq(StorageBackend::Fs))
@@ -80,12 +83,12 @@ pub(crate) async fn collect(
             .lock_with_behavior(LockType::Update, LockBehavior::SkipLocked)
             .all(&tx)
             .await
-            .db_operation("select expired images")?;
+            .db_context("select expired images")?;
 
         if expired.is_empty() {
             tx.commit()
                 .await
-                .db_operation("commit image cleanup transaction")?;
+                .db_context("commit image cleanup transaction")?;
             break;
         }
 
@@ -102,12 +105,12 @@ pub(crate) async fn collect(
             )
             .exec(&tx)
             .await
-            .db_operation("delete expired image records")?;
+            .db_context("delete expired image records")?;
 
         // Commit the removal of logical records before touching shared files.
         tx.commit()
             .await
-            .db_operation("commit image cleanup transaction")?;
+            .db_context("commit image cleanup transaction")?;
 
         if result.rows_affected == 0 {
             break;
@@ -138,8 +141,16 @@ pub(crate) async fn collect(
     Ok(())
 }
 
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+#[display("remove unreferenced image object {object_key}: {source}")]
+struct RemoveImageObjectError {
+    object_key: String,
+    #[error(source)]
+    source: std::io::Error,
+}
+
 async fn remove_unreferenced_objects(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
     storage: &FsStorage,
     object_keys: &[String],
 ) -> Result<(), WorkerError> {
@@ -150,16 +161,16 @@ async fn remove_unreferenced_objects(
     let tx = conn
         .begin()
         .await
-        .db_operation("begin image object cleanup transaction")?;
+        .db_context("begin image object cleanup transaction")?;
 
     let locked_object_keys = try_lock_objects(&tx, object_keys)
         .await
-        .db_operation("lock image objects for cleanup")?;
+        .db_context("lock image objects for cleanup")?;
 
     if locked_object_keys.is_empty() {
         tx.commit()
             .await
-            .db_operation("commit image object cleanup transaction")?;
+            .db_context("commit image object cleanup transaction")?;
         return Ok(());
     }
 
@@ -174,7 +185,7 @@ async fn remove_unreferenced_objects(
         .into_tuple()
         .all(&tx)
         .await
-        .db_operation("check image object references")?
+        .db_context("check image object references")?
         .into_iter()
         .collect();
 
@@ -190,13 +201,18 @@ async fn remove_unreferenced_objects(
             {
                 // Unlink synchronously: cancellation must not release the locks
                 // before deletion finishes.
-                storage.remove(object_key)?;
+                storage.remove(object_key).map_err(|source| {
+                    RemoveImageObjectError {
+                        object_key: object_key.clone(),
+                        source,
+                    }
+                })?;
             }
         }
     }
 
     tx.commit()
         .await
-        .db_operation("commit image object cleanup transaction")?;
+        .db_context("commit image object cleanup transaction")?;
     Ok(())
 }

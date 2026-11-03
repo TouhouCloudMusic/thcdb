@@ -24,6 +24,7 @@ use crate::features::artist::repo::ArtistReferenceRow;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
 
+#[infra_db::observe("artist.find_by_id")]
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,
     id: i32,
@@ -33,12 +34,11 @@ pub(super) async fn find_one(
         .filter(artist::Column::Id.eq(id))
         .filter(SimpleExpr::from(common));
 
-    find_many_impl(select, &repo.conn)
-        .await
-        .map(|x| x.into_iter().next())
-        .db_operation("find artist by id")
+    let artists = find_many_impl(select, &repo.conn).await?;
+    Ok(artists.into_iter().next())
 }
 
+#[infra_db::observe("artist.find_by_keyword")]
 pub(super) async fn find_many(
     repo: &SeaOrmRepository,
     filter: FindManyFilter,
@@ -59,31 +59,29 @@ pub(super) async fn find_many(
                 .binary(PgBinOper::SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, &repo.conn)
-        .await
-        .db_operation("find artists by keyword")
+    Ok(find_many_impl(select, &repo.conn).await?)
 }
 
+#[infra_db::observe("artist.exists")]
 pub(crate) async fn exists(
     db: &impl ConnectionTrait,
     id: i32,
 ) -> Result<bool, DatabaseError> {
-    artist::Entity::find()
+    let count = artist::Entity::find()
         .select_only()
         .expr(1)
         .filter(artist::Column::Id.eq(id))
         .count(db)
-        .await
-        .map(|count: u64| count > 0)
-        .db_operation("check artist exists")
+        .await?;
+    Ok(count > 0)
 }
 
-#[expect(clippy::too_many_lines, reason = "TODO")]
+#[infra_db::observe("artist.load_with_relations")]
 pub(super) async fn find_many_impl(
     select: Select<artist::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Artist>, DatabaseError> {
-    let artists = select.all(db).await.db_operation("load artists")?;
+    let artists = select.all(db).await.db_context("load artists")?;
 
     let ids = artists.iter().map(|x| x.id).unique().collect_vec();
 
@@ -98,7 +96,7 @@ pub(super) async fn find_many_impl(
         ])
         .all(db)
         .await
-        .db_operation("load artist aliases")?;
+        .db_context("load artist aliases")?;
 
     let alias_artists_by_id = artist::Entity::find()
         .filter(
@@ -111,7 +109,7 @@ pub(super) async fn find_many_impl(
         .into_partial_model::<ArtistReferenceRow>()
         .all(db)
         .await
-        .db_operation("load artist alias names")?
+        .db_context("load artist alias names")?
         .into_iter()
         .map(|artist| (artist.id, SimpleArtist::from(artist)))
         .collect::<HashMap<_, _>>();
@@ -122,7 +120,7 @@ pub(super) async fn find_many_impl(
         .order_by_desc(image::Column::UploadedAt)
         .all(db)
         .await
-        .db_operation("load artist images")?;
+        .db_context("load artist images")?;
 
     let mut images_map: HashMap<i32, Vec<_>> = artist_images.into_iter().fold(
         HashMap::new(),
@@ -150,11 +148,11 @@ pub(super) async fn find_many_impl(
     let links = artists
         .load_many(artist_link::Entity, db)
         .await
-        .db_operation("load artist links")?;
+        .db_context("load artist links")?;
     let localized_names = artists
         .load_many(artist_localized_name::Entity, db)
         .await
-        .db_operation("load artist localized names")?;
+        .db_context("load artist localized names")?;
 
     let artist_memberships = artist_membership::Entity::find()
         .filter(any![
@@ -163,7 +161,7 @@ pub(super) async fn find_many_impl(
         ])
         .all(db)
         .await
-        .db_operation("load artist memberships")?;
+        .db_context("load artist memberships")?;
 
     let membership_artists_by_id = artist::Entity::find()
         .filter(
@@ -179,7 +177,7 @@ pub(super) async fn find_many_impl(
         .into_partial_model::<ArtistReferenceRow>()
         .all(db)
         .await
-        .db_operation("load membership artists")?
+        .db_context("load membership artists")?
         .into_iter()
         .map(|artist| (artist.id, SimpleArtist::from(artist)))
         .collect::<HashMap<_, _>>();
@@ -191,12 +189,12 @@ pub(super) async fn find_many_impl(
             db,
         )
         .await
-        .db_operation("load artist membership roles")?;
+        .db_context("load artist membership roles")?;
 
     let join_leaves = artist_memberships
         .load_many(artist_membership_tenure::Entity, db)
         .await
-        .db_operation("load artist membership tenures")?;
+        .db_context("load artist membership tenures")?;
 
     let group_association =
         izip!(artist_memberships, roles, join_leaves).collect_vec();
@@ -211,7 +209,7 @@ pub(super) async fn find_many_impl(
         )
         .all(db)
         .await
-        .db_operation("load artist localized name languages")?;
+        .db_context("load artist localized name languages")?;
 
     let ret = izip!(artists, links, localized_names, images)
         .map(|(artist, links, localized_names, image)| {
@@ -325,6 +323,7 @@ pub(super) async fn find_many_impl(
     Ok(ret)
 }
 
+#[infra_db::observe("artist.find_by_filter")]
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ArtistFilter,
@@ -333,29 +332,30 @@ pub(super) async fn find_by_filter(
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
-        return find_sorted_by_correction(
+        let page = find_sorted_by_correction(
             repo,
             filter,
             sort_field,
             sort_direction,
             pagination,
         )
-        .await
-        .db_operation("explore artists");
+        .await?;
+        return Ok(page);
     }
 
     let select = filter.into_select();
-    utils::find_many_page(
+    let page = utils::find_many_page(
         &repo.conn,
         select,
         pagination,
         artist::Column::Id,
         |select| list::load(select, &repo.conn),
     )
-    .await
-    .db_operation("explore artists")
+    .await?;
+    Ok(page)
 }
 
+#[infra_db::observe("artist.find_sorted_by_correction")]
 async fn find_sorted_by_correction(
     repo: &SeaOrmRepository,
     filter: super::ArtistFilter,
@@ -378,7 +378,7 @@ async fn find_sorted_by_correction(
             },
         )
         .await
-        .db_operation("list correction-sorted artist ids")?;
+        .db_context("list correction-sorted artist ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));

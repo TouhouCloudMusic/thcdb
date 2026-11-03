@@ -1,9 +1,8 @@
 use domain::shared::HttpUrl;
 use entity::{release_link, release_link_history};
+use infra_db::DatabaseTransaction;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
-};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 use sea_query::OnConflict;
 
 pub(crate) async fn create_release_link(
@@ -73,27 +72,30 @@ pub(crate) async fn update_release_link(
     history_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    release_link::Entity::delete_many()
-        .filter(release_link::Column::ReleaseId.eq(release_id))
-        .exec(db)
-        .await?;
+    infra_db::trace("release.update_link", async {
+        release_link::Entity::delete_many()
+            .filter(release_link::Column::ReleaseId.eq(release_id))
+            .exec(db)
+            .await?;
 
-    let links = release_link_history::Entity::find()
-        .filter(release_link_history::Column::HistoryId.eq(history_id))
-        .all(db)
-        .await?;
+        let links = release_link_history::Entity::find()
+            .filter(release_link_history::Column::HistoryId.eq(history_id))
+            .all(db)
+            .await?;
 
-    if links.is_empty() {
-        return Ok(());
-    }
+        if links.is_empty() {
+            return Ok(());
+        }
 
-    let models = links.into_iter().map(|link| release_link::ActiveModel {
-        id: NotSet,
-        release_id: Set(release_id),
-        url: Set(link.url),
-    });
+        let models = links.into_iter().map(|link| release_link::ActiveModel {
+            id: NotSet,
+            release_id: Set(release_id),
+            url: Set(link.url),
+        });
 
-    release_link::Entity::insert_many(models).exec(db).await?;
+        release_link::Entity::insert_many(models).exec(db).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }

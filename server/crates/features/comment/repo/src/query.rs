@@ -5,7 +5,7 @@ use domain::shared::Cursor;
 use entity::enums::CommentState;
 use entity::{comment, comment_target, comment_thread, image, user};
 use infra_db::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+    BrokenEntityReference, DatabaseError, DatabaseFailure, DatabaseResultExt,
 };
 use sea_orm::prelude::DateTimeWithTimeZone;
 use sea_orm::{
@@ -17,6 +17,7 @@ use sea_query::all;
 use crate::CommentTarget;
 use crate::comment_target::find_target;
 
+#[infra_db::observe("comment.load_visible_comment_ids")]
 pub async fn load_visible_comment_ids(
     conn: &impl ConnectionTrait,
     ids: impl IntoIterator<Item = i32>,
@@ -26,7 +27,7 @@ pub async fn load_visible_comment_ids(
         return Ok(HashSet::new());
     }
 
-    comment::Entity::find()
+    let ids = comment::Entity::find()
         .select_only()
         .column(comment::Column::Id)
         .filter(all![
@@ -35,11 +36,12 @@ pub async fn load_visible_comment_ids(
         ])
         .into_tuple::<i32>()
         .all(conn)
-        .await
-        .db_operation("load visible comment ids")
-        .map(|ids| ids.into_iter().collect())
+        .await?;
+
+    Ok(HashSet::from_iter(ids))
 }
 
+#[infra_db::observe("comment.load_thread_targets")]
 pub async fn load_thread_targets(
     conn: &impl ConnectionTrait,
     ids: impl IntoIterator<Item = i32>,
@@ -53,13 +55,12 @@ pub async fn load_thread_targets(
         .filter(comment_thread::Column::Id.is_in(ids))
         .find_also_related(comment_target::Entity)
         .all(conn)
-        .await
-        .db_operation("load comment thread targets")?;
+        .await?;
 
     rows.into_iter()
         .map(|(thread, target)| {
             let target = target.ok_or_else(|| {
-                DatabaseError::broken_reference(BrokenEntityReference {
+                DatabaseFailure::broken_reference(BrokenEntityReference {
                     entity: "comment_target",
                     id: thread.target_id,
                 })
@@ -110,6 +111,7 @@ pub struct CommentRecordPage {
 }
 
 impl CommentRecordPage {
+    #[infra_db::observe("comment.load_page")]
     pub async fn load(
         conn: &impl ConnectionTrait,
         target: CommentTarget,
@@ -123,21 +125,24 @@ impl CommentRecordPage {
             return Ok(Self::default());
         };
 
-        load_comments_page(conn, thread.id, cursor).await
+        let page = load_comments_page(conn, thread.id, cursor).await?;
+        Ok(page)
     }
 }
 
+#[infra_db::observe("comment.thread.find_by_target_id")]
 async fn find_thread_by_target_id(
     conn: &impl ConnectionTrait,
     target_id: i32,
 ) -> Result<Option<comment_thread::Model>, DatabaseError> {
-    comment_thread::Entity::find()
+    let thread = comment_thread::Entity::find()
         .filter(comment_thread::Column::TargetId.eq(target_id))
         .one(conn)
-        .await
-        .db_operation("find comment thread")
+        .await?;
+    Ok(thread)
 }
 
+#[infra_db::observe("comment.load_thread_page")]
 async fn load_comments_page(
     conn: &impl ConnectionTrait,
     thread_id: i32,
@@ -151,7 +156,7 @@ async fn load_comments_page(
         .find_also_related(user::Entity)
         .all(conn)
         .await
-        .db_operation("load comments")?;
+        .db_context("load comments")?;
 
     let page = cursor.into_offset_response(rows);
     let rows = page
@@ -159,14 +164,14 @@ async fn load_comments_page(
         .into_iter()
         .map(|(comment, author)| {
             let author = author.ok_or_else(|| {
-                DatabaseError::broken_reference(BrokenEntityReference {
+                DatabaseFailure::broken_reference(BrokenEntityReference {
                     entity: "user",
                     id: comment.author_id,
                 })
             })?;
             Ok((comment, author))
         })
-        .collect::<Result<Vec<_>, DatabaseError>>()?;
+        .collect::<Result<Vec<_>, DatabaseFailure>>()?;
 
     let avatar_ids = rows
         .iter()
@@ -192,7 +197,7 @@ async fn load_comments_page(
         ])
         .count(conn)
         .await
-        .db_operation("count active comments")?;
+        .db_context("count active comments")?;
 
     Ok(CommentRecordPage {
         items,
@@ -201,6 +206,7 @@ async fn load_comments_page(
     })
 }
 
+#[infra_db::observe("comment.load_author_avatars")]
 async fn load_author_avatars(
     conn: &impl ConnectionTrait,
     avatar_ids: HashSet<i32>,
@@ -209,34 +215,33 @@ async fn load_author_avatars(
         return Ok(Vec::new());
     }
 
-    image::Entity::find()
+    let avatars = image::Entity::find()
         .filter(image::Column::Id.is_in(avatar_ids))
         .all(conn)
-        .await
-        .db_operation("load comment author avatars")
+        .await?;
+    Ok(avatars)
 }
 
+#[infra_db::observe("comment.find_active_comment_in_thread")]
 pub(crate) async fn find_active_comment_in_thread(
     conn: &impl ConnectionTrait,
     comment_id: i32,
     thread_id: i32,
 ) -> Result<Option<comment::Model>, DatabaseError> {
-    comment_in_thread(comment_id, thread_id)
+    let comment = comment_in_thread(comment_id, thread_id)
         .filter(comment::Column::State.eq(CommentState::Visable))
         .one(conn)
-        .await
-        .db_operation("load active comment in thread")
+        .await?;
+    Ok(comment)
 }
 
+#[infra_db::observe("comment.find_comment_in_thread")]
 pub async fn find_comment_in_thread(
     conn: &impl ConnectionTrait,
     comment_id: i32,
     thread_id: i32,
 ) -> Result<Option<comment::Model>, DatabaseError> {
-    comment_in_thread(comment_id, thread_id)
-        .one(conn)
-        .await
-        .db_operation("load comment in thread")
+    Ok(comment_in_thread(comment_id, thread_id).one(conn).await?)
 }
 
 fn comment_in_thread(
@@ -247,16 +252,15 @@ fn comment_in_thread(
         .filter(comment::Column::ThreadId.eq(thread_id))
 }
 
+#[infra_db::observe("comment.find_comment")]
 pub async fn find_comment(
     conn: &impl ConnectionTrait,
     comment_id: i32,
 ) -> Result<Option<comment::Model>, DatabaseError> {
-    comment::Entity::find_by_id(comment_id)
-        .one(conn)
-        .await
-        .db_operation("find comment")
+    Ok(comment::Entity::find_by_id(comment_id).one(conn).await?)
 }
 
+#[infra_db::observe("comment.load_comment")]
 pub async fn load_comment(
     conn: &impl ConnectionTrait,
     comment_id: i32,
@@ -265,16 +269,16 @@ pub async fn load_comment(
         .find_also_related(user::Entity)
         .one(conn)
         .await
-        .db_operation("load comment summary")?
+        .db_context("load comment summary")?
         .ok_or_else(|| {
-            DatabaseError::broken_reference(BrokenEntityReference {
+            DatabaseFailure::broken_reference(BrokenEntityReference {
                 entity: "comment",
                 id: comment_id,
             })
         })?;
 
     let author = author.ok_or_else(|| {
-        DatabaseError::broken_reference(BrokenEntityReference {
+        DatabaseFailure::broken_reference(BrokenEntityReference {
             entity: "user",
             id: comment.author_id,
         })
@@ -284,7 +288,7 @@ pub async fn load_comment(
         Some(avatar_id) => image::Entity::find_by_id(avatar_id)
             .one(conn)
             .await
-            .db_operation("load comment author avatar")?,
+            .db_context("load comment author avatar")?,
         None => None,
     };
 

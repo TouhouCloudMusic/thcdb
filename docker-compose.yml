@@ -37,6 +37,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.dev
     restart: "no"
+    stop_grace_period: 90s
     init: true
     working_dir: /app
     depends_on:
@@ -44,14 +45,16 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    env_file:
-      - .env
+    env_file: .env
     environment:
       MIDDLEWARE__SESSION_SECURE: "false"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
       MIDDLEWARE__LIMIT__REQ_PER_SEC: "1000000"
       DATABASE_URL: "postgres://${POSTGRES_USER:-devuser}:${POSTGRES_PASSWORD:-devuser}@db:5432/${POSTGRES_DB:-devdb}"
       REDIS_URL: "redis://redis:6379"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://jaeger:4318/v1/traces
+      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://loki:3100/otlp/v1/logs
+      METRICS_ADDR: 0.0.0.0:9464
     ports:
       - "${SERVER_PORT:-12345}:12345"
     volumes:
@@ -69,6 +72,62 @@ services:
     networks:
       - backend
 
+  jaeger-init:
+    image: alpine:3.24.3
+    user: "0:0"
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        mkdir -p /data/keys /data/values
+        chown 10001:10001 /data/keys /data/values
+    volumes:
+      - jaegerdata:/data
+    network_mode: none
+
+  jaeger:
+    image: jaegertracing/jaeger:2.20.0
+    restart: unless-stopped
+    depends_on:
+      jaeger-init:
+        condition: service_completed_successfully
+    command: ["--config", "/etc/jaeger/config.yaml"]
+    volumes:
+      - ./observability/jaeger/config.yaml:/etc/jaeger/config.yaml:ro
+      - jaegerdata:/var/lib/jaeger
+    networks:
+      - backend
+
+  loki:
+    image: grafana/loki:3.7.8
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./observability/loki/config.yaml:/etc/loki/config.yaml:ro
+      - lokidata:/loki
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    restart: unless-stopped
+    volumes:
+      - ./observability/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana:13.2.2
+    restart: unless-stopped
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./observability/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - backend
+
   web:
     image: node:24-bookworm-slim
     restart: unless-stopped
@@ -80,13 +139,24 @@ services:
     environment:
       CI: "true"
       VITE_SERVER_URL: "http://server:12345"
-    ports:
-      - "${WEB_PORT:-3000}:3000"
     volumes:
       - ./web:/app
       - node_modules:/app/node_modules
       - pnpm-store:/pnpm-store
     command: sh -c "corepack enable && corepack prepare pnpm@11.1.2 --activate && pnpm install --frozen-lockfile --store-dir /pnpm-store && pnpm dev --host 0.0.0.0"
+    networks:
+      - backend
+
+  gateway:
+    image: nginx:1.30.5-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    volumes:
+      - ./web/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web/nginx:/etc/nginx/includes:ro
     networks:
       - backend
 
@@ -98,6 +168,10 @@ volumes:
   cargo_registry:
   pgdata:
   redisdata:
+  jaegerdata:
+  lokidata:
+  prometheusdata:
+  grafanadata:
   pnpm-store:
   node_modules:
   server_public:

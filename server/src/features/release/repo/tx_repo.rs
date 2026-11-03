@@ -1,8 +1,8 @@
 use entity::{release, release_history};
+use infra_db::DatabaseTransaction;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
-    QueryFilter, QueryOrder,
+    ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, QueryFilter, QueryOrder,
 };
 
 use super::impls::*;
@@ -13,54 +13,71 @@ pub(crate) async fn create_release_with_relations(
     data: &NewRelease,
     tx: &DatabaseTransaction,
 ) -> Result<i32, DbErr> {
-    let release = release::ActiveModel::from(data).insert(tx).await?;
+    infra_db::trace("release.insert_with_relations", async {
+        let release = release::ActiveModel::from(data).insert(tx).await?;
 
-    tokio::try_join!(
-        create_release_artist(release.id, &data.artists, tx),
-        create_release_catalog_number(release.id, &data.catalog_nums, tx),
-        create_release_credit(release.id, &data.credits, tx),
-        create_release_event(release.id, &data.events, tx),
-        create_release_link(release.id, &data.links, tx),
-        create_release_localized_title(release.id, &data.localized_titles, tx)
-    )?;
+        tokio::try_join!(
+            create_release_artist(release.id, &data.artists, tx),
+            create_release_catalog_number(release.id, &data.catalog_nums, tx),
+            create_release_credit(release.id, &data.credits, tx),
+            create_release_event(release.id, &data.events, tx),
+            create_release_link(release.id, &data.links, tx),
+            create_release_localized_title(
+                release.id,
+                &data.localized_titles,
+                tx
+            )
+        )?;
 
-    let discs = create_release_disc(release.id, &data.discs, tx).await?;
-    create_release_track(release.id, &data.tracks, &discs, tx).await?;
+        let discs = create_release_disc(release.id, &data.discs, tx).await?;
+        create_release_track(release.id, &data.tracks, &discs, tx).await?;
 
-    Ok(release.id)
+        Ok(release.id)
+    })
+    .await
 }
 
 pub(crate) async fn create_release_history_with_relations(
     data: &NewRelease,
     tx: &DatabaseTransaction,
 ) -> Result<i32, DbErr> {
-    let history = release_history::ActiveModel::from(data).insert(tx).await?;
+    infra_db::trace("release.insert_history_with_relations", async {
+        let history =
+            release_history::ActiveModel::from(data).insert(tx).await?;
 
-    tokio::try_join!(
-        create_release_artist_history(history.id, &data.artists, tx),
-        create_release_catalog_number_history(
+        tokio::try_join!(
+            create_release_artist_history(history.id, &data.artists, tx),
+            create_release_catalog_number_history(
+                history.id,
+                &data.catalog_nums,
+                tx
+            ),
+            create_release_credit_history(history.id, &data.credits, tx),
+            create_release_event_history(history.id, &data.events, tx),
+            create_release_link_history(history.id, &data.links, tx),
+            create_release_localized_title_history(
+                history.id,
+                &data.localized_titles,
+                tx
+            )
+        )?;
+
+        let disc_histories =
+            create_release_disc_history(history.id, &data.discs, tx).await?;
+        create_release_track_history(
             history.id,
-            &data.catalog_nums,
-            tx
-        ),
-        create_release_credit_history(history.id, &data.credits, tx),
-        create_release_event_history(history.id, &data.events, tx),
-        create_release_link_history(history.id, &data.links, tx),
-        create_release_localized_title_history(
-            history.id,
-            &data.localized_titles,
-            tx
+            &data.tracks,
+            &disc_histories,
+            tx,
         )
-    )?;
-
-    let disc_histories =
-        create_release_disc_history(history.id, &data.discs, tx).await?;
-    create_release_track_history(history.id, &data.tracks, &disc_histories, tx)
         .await?;
 
-    Ok(history.id)
+        Ok(history.id)
+    })
+    .await
 }
 
+#[infra_db::observe("release.apply_update")]
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,

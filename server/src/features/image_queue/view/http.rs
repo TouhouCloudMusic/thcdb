@@ -111,7 +111,7 @@ async fn load_user_image_queue(
         .collect::<Vec<_>>();
     let users = load_users(&repo.conn, user_ids)
         .await
-        .db_operation("load image queue users")?;
+        .db_context("load image queue users")?;
 
     let items: Vec<UserImageQueueItem> = paginated
         .items

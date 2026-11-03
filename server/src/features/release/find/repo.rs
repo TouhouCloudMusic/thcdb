@@ -22,37 +22,36 @@ pub enum FindReleaseFilter {
     ReleaseTypes(Vec<entity::sea_orm_active_enums::ReleaseType>),
 }
 
+#[infra_db::observe("release.find_one")]
 pub(crate) async fn find_one(
     repo: &SeaOrmRepository,
     filter: FindReleaseFilter,
 ) -> Result<Option<Release>, DatabaseError> {
-    find_many_impl(filter_into_select(filter).limit(1), &repo.conn)
-        .await
-        .map(|mut releases| releases.pop())
-        .db_operation("find release by id")
+    let mut releases =
+        find_many_impl(filter_into_select(filter).limit(1), &repo.conn).await?;
+    Ok(releases.pop())
 }
 
+#[infra_db::observe("release.find_many")]
 pub(crate) async fn find_many(
     repo: &SeaOrmRepository,
     filter: FindReleaseFilter,
 ) -> Result<Vec<Release>, DatabaseError> {
-    find_many_impl(filter_into_select(filter), &repo.conn)
-        .await
-        .db_operation("find releases")
+    Ok(find_many_impl(filter_into_select(filter), &repo.conn).await?)
 }
 
+#[infra_db::observe("release.exists")]
 pub(crate) async fn exists(
     db: &impl ConnectionTrait,
     id: i32,
 ) -> Result<bool, DatabaseError> {
-    release::Entity::find()
+    let count = release::Entity::find()
         .select_only()
         .expr(1)
         .filter(release::Column::Id.eq(id))
         .count(db)
-        .await
-        .map(|count: u64| count > 0)
-        .db_operation("check release exists")
+        .await?;
+    Ok(count > 0)
 }
 
 fn filter_into_select(filter: FindReleaseFilter) -> Select<release::Entity> {
@@ -79,6 +78,7 @@ fn filter_into_select(filter: FindReleaseFilter) -> Select<release::Entity> {
     }
 }
 
+#[infra_db::observe("release.find_by_filter")]
 pub(crate) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ReleaseFilter,
@@ -87,7 +87,7 @@ pub(crate) async fn find_by_filter(
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
-        return match sort_field {
+        let page = match sort_field {
             ReleaseSortField::ReleaseDate => {
                 find_sorted_by_release_date(
                     repo,
@@ -117,12 +117,12 @@ pub(crate) async fn find_by_filter(
                 )
                 .await
             }
-        }
-        .db_operation("explore releases");
+        }?;
+        return Ok(page);
     }
 
     let select = filter.into_select();
-    utils::find_many_page(
+    let page = utils::find_many_page(
         &repo.conn,
         select,
         pagination,
@@ -130,13 +130,14 @@ pub(crate) async fn find_by_filter(
         |select| async {
             list::load(select, &repo.conn)
                 .await
-                .db_operation("load releases")
+                .db_context("load releases")
         },
     )
-    .await
-    .db_operation("explore releases")
+    .await?;
+    Ok(page)
 }
 
+#[infra_db::observe("release.find_sorted_by_release_date")]
 async fn find_sorted_by_release_date(
     repo: &SeaOrmRepository,
     filter: super::ReleaseFilter,
@@ -149,7 +150,7 @@ async fn find_sorted_by_release_date(
         NullOrdering::Last,
     );
 
-    utils::find_many_page(
+    let page = utils::find_many_page(
         &repo.conn,
         select,
         pagination,
@@ -157,12 +158,14 @@ async fn find_sorted_by_release_date(
         |select| async {
             list::load(select, &repo.conn)
                 .await
-                .db_operation("load releases")
+                .db_context("load releases")
         },
     )
-    .await
+    .await?;
+    Ok(page)
 }
 
+#[infra_db::observe("release.find_sorted_by_correction")]
 async fn find_sorted_by_correction(
     repo: &SeaOrmRepository,
     filter: super::ReleaseFilter,
@@ -180,7 +183,7 @@ async fn find_sorted_by_correction(
             sort_direction.into(),
         )
         .await
-        .db_operation("list correction-sorted release ids")?;
+        .db_context("list correction-sorted release ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -196,7 +199,7 @@ async fn find_sorted_by_correction(
 
     let mut releases = list::load(select, &repo.conn)
         .await
-        .db_operation("load releases")?;
+        .db_context("load releases")?;
 
     releases = crate::infra::database::utils::sort_by_id_list(
         releases,

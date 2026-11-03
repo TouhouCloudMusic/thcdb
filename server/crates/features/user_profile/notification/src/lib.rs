@@ -1,6 +1,6 @@
+use infra_db::DatabaseTransaction;
 use infra_db::error::DatabaseError;
 use notification_core::{CreateNotificationsCommand, NotificationRecipients};
-use sea_orm::DatabaseTransaction;
 
 pub struct FollowerId(pub i32);
 

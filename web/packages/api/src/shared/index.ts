@@ -2,6 +2,7 @@ import type { ADTEnum } from "@thc/toolkit/types"
 import { Either as E, Option as O } from "effect"
 
 import type { operations } from "../gen"
+import { bindResponseTraceId } from "../responseTrace"
 
 export type OkResponse<T> = {
 	status: string
@@ -62,36 +63,29 @@ function extractErrorMessage(error: unknown): string {
 
 function handleError<E>(res: RestErrorResponse<E>) {
 	if (res.error) {
-		return {
-			type: "Server",
-			error: extractErrorMessage(res.error),
-			statusCode: res.response.status,
-			detail: res.error,
-		} as const
+		return bindResponseTraceId(
+			{
+				type: "Server",
+				error: extractErrorMessage(res.error),
+				statusCode: res.response.status,
+				detail: res.error,
+			} as const,
+			res.response,
+		)
 	} else {
-		return {
-			type: "Response",
-			error: res.response.statusText,
-			statusCode: res.response.status,
-		} as const
+		return bindResponseTraceId(
+			{
+				type: "Response",
+				error: res.response.statusText,
+				statusCode: res.response.status,
+			} as const,
+			res.response,
+		)
 	}
 }
 
 function handleErrorResult<E>(res: RestErrorResponse<E>) {
-	if (res.error) {
-		return E.left({
-			type: "Server",
-			error: extractErrorMessage(res.error),
-			statusCode: res.response.status,
-			detail: res.error,
-		} as const)
-	} else {
-		return E.left({
-			type: "Response",
-			error: res.response.statusText,
-			statusCode: res.response.status,
-		} as const)
-	}
+	return E.left(handleError(res))
 }
 
 export type FetchResponse<T, E> = ADTEnum<

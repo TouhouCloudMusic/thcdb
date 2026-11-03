@@ -1,7 +1,6 @@
 use chrono::{Duration, Utc};
 use lettre::message::{Mailbox, Message as EmailMessage};
 
-use crate::features::auth::repo::EmailVerificationMutationError;
 use crate::features::auth::{
     InvalidEmail, ResendVerificationEmailError, SIGNUP_EXPIRES_HOURS,
     SignUpError, VERIFICATION_CODE_EXPIRES_MINUTES,
@@ -27,17 +26,6 @@ pub(super) enum SendVerificationEmailError {
 impl From<DatabaseError> for SendVerificationEmailError {
     fn from(value: DatabaseError) -> Self {
         Self::Internal(InternalError::new(value))
-    }
-}
-
-impl From<EmailVerificationMutationError> for SendVerificationEmailError {
-    fn from(value: EmailVerificationMutationError) -> Self {
-        match value {
-            EmailVerificationMutationError::Database(source) => source.into(),
-            EmailVerificationMutationError::BrokenReference(_) => {
-                InternalError::new(value).into()
-            }
-        }
     }
 }
 

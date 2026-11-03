@@ -22,82 +22,74 @@ pub enum FindManyFilter {
 }
 use crate::infra::database::cache::LANGUAGE_CACHE;
 
+#[infra_db::observe("song_lyrics.find_one")]
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,
     filter: FindOneFilter,
 ) -> Result<Option<SongLyrics>, DatabaseError> {
-    let result: Result<Option<SongLyrics>, DatabaseError> = async {
-        let condition = match filter {
-            FindOneFilter::Id { id } => song_lyrics::Column::Id.eq(id),
-            FindOneFilter::SongAndLang {
-                song_id,
-                language_id,
-            } => song_lyrics::Column::SongId
-                .eq(song_id)
-                .and(song_lyrics::Column::LanguageId.eq(language_id)),
-        };
+    let condition = match filter {
+        FindOneFilter::Id { id } => song_lyrics::Column::Id.eq(id),
+        FindOneFilter::SongAndLang {
+            song_id,
+            language_id,
+        } => song_lyrics::Column::SongId
+            .eq(song_id)
+            .and(song_lyrics::Column::LanguageId.eq(language_id)),
+    };
 
-        let model = song_lyrics::Entity::find()
-            .filter(condition)
-            .one(&repo.conn)
+    let model = song_lyrics::Entity::find()
+        .filter(condition)
+        .one(&repo.conn)
+        .await
+        .db_context("load song lyrics")?;
+
+    if let Some(model) = model {
+        let lang_cache = LANGUAGE_CACHE
+            .get_or_init(&repo.conn)
             .await
-            .db_operation("load song lyrics")?;
-
-        if let Some(model) = model {
-            let lang_cache = LANGUAGE_CACHE
-                .get_or_init(&repo.conn)
-                .await
-                .db_operation("load languages for song lyrics")?;
-            Ok(Some(map_song_lyrics(model, lang_cache)))
-        } else {
-            Ok(None)
-        }
+            .db_context("load languages for song lyrics")?;
+        Ok(Some(map_song_lyrics(model, lang_cache)))
+    } else {
+        Ok(None)
     }
-    .await;
-
-    result.db_operation("find song lyrics")
 }
 
+#[infra_db::observe("song_lyrics.find_many")]
 pub(super) async fn find_many(
     repo: &SeaOrmRepository,
     filter: FindManyFilter,
 ) -> Result<Vec<SongLyrics>, DatabaseError> {
-    let result: Result<Vec<SongLyrics>, DatabaseError> = async {
-        let condition = match filter {
-            FindManyFilter::Song { song_id } => {
-                song_lyrics::Column::SongId.eq(song_id)
-            }
-            FindManyFilter::Language { language_id } => {
-                song_lyrics::Column::LanguageId.eq(language_id)
-            }
-            FindManyFilter::Songs { song_ids } => {
-                song_lyrics::Column::SongId.is_in(song_ids)
-            }
-        };
-
-        let models = song_lyrics::Entity::find()
-            .filter(condition)
-            .all(&repo.conn)
-            .await
-            .db_operation("load song lyrics list")?;
-
-        if models.is_empty() {
-            return Ok(vec![]);
+    let condition = match filter {
+        FindManyFilter::Song { song_id } => {
+            song_lyrics::Column::SongId.eq(song_id)
         }
+        FindManyFilter::Language { language_id } => {
+            song_lyrics::Column::LanguageId.eq(language_id)
+        }
+        FindManyFilter::Songs { song_ids } => {
+            song_lyrics::Column::SongId.is_in(song_ids)
+        }
+    };
 
-        let lang_cache = LANGUAGE_CACHE
-            .get_or_init(&repo.conn)
-            .await
-            .db_operation("load languages for song lyrics")?;
+    let models = song_lyrics::Entity::find()
+        .filter(condition)
+        .all(&repo.conn)
+        .await
+        .db_context("load song lyrics list")?;
 
-        Ok(models
-            .into_iter()
-            .map(|model| map_song_lyrics(model, lang_cache))
-            .collect())
+    if models.is_empty() {
+        return Ok(vec![]);
     }
-    .await;
 
-    result.db_operation("find many song lyrics")
+    let lang_cache = LANGUAGE_CACHE
+        .get_or_init(&repo.conn)
+        .await
+        .db_context("load languages for song lyrics")?;
+
+    Ok(models
+        .into_iter()
+        .map(|model| map_song_lyrics(model, lang_cache))
+        .collect())
 }
 
 fn map_song_lyrics(

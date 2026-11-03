@@ -12,7 +12,7 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::auth::{EditableUserRole, UserRoleEnum};
 use crate::infra::database::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+    BrokenEntityReference, DatabaseError, DatabaseFailure, DatabaseResultExt,
 };
 use crate::shared::http::api_response::Data;
 
@@ -39,16 +39,16 @@ data! {
         (status = 200, body = DataVecLanguage),
     ),
 )]
+#[fastrace::trace(name = "enum_table.load_languages")]
 async fn language_list(
     State(state): State<ArcAppState>,
 ) -> Result<Data<Vec<Language>>, DatabaseError> {
-    let res: Vec<Language> = language::Entity::find()
+    let languages: Vec<Language> = language::Entity::find()
         .all(&state.database)
         .await
-        .db_operation("list languages")?
+        .db_context("list languages")?
         .fmap_into();
-
-    Ok(res.into())
+    Ok(languages.into())
 }
 
 #[utoipa::path(
@@ -58,24 +58,26 @@ async fn language_list(
         (status = 200, body = DataVecUserRole),
     ),
 )]
+#[fastrace::trace(name = "enum_table.load_user_roles")]
 async fn user_roles(
     State(state): State<ArcAppState>,
 ) -> Result<Data<Vec<UserRoleEnum>>, DatabaseError> {
-    Ok(role::Entity::find()
+    let roles = role::Entity::find()
         .all(&state.database)
         .await
-        .db_operation("list user roles")?
+        .db_context("list user roles")?
         .into_iter()
         .map(|model| {
             UserRoleEnum::try_from(model.id).map_err(|_| {
-                DatabaseError::from(BrokenEntityReference {
+                DatabaseFailure::from(BrokenEntityReference {
                     entity: "role",
                     id: model.id,
                 })
+                .context("decode user role")
             })
         })
-        .collect::<Result<Vec<_>, _>>()?
-        .into())
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(roles.into())
 }
 
 #[utoipa::path(

@@ -56,7 +56,7 @@ pub async fn load_artist_credit_references(
         )
         .all(db)
         .await
-        .db_operation("load credit artists")?
+        .db_context("load credit artists")?
         .into_iter()
         .map(|artist| (artist.id, artist.into()))
         .collect();
@@ -67,7 +67,7 @@ pub async fn load_artist_credit_references(
         )
         .all(db)
         .await
-        .db_operation("load credit roles")?
+        .db_context("load credit roles")?
         .into_iter()
         .map(|role| (role.id, role.into()))
         .collect();
@@ -117,7 +117,7 @@ pub async fn load_language_references(
         .filter(language::Column::Id.is_in(language_ids))
         .all(db)
         .await
-        .db_operation("load languages")?
+        .db_context("load languages")?
         .into_iter()
         .map(Into::into);
 

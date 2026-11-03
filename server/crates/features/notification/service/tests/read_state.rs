@@ -15,7 +15,7 @@ use notification_service::{
 };
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Uuid;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, TransactionTrait};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use sea_query::Expr;
 
 struct AccountNotification {

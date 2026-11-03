@@ -2,10 +2,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use entity::{role, user, user_role};
+use infra_db::DatabaseConnection;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{
-    ConnectionTrait, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel,
-};
+use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
 use sea_query::OnConflict;
 
 pub mod password_reset;

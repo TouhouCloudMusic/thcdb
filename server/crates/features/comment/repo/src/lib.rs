@@ -4,7 +4,7 @@ mod delete;
 mod query;
 
 pub use comment_target::{CommentTarget, CommentTargetKind};
-pub use create::{CommentThread, CreateCommentError, CreatedComment};
+pub use create::{CommentThread, CreatedComment};
 pub use delete::soft_delete_comment;
 pub use query::{
     CommentRecord, CommentRecordPage, find_comment, find_comment_in_thread,

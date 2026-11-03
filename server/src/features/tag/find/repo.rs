@@ -93,6 +93,7 @@ fn earliest_release_date() -> SimpleExpr {
     SimpleExpr::SubQuery(None, Box::new(query.into_sub_query_statement()))
 }
 
+#[infra_db::observe("tag.find_artists")]
 pub(super) async fn find_artists(
     repo: &SeaOrmRepository,
     tag_id: i32,
@@ -105,7 +106,7 @@ pub(super) async fn find_artists(
         .filter(artist_tag_vote::Column::Score.gt(0))
         .into_query();
 
-    utils::find_many_page(
+    let artists = utils::find_many_page(
         &repo.conn,
         artist::Entity::find()
             .filter(artist::Column::Id.in_subquery(entity_ids))
@@ -118,10 +119,11 @@ pub(super) async fn find_artists(
         artist::Column::Id,
         |select| artist_list::load(select, &repo.conn),
     )
-    .await
-    .db_operation("find artists by tag")
+    .await?;
+    Ok(artists)
 }
 
+#[infra_db::observe("tag.find_releases")]
 pub(super) async fn find_releases(
     repo: &SeaOrmRepository,
     tag_id: i32,
@@ -151,17 +153,18 @@ pub(super) async fn find_releases(
         ),
     };
 
-    utils::find_many_page(
+    let releases = utils::find_many_page(
         &repo.conn,
         select,
         pagination,
         release::Column::Id,
         |select| release_list::load(select, &repo.conn),
     )
-    .await
-    .db_operation("find releases by tag")
+    .await?;
+    Ok(releases)
 }
 
+#[infra_db::observe("tag.find_songs")]
 pub(super) async fn find_songs(
     repo: &SeaOrmRepository,
     tag_id: i32,
@@ -191,29 +194,29 @@ pub(super) async fn find_songs(
         ),
     };
 
-    utils::find_many_page(
+    let songs = utils::find_many_page(
         &repo.conn,
         select,
         pagination,
         song::Column::Id,
         |select| song_list::load(select, &repo.conn),
     )
-    .await
-    .db_operation("find songs by tag")
+    .await?;
+    Ok(songs)
 }
 
+#[infra_db::observe("tag.find_by_id")]
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
     id: i32,
 ) -> Result<Option<Tag>, DatabaseError> {
     let select = tag::Entity::find().filter(tag::Column::Id.eq(id));
 
-    find_many_impl(select, &repo.conn)
-        .await
-        .map(|mut tags| tags.pop())
-        .db_operation("find tag by id")
+    let mut tags = find_many_impl(select, &repo.conn).await?;
+    Ok(tags.pop())
 }
 
+#[infra_db::observe("tag.find_by_keyword")]
 pub(super) async fn find_by_keyword(
     repo: &SeaOrmRepository,
     keyword: &str,
@@ -230,11 +233,10 @@ pub(super) async fn find_by_keyword(
                 .binary(SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, &repo.conn)
-        .await
-        .db_operation("find tags by keyword")
+    Ok(find_many_impl(select, &repo.conn).await?)
 }
 
+#[infra_db::observe("tag.find_by_filter")]
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::TagFilter,
@@ -243,29 +245,30 @@ pub(super) async fn find_by_filter(
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
-        return find_sorted_by_correction(
+        let page = find_sorted_by_correction(
             repo,
             filter,
             sort_field,
             sort_direction,
             pagination,
         )
-        .await
-        .db_operation("explore tags");
+        .await?;
+        return Ok(page);
     }
 
     let select = filter.into_select();
-    utils::find_many_page(
+    let page = utils::find_many_page(
         &repo.conn,
         select,
         pagination,
         tag::Column::Id,
         |select| list::load(select, &repo.conn),
     )
-    .await
-    .db_operation("explore tags")
+    .await?;
+    Ok(page)
 }
 
+#[infra_db::observe("tag.find_sorted_by_correction")]
 async fn find_sorted_by_correction(
     repo: &SeaOrmRepository,
     filter: super::TagFilter,
@@ -288,7 +291,7 @@ async fn find_sorted_by_correction(
             },
         )
         .await
-        .db_operation("list correction-sorted tag ids")?;
+        .db_context("list correction-sorted tag ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -312,15 +315,16 @@ async fn find_sorted_by_correction(
     Ok(utils::page_from_items(tags, &pagination))
 }
 
+#[infra_db::observe("tag.load_with_relations")]
 async fn find_many_impl(
     select: sea_orm::Select<tag::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Tag>, DatabaseError> {
-    let tags = select.all(db).await.db_operation("load tags")?;
+    let tags = select.all(db).await.db_context("load tags")?;
     let alt_names = tags
         .load_many(tag_alternative_name::Entity, db)
         .await
-        .db_operation("load tag alternative names")?;
+        .db_context("load tag alternative names")?;
     let tag_relations = load_tag_relations(&tags, db).await?;
 
     Ok(itertools::izip!(tags, alt_names, tag_relations)
@@ -342,6 +346,7 @@ async fn find_many_impl(
         .collect())
 }
 
+#[infra_db::observe("tag.load_tag_relations")]
 async fn load_tag_relations(
     tags: &[tag::Model],
     db: &impl ConnectionTrait,
@@ -352,7 +357,7 @@ async fn load_tag_relations(
         )
         .all(db)
         .await
-        .db_operation("load tag relations")?;
+        .db_context("load tag relations")?;
 
     let mut grouped_relations: HashMap<i32, Vec<tag_relation::Model>> =
         HashMap::new();
@@ -386,7 +391,7 @@ async fn load_tag_relations(
             .filter(tag::Column::Id.is_in(missing_related_tag_ids))
             .all(db)
             .await
-            .db_operation("load related tags")?
+            .db_context("load related tags")?
     };
 
     let mut tag_lookup: HashMap<i32, TagRef> =

@@ -52,7 +52,7 @@ pub(crate) async fn load(
         .into_partial_model::<ReleaseRow>()
         .all(db)
         .await
-        .db_operation("load release list items")?;
+        .db_context("load release list items")?;
 
     load_items(releases, db).await
 }
@@ -85,7 +85,7 @@ pub(crate) async fn load_items(
                 .into_tuple::<(i32, String)>()
                 .all(db)
                 .await
-                .db_operation("load release list catalog numbers")
+                .db_context("load release list catalog numbers")
         },
         load_cover_art_urls(&release_ids, db),
     )?;
@@ -139,7 +139,7 @@ pub(crate) async fn load_artists(
         .into_tuple::<(i32, i32, String)>()
         .all(db)
         .await
-        .db_operation("load release list artists")?;
+        .db_context("load release list artists")?;
 
     let mut artists: HashMap<i32, Vec<SimpleArtist>> = HashMap::new();
     for (release_id, id, name) in artist_rows {
@@ -174,7 +174,7 @@ pub(crate) async fn load_cover_art_urls(
         .into_tuple::<(i32, String)>()
         .all(db)
         .await
-        .db_operation("load release list cover art")?;
+        .db_context("load release list cover art")?;
 
     let mut cover_art_urls = HashMap::new();
     for (release_id, object_key) in image_rows {

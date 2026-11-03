@@ -1,13 +1,11 @@
 use std::env;
 
 use entity::{user, user_role};
+use infra_db::DatabaseConnection;
 use infra_db::lookup_table::ValidateLookupTable;
 use sea_orm::ActiveValue::*;
 use sea_orm::prelude::Expr;
-use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QueryFilter,
-    TransactionTrait,
-};
+use sea_orm::{ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter};
 
 use crate::constant::ADMIN_USERNAME;
 use crate::features::auth::UserRoleEnum;
@@ -20,7 +18,7 @@ pub(crate) async fn sync_startup_data(
 ) -> Result<(), DatabaseError> {
     UserRoleEnum::check_and_sync(db)
         .await
-        .db_operation("sync user role lookup table")?;
+        .db_context("sync user role lookup table")?;
     sync_permissions(db).await?;
 
     upsert_admin_acc(db).await;
