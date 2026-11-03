@@ -23,11 +23,14 @@ entity.workspace       = true
 fred.workspace         = true
 infra_db.workspace     = true
 infra_email.workspace  = true
+infra_error.workspace  = true
 infra_worker.workspace = true
 log                    = { workspace = true, features = [ "kv" ] }
 sea-orm.workspace      = true
 
 [dev-dependencies]
+fastrace.workspace      = true
+logforth.workspace      = true
 anyhow.workspace        = true
 infra_testing.workspace = true
 tokio.workspace         = true

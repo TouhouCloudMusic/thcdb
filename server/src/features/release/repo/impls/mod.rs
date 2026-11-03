@@ -28,14 +28,17 @@ pub(crate) async fn find_many_impl(
     select: sea_orm::Select<release::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Release>, DbErr> {
-    let releases = select.all(db).await?;
-    let related = RelatedEntities::load(&releases, db).await?;
+    infra_db::trace("release.load_with_relations", async {
+        let releases = select.all(db).await?;
+        let related = RelatedEntities::load(&releases, db).await?;
 
-    let result = releases
-        .into_iter()
-        .enumerate()
-        .map(|(i, release)| conv_to_domain_model(&release, &related, i))
-        .collect();
+        let result = releases
+            .into_iter()
+            .enumerate()
+            .map(|(i, release)| conv_to_domain_model(&release, &related, i))
+            .collect();
 
-    Ok(result)
+        Ok(result)
+    })
+    .await
 }

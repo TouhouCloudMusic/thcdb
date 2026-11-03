@@ -198,7 +198,6 @@ import type {
 	GetTagsErrors,
 	GetTagsResponses,
 	HealthCheckData,
-	HealthCheckErrors,
 	HealthCheckResponses,
 	ImageQueueDetailData,
 	ImageQueueDetailErrors,
@@ -1149,12 +1148,11 @@ export const forgotPassword = <ThrowOnError extends boolean = false>(
 
 export const healthCheck = <ThrowOnError extends boolean = false>(
 	options?: Options<HealthCheckData, ThrowOnError>,
-): RequestResult<HealthCheckResponses, HealthCheckErrors, ThrowOnError> =>
-	(options?.client ?? client).get<
-		HealthCheckResponses,
-		HealthCheckErrors,
-		ThrowOnError
-	>({ url: "/health_check", ...options })
+): RequestResult<HealthCheckResponses, unknown, ThrowOnError> =>
+	(options?.client ?? client).get<HealthCheckResponses, unknown, ThrowOnError>({
+		url: "/health_check",
+		...options,
+	})
 
 export const getHome = <ThrowOnError extends boolean = false>(
 	options?: Options<GetHomeData, ThrowOnError>,

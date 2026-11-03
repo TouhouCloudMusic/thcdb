@@ -6,6 +6,7 @@ on:
       - '.github/workflows/deploy-prod.yml'
       - '.justfile'
       - 'docker-compose.prod.yml'
+      - 'observability/**'
       - 'server/**'
       - 'server/Dockerfile.toolchain'
       - 'web/**'
@@ -137,8 +138,8 @@ jobs:
             set -euo pipefail
             cd "$HOME/thcdb"
 
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin "${{ github.sha }}"
+            git reset --hard "${{ github.sha }}"
 
             echo "${{ github.token }}" | docker login "${{ env.REGISTRY }}" -u "${{ github.actor }}" --password-stdin
 
@@ -146,7 +147,7 @@ jobs:
             export SERVER_IMAGE="${{ env.SERVER_IMAGE }}"
             export WEB_IMAGE="${{ env.WEB_IMAGE }}"
 
-            docker compose -f docker-compose.prod.yml pull server web
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml pull server web jaeger-init jaeger loki prometheus grafana
+            docker compose -f docker-compose.prod.yml up --wait --force-recreate --remove-orphans server web jaeger loki prometheus grafana
 
             docker logout "${{ env.REGISTRY }}"

@@ -1,10 +1,9 @@
 use entity::{release_artist, release_artist_history};
+use infra_db::DatabaseTransaction;
 use itertools::Itertools;
 use libfp::EmptyExt;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
-};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 
 pub(crate) async fn create_release_artist(
     release_id: i32,
@@ -55,22 +54,25 @@ pub(crate) async fn update_release_artist(
     history_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    release_artist::Entity::delete_many()
-        .filter(release_artist::Column::ReleaseId.eq(release_id))
-        .exec(db)
-        .await?;
+    infra_db::trace("release.update_artist", async {
+        release_artist::Entity::delete_many()
+            .filter(release_artist::Column::ReleaseId.eq(release_id))
+            .exec(db)
+            .await?;
 
-    if let Some(artists) = release_artist_history::Entity::find()
-        .filter(release_artist_history::Column::HistoryId.eq(history_id))
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|x| x.artist_id)
-        .collect_vec()
-        .into_option()
-    {
-        create_release_artist(release_id, &artists, db).await?;
-    }
+        if let Some(artists) = release_artist_history::Entity::find()
+            .filter(release_artist_history::Column::HistoryId.eq(history_id))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|x| x.artist_id)
+            .collect_vec()
+            .into_option()
+        {
+            create_release_artist(release_id, &artists, db).await?;
+        }
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }

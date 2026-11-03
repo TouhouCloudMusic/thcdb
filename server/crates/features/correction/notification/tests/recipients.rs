@@ -6,7 +6,7 @@ use entity::{correction, correction_subscription, correction_user};
 use infra_testing::{MockUser, test_connection};
 use notification_core::CorrectionModerationAction;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{EntityTrait, TransactionTrait};
+use sea_orm::EntityTrait;
 
 #[tokio::test]
 async fn correction_moderation_notifies_authors_instead_of_subscribers()

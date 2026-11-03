@@ -70,7 +70,7 @@ impl<Storage: AsyncFileStorage> Service<Storage> {
 
         lock_object(self.tx.conn(), &object_key)
             .await
-            .db_operation("lock uploaded image object")?;
+            .db_context("lock uploaded image object")?;
         self.storage
             .create(NewStorageObject {
                 object_key: object_key.clone(),
@@ -88,7 +88,7 @@ impl<Storage: AsyncFileStorage> Service<Storage> {
         })
         .exec_with_returning(self.tx.conn())
         .await
-        .db_operation("create image upload")
+        .db_context("create image upload")
         .fmap_into()
         .map_err(Into::into)
     }

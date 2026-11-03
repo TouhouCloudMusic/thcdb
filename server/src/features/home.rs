@@ -9,16 +9,15 @@ use sea_orm::{
 };
 use sea_query::{Expr, Func};
 use serde::Serialize;
-use tokio::try_join;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::artist::list::ArtistListItem;
-use crate::features::release::list::ReleaseListItem;
-use crate::infra::database::error::DatabaseResultExt;
+use crate::features::artist::list::{self as artist_list, ArtistListItem};
+use crate::features::release::list::{self as release_list, ReleaseListItem};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::api_response::{AppError, Data};
 
 const HOME_ITEMS_LIMIT: usize = 6;
@@ -71,13 +70,21 @@ async fn get_home(
         .map_err(AppError::internal)?;
     let popular = load_popular_items(db, &ranking).await?;
 
-    let (artists_count, releases_count, songs_count, tags_count) = try_join!(
-        artist::Entity::find().count(db),
-        release::Entity::find().count(db),
-        song::Entity::find().count(db),
-        tag::Entity::find().count(db),
-    )
-    .db_operation("load home metadata")?;
+    let (artists_count, releases_count, songs_count, tags_count) =
+        infra_db::observe::<_, DatabaseError, _>(
+            "home.count_entities",
+            async {
+                let counts = tokio::try_join!(
+                    artist::Entity::find().count(db),
+                    release::Entity::find().count(db),
+                    song::Entity::find().count(db),
+                    tag::Entity::find().count(db),
+                )
+                .db_context("load home metadata")?;
+                Ok(counts)
+            },
+        )
+        .await?;
 
     Ok(Home {
         statistics: HomeStatistics {
@@ -91,16 +98,17 @@ async fn get_home(
     .into())
 }
 
+#[infra_db::observe("home.load_popular_items")]
 async fn load_popular_items(
     conn: &impl ConnectionTrait,
     ranking: &Ranking,
-) -> Result<PopularItems, AppError> {
+) -> Result<PopularItems, DatabaseError> {
     let (releases, artists) = tokio::try_join!(
         async {
             if ranking.release_ids.is_empty() {
                 return Ok(Vec::new());
             }
-            crate::features::release::list::load(
+            release_list::load(
                 release::Entity::find().filter(
                     release::Column::Id
                         .is_in(ranking.release_ids.iter().copied()),
@@ -108,13 +116,12 @@ async fn load_popular_items(
                 conn,
             )
             .await
-            .map_err(AppError::internal)
         },
         async {
             if ranking.artist_ids.is_empty() {
                 return Ok(Vec::new());
             }
-            crate::features::artist::list::load(
+            artist_list::load(
                 artist::Entity::find().filter(
                     artist::Column::Id
                         .is_in(ranking.artist_ids.iter().copied()),
@@ -122,7 +129,6 @@ async fn load_popular_items(
                 conn,
             )
             .await
-            .map_err(AppError::internal)
         },
     )?;
 
@@ -184,11 +190,12 @@ async fn load_popular_items(
     Ok(PopularItems { releases, artists })
 }
 
+#[infra_db::observe("home.load_random_releases")]
 async fn load_random_releases(
     conn: &impl ConnectionTrait,
     excluded_release_ids: &[i32],
     count: usize,
-) -> Result<Vec<ReleaseListItem>, AppError> {
+) -> Result<Vec<ReleaseListItem>, DatabaseError> {
     let select = release::Entity::find();
     let select = if excluded_release_ids.is_empty() {
         select
@@ -198,21 +205,22 @@ async fn load_random_releases(
         )
     };
 
-    crate::features::release::list::load(
+    let releases = release_list::load(
         select
             .order_by_asc(Expr::expr(Func::random()))
             .limit(count as u64),
         conn,
     )
-    .await
-    .map_err(AppError::internal)
+    .await?;
+    Ok(releases)
 }
 
+#[infra_db::observe("home.load_random_artists")]
 async fn load_random_artists(
     conn: &impl ConnectionTrait,
     excluded_artist_ids: &[i32],
     count: usize,
-) -> Result<Vec<ArtistListItem>, AppError> {
+) -> Result<Vec<ArtistListItem>, DatabaseError> {
     let select = artist::Entity::find();
     let select = if excluded_artist_ids.is_empty() {
         select
@@ -222,12 +230,12 @@ async fn load_random_artists(
         )
     };
 
-    crate::features::artist::list::load(
+    let artists = artist_list::load(
         select
             .order_by_asc(Expr::expr(Func::random()))
             .limit(count as u64),
         conn,
     )
-    .await
-    .map_err(AppError::internal)
+    .await?;
+    Ok(artists)
 }

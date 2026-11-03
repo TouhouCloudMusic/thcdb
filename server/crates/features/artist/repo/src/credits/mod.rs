@@ -6,12 +6,10 @@ mod query;
 mod tests;
 
 pub use cursor::{CreditsCursor, SongPosition};
-use entity::credit_role;
 use infra_db::SeaOrmRepository;
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::DatabaseError;
 use itertools::{Itertools, izip};
-use sea_orm::prelude::*;
-use sea_orm::{FromQueryResult, QueryFilter};
+use sea_orm::FromQueryResult;
 
 use crate::model::{
     ArtistCreditScope, ArtistCreditSort, ArtistCredits, ArtistSongCredit,
@@ -24,6 +22,7 @@ struct SelectedSong {
     primary_release_id: Option<i32>,
 }
 
+#[infra_db::observe("artist.credits.list")]
 pub async fn credits(
     repo: &SeaOrmRepository,
     query: CreditQuery,
@@ -101,6 +100,7 @@ struct CreditPage {
     last_release_cursor: Option<CreditsCursor>,
 }
 
+#[infra_db::observe("artist.credits.load_release_page")]
 async fn credit_page(
     repo: &SeaOrmRepository,
     artist_id: i32,
@@ -172,11 +172,7 @@ async fn credit_page(
                 .filter_map(|credit| credit.role_id),
         )
         .collect_vec();
-    let credit_roles = credit_role::Entity::find()
-        .filter(credit_role::Column::Id.is_in(role_ids))
-        .all(&repo.conn)
-        .await
-        .db_operation("load artist credit roles")?;
+    let credit_roles = query::load_credit_roles(repo, role_ids).await?;
     let credit_irs = izip!(releases.items, release_credits_by_release)
         .map(|(item, release_credits)| load::CreditIR {
             release: item.release,
@@ -202,6 +198,7 @@ struct SongPage {
     next_cursor: Option<CreditsCursor>,
 }
 
+#[infra_db::observe("artist.credits.load_orphan_song_page")]
 async fn orphan_song_page(
     repo: &SeaOrmRepository,
     artist_id: i32,
@@ -233,11 +230,7 @@ async fn orphan_song_page(
         .flat_map(|item| item.song_credits.iter())
         .filter_map(|credit| credit.role_id)
         .collect_vec();
-    let credit_roles = credit_role::Entity::find()
-        .filter(credit_role::Column::Id.is_in(role_ids))
-        .all(&repo.conn)
-        .await
-        .db_operation("load artist orphan song credit roles")?;
+    let credit_roles = query::load_credit_roles(repo, role_ids).await?;
     let items = data
         .items
         .into_iter()

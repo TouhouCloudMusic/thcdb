@@ -130,60 +130,63 @@ pub(super) async fn counts(
     since: NaiveDate,
     until: NaiveDate,
 ) -> Result<BTreeMap<PopularityEntity, ParticipationCounts>, DbErr> {
-    let since = since.and_time(chrono::NaiveTime::MIN).and_utc();
-    let until = until
-        .succ_opt()
-        .ok_or_else(|| {
-            DbErr::Type("participation date exceeds supported range".into())
-        })?
-        .and_time(chrono::NaiveTime::MIN)
-        .and_utc();
+    infra_db::trace("popularity.participation.count", async {
+        let since = since.and_time(chrono::NaiveTime::MIN).and_utc();
+        let until = until
+            .succ_opt()
+            .ok_or_else(|| {
+                DbErr::Type("participation date exceeds supported range".into())
+            })?
+            .and_time(chrono::NaiveTime::MIN)
+            .and_utc();
 
-    let mut counts: BTreeMap<PopularityEntity, ParticipationCounts> =
-        BTreeMap::new();
+        let mut counts: BTreeMap<PopularityEntity, ParticipationCounts> =
+            BTreeMap::new();
 
-    for kind in [
-        PopularityEntityKind::Release,
-        PopularityEntityKind::Artist,
-        PopularityEntityKind::Song,
-    ] {
-        for (query, metric) in [
-            (
-                collector_counts_query(kind, since, until),
-                ParticipationMetric::Collectors,
-            ),
-            (
-                voter_counts_query(kind, since, until),
-                ParticipationMetric::Voters,
-            ),
+        for kind in [
+            PopularityEntityKind::Release,
+            PopularityEntityKind::Artist,
+            PopularityEntityKind::Song,
         ] {
-            let rows = ParticipationCountRow::find_by_statement(
-                conn.get_database_backend().build(&query),
-            )
-            .all(conn)
-            .await?;
+            for (query, metric) in [
+                (
+                    collector_counts_query(kind, since, until),
+                    ParticipationMetric::Collectors,
+                ),
+                (
+                    voter_counts_query(kind, since, until),
+                    ParticipationMetric::Voters,
+                ),
+            ] {
+                let rows = ParticipationCountRow::find_by_statement(
+                    conn.get_database_backend().build(&query),
+                )
+                .all(conn)
+                .await?;
 
-            for row in rows {
-                let count = u64::try_from(row.count)
-                    .map_err(|error| DbErr::Type(error.to_string()))?;
+                for row in rows {
+                    let count = u64::try_from(row.count)
+                        .map_err(|error| DbErr::Type(error.to_string()))?;
 
-                let entity = PopularityEntity {
-                    kind,
-                    id: row.entity_id,
-                };
-                let entry = counts.entry(entity).or_default();
+                    let entity = PopularityEntity {
+                        kind,
+                        id: row.entity_id,
+                    };
+                    let entry = counts.entry(entity).or_default();
 
-                match metric {
-                    ParticipationMetric::Collectors => {
-                        entry.collector_count = count;
-                    }
-                    ParticipationMetric::Voters => {
-                        entry.voter_count = count;
+                    match metric {
+                        ParticipationMetric::Collectors => {
+                            entry.collector_count = count;
+                        }
+                        ParticipationMetric::Voters => {
+                            entry.voter_count = count;
+                        }
                     }
                 }
             }
         }
-    }
 
-    Ok(counts)
+        Ok(counts)
+    })
+    .await
 }

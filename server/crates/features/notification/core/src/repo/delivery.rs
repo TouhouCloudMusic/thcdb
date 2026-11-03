@@ -6,12 +6,13 @@ use entity::{
     notification, notification_entry, notification_event,
     notification_inbox_state,
 };
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::DatabaseTransaction;
+use infra_db::error::{DatabaseError, DatabaseFailure, DatabaseResultExt};
 use sea_orm::ActiveValue::Set;
 use sea_orm::prelude::Uuid;
 use sea_orm::{
-    ColumnTrait, DatabaseTransaction, EntityTrait, JoinType, QueryFilter,
-    QuerySelect, RelationTrait, TryInsert,
+    ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect,
+    RelationTrait, TryInsert,
 };
 use sea_query::{Condition, Expr, OnConflict};
 use sorted_vec::SortedSet;
@@ -93,6 +94,7 @@ pub(super) struct ReservedInboxPosition {
 }
 
 impl ReservedInboxPosition {
+    #[infra_db::observe("notification.delivery.reserve")]
     pub(super) async fn reserve(
         conn: &DatabaseTransaction,
         recipient_id: i32,
@@ -117,7 +119,7 @@ impl ReservedInboxPosition {
         )
         .exec_with_returning(conn)
         .await
-        .db_operation("reserve notification Inbox position")?;
+        .db_context("reserve notification Inbox position")?;
 
         Ok(Self {
             recipient_id,
@@ -132,45 +134,47 @@ pub(super) struct LockedNotification {
     pub(super) last_activity_at: DateTime<FixedOffset>,
 }
 
+#[infra_db::observe("notification.delivery.create_notification")]
 pub(super) async fn create_notification(
     conn: &DatabaseTransaction,
     recipient_id: i32,
     kind: NotificationAggregateKind,
 ) -> Result<Uuid, DatabaseError> {
-    notification::Entity::insert(notification::ActiveModel {
+    let result = notification::Entity::insert(notification::ActiveModel {
         recipient_id: Set(recipient_id),
         kind: Set(DbNotificationAggregateKind::from(kind)),
         ..Default::default()
     })
     .exec(conn)
-    .await
-    .db_operation("insert notification")
-    .map(|result| result.last_insert_id)
+    .await?;
+
+    Ok(result.last_insert_id)
 }
 
+#[infra_db::observe("notification.delivery.lock_notification")]
 pub(super) async fn lock_notification(
     conn: &DatabaseTransaction,
     notification_id: Uuid,
     recipient_id: i32,
     kind: NotificationAggregateKind,
 ) -> Result<Option<LockedNotification>, DatabaseError> {
-    notification::Entity::find_by_id(notification_id)
+    let notification = notification::Entity::find_by_id(notification_id)
         .filter(notification::Column::RecipientId.eq(recipient_id))
         .filter(notification::Column::Kind.eq(kind))
         .lock_exclusive()
         .one(conn)
-        .await
-        .db_operation("lock notification")
-        .map(|notification| {
-            notification.map(|model| LockedNotification {
-                id: model.id,
-                last_seq: model.last_seq,
-                last_activity_at: model.last_activity_at,
-            })
+        .await?;
+    Ok({
+        notification.map(|model| LockedNotification {
+            id: model.id,
+            last_seq: model.last_seq,
+            last_activity_at: model.last_activity_at,
         })
+    })
 }
 
 /// Serializes cooldown decisions for one recipient without consuming an Inbox position.
+#[infra_db::observe("notification.delivery.lock_inbox_state")]
 async fn lock_inbox_state(
     conn: &DatabaseTransaction,
     recipient_id: i32,
@@ -186,20 +190,21 @@ async fn lock_inbox_state(
     )
     .exec(conn)
     .await
-    .db_operation("ensure notification Inbox state")?;
+    .db_context("ensure notification Inbox state")?;
 
     notification_inbox_state::Entity::find_by_id(recipient_id)
         .lock_exclusive()
         .one(conn)
         .await
-        .db_operation("lock notification Inbox state")?
+        .db_context("lock notification Inbox state")?
         .ok_or_else(|| {
-            DatabaseError::internal("notification Inbox state is missing")
+            DatabaseFailure::internal("notification Inbox state is missing")
         })?;
 
     Ok(())
 }
 
+#[infra_db::observe("notification.delivery.create_notifications")]
 pub async fn create_notifications(
     conn: &DatabaseTransaction,
     command: CreateNotificationsCommand,
@@ -233,7 +238,8 @@ pub async fn create_notifications(
                 *comment_id,
                 *reply_recipient_id,
             )
-            .await;
+            .await
+            .map_err(Into::into);
         }
         Command::UserFollowed { target_user_id, .. } => (
             Aggregate::UserFollowed,
@@ -255,9 +261,12 @@ pub async fn create_notifications(
         ),
     };
 
-    create_single_event_notifications(conn, &command, kind, recipients).await
+    create_single_event_notifications(conn, &command, kind, recipients)
+        .await
+        .map_err(Into::into)
 }
 
+#[infra_db::observe("notification.delivery.create_single_event_notifications")]
 async fn create_single_event_notifications(
     conn: &DatabaseTransaction,
     command: &CreateNotificationsCommand,
@@ -291,6 +300,7 @@ async fn create_single_event_notifications(
     })
 }
 
+#[infra_db::observe("notification.delivery.deliver_event_at_positions")]
 pub(super) async fn deliver_event_at_positions(
     conn: &DatabaseTransaction,
     event_id: NotificationEventId,
@@ -306,7 +316,7 @@ pub(super) async fn deliver_event_at_positions(
     let notifications = notification::Entity::insert_many(models)
         .exec_with_returning_many(conn)
         .await
-        .db_operation("insert recipient notifications")?;
+        .db_context("insert recipient notifications")?;
 
     let inbox_sequences = positions
         .into_iter()
@@ -331,7 +341,7 @@ pub(super) async fn deliver_event_at_positions(
     notification_entry::Entity::insert_many(entries)
         .exec_without_returning(conn)
         .await
-        .db_operation("insert initial notification entries")?;
+        .db_context("insert initial notification entries")?;
 
     Ok(())
 }
@@ -372,6 +382,7 @@ fn delivery_cooldown_filter(
     filter
 }
 
+#[infra_db::observe("notification.delivery.apply_delivery_cooldown")]
 async fn apply_delivery_cooldown(
     conn: &DatabaseTransaction,
     mut recipients: SortedSet<i32>,
@@ -430,7 +441,7 @@ async fn apply_delivery_cooldown(
         .into_tuple::<i32>()
         .all(conn)
         .await
-        .db_operation("load notification cooldown recipients")?
+        .db_context("load notification cooldown recipients")?
         .into_iter()
         .collect::<HashSet<_>>();
     recipients.retain(|recipient| !recent_recipients.contains(recipient));

@@ -14,6 +14,7 @@ pub(super) enum UserFilter {
     Name(String),
 }
 
+#[infra_db::observe("image_queue.view.find_by_user")]
 pub(super) async fn find_by_user(
     repo: &SeaOrmRepository,
     filter: UserFilter,
@@ -36,7 +37,7 @@ pub(super) async fn find_by_user(
         .limit(u64::from(limit) + 1)
         .all(&repo.conn)
         .await
-        .db_operation("find user image queue")?;
+        .db_context("find user image queue")?;
 
     let has_next = models.len() > usize::from(limit);
     if has_next {

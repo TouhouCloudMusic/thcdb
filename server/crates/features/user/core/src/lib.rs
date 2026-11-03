@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use entity::user;
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::DatabaseError;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DerivePartialModel, EntityTrait, QueryFilter,
 };
@@ -26,6 +26,7 @@ impl UserSummary {
 }
 
 /// Missing user IDs are omitted from the returned map.
+#[infra_db::observe("user.load_users")]
 pub async fn load_users(
     conn: &impl ConnectionTrait,
     user_ids: impl IntoIterator<Item = i32>,
@@ -39,8 +40,7 @@ pub async fn load_users(
         .filter(user::Column::Id.is_in(user_ids))
         .into_partial_model::<UserSummary>()
         .all(conn)
-        .await
-        .db_operation("load users")?;
+        .await?;
 
     Ok(users.into_iter().map(|user| (user.id, user)).collect())
 }

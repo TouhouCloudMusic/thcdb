@@ -107,7 +107,7 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin release cover art upload transaction")?;
+            .db_context("begin release cover art upload transaction")?;
 
         let image_service =
             image_upload::Service::new(tx_repo.clone(), self.storage.clone());
@@ -143,6 +143,7 @@ impl Service {
         Ok(image_queue_entry.id)
     }
 
+    #[fastrace::trace(name = "release_image.find_current_cover_art_metadata")]
     pub async fn get_cover_art_metadata(
         &self,
         release_id: i32,
@@ -154,7 +155,7 @@ impl Service {
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
             .await
-            .db_operation("find current release cover art")?;
+            .db_context("find current release cover art")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -164,7 +165,7 @@ impl Service {
             .into_partial_model::<UserSummary>()
             .one(&self.repo.conn)
             .await
-            .db_operation("find release cover art uploader")?
+            .db_context("find release cover art uploader")?
             .unwrap_or_else(|| UserSummary::unknown(image.uploaded_by));
 
         Ok(Some(CurrentImageMetadata {

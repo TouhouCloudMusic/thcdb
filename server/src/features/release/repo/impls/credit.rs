@@ -1,8 +1,7 @@
 use entity::{release_credit, release_credit_history};
+use infra_db::DatabaseTransaction;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
-};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 
 use crate::features::release::model::NewCredit;
 
@@ -63,26 +62,29 @@ pub(crate) async fn update_release_credit(
     history_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    release_credit::Entity::delete_many()
-        .filter(release_credit::Column::ReleaseId.eq(release_id))
-        .exec(db)
-        .await?;
+    infra_db::trace("release.update_credit", async {
+        release_credit::Entity::delete_many()
+            .filter(release_credit::Column::ReleaseId.eq(release_id))
+            .exec(db)
+            .await?;
 
-    let credits = release_credit_history::Entity::find()
-        .filter(release_credit_history::Column::HistoryId.eq(history_id))
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|x| NewCredit {
-            artist_id: x.artist_id,
-            role_id: x.role_id,
-            on: x.on.into(),
-        })
-        .collect::<Vec<_>>();
+        let credits = release_credit_history::Entity::find()
+            .filter(release_credit_history::Column::HistoryId.eq(history_id))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|x| NewCredit {
+                artist_id: x.artist_id,
+                role_id: x.role_id,
+                on: x.on.into(),
+            })
+            .collect::<Vec<_>>();
 
-    if credits.is_empty() {
-        return Ok(());
-    }
+        if credits.is_empty() {
+            return Ok(());
+        }
 
-    create_release_credit(release_id, &credits, db).await
+        create_release_credit(release_id, &credits, db).await
+    })
+    .await
 }

@@ -9,12 +9,12 @@ use entity::sea_orm_active_enums::{
     ArtistImageType, ImageQueueStatus, ReleaseImageType,
 };
 use entity::{artist_image, image, image_queue, release_image, user};
-use infra_db::SeaOrmRepository;
+use infra_db::{DatabaseConnection, SeaOrmRepository};
 use infra_storage::FsStorage;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ConnectionTrait, DatabaseBackend, EntityTrait,
-    IsolationLevel, Statement, TransactionTrait, Value,
+    IsolationLevel, Statement, Value,
 };
 use sea_query::{Alias, Func, Query};
 
@@ -59,7 +59,7 @@ fn png(seed: i32) -> Result<Vec<u8>> {
 }
 
 async fn upload(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
     base_path: &Path,
     bytes: &[u8],
     uploaded_by: i32,
@@ -78,11 +78,11 @@ async fn upload(
 }
 
 async fn insert_image(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
     uploaded_by: i32,
     object_key: &str,
 ) -> Result<image::Model> {
-    image::Entity::insert(image::ActiveModel {
+    let image = image::Entity::insert(image::ActiveModel {
         id: NotSet,
         uploaded_by: Set(uploaded_by),
         uploaded_at: NotSet,
@@ -91,8 +91,8 @@ async fn insert_image(
         unreferenced_since: Set(Some(Utc::now().fixed_offset())),
     })
     .exec_with_returning(conn)
-    .await
-    .map_err(Into::into)
+    .await?;
+    Ok(image)
 }
 
 fn age_file(base_path: &Path, object_key: &str, days: u64) -> Result<()> {
@@ -103,7 +103,7 @@ fn age_file(base_path: &Path, object_key: &str, days: u64) -> Result<()> {
 }
 
 async fn set_unreferenced_days_ago(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
     id: i32,
     days: i64,
 ) -> Result<()> {
@@ -120,11 +120,11 @@ async fn set_unreferenced_days_ago(
 }
 
 async fn insert_rejected_queue(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
     image_id: i32,
     user_id: i32,
 ) -> Result<image_queue::Model> {
-    image_queue::Entity::insert(image_queue::ActiveModel {
+    let queue = image_queue::Entity::insert(image_queue::ActiveModel {
         id: NotSet,
         image_id: Set(Some(image_id)),
         status: Set(ImageQueueStatus::Rejected),
@@ -136,8 +136,8 @@ async fn insert_rejected_queue(
         created_by: Set(user_id),
     })
     .exec_with_returning(conn)
-    .await
-    .map_err(Into::into)
+    .await?;
+    Ok(queue)
 }
 
 #[tokio::test]
@@ -672,32 +672,34 @@ async fn gc_reclaims_rolled_back_upload_after_retention() -> Result<()> {
 }
 
 async fn backend_pid<C: sea_orm::ConnectionTrait>(conn: &C) -> Result<i32> {
-    conn.query_one(Statement::from_string(
-        DatabaseBackend::Postgres,
-        "SELECT pg_backend_pid() AS pid",
-    ))
-    .await?
-    .context("transaction backend pid was not returned")?
-    .try_get("", "pid")
-    .map_err(Into::into)
+    let pid = conn
+        .query_one(Statement::from_string(
+            DatabaseBackend::Postgres,
+            "SELECT pg_backend_pid() AS pid",
+        ))
+        .await?
+        .context("transaction backend pid was not returned")?
+        .try_get("", "pid")?;
+    Ok(pid)
 }
 
 async fn database_clock(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
 ) -> Result<chrono::DateTime<chrono::FixedOffset>> {
     let clock_query = Query::select()
         .expr_as(Func::cust(Alias::new("clock_timestamp")), Alias::new("now"))
         .to_owned();
     let statement = conn.get_database_backend().build(&clock_query);
-    conn.query_one(statement)
+    let now = conn
+        .query_one(statement)
         .await?
         .context("database time was not returned")?
-        .try_get("", "now")
-        .map_err(Into::into)
+        .try_get("", "now")?;
+    Ok(now)
 }
 
 async fn wait_until_transaction_is_blocked_by(
-    conn: &sea_orm::DatabaseConnection,
+    conn: &DatabaseConnection,
     waiting_pid: i32,
     blocking_pid: i32,
 ) -> Result<()> {
@@ -774,7 +776,7 @@ async fn gc_skips_upload_in_progress_and_reclaims_other_objects() -> Result<()>
     )
     .await;
     let holder_result = holder.commit().await;
-    holder_result.map_err(anyhow::Error::from)?;
+    holder_result?;
     match gc_result {
         Ok(result) => result.map_err(anyhow::Error::from_boxed)?,
         Err(error) => {

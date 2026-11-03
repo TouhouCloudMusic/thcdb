@@ -1,0 +1,5 @@
+scrape_configs:
+  - job_name: thcdb-server
+    honor_labels: true
+    static_configs:
+      - targets: ["server:9464"]

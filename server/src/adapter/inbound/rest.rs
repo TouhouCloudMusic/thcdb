@@ -1,6 +1,7 @@
 #![expect(clippy::needless_for_each)]
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -28,6 +29,12 @@ pub(crate) mod authz;
 mod extract;
 pub(crate) mod middleware;
 pub mod state;
+
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
+
+#[cfg(all(test, feature = "integration-test"))]
+mod observability_tests;
 
 pub(crate) use extract::AuthRejection;
 pub use extract::CurrentUser;
@@ -336,35 +343,96 @@ where
     }
 }
 
-pub async fn listen(
+pub(crate) async fn listen(
     listener: TcpListener,
     state: Arc<AppState>,
-) -> Result<(), Box<dyn std::error::Error>> {
+    metrics_address: Option<String>,
+    shutdown: impl std::future::Future<Output = ()> + Clone + Send + 'static,
+) -> std::io::Result<()> {
     let state = ArcAppState::new(state);
 
     let app = router(state);
 
-    axum::serve(
+    let server = axum::serve(
         listener,
         app.into_make_service_with_connect_info::<SocketAddr>(),
     )
-    .with_graceful_shutdown(async {
-        match signal::ctrl_c().await {
-            Ok(()) => {}
+    .with_graceful_shutdown(shutdown.clone());
+
+    let metrics_shutdown = shutdown.clone();
+    let serving = async {
+        let metrics = async {
+            if let Some(address) = metrics_address
+                && let Err(error) =
+                    serve_metrics(&address, metrics_shutdown).await
+            {
+                log::error!(target: "app", error:% = error; "metrics listener failed");
+            }
+            Ok::<_, std::io::Error>(())
+        };
+        tokio::try_join!(server, metrics)?;
+        Ok(())
+    };
+    tokio::pin!(serving);
+    tokio::select! {
+        result = &mut serving => return result,
+        () = shutdown => {},
+    }
+
+    tokio::time::timeout(Duration::from_secs(30), &mut serving).await?
+}
+
+async fn serve_metrics(
+    address: &str,
+    shutdown: impl std::future::Future<Output = ()> + Send + 'static,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let address = address.parse::<SocketAddr>()?;
+    let listener = TcpListener::bind(address).await?;
+    axum::serve(listener, Router::new().route("/metrics", get(metrics)))
+        .with_graceful_shutdown(shutdown)
+        .await?;
+    Ok(())
+}
+
+async fn metrics() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            "application/openmetrics-text; version=1.0.0; charset=utf-8",
+        )],
+        infra_observability::metrics::encode_metrics(),
+    )
+}
+
+pub(crate) async fn shutdown_signal() {
+    let ctrl_c = async {
+        if let Err(err) = signal::ctrl_c().await {
+            log::error!(target: "app", error:% = err; "failed to listen for Ctrl-C");
+        }
+    };
+    #[cfg(unix)]
+    let terminate = async {
+        match signal::unix::signal(signal::unix::SignalKind::terminate()) {
+            Ok(mut signal) => {
+                signal.recv().await;
+            }
             Err(err) => {
-                eprintln!("Unable to listen for shutdown signal: {err}");
+                log::error!(target: "app", error:% = err; "failed to listen for SIGTERM");
             }
         }
-    })
-    .await?;
+    };
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
 
-    Ok(())
+    tokio::select! {
+        () = ctrl_c => {},
+        () = terminate => {},
+    }
 }
 
 fn openapi_router() -> OpenApiRouter<ArcAppState> {
     let mut router = OpenApiRouter::with_openapi(ApiDoc::openapi())
-        .merge(features::router())
-        .routes(routes!(health_check));
+        .merge(features::router());
 
     let openapi = router.get_openapi_mut();
     utoipa::Modify::modify(&DefaultErrorResponseModifier, openapi);
@@ -373,11 +441,14 @@ fn openapi_router() -> OpenApiRouter<ArcAppState> {
 }
 
 pub fn generate_openapi() -> utoipa::openapi::OpenApi {
-    openapi_router().to_openapi()
+    openapi_router().merge(health_check_router()).to_openapi()
 }
 
 fn router(state: ArcAppState) -> Router {
-    let (router, api_doc) = openapi_router().split_for_parts();
+    let (router, mut api_doc) = openapi_router().split_for_parts();
+    let (health, health_doc) = health_check_router().split_for_parts();
+    let grafana_auth = features::observability::auth_router();
+    api_doc.merge(health_doc);
 
     let doc_router = router
         .merge(Scalar::with_url("/docs", api_doc.clone()))
@@ -388,7 +459,15 @@ fn router(state: ArcAppState) -> Router {
         .merge(doc_router)
         .merge(constant_files())
         .pipe(|this| append_global_middlewares(this, &state))
+        // Grafana checks every asset request. These internal checks must not
+        // consume the business API rate limit shared by the proxy connection.
+        .merge(grafana_auth.layer(middleware::auth_layer(&state)))
+        .merge(health)
         .with_state(state)
+}
+
+fn health_check_router() -> OpenApiRouter<ArcAppState> {
+    OpenApiRouter::new().routes(routes!(health_check))
 }
 
 #[cfg(test)]

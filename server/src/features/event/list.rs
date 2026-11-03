@@ -63,6 +63,6 @@ pub(crate) async fn load(
         .into_partial_model::<EventRow>()
         .all(db)
         .await
-        .db_operation("load event list items")
+        .db_context("load event list items")
         .map(|events| events.into_iter().map(Into::into).collect())
 }

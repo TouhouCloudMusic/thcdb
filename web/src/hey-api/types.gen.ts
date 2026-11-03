@@ -3443,19 +3443,6 @@ export type HealthCheckData = {
 	url: "/health_check"
 }
 
-export type HealthCheckErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type HealthCheckError = HealthCheckErrors[keyof HealthCheckErrors]
-
 export type HealthCheckResponses = {
 	200: unknown
 }

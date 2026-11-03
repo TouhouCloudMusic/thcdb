@@ -6,45 +6,46 @@ use entity::{
     song_localized_title_history, song_relation, song_relation_history,
 };
 use futures_util::try_join;
-use infra_db::SeaOrmTxRepo;
+use infra_db::{DatabaseTransaction, SeaOrmTxRepo};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
-    IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveValue,
+    ModelTrait, QueryFilter, QueryOrder,
 };
 use sea_query::OnConflict;
 
 use crate::features::song::model::{
     NewSong, NewSongCredit, NewSongRelation, SongRelationDirection,
 };
-use crate::infra::database::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
-};
+use crate::infra::database::error::{BrokenEntityReference, DatabaseError};
 
 #[cfg(all(test, feature = "integration-test"))]
 mod integration_tests;
 
+#[infra_db::observe("song.create")]
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
     data: &NewSong,
 ) -> Result<i32, DatabaseError> {
-    create_song_and_relations(data, repo.conn())
+    Ok(create_song_and_relations(data, repo.conn())
         .await
-        .map(|song| song.id)
-        .db_operation("create song")
+        .map(|song| song.id)?)
 }
 
+#[infra_db::observe("song.create_history")]
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
     song_id: i32,
     data: &NewSong,
 ) -> Result<i32, DatabaseError> {
-    create_song_history_and_relations(song_id, data, repo.conn())
-        .await
-        .map(|song| song.id)
-        .db_operation("create song history")
+    Ok(
+        create_song_history_and_relations(song_id, data, repo.conn())
+            .await
+            .map(|song| song.id)?,
+    )
 }
 
+#[infra_db::observe("song.apply_update")]
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
@@ -94,28 +95,31 @@ async fn update_artists(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    song_artist::Entity::delete_many()
-        .filter(song_artist::Column::SongId.eq(song_id))
-        .exec(tx)
-        .await?;
+    infra_db::trace("song.update_artists", async {
+        song_artist::Entity::delete_many()
+            .filter(song_artist::Column::SongId.eq(song_id))
+            .exec(tx)
+            .await?;
 
-    let artists = song_artist_history::Entity::find()
-        .filter(song_artist_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let artists = song_artist_history::Entity::find()
+            .filter(song_artist_history::Column::HistoryId.eq(history_id))
+            .all(tx)
+            .await?;
 
-    if artists.is_empty() {
-        return Ok(());
-    }
+        if artists.is_empty() {
+            return Ok(());
+        }
 
-    let models = artists.iter().map(|a| song_artist::ActiveModel {
-        song_id: Set(song_id),
-        artist_id: Set(a.artist_id),
-    });
+        let models = artists.iter().map(|a| song_artist::ActiveModel {
+            song_id: Set(song_id),
+            artist_id: Set(a.artist_id),
+        });
 
-    song_artist::Entity::insert_many(models).exec(tx).await?;
+        song_artist::Entity::insert_many(models).exec(tx).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_credits(
@@ -123,30 +127,33 @@ async fn update_credits(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    song_credit::Entity::delete_many()
-        .filter(song_credit::Column::SongId.eq(song_id))
-        .exec(tx)
-        .await?;
+    infra_db::trace("song.update_credits", async {
+        song_credit::Entity::delete_many()
+            .filter(song_credit::Column::SongId.eq(song_id))
+            .exec(tx)
+            .await?;
 
-    let credits = song_credit_history::Entity::find()
-        .filter(song_credit_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let credits = song_credit_history::Entity::find()
+            .filter(song_credit_history::Column::HistoryId.eq(history_id))
+            .all(tx)
+            .await?;
 
-    if credits.is_empty() {
-        return Ok(());
-    }
+        if credits.is_empty() {
+            return Ok(());
+        }
 
-    let models = credits.iter().map(|credit| song_credit::ActiveModel {
-        id: NotSet,
-        song_id: Set(song_id),
-        artist_id: Set(credit.artist_id),
-        role_id: Set(credit.role_id),
-    });
+        let models = credits.iter().map(|credit| song_credit::ActiveModel {
+            id: NotSet,
+            song_id: Set(song_id),
+            artist_id: Set(credit.artist_id),
+            role_id: Set(credit.role_id),
+        });
 
-    song_credit::Entity::insert_many(models).exec(tx).await?;
+        song_credit::Entity::insert_many(models).exec(tx).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_languages(
@@ -154,28 +161,32 @@ async fn update_languages(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    song_language::Entity::delete_many()
-        .filter(song_language::Column::SongId.eq(song_id))
-        .exec(tx)
-        .await?;
+    infra_db::trace("song.update_languages", async {
+        song_language::Entity::delete_many()
+            .filter(song_language::Column::SongId.eq(song_id))
+            .exec(tx)
+            .await?;
 
-    let languages = song_language_history::Entity::find()
-        .filter(song_language_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let languages = song_language_history::Entity::find()
+            .filter(song_language_history::Column::HistoryId.eq(history_id))
+            .all(tx)
+            .await?;
 
-    if languages.is_empty() {
-        return Ok(());
-    }
+        if languages.is_empty() {
+            return Ok(());
+        }
 
-    let models = languages.iter().map(|language| song_language::ActiveModel {
-        song_id: Set(song_id),
-        language_id: Set(language.language_id),
-    });
+        let models =
+            languages.iter().map(|language| song_language::ActiveModel {
+                song_id: Set(song_id),
+                language_id: Set(language.language_id),
+            });
 
-    song_language::Entity::insert_many(models).exec(tx).await?;
+        song_language::Entity::insert_many(models).exec(tx).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_localized_titles(
@@ -183,34 +194,40 @@ async fn update_localized_titles(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    song_localized_title::Entity::delete_many()
-        .filter(song_localized_title::Column::SongId.eq(song_id))
-        .exec(tx)
-        .await?;
+    infra_db::trace("song.update_localized_titles", async {
+        song_localized_title::Entity::delete_many()
+            .filter(song_localized_title::Column::SongId.eq(song_id))
+            .exec(tx)
+            .await?;
 
-    let titles = song_localized_title_history::Entity::find()
-        .filter(song_localized_title_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let titles = song_localized_title_history::Entity::find()
+            .filter(
+                song_localized_title_history::Column::HistoryId.eq(history_id),
+            )
+            .all(tx)
+            .await?;
 
-    if titles.is_empty() {
-        return Ok(());
-    }
+        if titles.is_empty() {
+            return Ok(());
+        }
 
-    let models = titles
-        .iter()
-        .map(|title| song_localized_title::ActiveModel {
-            id: NotSet,
-            song_id: Set(song_id),
-            language_id: Set(title.language_id),
-            title: Set(title.title.clone()),
-        });
+        let models =
+            titles
+                .iter()
+                .map(|title| song_localized_title::ActiveModel {
+                    id: NotSet,
+                    song_id: Set(song_id),
+                    language_id: Set(title.language_id),
+                    title: Set(title.title.clone()),
+                });
 
-    song_localized_title::Entity::insert_many(models)
-        .exec(tx)
-        .await?;
+        song_localized_title::Entity::insert_many(models)
+            .exec(tx)
+            .await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_relations(
@@ -218,35 +235,39 @@ async fn update_relations(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    song_relation::Entity::delete_many()
-        .filter(
-            song_relation::Column::SourceId
-                .eq(song_id)
-                .or(song_relation::Column::DerivedId.eq(song_id)),
-        )
-        .exec(tx)
-        .await?;
+    infra_db::trace("song.update_relations", async {
+        song_relation::Entity::delete_many()
+            .filter(
+                song_relation::Column::SourceId
+                    .eq(song_id)
+                    .or(song_relation::Column::DerivedId.eq(song_id)),
+            )
+            .exec(tx)
+            .await?;
 
-    let relations = song_relation_history::Entity::find()
-        .filter(song_relation_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let relations = song_relation_history::Entity::find()
+            .filter(song_relation_history::Column::HistoryId.eq(history_id))
+            .all(tx)
+            .await?;
 
-    if relations.is_empty() {
-        return Ok(());
-    }
+        if relations.is_empty() {
+            return Ok(());
+        }
 
-    let models = relations.iter().map(|relation| song_relation::ActiveModel {
-        id: NotSet,
-        source_id: Set(relation.source_id),
-        derived_id: Set(relation.derived_id),
-        relation_type: Set(relation.relation_type),
-        description: Set(relation.description.clone()),
-    });
+        let models =
+            relations.iter().map(|relation| song_relation::ActiveModel {
+                id: NotSet,
+                source_id: Set(relation.source_id),
+                derived_id: Set(relation.derived_id),
+                relation_type: Set(relation.relation_type),
+                description: Set(relation.description.clone()),
+            });
 
-    song_relation::Entity::insert_many(models).exec(tx).await?;
+        song_relation::Entity::insert_many(models).exec(tx).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_links(
@@ -254,52 +275,62 @@ async fn update_links(
     history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    song_link::Entity::delete_many()
-        .filter(song_link::Column::SongId.eq(song_id))
-        .exec(tx)
-        .await?;
+    infra_db::trace("song.update_links", async {
+        song_link::Entity::delete_many()
+            .filter(song_link::Column::SongId.eq(song_id))
+            .exec(tx)
+            .await?;
 
-    let links = song_link_history::Entity::find()
-        .filter(song_link_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?;
+        let links = song_link_history::Entity::find()
+            .filter(song_link_history::Column::HistoryId.eq(history_id))
+            .all(tx)
+            .await?;
 
-    if links.is_empty() {
-        return Ok(());
-    }
+        if links.is_empty() {
+            return Ok(());
+        }
 
-    let models = links.into_iter().map(|link| song_link::ActiveModel {
-        id: NotSet,
-        song_id: Set(song_id),
-        url: Set(link.url),
-    });
+        let models = links.into_iter().map(|link| song_link::ActiveModel {
+            id: NotSet,
+            song_id: Set(song_id),
+            url: Set(link.url),
+        });
 
-    song_link::Entity::insert_many(models).exec(tx).await?;
+        song_link::Entity::insert_many(models).exec(tx).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn create_song_and_relations(
     data: &NewSong,
     tx: &DatabaseTransaction,
 ) -> Result<song::Model, DbErr> {
-    let song_model = song::ActiveModel {
-        id: NotSet,
-        title: data.title.to_string().into_active_value(),
-    };
+    infra_db::trace("song.insert_with_relations", async {
+        let song_model = song::ActiveModel {
+            id: NotSet,
+            title: data.title.to_string().into_active_value(),
+        };
 
-    let song = song_model.insert(tx).await?;
+        let song = song_model.insert(tx).await?;
 
-    try_join!(
-        create_artists(song.id, data.artists.as_deref(), tx),
-        create_credits(song.id, data.credits.as_deref(), tx),
-        create_languages(song.id, data.languages.as_deref(), tx),
-        create_localized_titles(song.id, data.localized_titles.as_deref(), tx),
-        create_links(song.id, data.links.as_deref(), tx),
-        create_relations(song.id, data.relations.as_deref(), tx),
-    )?;
+        try_join!(
+            create_artists(song.id, data.artists.as_deref(), tx),
+            create_credits(song.id, data.credits.as_deref(), tx),
+            create_languages(song.id, data.languages.as_deref(), tx),
+            create_localized_titles(
+                song.id,
+                data.localized_titles.as_deref(),
+                tx
+            ),
+            create_links(song.id, data.links.as_deref(), tx),
+            create_relations(song.id, data.relations.as_deref(), tx),
+        )?;
 
-    Ok(song)
+        Ok(song)
+    })
+    .await
 }
 
 async fn create_song_history_and_relations(
@@ -307,32 +338,39 @@ async fn create_song_history_and_relations(
     data: &NewSong,
     tx: &DatabaseTransaction,
 ) -> Result<song_history::Model, DbErr> {
-    let history_model = song_history::ActiveModel {
-        id: NotSet,
-        title: data.title.to_string().into_active_value(),
-    };
+    infra_db::trace("song.insert_history_with_relations", async {
+        let history_model = song_history::ActiveModel {
+            id: NotSet,
+            title: data.title.to_string().into_active_value(),
+        };
 
-    let history = history_model.insert(tx).await?;
+        let history = history_model.insert(tx).await?;
 
-    try_join!(
-        create_artist_histories(history.id, data.artists.as_deref(), tx),
-        create_credit_histories(history.id, data.credits.as_deref(), tx),
-        create_language_histories(history.id, data.languages.as_deref(), tx),
-        create_localized_title_histories(
-            history.id,
-            data.localized_titles.as_deref(),
-            tx
-        ),
-        create_link_histories(history.id, data.links.as_deref(), tx),
-        create_relation_histories(
-            song_id,
-            history.id,
-            data.relations.as_deref(),
-            tx
-        ),
-    )?;
+        try_join!(
+            create_artist_histories(history.id, data.artists.as_deref(), tx),
+            create_credit_histories(history.id, data.credits.as_deref(), tx),
+            create_language_histories(
+                history.id,
+                data.languages.as_deref(),
+                tx
+            ),
+            create_localized_title_histories(
+                history.id,
+                data.localized_titles.as_deref(),
+                tx
+            ),
+            create_link_histories(history.id, data.links.as_deref(), tx),
+            create_relation_histories(
+                song_id,
+                history.id,
+                data.relations.as_deref(),
+                tx
+            ),
+        )?;
 
-    Ok(history)
+        Ok(history)
+    })
+    .await
 }
 
 async fn create_artists(

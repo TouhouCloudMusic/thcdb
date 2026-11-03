@@ -31,7 +31,7 @@ pub async fn ensure_permission(
 ) -> Result<(), Error> {
     let has_permission = user_has_permission(db, user_id, permission_name)
         .await
-        .db_operation("check user permission")?;
+        .db_context("check user permission")?;
 
     if !has_permission {
         return Err(Error::PermissionDenied);

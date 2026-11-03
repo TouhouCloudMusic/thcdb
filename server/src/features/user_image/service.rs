@@ -106,7 +106,7 @@ impl Service {
             self.repo
                 .begin_tx()
                 .await
-                .db_operation("begin avatar upload transaction")?,
+                .db_context("begin avatar upload transaction")?,
             self.storage.clone(),
             user,
             buffer,
@@ -126,7 +126,7 @@ impl Service {
             self.repo
                 .begin_tx()
                 .await
-                .db_operation("begin profile banner upload transaction")?,
+                .db_context("begin profile banner upload transaction")?,
             self.storage.clone(),
             user,
             buffer,

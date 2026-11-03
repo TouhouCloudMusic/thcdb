@@ -159,6 +159,7 @@
 		"no-undefined": "off",
 		"no-unused-vars": "warn",
 		"no-void": "off",
+		"one-var": "off",
 		"prefer-destructuring": "off",
 		"sort-imports": "off", // Oxfmt sorts imports
 		"sort-keys": "off",

@@ -27,7 +27,7 @@ impl InboxCutoff {
             .into_tuple::<i64>()
             .one(conn)
             .await
-            .db_operation("load notification inbox cutoff")
+            .db_context("load notification inbox cutoff")
             .map(|sequence| Self::new(sequence.unwrap_or(0)))
     }
 

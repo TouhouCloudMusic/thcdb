@@ -52,6 +52,7 @@ impl Service {
         Ok(page.into())
     }
 
+    #[fastrace::trace(name = "comment.service.create_comment")]
     pub async fn create_comment(
         &self,
         command: CreateCommentCommand,
@@ -78,7 +79,7 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin comment transaction")?;
+            .db_context("begin comment transaction")?;
         let conn = tx_repo.conn();
 
         let target = CommentTarget::find(conn, target_kind, target_id)
@@ -88,8 +89,22 @@ impl Service {
         let thread =
             comment_repo::CommentThread::lock_or_create(conn, target).await?;
 
+        let in_reply_to = if let Some(comment_id) = in_reply_to_comment_id {
+            Some(
+                thread
+                    .find_active_reply(conn, comment_id)
+                    .await?
+                    .ok_or_else(|| {
+                        Error::invalid_request(
+                            "Replied-to comment is not active in this thread",
+                        )
+                    })?,
+            )
+        } else {
+            None
+        };
         let created = thread
-            .create_comment(conn, author_id, in_reply_to_comment_id, content)
+            .create_comment(conn, author_id, in_reply_to, content)
             .await?;
 
         subscribe(conn, target, author_id).await?;
@@ -114,7 +129,7 @@ impl Service {
                     read_boundary.id,
                 )
                 .await
-                .db_operation("mark comment thread read through")?;
+                .db_context("mark comment thread read through")?;
 
             if read_boundary_advanced {
                 notification_recipients.user_ids.find_or_insert(author_id);
@@ -150,7 +165,7 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin delete comment transaction")?;
+            .db_context("begin delete comment transaction")?;
 
         comment_repo::soft_delete_comment(tx_repo.conn(), comment).await?;
 
@@ -170,7 +185,7 @@ impl Service {
 
         user_has_permission(&self.repo.conn, user_id, Permission::CommentManage)
             .await
-            .db_operation("check comment manage permission")
+            .db_context("check comment manage permission")
             .map_err(Into::into)
     }
 }

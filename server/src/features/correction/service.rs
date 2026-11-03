@@ -1,9 +1,9 @@
 use auth_core::permission::{Permission, user_has_permission};
+use entity::enums::CorrectionStatus;
 use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
 use notification_core::{CorrectionModerationAction, NotificationRecipients};
 
 use super::{ModerationError, SubmissionError, repo};
-use crate::features::correction::repo::CorrectionApprover;
 use crate::features::correction::{
     CorrectionEntity, CorrectionFilter, NewCorrectionMeta,
 };
@@ -11,6 +11,10 @@ use crate::features::user::User;
 use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::infra::database::error::DatabaseResultExt;
 
+#[cfg(all(test, feature = "integration-test"))]
+mod observation_tests;
+
+#[fastrace::trace(name = "correction.service.approve")]
 pub async fn approve(
     repo: &SeaOrmRepository,
     user_events: UserEventSender,
@@ -21,9 +25,16 @@ pub async fn approve(
     let tx_repo = repo
         .begin_tx()
         .await
-        .db_operation("begin approve correction transaction")?;
+        .db_context("begin approve correction transaction")?;
 
-    repo::approve(&tx_repo, correction_id, CorrectionApprover(user)).await?;
+    let correction = repo::lock_correction(&tx_repo, correction_id)
+        .await?
+        .ok_or(ModerationError::NotFound)?;
+    if correction.status != CorrectionStatus::Pending {
+        return Err(ModerationError::AlreadyHandled);
+    }
+
+    repo::approve(&tx_repo, correction, actor_user_id).await?;
 
     let notification_recipients = correction_notification::create_moderated(
         tx_repo.conn(),
@@ -45,6 +56,7 @@ pub async fn approve(
     Ok(())
 }
 
+#[fastrace::trace(name = "correction.service.reject")]
 pub async fn reject(
     repo: &SeaOrmRepository,
     user_events: UserEventSender,
@@ -55,9 +67,16 @@ pub async fn reject(
     let tx_repo = repo
         .begin_tx()
         .await
-        .db_operation("begin reject correction transaction")?;
+        .db_context("begin reject correction transaction")?;
 
-    repo::reject(&tx_repo, correction_id, CorrectionApprover(user)).await?;
+    let correction = repo::lock_correction(&tx_repo, correction_id)
+        .await?
+        .ok_or(ModerationError::NotFound)?;
+    if correction.status != CorrectionStatus::Pending {
+        return Err(ModerationError::AlreadyHandled);
+    }
+
+    repo::reject(&tx_repo, correction, actor_user_id).await?;
 
     let notification_recipients = correction_notification::create_moderated(
         tx_repo.conn(),
@@ -94,7 +113,7 @@ pub async fn create<T: CorrectionEntity + Send>(
         correction_id,
     )
     .await
-    .db_operation("subscribe correction author")?;
+    .db_context("subscribe correction author")?;
 
     Ok(correction_id)
 }
@@ -128,6 +147,7 @@ async fn ensure_entity_exists<T: CorrectionEntity + Send + Sync>(
     Ok(())
 }
 
+#[fastrace::trace(name = "correction.service.upsert")]
 pub async fn upsert<T: CorrectionEntity + Send + Sync>(
     repo: &SeaOrmTxRepo,
     meta: NewCorrectionMeta<T>,
@@ -153,7 +173,7 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
                 correction_id,
             )
             .await
-            .db_operation("subscribe correction author")?;
+            .db_context("subscribe correction author")?;
 
             let notification_recipients =
                 correction_notification::create_review_requested(
@@ -194,7 +214,7 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
                 Permission::CorrectionManage,
             )
             .await
-            .db_operation("check correction manage permission")?
+            .db_context("check correction manage permission")?
                 || repo::is_author(
                     repo.conn(),
                     &meta.author,
@@ -216,7 +236,7 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
                 correction_id,
             )
             .await
-            .db_operation("subscribe correction author")?;
+            .db_context("subscribe correction author")?;
 
             let notification_recipients =
                 correction_notification::create_updated(

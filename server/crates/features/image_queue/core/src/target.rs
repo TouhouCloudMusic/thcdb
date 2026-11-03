@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use entity::enums::{ArtistImageType, ReleaseImageType};
 use entity::{artist, artist_image_queue, release, release_image_queue};
 use infra_db::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+    BrokenEntityReference, DatabaseError, DatabaseFailure, DatabaseResultExt,
 };
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, JoinType, QueryFilter,
@@ -23,6 +23,7 @@ pub enum ImageQueueTarget {
     },
 }
 
+#[infra_db::observe("image_queue.load_targets")]
 pub async fn load_targets(
     conn: &impl ConnectionTrait,
     ids: impl Iterator<Item = i32> + Clone,
@@ -46,7 +47,7 @@ pub async fn load_targets(
         .into_tuple::<(i32, i32, Option<String>, ArtistImageType)>()
         .all(conn)
         .await
-        .db_operation("load artist image queue targets")?;
+        .db_context("load artist image queue targets")?;
     let release_targets = release_image_queue::Entity::find()
         .select_only()
         .column(release_image_queue::Column::QueueId)
@@ -61,19 +62,19 @@ pub async fn load_targets(
         .into_tuple::<(i32, i32, Option<String>, ReleaseImageType)>()
         .all(conn)
         .await
-        .db_operation("load release image queue targets")?;
+        .db_context("load release image queue targets")?;
 
     let targets = artist_targets
         .into_iter()
         .map(|(queue_id, artist_id, name, image_type)| {
             let name = name.ok_or_else(|| {
-                DatabaseError::broken_reference(BrokenEntityReference {
+                DatabaseFailure::broken_reference(BrokenEntityReference {
                     entity: "artist",
                     id: artist_id,
                 })
             })?;
 
-            Ok::<_, DatabaseError>((
+            Ok::<_, DatabaseFailure>((
                 queue_id,
                 ImageQueueTarget::Artist {
                     artist_id,
@@ -85,13 +86,13 @@ pub async fn load_targets(
         .chain(release_targets.into_iter().map(
             |(queue_id, release_id, title, image_type)| {
                 let title = title.ok_or_else(|| {
-                    DatabaseError::broken_reference(BrokenEntityReference {
+                    DatabaseFailure::broken_reference(BrokenEntityReference {
                         entity: "release",
                         id: release_id,
                     })
                 })?;
 
-                Ok::<_, DatabaseError>((
+                Ok::<_, DatabaseFailure>((
                     queue_id,
                     ImageQueueTarget::Release {
                         release_id,

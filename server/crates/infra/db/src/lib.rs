@@ -5,17 +5,21 @@
 
 use std::sync::Arc;
 
-use ::sea_orm::{
-    ConnectOptions, Database, DatabaseConnection, DatabaseTransaction,
-    TransactionTrait,
-};
+use ::sea_orm::{ConnectOptions, Database};
 use sea_orm_migration::MigratorTrait;
+
+mod connection;
+mod observation;
+pub use connection::{DatabaseConnection, DatabaseTransaction};
+pub use infra_observability::span::trace;
+pub use observation::observe;
+pub use proc_macros::observe;
 
 pub mod error;
 pub mod ext;
 pub mod lookup_table;
 
-use crate::error::{DatabaseError, DatabaseResultExt};
+use crate::error::{DatabaseError, DatabaseFailure, DatabaseResultExt};
 
 pub async fn get_connection(url: &str) -> DatabaseConnection {
     let opt = ConnectOptions::new(url)
@@ -23,14 +27,17 @@ pub async fn get_connection(url: &str) -> DatabaseConnection {
         .min_connections(1)
         .to_owned();
 
-    Database::connect(opt).await.unwrap()
+    Database::connect(opt).await.unwrap().into()
 }
 
 pub async fn run_migrations(conn: &DatabaseConnection) {
-    migration::Migrator::up(conn, None)
-        .await
-        .inspect_err(|x| println!("Failed to run migration:\n{x}"))
-        .unwrap();
+    trace(
+        "database.migrate",
+        migration::Migrator::up(&conn.inner, None),
+    )
+    .await
+    .inspect_err(|x| println!("Failed to run migration:\n{x}"))
+    .unwrap();
 }
 
 /// `DatabaseConnection` is a wrapper of Arc<InnerPool>.
@@ -46,7 +53,7 @@ impl SeaOrmRepository {
     }
 
     pub async fn begin_tx(&self) -> Result<SeaOrmTxRepo, DatabaseError> {
-        let tx = self.conn.begin().await.db_operation("begin transaction")?;
+        let tx = self.conn.begin().await.db_context("begin transaction")?;
         Ok(SeaOrmTxRepo::new(tx))
     }
 }
@@ -69,14 +76,14 @@ impl SeaOrmTxRepo {
         self.into_transaction("commit transaction")?
             .commit()
             .await
-            .db_operation("commit transaction")
+            .db_context("commit transaction")
     }
 
     pub async fn rollback(self) -> Result<(), DatabaseError> {
         self.into_transaction("rollback transaction")?
             .rollback()
             .await
-            .db_operation("rollback transaction")
+            .db_context("rollback transaction")
     }
 
     fn into_transaction(
@@ -91,7 +98,7 @@ impl SeaOrmTxRepo {
                     multiple references to the transaction exist, \
                     current weak count: {wc}, strong count: {sc}"
             );
-            DatabaseError::internal(msg).db_operation(operation)
+            DatabaseFailure::internal(msg).context(operation)
         })
     }
 }

@@ -40,7 +40,7 @@ pub(crate) async fn load(
         .into_partial_model::<ArtistRow>()
         .all(db)
         .await
-        .db_operation("load artist list items")?;
+        .db_context("load artist list items")?;
 
     load_items(artists, db).await
 }
@@ -68,7 +68,7 @@ pub(crate) async fn load_items(
         .into_tuple::<(i32, String)>()
         .all(db)
         .await
-        .db_operation("load artist list profile images")?;
+        .db_context("load artist list profile images")?;
 
     let mut profile_image_urls = HashMap::new();
     for (artist_id, object_key) in profile_images {

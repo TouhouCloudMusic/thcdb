@@ -26,7 +26,7 @@ impl Service {
             entity_id,
         )
         .await
-        .db_operation("find correction history")?;
+        .db_context("find correction history")?;
 
         if corrections.is_empty() {
             return Ok(Vec::new());
@@ -37,7 +37,7 @@ impl Service {
         let revision_map =
             repo::load_latest_revision_authors(&self.repo.conn, correction_ids)
                 .await
-                .db_operation("find correction history revisions")?;
+                .db_context("find correction history revisions")?;
 
         corrections
             .into_iter()

@@ -1,0 +1,7 @@
+apiVersion: 1
+
+providers:
+  - name: THCDB
+    folder: THCDB
+    options:
+      path: /var/lib/grafana/dashboards

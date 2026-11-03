@@ -13,64 +13,69 @@ use sea_orm::{
 use sea_query::OnConflict;
 
 use crate::features::label::model::NewLabel;
-use crate::infra::database::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
-};
+use crate::infra::database::error::{BrokenEntityReference, DatabaseError};
 
+#[infra_db::observe("label.create")]
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
     data: &NewLabel,
 ) -> Result<i32, DatabaseError> {
-    save_label_and_link_relations(data, repo.conn())
+    Ok(save_label_and_link_relations(data, repo.conn())
         .await
-        .map(|label| label.id)
-        .db_operation("create label")
+        .map(|label| label.id)?)
 }
 
+#[infra_db::observe("label.create_history")]
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
     data: &NewLabel,
 ) -> Result<i32, DatabaseError> {
-    save_label_history_and_link_relations(data, repo.conn())
+    Ok(save_label_history_and_link_relations(data, repo.conn())
         .await
-        .map(|label| label.id)
-        .db_operation("create label history")
+        .map(|label| label.id)?)
 }
 
 async fn save_label_and_link_relations(
     data: &NewLabel,
     conn: &impl ConnectionTrait,
 ) -> Result<label::Model, DbErr> {
-    let label = label::ActiveModel::from(data).insert(conn).await?;
+    infra_db::trace("label.insert_with_relations", async {
+        let label = label::ActiveModel::from(data).insert(conn).await?;
 
-    if let Some(founders) = &data.founders {
-        create_founders(label.id, founders, conn).await?;
-    }
+        if let Some(founders) = &data.founders {
+            create_founders(label.id, founders, conn).await?;
+        }
 
-    if let Some(names) = &data.localized_names {
-        create_localized_names(label.id, names, conn).await?;
-    }
-    create_links(label.id, data.links.as_deref(), conn).await?;
+        if let Some(names) = &data.localized_names {
+            create_localized_names(label.id, names, conn).await?;
+        }
+        create_links(label.id, data.links.as_deref(), conn).await?;
 
-    Ok(label)
+        Ok(label)
+    })
+    .await
 }
 
 async fn save_label_history_and_link_relations(
     data: &NewLabel,
     conn: &impl ConnectionTrait,
 ) -> Result<label_history::Model, DbErr> {
-    let history = label_history::ActiveModel::from(data).insert(conn).await?;
+    infra_db::trace("label.insert_history_with_relations", async {
+        let history =
+            label_history::ActiveModel::from(data).insert(conn).await?;
 
-    if let Some(founders) = &data.founders {
-        create_founder_histories(history.id, founders, conn).await?;
-    }
+        if let Some(founders) = &data.founders {
+            create_founder_histories(history.id, founders, conn).await?;
+        }
 
-    if let Some(names) = &data.localized_names {
-        create_localized_name_histories(history.id, names, conn).await?;
-    }
-    create_link_histories(history.id, data.links.as_deref(), conn).await?;
+        if let Some(names) = &data.localized_names {
+            create_localized_name_histories(history.id, names, conn).await?;
+        }
+        create_link_histories(history.id, data.links.as_deref(), conn).await?;
 
-    Ok(history)
+        Ok(history)
+    })
+    .await
 }
 
 impl From<&NewLabel> for label::ActiveModel {
@@ -279,6 +284,7 @@ async fn create_link_histories(
     Ok(())
 }
 
+#[infra_db::observe("label.apply_update")]
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     conn: &impl ConnectionTrait,
@@ -330,27 +336,30 @@ async fn update_founders(
     history_id: i32,
     conn: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
-    label_founder::Entity::delete_many()
-        .filter(label_founder::Column::LabelId.eq(label_id))
-        .exec(conn)
-        .await?;
+    infra_db::trace("label.update_founders", async {
+        label_founder::Entity::delete_many()
+            .filter(label_founder::Column::LabelId.eq(label_id))
+            .exec(conn)
+            .await?;
 
-    let founders = label_founder_history::Entity::find()
-        .filter(label_founder_history::Column::HistoryId.eq(history_id))
-        .all(conn)
-        .await?;
+        let founders = label_founder_history::Entity::find()
+            .filter(label_founder_history::Column::HistoryId.eq(history_id))
+            .all(conn)
+            .await?;
 
-    if founders.is_empty() {
-        return Ok(());
-    }
+        if founders.is_empty() {
+            return Ok(());
+        }
 
-    let founder_ids = founders
-        .iter()
-        .map(|founder| founder.artist_id)
-        .collect::<Vec<_>>();
-    create_founders(label_id, &founder_ids, conn).await?;
+        let founder_ids = founders
+            .iter()
+            .map(|founder| founder.artist_id)
+            .collect::<Vec<_>>();
+        create_founders(label_id, &founder_ids, conn).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_localized_names(
@@ -358,30 +367,35 @@ async fn update_localized_names(
     history_id: i32,
     conn: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
-    label_localized_name::Entity::delete_many()
-        .filter(label_localized_name::Column::LabelId.eq(label_id))
-        .exec(conn)
-        .await?;
+    infra_db::trace("label.update_localized_names", async {
+        label_localized_name::Entity::delete_many()
+            .filter(label_localized_name::Column::LabelId.eq(label_id))
+            .exec(conn)
+            .await?;
 
-    let names = label_localized_name_history::Entity::find()
-        .filter(label_localized_name_history::Column::HistoryId.eq(history_id))
-        .all(conn)
-        .await?;
+        let names = label_localized_name_history::Entity::find()
+            .filter(
+                label_localized_name_history::Column::HistoryId.eq(history_id),
+            )
+            .all(conn)
+            .await?;
 
-    if names.is_empty() {
-        return Ok(());
-    }
+        if names.is_empty() {
+            return Ok(());
+        }
 
-    let names = names
-        .iter()
-        .map(|name| NewLocalizedName {
-            language_id: name.language_id,
-            name: name.name.clone(),
-        })
-        .collect::<Vec<_>>();
-    create_localized_names(label_id, &names, conn).await?;
+        let names = names
+            .iter()
+            .map(|name| NewLocalizedName {
+                language_id: name.language_id,
+                name: name.name.clone(),
+            })
+            .collect::<Vec<_>>();
+        create_localized_names(label_id, &names, conn).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }
 
 async fn update_links(
@@ -389,27 +403,30 @@ async fn update_links(
     history_id: i32,
     conn: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
-    label_link::Entity::delete_many()
-        .filter(label_link::Column::LabelId.eq(label_id))
-        .exec(conn)
-        .await?;
+    infra_db::trace("label.update_links", async {
+        label_link::Entity::delete_many()
+            .filter(label_link::Column::LabelId.eq(label_id))
+            .exec(conn)
+            .await?;
 
-    let links = label_link_history::Entity::find()
-        .filter(label_link_history::Column::HistoryId.eq(history_id))
-        .all(conn)
-        .await?;
+        let links = label_link_history::Entity::find()
+            .filter(label_link_history::Column::HistoryId.eq(history_id))
+            .all(conn)
+            .await?;
 
-    if links.is_empty() {
-        return Ok(());
-    }
+        if links.is_empty() {
+            return Ok(());
+        }
 
-    let models = links.into_iter().map(|link| label_link::ActiveModel {
-        id: NotSet,
-        label_id: Set(label_id),
-        url: Set(link.url),
-    });
+        let models = links.into_iter().map(|link| label_link::ActiveModel {
+            id: NotSet,
+            label_id: Set(label_id),
+            url: Set(link.url),
+        });
 
-    label_link::Entity::insert_many(models).exec(conn).await?;
+        label_link::Entity::insert_many(models).exec(conn).await?;
 
-    Ok(())
+        Ok(())
+    })
+    .await
 }

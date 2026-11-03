@@ -1,9 +1,9 @@
+use infra_db::DatabaseTransaction;
 use infra_db::error::DatabaseError;
 use notification_core::{
     CorrectionModerationAction, CreateNotificationsCommand,
     NotificationRecipients,
 };
-use sea_orm::DatabaseTransaction;
 
 mod repo;
 

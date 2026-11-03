@@ -36,6 +36,7 @@ pub(crate) struct SongCreditData {
     pub(crate) discs: Vec<release_disc::Model>,
 }
 
+#[infra_db::observe("artist.credits.load_release_credit_details")]
 pub(crate) async fn load_release_credit_details(
     repo: &SeaOrmRepository,
     artist_id: i32,
@@ -48,7 +49,8 @@ pub(crate) async fn load_release_credit_details(
     if matches!(scope, ArtistCreditScope::Song) {
         return Ok((Vec::new(), Vec::new()));
     }
-    tokio::try_join!(
+
+    let details = tokio::try_join!(
         release_credit::Entity::find()
             .filter(release_credit::Column::ArtistId.eq(artist_id))
             .filter(
@@ -61,8 +63,9 @@ pub(crate) async fn load_release_credit_details(
                 release_artist::Column::ReleaseId.is_in(release_ids.to_vec())
             )
             .all(&repo.conn),
-    )
-    .db_operation("load artist credit release details")
+    )?;
+
+    Ok(details)
 }
 
 pub(crate) fn release_credits_by_release(
@@ -138,6 +141,7 @@ pub(crate) fn into_group_songs(
         .collect_vec()
 }
 
+#[infra_db::observe("artist.credits.load_song_credit_data")]
 pub(crate) async fn load_song_credit_data(
     repo: &SeaOrmRepository,
     artist_id: i32,
@@ -168,7 +172,7 @@ pub(crate) async fn load_song_credit_data(
             .order_by_asc(release_track::Column::Id)
             .all(&repo.conn),
     )
-    .db_operation("load artist song credit data")?;
+    .db_context("load artist song credit data")?;
     let release_ids = release_tracks
         .iter()
         .map(|track| track.release_id)
@@ -187,7 +191,7 @@ pub(crate) async fn load_song_credit_data(
                 .order_by_asc(release_disc::Column::Id)
                 .all(&repo.conn),
         )
-        .db_operation("load artist song credit release context")?
+        .db_context("load artist song credit release context")?
     };
 
     let items = selected_songs

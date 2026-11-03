@@ -18,6 +18,7 @@ use crate::features::user::User;
 use crate::features::user_profile::{UserProfile, UserProfileStats};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
+#[infra_db::observe("user_profile.find_by_name")]
 pub(crate) async fn find_by_name(
     repo: &SeaOrmRepository,
     name: &str,
@@ -75,7 +76,7 @@ pub(crate) async fn find_by_name(
         .into_model::<UserProfileRaw>()
         .one(&repo.conn)
         .await
-        .db_operation("find user profile")?
+        .db_context("find user profile")?
     else {
         return Ok(None);
     };
@@ -85,13 +86,13 @@ pub(crate) async fn find_by_name(
         .filter(user_role::Column::UserId.eq(profile.id))
         .all(&repo.conn)
         .await
-        .db_operation("find user profile roles")?;
+        .db_context("find user profile roles")?;
     let permissions = find_user_permission_names(profile.id, &repo.conn)
         .await
-        .db_operation("find user profile permissions")?;
+        .db_context("find user profile permissions")?;
     let stats = find_profile_stats(profile.id, &repo.conn)
         .await
-        .db_operation("find user profile stats")?;
+        .db_context("find user profile stats")?;
 
     Ok(Some(UserProfile {
         id: profile.id,
@@ -111,6 +112,7 @@ pub(crate) async fn find_by_name(
     }))
 }
 
+#[infra_db::observe("user_profile.load_following_state")]
 pub(crate) async fn with_following(
     repo: &SeaOrmRepository,
     profile: &mut UserProfile,
@@ -133,7 +135,7 @@ pub(crate) async fn with_following(
         .filter(user_following::Column::FollowingId.in_subquery(sub_query))
         .count(&repo.conn)
         .await
-        .db_operation("check user profile follow relationship")?;
+        .db_context("check user profile follow relationship")?;
 
     profile.is_following = Some(res > 0);
 
@@ -144,33 +146,37 @@ async fn find_user_permission_names(
     user_id: i32,
     conn: &impl ConnectionTrait,
 ) -> Result<Vec<Permission>, DbErr> {
-    use entity::{permission, role_permission, user_role};
+    infra_db::trace("user_profile.find_user_permission_names", async {
+        use entity::{permission, role_permission, user_role};
 
-    let names = user_role::Entity::find()
-        .select_only()
-        .column(permission::Column::Name)
-        .filter(user_role::Column::UserId.eq(user_id))
-        .join(JoinType::InnerJoin, user_role::Relation::Role.def())
-        .join(
-            JoinType::InnerJoin,
-            role_permission::Relation::Role.def().rev(),
-        )
-        .join(
-            JoinType::InnerJoin,
-            role_permission::Relation::Permission.def(),
-        )
-        .order_by_asc(permission::Column::Name)
-        .distinct()
-        .into_tuple::<String>()
-        .all(conn)
-        .await?;
+        let names = user_role::Entity::find()
+            .select_only()
+            .column(permission::Column::Name)
+            .filter(user_role::Column::UserId.eq(user_id))
+            .join(JoinType::InnerJoin, user_role::Relation::Role.def())
+            .join(
+                JoinType::InnerJoin,
+                role_permission::Relation::Role.def().rev(),
+            )
+            .join(
+                JoinType::InnerJoin,
+                role_permission::Relation::Permission.def(),
+            )
+            .order_by_asc(permission::Column::Name)
+            .distinct()
+            .into_tuple::<String>()
+            .all(conn)
+            .await?;
 
-    names
-        .into_iter()
-        .map(|name| Permission::try_from(name).map_err(DbErr::Custom))
-        .collect()
+        names
+            .into_iter()
+            .map(|name| Permission::try_from(name).map_err(DbErr::Custom))
+            .collect()
+    })
+    .await
 }
 
+#[fastrace::trace(name = "user_profile.find_profile_stats")]
 async fn find_profile_stats(
     user_id: i32,
     conn: &impl ConnectionTrait,
@@ -289,9 +295,9 @@ mod tests {
         artist_tag_vote, correction, correction_user, release_tag_vote,
         song_tag_vote,
     };
-    use infra_db::SeaOrmRepository;
+    use infra_db::{DatabaseConnection, SeaOrmRepository};
     use sea_orm::ActiveValue::{NotSet, Set};
-    use sea_orm::{DatabaseConnection, EntityTrait};
+    use sea_orm::EntityTrait;
 
     use crate::infra::integration_test::fixture::{
         MockArtist, MockRelease, MockSong, MockTag, MockUser,

@@ -1,8 +1,7 @@
 use chrono::{Duration, Utc};
 use domain::shared::MessageError;
 use lettre::message::Mailbox;
-use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, TransactionTrait};
+use sea_orm::{ActiveModelTrait, Set};
 
 use super::verification::{
     SendVerificationEmailError, build_verification_email_message,
@@ -24,6 +23,7 @@ use crate::shared::secret::hash;
 const VERIFICATION_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
 
 impl Service {
+    #[fastrace::trace(name = "auth.service.sign_up")]
     pub async fn sign_up(
         &self,
         SignUpRequest {
@@ -32,7 +32,7 @@ impl Service {
             password,
         }: SignUpRequest,
     ) -> Result<SignUpResponse, SignUpError> {
-        let email = Email::parse(&email).map_err(SignUpError::from)?;
+        let email = Email::parse(&email)?;
 
         let mut creds = AuthCredential::try_new(username, password)?;
         let username = creds.username.clone();
@@ -57,8 +57,8 @@ impl Service {
             .conn
             .begin()
             .await
-            .db_operation("begin sign-up transaction")?;
-        let res = repo::create_user(
+            .db_context("begin sign-up transaction")?;
+        let result = repo::create_user(
             &tx,
             NewUser {
                 name: username.clone(),
@@ -69,21 +69,18 @@ impl Service {
         )
         .await;
 
-        match res {
+        match result {
             Ok(user) => {
-                tx.commit()
-                    .await
-                    .db_operation("commit sign-up transaction")?;
+                tx.commit().await.db_context("commit sign-up transaction")?;
                 self.create_and_send_email_verification(&user).await?;
                 Ok(SignUpResponse::default())
             }
             Err(err) => {
                 let _ = tx.rollback().await;
-                match err {
-                    repo::CreateUserError::AlreadyExists => {
-                        Err(SignUpError::UsernameAlreadyInUse { username })
-                    }
-                    repo::CreateUserError::Database(err) => Err(err.into()),
+                if err.is_unique_violation() {
+                    Err(SignUpError::UsernameAlreadyInUse { username })
+                } else {
+                    Err(err.into())
                 }
             }
         }
@@ -93,7 +90,7 @@ impl Service {
         &self,
         VerifyEmailRequest { email, code }: VerifyEmailRequest,
     ) -> Result<User, VerifyEmailError> {
-        let email = Email::parse(&email).map_err(VerifyEmailError::from)?;
+        let email = Email::parse(&email)?;
 
         let user = repo::find_by_email(&self.repo.conn, &email)
             .await?
@@ -101,14 +98,16 @@ impl Service {
             .ok_or(VerifyEmailError::InvalidOrExpiredCode)?;
 
         if is_unverified_signup_expired(&user) {
-            let tx =
-                self.repo.conn.begin().await.db_operation(
-                    "begin expired sign-up cleanup transaction",
-                )?;
+            let tx = self
+                .repo
+                .conn
+                .begin()
+                .await
+                .db_context("begin expired sign-up cleanup transaction")?;
             repo::delete_user(&tx, user.id).await?;
             tx.commit()
                 .await
-                .db_operation("commit expired sign-up cleanup transaction")?;
+                .db_context("commit expired sign-up cleanup transaction")?;
             return Err(VerifyEmailError::InvalidOrExpiredCode);
         }
 
@@ -138,15 +137,7 @@ impl Service {
                 &self.repo.conn,
                 user.id,
             )
-            .await
-            .map_err(|err| match err {
-                repo::EmailVerificationMutationError::BrokenReference(_) => {
-                    VerifyEmailError::from(InternalError::new(err))
-                }
-                repo::EmailVerificationMutationError::Database(err) => {
-                    err.into()
-                }
-            })?;
+            .await?;
             return Err(VerifyEmailError::InvalidOrExpiredCode);
         }
 
@@ -155,11 +146,11 @@ impl Service {
             .conn
             .begin()
             .await
-            .db_operation("begin verify email transaction")?;
+            .db_context("begin verify email transaction")?;
         let user = repo::set_email_verified(&tx, user.id).await?;
         tx.commit()
             .await
-            .db_operation("commit verify email transaction")?;
+            .db_context("commit verify email transaction")?;
 
         Ok(user)
     }
@@ -169,8 +160,7 @@ impl Service {
         ResendVerificationEmailRequest { email }: ResendVerificationEmailRequest,
     ) -> Result<ResendVerificationEmailResponse, ResendVerificationEmailError>
     {
-        let email =
-            Email::parse(&email).map_err(ResendVerificationEmailError::from)?;
+        let email = Email::parse(&email)?;
 
         let Some(user) = repo::find_by_email(&self.repo.conn, &email)
             .await?
@@ -180,13 +170,14 @@ impl Service {
         };
 
         if is_unverified_signup_expired(&user) {
-            let tx = self.repo.conn.begin().await.db_operation(
-                "begin resend verification cleanup transaction",
-            )?;
+            let tx =
+                self.repo.conn.begin().await.db_context(
+                    "begin resend verification cleanup transaction",
+                )?;
             repo::delete_user(&tx, user.id).await?;
-            tx.commit().await.db_operation(
-                "commit resend verification cleanup transaction",
-            )?;
+            tx.commit()
+                .await
+                .db_context("commit resend verification cleanup transaction")?;
 
             return Ok(ResendVerificationEmailResponse::default());
         }
@@ -221,29 +212,34 @@ impl Service {
         if is_unverified_signup_expired(&existing) {
             // Remove stale unverified signups (past TTL) so email/username can be reused.
             // Return `None` to let the caller continue handling the request
-            let tx =
-                self.repo.conn.begin().await.db_operation(
-                    "begin existing sign-up cleanup transaction",
-                )?;
+            let tx = self
+                .repo
+                .conn
+                .begin()
+                .await
+                .db_context("begin existing sign-up cleanup transaction")?;
             repo::delete_user(&tx, existing.id).await?;
             tx.commit()
                 .await
-                .db_operation("commit existing sign-up cleanup transaction")?;
+                .db_context("commit existing sign-up cleanup transaction")?;
             return Ok(None);
         }
 
         self.ensure_signup_username_available(&username, Some(existing.id))
             .await?;
 
-        let _ = entity::user::ActiveModel {
-            id: Set(existing.id),
-            name: Set(username),
-            password: Set(password_hash.as_str().to_string()),
-            ..Default::default()
-        }
-        .update(&self.repo.conn)
+        infra_db::trace(
+            "auth.update_unverified_signup",
+            entity::user::ActiveModel {
+                id: Set(existing.id),
+                name: Set(username),
+                password: Set(password_hash.as_str().to_string()),
+                ..Default::default()
+            }
+            .update(&self.repo.conn),
+        )
         .await
-        .db_operation("update existing unverified sign-up")?;
+        .db_context("update existing unverified sign-up")?;
 
         let user = repo::find_by_id(&self.repo.conn, existing.id)
             .await?
@@ -286,11 +282,11 @@ impl Service {
             .conn
             .begin()
             .await
-            .db_operation("begin stale username cleanup transaction")?;
+            .db_context("begin stale username cleanup transaction")?;
         repo::delete_user(&tx, existing.id).await?;
         tx.commit()
             .await
-            .db_operation("commit stale username cleanup transaction")?;
+            .db_context("commit stale username cleanup transaction")?;
 
         Ok(())
     }
@@ -329,9 +325,7 @@ impl Service {
             expires_at,
             sent_at,
         )
-        .await
-        .map(|_| ())
-        .map_err(SendVerificationEmailError::from)?;
+        .await?;
 
         let send_failure =
             match self.send_verification_email(&user.email, &code).await {

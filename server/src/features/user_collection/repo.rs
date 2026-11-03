@@ -20,14 +20,13 @@ use sea_orm::prelude::Expr;
 use sea_orm::{
     ActiveEnum, ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
     FromQueryResult, IntoActiveModel, LoaderTrait, PaginatorTrait, QueryFilter,
-    QueryOrder, QuerySelect, QueryTrait, Select, TryInsert, TryInsertResult,
+    QueryOrder, QuerySelect, QueryTrait, Select,
 };
 use sea_query::{
     Alias, ExprTrait, Func, JoinType, OnConflict, Order, Query,
     SelectStatement, all, any,
 };
 
-use super::error::{Error, NotFound};
 use super::model::{
     ArtistSummary, CreateUserCollectionItemRequest, EntitySummary,
     EntityUserCollectionSort, EventSummary, FollowedUserCollection,
@@ -35,7 +34,9 @@ use super::model::{
     UserCollectionItem, UserCollectionItemDetail, UserCollectionItemEntityType,
     UserCollectionMutationRequest, UserCollectionOwner,
 };
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::error::{
+    DatabaseError, DatabaseFailure, DatabaseResultExt,
+};
 use crate::shared::http::PageQuery;
 
 #[derive(Debug, Clone, FromQueryResult)]
@@ -84,29 +85,31 @@ impl From<UserCollectionSummaryRow> for UserCollection {
     }
 }
 
+#[infra_db::observe("user_collection.find_requested_user_by_name")]
 pub(super) async fn find_requested_user_by_name(
     conn: &impl ConnectionTrait,
     username: &str,
-) -> Result<user_entity::Model, Error> {
-    user_entity::Entity::find()
+) -> Result<Option<user_entity::Model>, DatabaseError> {
+    let user = user_entity::Entity::find()
         .filter(user_entity::Column::Name.eq(username))
         .one(conn)
         .await
-        .db_operation("find requested collection user")?
-        .ok_or(Error::NotFound(NotFound::RequestedUser))
+        .db_context("find requested collection user")?;
+    Ok(user)
 }
 
+#[infra_db::observe("user_collection.load_collections_page")]
 pub(super) async fn load_user_collections_page(
     conn: &impl ConnectionTrait,
     select: Select<user_collection_entity::Entity>,
     viewer_id: Option<i32>,
     page_query: PageQuery,
-) -> Result<PageResponse<UserCollection>, Error> {
+) -> Result<PageResponse<UserCollection>, DatabaseError> {
     let total_items = select
         .clone()
         .count(conn)
         .await
-        .db_operation("count user collections")?;
+        .db_context("count user collections")?;
 
     let items = load_user_collection_summaries(
         conn,
@@ -121,12 +124,13 @@ pub(super) async fn load_user_collections_page(
     Ok(page_query.to_response(items, total_items))
 }
 
+#[infra_db::observe("user_collection.load_collection_detail")]
 pub(super) async fn load_user_collection_detail(
     conn: &impl ConnectionTrait,
     collection_id: i32,
     viewer_id: Option<i32>,
-) -> Result<UserCollection, Error> {
-    load_user_collection_summaries(
+) -> Result<Option<UserCollection>, DatabaseError> {
+    let collection = load_user_collection_summaries(
         conn,
         user_collection_entity::Entity::find()
             .filter(user_collection_entity::Column::Id.eq(collection_id)),
@@ -134,10 +138,11 @@ pub(super) async fn load_user_collection_detail(
     )
     .await?
     .into_iter()
-    .next()
-    .ok_or(Error::NotFound(NotFound::Collection))
+    .next();
+    Ok(collection)
 }
 
+#[infra_db::observe("user_collection.load_entity_collections_page")]
 pub(super) async fn load_entity_user_collections_page(
     conn: &impl ConnectionTrait,
     entity_type: EntityType,
@@ -145,7 +150,7 @@ pub(super) async fn load_entity_user_collections_page(
     viewer_id: Option<i32>,
     sort: EntityUserCollectionSort,
     page_query: PageQuery,
-) -> Result<PageResponse<UserCollection>, Error> {
+) -> Result<PageResponse<UserCollection>, DatabaseError> {
     let total_items =
         count_entity_user_collections(conn, entity_type, entity_id, viewer_id)
             .await?;
@@ -178,12 +183,13 @@ pub(super) async fn load_entity_user_collections_page(
     Ok(page_query.to_response(items, total_items))
 }
 
+#[infra_db::observe("user_collection.count_entity_collections")]
 async fn count_entity_user_collections(
     conn: &impl ConnectionTrait,
     entity_type: EntityType,
     entity_id: i32,
     viewer_id: Option<i32>,
-) -> Result<u64, Error> {
+) -> Result<u64, DatabaseError> {
     let mut query = Query::select();
     query
         .expr_as(
@@ -226,13 +232,14 @@ async fn count_entity_user_collections(
     let count = CountRow::find_by_statement(stmt)
         .one(conn)
         .await
-        .db_operation("count entity user collections")?
+        .db_context("count entity user collections")?
         .map(|row| row.count)
         .unwrap_or_default();
 
     Ok(u64::try_from(count).unwrap_or(u64::MAX))
 }
 
+#[infra_db::observe("user_collection.load_entity_collection_ids")]
 async fn load_entity_user_collection_ids(
     conn: &impl ConnectionTrait,
     entity_type: EntityType,
@@ -240,7 +247,7 @@ async fn load_entity_user_collection_ids(
     viewer_id: Option<i32>,
     sort: EntityUserCollectionSort,
     page_query: &PageQuery,
-) -> Result<Vec<i32>, Error> {
+) -> Result<Vec<i32>, DatabaseError> {
     let mut query = Query::select();
     query
         .expr(Expr::col((
@@ -328,7 +335,7 @@ async fn load_entity_user_collection_ids(
     let rows = CollectionIdRow::find_by_statement(stmt)
         .all(conn)
         .await
-        .db_operation("load entity user collection ids")?;
+        .db_context("load entity user collection ids")?;
 
     Ok(rows.into_iter().map(|row| row.id).collect())
 }
@@ -356,18 +363,19 @@ fn visible_user_collection_condition(
     ]
 }
 
+#[infra_db::observe("user_collection.load_collection_summaries")]
 async fn load_user_collection_summaries(
     conn: &impl ConnectionTrait,
     select: Select<user_collection_entity::Entity>,
     viewer_id: Option<i32>,
-) -> Result<Vec<UserCollection>, Error> {
+) -> Result<Vec<UserCollection>, DatabaseError> {
     let stmt = conn
         .get_database_backend()
         .build(&build_user_collection_summary_query(select, viewer_id));
     let rows = UserCollectionSummaryRow::find_by_statement(stmt)
         .all(conn)
         .await
-        .db_operation("load user collection summaries")?;
+        .db_context("load user collection summaries")?;
 
     Ok(rows.into_iter().map(Into::into).collect())
 }
@@ -607,16 +615,19 @@ fn select_viewer_follow_state(
         );
 }
 
+#[infra_db::observe("user_collection.follow")]
 pub(super) async fn follow_user_collection(
     conn: &impl ConnectionTrait,
     user_id: i32,
     collection_id: i32,
-) -> Result<bool, Error> {
-    let result = TryInsert::one(user_collection_follow_entity::ActiveModel {
-        user_id: Set(user_id),
-        collection_id: Set(collection_id),
-        followed_at: NotSet,
-    })
+) -> Result<bool, DatabaseError> {
+    let rows_affected = user_collection_follow_entity::Entity::insert(
+        user_collection_follow_entity::ActiveModel {
+            user_id: Set(user_id),
+            collection_id: Set(collection_id),
+            followed_at: NotSet,
+        },
+    )
     .on_conflict(
         OnConflict::columns([
             user_collection_follow_entity::Column::UserId,
@@ -625,41 +636,18 @@ pub(super) async fn follow_user_collection(
         .do_nothing()
         .to_owned(),
     )
-    .exec(conn)
-    .await
-    .db_operation("follow user collection")?;
+    .exec_without_returning(conn)
+    .await?;
 
-    match result {
-        TryInsertResult::Inserted(_) => Ok(true),
-        TryInsertResult::Conflicted => Ok(false),
-        TryInsertResult::Empty => Err(Error::InvalidRequest(
-            "Follow user collection insert was empty".to_string(),
-        )),
-    }
+    Ok(rows_affected > 0)
 }
 
-pub(super) async fn unfollow_user_collection(
-    conn: &impl ConnectionTrait,
-    user_id: i32,
-    collection_id: i32,
-) -> Result<(), Error> {
-    user_collection_follow_entity::Entity::delete_many()
-        .filter(all![
-            user_collection_follow_entity::Column::UserId.eq(user_id),
-            user_collection_follow_entity::Column::CollectionId
-                .eq(collection_id),
-        ])
-        .exec(conn)
-        .await
-        .db_operation("unfollow user collection")?;
-    Ok(())
-}
-
+#[infra_db::observe("user_collection.load_followed_collections_page")]
 pub(super) async fn load_followed_user_collections_page(
     conn: &impl ConnectionTrait,
     user_id: i32,
     page_query: PageQuery,
-) -> Result<PageResponse<FollowedUserCollection>, Error> {
+) -> Result<PageResponse<FollowedUserCollection>, DatabaseError> {
     let base_select = user_collection_entity::Entity::find()
         .inner_join(user_collection_follow_entity::Entity)
         .filter(all![
@@ -671,7 +659,7 @@ pub(super) async fn load_followed_user_collections_page(
         .clone()
         .count(conn)
         .await
-        .db_operation("count followed user collections")?;
+        .db_context("count followed user collections")?;
 
     let followed = user_collection_follow_entity::Entity::find()
         .inner_join(user_collection_entity::Entity)
@@ -684,7 +672,7 @@ pub(super) async fn load_followed_user_collections_page(
         .limit(u64::from(page_query.limit()))
         .all(conn)
         .await
-        .db_operation("load followed user collection ids")?;
+        .db_context("load followed user collection ids")?;
 
     let collection_ids: Vec<i32> =
         followed.iter().map(|follow| follow.collection_id).collect();
@@ -716,11 +704,12 @@ pub(super) async fn load_followed_user_collections_page(
     Ok(page_query.to_response(items, total_items))
 }
 
+#[infra_db::observe("user_collection.load_collection_items_page")]
 pub(super) async fn load_user_collection_items_page(
     conn: &impl ConnectionTrait,
     collection_id: i32,
     page_query: PageQuery,
-) -> Result<PageResponse<UserCollectionItemDetail>, Error> {
+) -> Result<PageResponse<UserCollectionItemDetail>, DatabaseError> {
     let select = user_collection_item_entity::Entity::find().filter(
         user_collection_item_entity::Column::UserCollectionId.eq(collection_id),
     );
@@ -728,7 +717,7 @@ pub(super) async fn load_user_collection_items_page(
         .clone()
         .count(conn)
         .await
-        .db_operation("count user collection items")?;
+        .db_context("count user collection items")?;
 
     let items: Vec<UserCollectionItem> = select
         .order_by_asc(user_collection_item_entity::Column::SortKey)
@@ -737,7 +726,7 @@ pub(super) async fn load_user_collection_items_page(
         .limit(u64::from(page_query.limit()))
         .all(conn)
         .await
-        .db_operation("load user collection items page")?
+        .db_context("load user collection items page")?
         .into_iter()
         .map(Into::into)
         .collect();
@@ -811,60 +800,36 @@ pub(super) async fn load_user_collection_items_page(
     Ok(page_query.to_response(enriched, total_items))
 }
 
-pub(super) async fn find_visible_user_collection(
+#[infra_db::observe("user_collection.find_collection")]
+pub(super) async fn find_user_collection(
     conn: &impl ConnectionTrait,
     collection_id: i32,
-    viewer_id: Option<i32>,
-) -> Result<user_collection_entity::Model, Error> {
+) -> Result<Option<user_collection_entity::Model>, DatabaseError> {
     let collection = user_collection_entity::Entity::find_by_id(collection_id)
         .one(conn)
-        .await
-        .db_operation("find visible user collection")?
-        .ok_or(Error::NotFound(NotFound::Collection))?;
-
-    if collection.is_public || viewer_id == Some(collection.user_id) {
-        Ok(collection)
-    } else {
-        Err(Error::NotFound(NotFound::Collection))
-    }
+        .await?;
+    Ok(collection)
 }
 
-pub(super) async fn find_owned_user_collection(
-    conn: &impl ConnectionTrait,
-    collection_id: i32,
-    owner_id: i32,
-) -> Result<user_collection_entity::Model, Error> {
-    let collection = user_collection_entity::Entity::find_by_id(collection_id)
-        .one(conn)
-        .await
-        .db_operation("find owned user collection")?
-        .ok_or(Error::NotFound(NotFound::Collection))?;
-
-    if collection.user_id == owner_id {
-        Ok(collection)
-    } else {
-        Err(Error::CollectionAccessDenied)
-    }
-}
-
+#[infra_db::observe("user_collection.lock")]
 pub(super) async fn lock_user_collection(
     conn: &impl ConnectionTrait,
     collection_id: i32,
-) -> Result<user_collection_entity::Model, Error> {
-    user_collection_entity::Entity::find_by_id(collection_id)
+) -> Result<Option<user_collection_entity::Model>, DatabaseError> {
+    let collection = user_collection_entity::Entity::find_by_id(collection_id)
         .lock_exclusive()
         .one(conn)
-        .await
-        .db_operation("lock user collection")?
-        .ok_or(Error::NotFound(NotFound::Collection))
+        .await?;
+    Ok(collection)
 }
 
+#[infra_db::observe("user_collection.insert")]
 pub(super) async fn insert_user_collection(
     conn: &impl ConnectionTrait,
     owner_id: i32,
     req: &UserCollectionMutationRequest,
-) -> Result<user_collection_entity::Model, Error> {
-    user_collection_entity::Entity::insert(
+) -> Result<user_collection_entity::Model, DatabaseError> {
+    let collection = user_collection_entity::Entity::insert(
         user_collection_entity::ActiveModel {
             id: NotSet,
             user_id: Set(owner_id),
@@ -874,35 +839,32 @@ pub(super) async fn insert_user_collection(
         },
     )
     .exec_with_returning(conn)
-    .await
-    .db_operation("insert user collection")
-    .map_err(Into::into)
+    .await?;
+    Ok(collection)
 }
 
+#[infra_db::observe("user_collection.update")]
 pub(super) async fn update_user_collection(
     conn: &impl ConnectionTrait,
     model: user_collection_entity::Model,
     req: &UserCollectionMutationRequest,
-) -> Result<(), Error> {
+) -> Result<(), DatabaseError> {
     let mut active = model.into_active_model();
     active.name = Set(String::from(req.name.clone()));
     active.description = Set(req.description.clone());
     active.is_public = Set(req.is_public);
-    active
-        .update(conn)
-        .await
-        .db_operation("update user collection")?;
+    active.update(conn).await?;
     Ok(())
 }
 
+#[infra_db::observe("user_collection.delete")]
 pub(super) async fn delete_user_collection(
     conn: &impl ConnectionTrait,
     collection_id: i32,
-) -> Result<(), Error> {
+) -> Result<(), DatabaseError> {
     user_collection_entity::Entity::delete_by_id(collection_id)
         .exec(conn)
-        .await
-        .db_operation("delete user collection")?;
+        .await?;
     Ok(())
 }
 
@@ -911,16 +873,16 @@ macro_rules! check_entity_exists {
         $entity::Entity::find_by_id($id)
             .one($conn)
             .await
-            .db_operation("check user collection referenced entity exists")?
+            .db_context("check user collection referenced entity exists")?
             .is_some()
     };
 }
 
-pub(super) async fn ensure_referenced_entity_exists(
+pub(super) async fn referenced_entity_exists(
     conn: &impl ConnectionTrait,
     entity_type: UserCollectionItemEntityType,
     entity_id: i32,
-) -> Result<(), Error> {
+) -> Result<bool, DatabaseError> {
     let exists = match entity_type {
         UserCollectionItemEntityType::Artist => {
             check_entity_exists!(artist_entity, conn, entity_id)
@@ -942,18 +904,15 @@ pub(super) async fn ensure_referenced_entity_exists(
         }
     };
 
-    if exists {
-        Ok(())
-    } else {
-        Err(Error::NotFound(NotFound::ReferencedEntity))
-    }
+    Ok(exists)
 }
 
+#[infra_db::observe("user_collection.insert_collection_item")]
 pub(super) async fn insert_user_collection_item(
     conn: &impl ConnectionTrait,
     collection_id: i32,
     req: &CreateUserCollectionItemRequest,
-) -> Result<user_collection_item_entity::Model, Error> {
+) -> Result<user_collection_item_entity::Model, DatabaseError> {
     let last_item = user_collection_item_entity::Entity::find()
         .filter(
             user_collection_item_entity::Column::UserCollectionId
@@ -963,18 +922,18 @@ pub(super) async fn insert_user_collection_item(
         .order_by_desc(user_collection_item_entity::Column::Id)
         .one(conn)
         .await
-        .db_operation("find last user collection item")?;
+        .db_context("find last user collection item")?;
 
     let sort_key = match last_item {
         None => 0,
         Some(item) => item.sort_key.checked_add(1).ok_or_else(|| {
-            DatabaseError::internal(
+            DatabaseFailure::internal(
                 "user collection item sort key is exhausted",
             )
         })?,
     };
 
-    user_collection_item_entity::Entity::insert(
+    let item = user_collection_item_entity::Entity::insert(
         user_collection_item_entity::ActiveModel {
             id: NotSet,
             user_collection_id: Set(collection_id),
@@ -987,37 +946,33 @@ pub(super) async fn insert_user_collection_item(
     )
     .exec_with_returning(conn)
     .await
-    .db_operation("insert user collection item")
-    .map_err(Into::into)
+    .db_context("insert user collection item")?;
+    Ok(item)
 }
 
+#[infra_db::observe("user_collection.delete_collection_item")]
 pub(super) async fn delete_user_collection_item(
     conn: &impl ConnectionTrait,
     collection_id: i32,
     item_id: i32,
-) -> Result<(), Error> {
-    let item = user_collection_item_entity::Entity::find_by_id(item_id)
+) -> Result<bool, DatabaseError> {
+    let result = user_collection_item_entity::Entity::delete_many()
         .filter(
             user_collection_item_entity::Column::UserCollectionId
                 .eq(collection_id),
         )
-        .one(conn)
-        .await
-        .db_operation("find user collection item before delete")?
-        .ok_or(Error::NotFound(NotFound::CollectionItem))?;
-
-    user_collection_item_entity::Entity::delete_by_id(item.id)
+        .filter(user_collection_item_entity::Column::Id.eq(item_id))
         .exec(conn)
-        .await
-        .db_operation("delete user collection item")?;
-    Ok(())
+        .await?;
+    Ok(result.rows_affected != 0)
 }
 
+#[infra_db::observe("user_collection.load_collection_items")]
 pub(super) async fn load_user_collection_items(
     conn: &impl ConnectionTrait,
     collection_id: i32,
-) -> Result<Vec<user_collection_item_entity::Model>, Error> {
-    user_collection_item_entity::Entity::find()
+) -> Result<Vec<user_collection_item_entity::Model>, DatabaseError> {
+    let items = user_collection_item_entity::Entity::find()
         .filter(
             user_collection_item_entity::Column::UserCollectionId
                 .eq(collection_id),
@@ -1026,15 +981,16 @@ pub(super) async fn load_user_collection_items(
         .order_by_asc(user_collection_item_entity::Column::Id)
         .all(conn)
         .await
-        .db_operation("load user collection items")
-        .map_err(Into::into)
+        .db_context("load user collection items")?;
+    Ok(items)
 }
 
+#[infra_db::observe("user_collection.update_collection_item_order")]
 pub(super) async fn update_user_collection_item_order(
     conn: &impl ConnectionTrait,
     collection_id: i32,
     item_ids: &[i32],
-) -> Result<(), Error> {
+) -> Result<(), DatabaseError> {
     let mut ordered_items = item_ids.iter().copied().enumerate();
     let Some((_, first_item_id)) = ordered_items.next() else {
         return Ok(());
@@ -1047,7 +1003,7 @@ pub(super) async fn update_user_collection_item_order(
 
     for (sort_key, item_id) in ordered_items {
         let sort_key = i32::try_from(sort_key).map_err(|_| {
-            DatabaseError::internal("user collection contains too many items")
+            DatabaseFailure::internal("user collection contains too many items")
         })?;
         sort_key_expr = sort_key_expr.case(
             Expr::col(user_collection_item_entity::Column::Id).eq(item_id),
@@ -1072,14 +1028,15 @@ pub(super) async fn update_user_collection_item_order(
         )
         .exec(conn)
         .await
-        .db_operation("update user collection item order")?;
+        .db_context("update user collection item order")?;
     Ok(())
 }
 
+#[infra_db::observe("user_collection.load_artist_summaries")]
 async fn load_artist_summaries(
     ids: &[i32],
     conn: &impl ConnectionTrait,
-) -> Result<HashMap<i32, ArtistSummary>, Error> {
+) -> Result<HashMap<i32, ArtistSummary>, DatabaseError> {
     if ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -1088,7 +1045,7 @@ async fn load_artist_summaries(
         .filter(artist_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .db_operation("load user collection artist summaries")?;
+        .db_context("load user collection artist summaries")?;
 
     let profile_images = artist_image_entity::Entity::find()
         .find_also_related(image_entity::Entity)
@@ -1099,7 +1056,7 @@ async fn load_artist_summaries(
         .order_by_desc(image_entity::Column::UploadedAt)
         .all(conn)
         .await
-        .db_operation("load user collection artist profile images")?;
+        .db_context("load user collection artist profile images")?;
 
     let mut image_map: HashMap<i32, String> = HashMap::new();
     for (ai, img) in profile_images {
@@ -1127,10 +1084,11 @@ async fn load_artist_summaries(
         .collect())
 }
 
+#[infra_db::observe("user_collection.load_release_summaries")]
 async fn load_release_summaries(
     ids: &[i32],
     conn: &impl ConnectionTrait,
-) -> Result<HashMap<i32, ReleaseSummary>, Error> {
+) -> Result<HashMap<i32, ReleaseSummary>, DatabaseError> {
     if ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -1139,7 +1097,7 @@ async fn load_release_summaries(
         .filter(release_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .db_operation("load user collection release summaries")?;
+        .db_context("load user collection release summaries")?;
 
     let artists_per_release = releases
         .load_many_to_many(
@@ -1148,27 +1106,9 @@ async fn load_release_summaries(
             conn,
         )
         .await
-        .db_operation("load user collection release artists")?;
+        .db_context("load user collection release artists")?;
 
-    let cover_images = release_image_entity::Entity::find()
-        .find_also_related(image_entity::Entity)
-        .filter(all![
-            release_image_entity::Column::ReleaseId.is_in(ids.iter().copied()),
-            release_image_entity::Column::Type.eq(ReleaseImageType::Cover),
-        ])
-        .order_by_desc(image_entity::Column::UploadedAt)
-        .all(conn)
-        .await
-        .db_operation("load user collection release cover images")?;
-
-    let mut cover_map: HashMap<i32, String> = HashMap::new();
-    for (ri, img) in cover_images {
-        if let Some(img) = img {
-            cover_map
-                .entry(ri.release_id)
-                .or_insert_with(|| img.object_key.clone());
-        }
-    }
+    let mut cover_map = load_release_cover_image_keys(ids, conn).await?;
 
     Ok(releases
         .into_iter()
@@ -1201,10 +1141,37 @@ async fn load_release_summaries(
         .collect())
 }
 
+#[infra_db::observe("user_collection.load_release_cover_image_keys")]
+async fn load_release_cover_image_keys(
+    ids: &[i32],
+    conn: &impl ConnectionTrait,
+) -> Result<HashMap<i32, String>, DatabaseError> {
+    let cover_images = release_image_entity::Entity::find()
+        .find_also_related(image_entity::Entity)
+        .filter(all![
+            release_image_entity::Column::ReleaseId.is_in(ids.iter().copied()),
+            release_image_entity::Column::Type.eq(ReleaseImageType::Cover),
+        ])
+        .order_by_desc(image_entity::Column::UploadedAt)
+        .all(conn)
+        .await?;
+
+    let mut cover_map: HashMap<i32, String> = HashMap::new();
+    for (ri, img) in cover_images {
+        if let Some(img) = img {
+            cover_map
+                .entry(ri.release_id)
+                .or_insert_with(|| img.object_key.clone());
+        }
+    }
+    Ok(cover_map)
+}
+
+#[infra_db::observe("user_collection.load_song_summaries")]
 async fn load_song_summaries(
     ids: &[i32],
     conn: &impl ConnectionTrait,
-) -> Result<HashMap<i32, SongSummary>, Error> {
+) -> Result<HashMap<i32, SongSummary>, DatabaseError> {
     if ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -1213,7 +1180,7 @@ async fn load_song_summaries(
         .filter(song_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .db_operation("load user collection song summaries")?;
+        .db_context("load user collection song summaries")?;
 
     let song_artists_per_song = songs
         .load_many_to_many(
@@ -1222,14 +1189,14 @@ async fn load_song_summaries(
             conn,
         )
         .await
-        .db_operation("load user collection song artists")?;
+        .db_context("load user collection song artists")?;
 
     // Find the first (smallest) release_id per song via release_track
     let release_tracks = release_track_entity::Entity::find()
         .filter(release_track_entity::Column::SongId.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .db_operation("load user collection song release tracks")?;
+        .db_context("load user collection song release tracks")?;
 
     let mut first_release_per_song: HashMap<i32, i32> = HashMap::new();
     for track in &release_tracks {
@@ -1246,30 +1213,11 @@ async fn load_song_summaries(
         .into_iter()
         .collect();
 
-    let cover_images = if first_release_ids.is_empty() {
-        vec![]
+    let release_cover_map = if first_release_ids.is_empty() {
+        HashMap::new()
     } else {
-        release_image_entity::Entity::find()
-            .find_also_related(image_entity::Entity)
-            .filter(all![
-                release_image_entity::Column::ReleaseId
-                    .is_in(first_release_ids),
-                release_image_entity::Column::Type.eq(ReleaseImageType::Cover),
-            ])
-            .order_by_desc(image_entity::Column::UploadedAt)
-            .all(conn)
-            .await
-            .db_operation("load user collection song cover images")?
+        load_release_cover_image_keys(&first_release_ids, conn).await?
     };
-
-    let mut release_cover_map: HashMap<i32, String> = HashMap::new();
-    for (ri, img) in cover_images {
-        if let Some(img) = img {
-            release_cover_map
-                .entry(ri.release_id)
-                .or_insert_with(|| img.object_key.clone());
-        }
-    }
 
     Ok(songs
         .into_iter()
@@ -1299,18 +1247,20 @@ async fn load_song_summaries(
         .collect())
 }
 
+#[infra_db::observe("user_collection.load_tag_summaries")]
 async fn load_tag_summaries(
     ids: &[i32],
     conn: &impl ConnectionTrait,
-) -> Result<HashMap<i32, TagSummary>, Error> {
+) -> Result<HashMap<i32, TagSummary>, DatabaseError> {
     if ids.is_empty() {
         return Ok(HashMap::new());
     }
-    Ok(tag_entity::Entity::find()
+    let tags = tag_entity::Entity::find()
         .filter(tag_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
-        .await
-        .db_operation("load user collection tag summaries")?
+        .await?;
+
+    Ok(tags
         .into_iter()
         .map(|t| {
             (
@@ -1325,18 +1275,20 @@ async fn load_tag_summaries(
         .collect())
 }
 
+#[infra_db::observe("user_collection.load_event_summaries")]
 async fn load_event_summaries(
     ids: &[i32],
     conn: &impl ConnectionTrait,
-) -> Result<HashMap<i32, EventSummary>, Error> {
+) -> Result<HashMap<i32, EventSummary>, DatabaseError> {
     if ids.is_empty() {
         return Ok(HashMap::new());
     }
-    Ok(event_entity::Entity::find()
+    let events = event_entity::Entity::find()
         .filter(event_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
-        .await
-        .db_operation("load user collection event summaries")?
+        .await?;
+
+    Ok(events
         .into_iter()
         .map(|e| {
             let start_date = DateWithPrecision::from_option(
@@ -1355,18 +1307,20 @@ async fn load_event_summaries(
         .collect())
 }
 
+#[infra_db::observe("user_collection.load_label_summaries")]
 async fn load_label_summaries(
     ids: &[i32],
     conn: &impl ConnectionTrait,
-) -> Result<HashMap<i32, LabelSummary>, Error> {
+) -> Result<HashMap<i32, LabelSummary>, DatabaseError> {
     if ids.is_empty() {
         return Ok(HashMap::new());
     }
-    Ok(label_entity::Entity::find()
+    let labels = label_entity::Entity::find()
         .filter(label_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
-        .await
-        .db_operation("load user collection label summaries")?
+        .await?;
+
+    Ok(labels
         .into_iter()
         .map(|l| {
             (

@@ -106,10 +106,11 @@ impl Service {
             return Err(EntityNotFound::new("artist", artist_id).into());
         }
 
-        let tx_repo =
-            self.repo.begin_tx().await.db_operation(
-                "begin artist profile image upload transaction",
-            )?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .db_context("begin artist profile image upload transaction")?;
 
         let image_service =
             image_upload::Service::new(tx_repo.clone(), self.storage.clone());
@@ -143,6 +144,9 @@ impl Service {
         Ok(image_queue.id)
     }
 
+    #[fastrace::trace(
+        name = "artist_image.find_current_profile_image_metadata"
+    )]
     pub async fn get_profile_image_metadata(
         &self,
         artist_id: i32,
@@ -154,7 +158,7 @@ impl Service {
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
             .await
-            .db_operation("find current artist profile image")?;
+            .db_context("find current artist profile image")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -164,7 +168,7 @@ impl Service {
             .into_partial_model::<UserSummary>()
             .one(&self.repo.conn)
             .await
-            .db_operation("find artist profile image uploader")?
+            .db_context("find artist profile image uploader")?
             .unwrap_or_else(|| UserSummary::unknown(image.uploaded_by));
 
         Ok(Some(CurrentImageMetadata {

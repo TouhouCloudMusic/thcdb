@@ -4,6 +4,7 @@ use domain::shared::{NonEmptyString, PageResponse};
 use entity::enums::EntityType;
 use entity::{
     user_collection as user_collection_entity,
+    user_collection_follow as user_collection_follow_entity,
     user_collection_item as user_collection_item_entity,
 };
 use infra_db::SeaOrmRepository;
@@ -22,6 +23,9 @@ use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PageQuery;
 
+#[cfg(all(test, feature = "integration-test"))]
+mod tests;
+
 #[derive(Clone)]
 pub(super) struct Service {
     repo: SeaOrmRepository,
@@ -36,6 +40,7 @@ impl Service {
         Self { repo, user_events }
     }
 
+    #[fastrace::trace(name = "user_collection.service.list_user_collections")]
     pub(super) async fn list_user_collections(
         &self,
         username: NonEmptyString,
@@ -44,7 +49,8 @@ impl Service {
     ) -> Result<PageResponse<UserCollection>, Error> {
         let user =
             repo::find_requested_user_by_name(&self.repo.conn, &username)
-                .await?;
+                .await?
+                .ok_or(Error::NotFound(NotFound::RequestedUser))?;
 
         let mut select = user_collection_entity::Entity::find()
             .filter(user_collection_entity::Column::UserId.eq(user.id));
@@ -61,8 +67,12 @@ impl Service {
             page_query,
         )
         .await
+        .map_err(Into::into)
     }
 
+    #[fastrace::trace(
+        name = "user_collection.service.get_user_collection_detail"
+    )]
     pub(super) async fn get_user_collection_detail(
         &self,
         collection_id: i32,
@@ -73,31 +83,37 @@ impl Service {
             collection_id,
             viewer_id,
         )
-        .await?;
+        .await?
+        .ok_or(Error::NotFound(NotFound::Collection))?;
         if !collection.is_public && viewer_id != Some(collection.owner.id) {
             return Err(Error::NotFound(NotFound::Collection));
         }
         Ok(collection)
     }
 
+    #[fastrace::trace(
+        name = "user_collection.service.list_user_collection_items"
+    )]
     pub(super) async fn list_user_collection_items(
         &self,
         collection_id: i32,
         viewer_id: Option<i32>,
         page_query: PageQuery,
     ) -> Result<PageResponse<UserCollectionItemDetail>, Error> {
-        repo::find_visible_user_collection(
-            &self.repo.conn,
-            collection_id,
-            viewer_id,
-        )
-        .await?;
+        let collection =
+            repo::find_user_collection(&self.repo.conn, collection_id)
+                .await?
+                .ok_or(Error::NotFound(NotFound::Collection))?;
+        if !collection.is_public && viewer_id != Some(collection.user_id) {
+            return Err(Error::NotFound(NotFound::Collection));
+        }
         repo::load_user_collection_items_page(
             &self.repo.conn,
             collection_id,
             page_query,
         )
         .await
+        .map_err(Into::into)
     }
 
     pub(super) async fn list_public_user_collections(
@@ -114,6 +130,7 @@ impl Service {
             page_query,
         )
         .await
+        .map_err(Into::into)
     }
 
     pub(super) async fn list_entity_user_collections(
@@ -133,6 +150,7 @@ impl Service {
             page_query,
         )
         .await
+        .map_err(Into::into)
     }
 
     pub(super) async fn search_public_user_collections(
@@ -161,8 +179,10 @@ impl Service {
             page_query,
         )
         .await
+        .map_err(Into::into)
     }
 
+    #[fastrace::trace(name = "user_collection.service.create_user_collection")]
     pub(super) async fn create_user_collection(
         &self,
         owner_id: i32,
@@ -176,9 +196,11 @@ impl Service {
             model.id,
             Some(owner_id),
         )
-        .await
+        .await?
+        .ok_or(Error::NotFound(NotFound::Collection))
     }
 
+    #[fastrace::trace(name = "user_collection.service.update_user_collection")]
     pub(super) async fn update_user_collection(
         &self,
         owner_id: i32,
@@ -189,10 +211,12 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin update user collection transaction")?;
+            .db_context("begin update user collection transaction")?;
         let conn = tx_repo.conn();
 
-        let model = repo::lock_user_collection(conn, collection_id).await?;
+        let model = repo::lock_user_collection(conn, collection_id)
+            .await?
+            .ok_or(Error::NotFound(NotFound::Collection))?;
         model.ensure_owned_by(owner_id)?;
 
         repo::update_user_collection(conn, model, &req).await?;
@@ -202,16 +226,15 @@ impl Service {
             collection_id,
             Some(owner_id),
         )
-        .await?;
+        .await?
+        .ok_or(Error::NotFound(NotFound::Collection))?;
 
-        tx_repo
-            .commit()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        tx_repo.commit().await?;
 
         Ok(collection)
     }
 
+    #[fastrace::trace(name = "user_collection.service.delete_user_collection")]
     pub(super) async fn delete_user_collection(
         &self,
         owner_id: i32,
@@ -221,45 +244,47 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin delete user collection transaction")?;
+            .db_context("begin delete user collection transaction")?;
         let conn = tx_repo.conn();
 
-        let collection =
-            repo::lock_user_collection(conn, collection_id).await?;
+        let collection = repo::lock_user_collection(conn, collection_id)
+            .await?
+            .ok_or(Error::NotFound(NotFound::Collection))?;
         collection.ensure_owned_by(owner_id)?;
 
         repo::delete_user_collection(conn, collection_id).await?;
 
-        tx_repo
-            .commit()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        tx_repo.commit().await?;
 
         Ok(())
     }
 
+    #[fastrace::trace(
+        name = "user_collection.service.create_user_collection_item"
+    )]
     pub(super) async fn create_user_collection_item(
         &self,
         owner_id: i32,
         collection_id: i32,
         req: CreateUserCollectionItemRequest,
     ) -> Result<UserCollectionItem, Error> {
-        let tx_repo =
-            self.repo.begin_tx().await.db_operation(
-                "begin create user collection item transaction",
-            )?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .db_context("begin create user collection item transaction")?;
         let conn = tx_repo.conn();
 
-        let collection =
-            repo::lock_user_collection(conn, collection_id).await?;
+        let collection = repo::lock_user_collection(conn, collection_id)
+            .await?
+            .ok_or(Error::NotFound(NotFound::Collection))?;
         collection.ensure_owned_by(owner_id)?;
 
-        repo::ensure_referenced_entity_exists(
-            conn,
-            req.entity_type,
-            req.entity_id,
-        )
-        .await?;
+        if !repo::referenced_entity_exists(conn, req.entity_type, req.entity_id)
+            .await?
+        {
+            return Err(Error::NotFound(NotFound::ReferencedEntity));
+        }
 
         let item = repo::insert_user_collection_item(conn, collection_id, &req)
             .await?;
@@ -278,10 +303,7 @@ impl Service {
             None
         };
 
-        tx_repo
-            .commit()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        tx_repo.commit().await?;
 
         if let Some(notification_recipients) = notification_recipients {
             self.user_events.publish(
@@ -293,32 +315,41 @@ impl Service {
         Ok(item.into())
     }
 
+    #[fastrace::trace(
+        name = "user_collection.service.delete_user_collection_item"
+    )]
     pub(super) async fn delete_user_collection_item(
         &self,
         owner_id: i32,
         collection_id: i32,
         item_id: i32,
     ) -> Result<(), Error> {
-        let tx_repo =
-            self.repo.begin_tx().await.db_operation(
-                "begin delete user collection item transaction",
-            )?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .db_context("begin delete user collection item transaction")?;
         let conn = tx_repo.conn();
 
-        let collection =
-            repo::lock_user_collection(conn, collection_id).await?;
+        let collection = repo::lock_user_collection(conn, collection_id)
+            .await?
+            .ok_or(Error::NotFound(NotFound::Collection))?;
         collection.ensure_owned_by(owner_id)?;
 
-        repo::delete_user_collection_item(conn, collection_id, item_id).await?;
+        if !repo::delete_user_collection_item(conn, collection_id, item_id)
+            .await?
+        {
+            return Err(Error::NotFound(NotFound::CollectionItem));
+        }
 
-        tx_repo
-            .commit()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        tx_repo.commit().await?;
 
         Ok(())
     }
 
+    #[fastrace::trace(
+        name = "user_collection.service.reorder_user_collection_items"
+    )]
     pub(super) async fn reorder_user_collection_items(
         &self,
         owner_id: i32,
@@ -326,13 +357,14 @@ impl Service {
         req: ReorderUserCollectionItemsRequest,
     ) -> Result<(), Error> {
         let tx_repo =
-            self.repo.begin_tx().await.db_operation(
+            self.repo.begin_tx().await.db_context(
                 "begin reorder user collection items transaction",
             )?;
         let conn = tx_repo.conn();
 
-        let collection =
-            repo::lock_user_collection(conn, collection_id).await?;
+        let collection = repo::lock_user_collection(conn, collection_id)
+            .await?
+            .ok_or(Error::NotFound(NotFound::Collection))?;
         collection.ensure_owned_by(owner_id)?;
 
         let items =
@@ -346,14 +378,12 @@ impl Service {
         )
         .await?;
 
-        tx_repo
-            .commit()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        tx_repo.commit().await?;
 
         Ok(())
     }
 
+    #[fastrace::trace(name = "user_collection.service.follow_user_collection")]
     pub(super) async fn follow_user_collection(
         &self,
         user_id: i32,
@@ -363,11 +393,12 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .db_operation("begin follow user collection transaction")?;
+            .db_context("begin follow user collection transaction")?;
         let conn = tx_repo.conn();
 
-        let collection =
-            repo::lock_user_collection(conn, collection_id).await?;
+        let collection = repo::lock_user_collection(conn, collection_id)
+            .await?
+            .ok_or(Error::NotFound(NotFound::Collection))?;
 
         if !collection.is_public {
             return Err(Error::NotFound(NotFound::Collection));
@@ -391,10 +422,7 @@ impl Service {
             None
         };
 
-        tx_repo
-            .commit()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        tx_repo.commit().await?;
 
         if let Some(notification_recipients) = notification_recipients {
             self.user_events.publish(
@@ -406,13 +434,22 @@ impl Service {
         Ok(())
     }
 
+    #[fastrace::trace(name = "user_collection.unfollow")]
     pub(super) async fn unfollow_user_collection(
         &self,
         user_id: i32,
         collection_id: i32,
     ) -> Result<(), Error> {
-        repo::unfollow_user_collection(&self.repo.conn, user_id, collection_id)
+        user_collection_follow_entity::Entity::delete_many()
+            .filter(all![
+                user_collection_follow_entity::Column::UserId.eq(user_id),
+                user_collection_follow_entity::Column::CollectionId
+                    .eq(collection_id),
+            ])
+            .exec(&self.repo.conn)
             .await
+            .db_context("unfollow user collection")?;
+        Ok(())
     }
 
     pub(super) async fn list_followed_user_collections(
@@ -426,6 +463,7 @@ impl Service {
             page_query,
         )
         .await
+        .map_err(Into::into)
     }
 }
 

@@ -12,6 +12,7 @@ name = "popularity_core"
 path = "src/lib.rs"
 
 [dependencies]
+infra_db.workspace     = true
 chrono.workspace       = true
 entity.workspace       = true
 fred.workspace         = true

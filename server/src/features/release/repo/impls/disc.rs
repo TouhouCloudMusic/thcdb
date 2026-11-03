@@ -2,11 +2,11 @@ use entity::{
     release_disc, release_disc_history, release_track, release_track_artist,
     release_track_artist_history, release_track_history,
 };
+use infra_db::DatabaseTransaction;
 use itertools::Itertools;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, LoaderTrait,
-    QueryFilter, QueryOrder,
+    ColumnTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter, QueryOrder,
 };
 use vecmap::VecMap;
 
@@ -62,6 +62,7 @@ pub(crate) async fn create_release_disc_history(
     Ok(inserted)
 }
 
+#[fastrace::trace(name = "release.update_tracks_and_discs")]
 pub(crate) async fn update_release_track_and_disc(
     release_id: i32,
     history_id: i32,

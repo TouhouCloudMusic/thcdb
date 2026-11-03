@@ -1,6 +1,6 @@
 use chrono::{DateTime, FixedOffset};
 use entity::notification;
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::DatabaseError;
 use sea_orm::prelude::Uuid;
 use sea_orm::{ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter};
 use sea_query::{Alias, Expr, Func, SimpleExpr};
@@ -37,20 +37,20 @@ pub(super) async fn unsave(
     .await
 }
 
+#[infra_db::observe("notification.set_saved_at")]
 async fn set_saved_at(
     conn: &impl ConnectionTrait,
     recipient_id: i32,
     notification_id: Uuid,
     saved_at: SimpleExpr,
 ) -> Result<u64, DatabaseError> {
-    notification::Entity::update_many()
+    let result = notification::Entity::update_many()
         .col_expr(notification::Column::SavedAt, saved_at)
         .filter(sea_query::all![
             notification::Column::Id.eq(notification_id),
             notification::Column::RecipientId.eq(recipient_id),
         ])
         .exec(conn)
-        .await
-        .db_operation("update notification saved state")
-        .map(|result| result.rows_affected)
+        .await?;
+    Ok(result.rows_affected)
 }

@@ -42,6 +42,7 @@ pub(super) struct RawNotificationBatch {
     pub(super) exhausted: bool,
 }
 
+#[infra_db::observe("notification.inbox.load_batch")]
 pub(super) async fn load_raw_notification_batch(
     conn: &impl ConnectionTrait,
     recipient_id: i32,
@@ -128,6 +129,7 @@ struct ThreadUnreadCommenterSummaryRow {
     commenter_count: i64,
 }
 
+#[infra_db::observe("notification.inbox.load_unread_commenter_summaries")]
 pub(super) async fn load_thread_unread_commenter_summaries<'a>(
     conn: &impl ConnectionTrait,
     notifications: impl IntoIterator<Item = &'a ListedNotification>,
@@ -164,7 +166,7 @@ pub(super) async fn load_thread_unread_commenter_summaries<'a>(
     )
     .all(conn)
     .await
-    .db_operation("load thread notification unread commenter summaries")?;
+    .db_context("load thread notification unread commenter summaries")?;
 
     let mut commenter_summaries = HashMap::<Uuid, (Vec<i32>, i64)>::new();
     for row in rows {
@@ -346,6 +348,7 @@ struct NotificationSnapshotRow {
     user_collection_id: Option<i32>,
 }
 
+#[infra_db::observe("notification.inbox.load_event_data")]
 async fn load_notification_data(
     conn: &impl ConnectionTrait,
     notifications: &mut [RawNotification],
@@ -403,6 +406,7 @@ async fn load_notification_data(
     Ok(())
 }
 
+#[infra_db::observe("notification.inbox.load_account_role_names")]
 async fn load_account_role_names(
     conn: &impl ConnectionTrait,
     event_ids: HashSet<i64>,
@@ -440,7 +444,7 @@ async fn load_account_role_names(
         .into_tuple::<(i64, String)>()
         .all(conn)
         .await
-        .db_operation("load account role changed notification data")?;
+        .db_context("load account role changed notification data")?;
 
     for (event_id, role_name) in rows {
         role_names.entry(event_id).or_default().push(role_name);
@@ -449,6 +453,7 @@ async fn load_account_role_names(
     Ok(role_names)
 }
 
+#[infra_db::observe("notification.inbox.load_comment_contents")]
 async fn load_comment_contents(
     conn: &impl ConnectionTrait,
     event_ids: HashSet<i64>,
@@ -457,21 +462,21 @@ async fn load_comment_contents(
         return Ok(HashMap::new());
     }
 
-    comment_created_notification_event::Entity::find()
+    let rows = comment_created_notification_event::Entity::find()
         .filter(
             comment_created_notification_event::Column::NotificationEventId
                 .is_in(event_ids),
         )
         .all(conn)
-        .await
-        .db_operation("load comment created notification data")
-        .map(|rows| {
-            rows.into_iter()
-                .map(|row| (row.notification_event_id, row.content))
-                .collect()
-        })
+        .await?;
+    Ok({
+        rows.into_iter()
+            .map(|row| (row.notification_event_id, row.content))
+            .collect()
+    })
 }
 
+#[infra_db::observe("notification.inbox.list_snapshot_heads")]
 async fn list_snapshot_heads(
     conn: &impl ConnectionTrait,
     recipient_id: i32,
@@ -535,13 +540,12 @@ async fn list_snapshot_heads(
                 .expect("notification batch limit fits in u64"),
         );
 
-    NotificationSnapshotRow::find_by_statement(
+    let rows = NotificationSnapshotRow::find_by_statement(
         conn.get_database_backend().build(&statement),
     )
     .all(conn)
-    .await
-    .db_operation("list notification snapshot heads")
-    .map(|rows| rows.into_iter().map(Into::into).collect())
+    .await?;
+    Ok(rows.into_iter().map(Into::into).collect())
 }
 
 fn snapshot_head_projection(head: &Alias) -> SelectStatement {

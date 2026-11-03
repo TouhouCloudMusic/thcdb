@@ -30,7 +30,7 @@ impl AsyncFileStorage for GenericFileStorage {
 
 /// Serializes publishing and collecting the same object until the transaction ends.
 pub(crate) async fn lock_object(
-    conn: &sea_orm::DatabaseTransaction,
+    conn: &infra_db::DatabaseTransaction,
     object_key: &str,
 ) -> Result<(), sea_orm::DbErr> {
     use sea_orm::ConnectionTrait;
@@ -54,7 +54,7 @@ pub(crate) async fn lock_object(
 }
 
 pub(crate) async fn try_lock_objects(
-    conn: &sea_orm::DatabaseTransaction,
+    conn: &infra_db::DatabaseTransaction,
     object_keys: &[String],
 ) -> Result<Vec<String>, sea_orm::DbErr> {
     use sea_orm::ConnectionTrait;

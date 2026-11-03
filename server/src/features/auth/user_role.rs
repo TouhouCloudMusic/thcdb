@@ -2,7 +2,9 @@ pub use auth_core::user_role::{EditableUserRole, UserRoleEnum};
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::infra::database::error::{BrokenEntityReference, DatabaseError};
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseFailure,
+};
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct UserRole {
@@ -18,10 +20,12 @@ impl TryFrom<entity::user_role::Model> for UserRole {
         UserRoleEnum::try_from(value.role_id)
             .map(Into::into)
             .map_err(|_| {
-                DatabaseError::from(BrokenEntityReference {
+                DatabaseFailure::from(BrokenEntityReference {
                     entity: "user_role",
                     id: value.role_id,
                 })
+                .context("decode user role")
+                .into()
             })
     }
 }

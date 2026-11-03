@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use comment_repo::{CommentTarget, CommentTargetKind};
 use entity::enums::EntityType;
 use image_queue_core::ImageQueueTarget;
-use infra_db::error::{DatabaseError, DatabaseResultExt};
+use infra_db::error::{DatabaseFailure, DatabaseResultExt};
 use sea_orm::ConnectionTrait;
 use user_core::{UserSummary, load_users};
 
@@ -204,7 +204,7 @@ impl References {
             .collect();
         let users = load_users(conn, ids.iter(ReferenceKind::User))
             .await
-            .db_operation("load notification users")?;
+            .db_context("load notification users")?;
         let collections = queries::load_collections(
             conn,
             ids.iter(ReferenceKind::UserCollection),
@@ -220,17 +220,19 @@ impl References {
             resolve_corrections(correction_targets, &entity_names)?;
         for id in ids.iter(ReferenceKind::Correction) {
             if !corrections.contains_key(&id) {
-                return Err(DatabaseError::internal(format!(
+                return Err(DatabaseFailure::internal(format!(
                     "notification correction {id} has no target name"
                 ))
+                .context("resolve notification references")
                 .into());
             }
         }
         for id in ids.iter(ReferenceKind::ImageQueue) {
             if !image_queues.contains_key(&id) {
-                return Err(DatabaseError::internal(format!(
+                return Err(DatabaseFailure::internal(format!(
                     "notification image queue {id} has no target"
                 ))
+                .context("resolve notification references")
                 .into());
             }
         }
@@ -328,10 +330,11 @@ fn resolve_corrections(
             let name = names
                 .get(target.entity_type.into(), target.entity_id)
                 .ok_or_else(|| {
-                DatabaseError::internal(format!(
+                DatabaseFailure::internal(format!(
                     "notification correction {} references missing {:?} {}",
                     target.correction_id, target.entity_type, target.entity_id
                 ))
+                .context("resolve correction notification target")
             })?;
             Ok((
                 target.correction_id,
@@ -358,10 +361,11 @@ fn resolve_comment_target(
             entity_kind,
         } => {
             let name = entity_names.get(name_kind, id).ok_or_else(|| {
-                DatabaseError::internal(format!(
+                DatabaseFailure::internal(format!(
                     "notification comment target references missing {} {id}",
                     name_kind.name()
                 ))
+                .context("resolve comment notification target")
             })?;
             Ok(EntityMeta {
                 kind: entity_kind,

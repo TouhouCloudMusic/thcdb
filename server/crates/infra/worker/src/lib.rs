@@ -1,4 +1,3 @@
-use std::error::Error as StdError;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -14,21 +13,36 @@ use infra_error::BoxedError;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
+mod observation;
+mod reporting;
+
+#[cfg(test)]
+mod tests;
+
+pub use observation::{AttemptLayer, RunLayer};
+pub use reporting::report_backend_error;
+
+/// Business result; every variant permits the backend to acknowledge the task.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TaskOutcome {
+    /// Processing completed successfully.
+    Completed,
+    /// Processing is no longer needed.
+    Skipped,
+    /// Processing failed, but the task should be consumed without retrying.
+    Discarded,
+}
+
 pub type WorkerError = BoxedError;
 pub type RedisQueue<T> = RedisStorage<T>;
 
-pub fn retryable_error<E>(source: E) -> Error
-where
-    E: StdError + Send + Sync + 'static,
-{
-    Error::Failed(Arc::new(Box::new(source) as WorkerError))
+pub fn retryable_error(source: impl Into<WorkerError>) -> Error {
+    Error::Failed(Arc::new(source.into()))
 }
 
-pub fn permanent_error<E>(source: E) -> Error
-where
-    E: StdError + Send + Sync + 'static,
-{
-    Error::Abort(Arc::new(Box::new(source) as WorkerError))
+pub fn permanent_error(source: impl Into<WorkerError>) -> Error {
+    Error::Abort(Arc::new(source.into()))
 }
 
 #[derive(Clone, Debug)]

@@ -7,26 +7,22 @@ use sea_orm::{
 };
 
 use crate::features::song_lyrics::model::NewSongLyrics;
-use crate::infra::database::error::{
-    BrokenEntityReference, DatabaseError, DatabaseResultExt,
-};
+use crate::infra::database::error::{BrokenEntityReference, DatabaseError};
 
+#[infra_db::observe("song_lyrics.create")]
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
     data: &NewSongLyrics,
 ) -> Result<i32, DatabaseError> {
-    create_lyrics(repo.conn(), data)
-        .await
-        .db_operation("create song lyrics")
+    Ok(create_lyrics(repo.conn(), data).await?)
 }
 
+#[infra_db::observe("song_lyrics.create_history")]
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
     data: &NewSongLyrics,
 ) -> Result<i32, DatabaseError> {
-    create_history_record(repo.conn(), data)
-        .await
-        .db_operation("create song lyrics history")
+    Ok(create_history_record(repo.conn(), data).await?)
 }
 
 async fn unset_song_main_lyrics(
@@ -50,20 +46,23 @@ async fn create_lyrics(
     conn: &impl ConnectionTrait,
     lyrics: &NewSongLyrics,
 ) -> Result<i32, DbErr> {
-    if lyrics.is_main {
-        unset_song_main_lyrics(lyrics.song_id, None, conn).await?;
-    }
+    infra_db::trace("song_lyrics.insert", async {
+        if lyrics.is_main {
+            unset_song_main_lyrics(lyrics.song_id, None, conn).await?;
+        }
 
-    let model = song_lyrics::ActiveModel {
-        id: NotSet,
-        song_id: Set(lyrics.song_id),
-        language_id: Set(lyrics.language_id),
-        content: Set(lyrics.content.clone()),
-        is_main: Set(lyrics.is_main),
-    };
+        let model = song_lyrics::ActiveModel {
+            id: NotSet,
+            song_id: Set(lyrics.song_id),
+            language_id: Set(lyrics.language_id),
+            content: Set(lyrics.content.clone()),
+            is_main: Set(lyrics.is_main),
+        };
 
-    let result = model.insert(conn).await?;
-    Ok(result.id)
+        let result = model.insert(conn).await?;
+        Ok(result.id)
+    })
+    .await
 }
 
 async fn create_history_record(
@@ -82,6 +81,7 @@ async fn create_history_record(
     Ok(result.id)
 }
 
+#[infra_db::observe("song_lyrics.apply_update")]
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     conn: &impl ConnectionTrait,

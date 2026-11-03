@@ -587,8 +587,6 @@ export type {
 	GetTagsResponse,
 	GetTagsResponses,
 	HealthCheckData,
-	HealthCheckError,
-	HealthCheckErrors,
 	HealthCheckResponses,
 	Home,
 	HomeStatistics,

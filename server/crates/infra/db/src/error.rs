@@ -1,9 +1,10 @@
+use std::error::Error as _;
 use std::panic::Location;
 
 use frunk::{Coprod, Coproduct};
-use infra_error::BoxedError;
+use infra_error::{BoxedError, OperationContext};
 use itertools::Itertools;
-use sea_orm::{DbErr, RuntimeErr, sqlx};
+use sea_orm::{DbErr, RuntimeErr, SqlErr, sqlx};
 
 #[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
 #[display("Broken entity reference: {entity} #{id} not found")]
@@ -12,11 +13,89 @@ pub struct BrokenEntityReference {
     pub id: i32,
 }
 
+#[derive(Debug)]
+pub struct DatabaseFailure(DatabaseFailureKind);
+
+#[derive(Debug)]
+enum DatabaseFailureKind {
+    Raw {
+        source: DatabaseErrorSource,
+        location: &'static Location<'static>,
+    },
+    Child(DatabaseError),
+}
+
+impl DatabaseFailure {
+    #[track_caller]
+    pub const fn new(source: DbErr) -> Self {
+        Self(DatabaseFailureKind::Raw {
+            source: DatabaseErrorSource::Db(source),
+            location: Location::caller(),
+        })
+    }
+
+    #[track_caller]
+    pub fn broken_reference(
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Self(DatabaseFailureKind::Raw {
+            source: DatabaseErrorSource::BrokenReference(Box::new(source)),
+            location: Location::caller(),
+        })
+    }
+
+    #[track_caller]
+    pub fn internal(message: impl Into<String>) -> Self {
+        Self(DatabaseFailureKind::Raw {
+            source: DatabaseErrorSource::Internal(message.into()),
+            location: Location::caller(),
+        })
+    }
+
+    #[track_caller]
+    #[must_use]
+    pub fn context(self, operation: &'static str) -> DatabaseError {
+        DatabaseError::attach_context(self, OperationContext::new(operation))
+    }
+}
+
+impl From<DbErr> for DatabaseFailure {
+    #[track_caller]
+    fn from(source: DbErr) -> Self {
+        Self::new(source)
+    }
+}
+
+impl From<BrokenEntityReference> for DatabaseFailure {
+    #[track_caller]
+    fn from(source: BrokenEntityReference) -> Self {
+        Self::broken_reference(source)
+    }
+}
+
+impl From<DatabaseError> for DatabaseFailure {
+    fn from(source: DatabaseError) -> Self {
+        Self(DatabaseFailureKind::Child(source))
+    }
+}
+
+/// A database error with at least one operation context.
+///
+/// Raw database failures cannot be converted without an operation context.
+/// ```compile_fail
+/// use infra_db::error::DatabaseError;
+/// let error: DatabaseError = sea_orm::DbErr::Custom("failure".into()).into();
+/// ```
+/// ```compile_fail
+/// use infra_db::error::{DatabaseError, DatabaseFailure};
+/// let error: DatabaseError = DatabaseFailure::internal("failure").into();
+/// ```
 #[derive(Debug, derive_more::Error)]
 pub struct DatabaseError {
     #[error(source)]
     source: DatabaseErrorSource,
-    frames: Vec<DatabaseErrorFrame>,
+    first_context: OperationContext,
+    parents: Vec<OperationContext>,
     location: &'static Location<'static>,
 }
 
@@ -30,99 +109,87 @@ enum DatabaseErrorSource {
     Internal(#[error(ignore)] String),
 }
 
-#[derive(Debug)]
-struct DatabaseErrorFrame {
-    operation: &'static str,
-    location: &'static Location<'static>,
-}
-
 impl DatabaseError {
-    #[track_caller]
-    pub const fn new(source: DbErr) -> Self {
-        Self {
-            source: DatabaseErrorSource::Db(source),
-            frames: Vec::new(),
-            location: Location::caller(),
-        }
-    }
-
-    #[track_caller]
-    pub fn broken_reference(
-        source: impl std::error::Error + Send + Sync + 'static,
-    ) -> Self {
-        Self {
-            source: DatabaseErrorSource::BrokenReference(Box::new(source)),
-            frames: Vec::new(),
-            location: Location::caller(),
-        }
-    }
-
-    #[track_caller]
-    pub fn internal(message: impl Into<String>) -> Self {
-        Self {
-            source: DatabaseErrorSource::Internal(message.into()),
-            frames: Vec::new(),
-            location: Location::caller(),
-        }
+    pub fn is_unique_violation(&self) -> bool {
+        matches!(
+            &self.source,
+            DatabaseErrorSource::Db(error)
+                if matches!(error.sql_err(), Some(SqlErr::UniqueConstraintViolation(_)))
+        )
     }
 
     #[track_caller]
     #[must_use]
-    pub fn db_operation(mut self, operation: &'static str) -> Self {
-        self.frames.push(DatabaseErrorFrame {
-            operation,
-            location: Location::caller(),
-        });
-        self
+    pub fn context(self, operation: &'static str) -> Self {
+        Self::attach_context(self.into(), OperationContext::new(operation))
     }
 }
 
-impl From<DbErr> for DatabaseError {
-    #[track_caller]
-    fn from(source: DbErr) -> Self {
-        Self::new(source)
-    }
-}
-
-impl From<BrokenEntityReference> for DatabaseError {
-    #[track_caller]
-    fn from(source: BrokenEntityReference) -> Self {
-        Self::broken_reference(source)
+impl DatabaseError {
+    pub fn attach_context(
+        input: DatabaseFailure,
+        context: OperationContext,
+    ) -> Self {
+        match input.0 {
+            DatabaseFailureKind::Raw { source, location } => Self {
+                source,
+                location,
+                first_context: context,
+                parents: Vec::new(),
+            },
+            DatabaseFailureKind::Child(mut error) => {
+                error.parents.push(context);
+                error
+            }
+        }
     }
 }
 
 impl std::fmt::Display for DatabaseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.frames.last() {
-            Some(frame) => write!(
-                f,
-                "database error while {} at {}: {}",
-                frame.operation, frame.location, self.source
-            ),
-            None => write!(
-                f,
-                "database error at {}: {}",
-                self.location, self.source
-            ),
+        write!(f, "database error\n\nCaused by:")?;
+        for (index, context) in self
+            .parents
+            .iter()
+            .rev()
+            .chain(std::iter::once(&self.first_context))
+            .enumerate()
+        {
+            write!(f, "\n    {index}: {context}")?;
         }
+        let mut index = self.parents.len() + 1;
+        write!(
+            f,
+            "\n    {index}: {} (origin at {})",
+            self.source, self.location
+        )?;
+        let mut cause: Option<&(dyn std::error::Error + 'static)> =
+            match &self.source {
+                DatabaseErrorSource::Db(error) => error.source(),
+                DatabaseErrorSource::BrokenReference(error) => error.source(),
+                DatabaseErrorSource::Internal(_) => None,
+            };
+        while let Some(error) = cause {
+            index += 1;
+            write!(f, "\n    {index}: {error}")?;
+            cause = error.source();
+        }
+        Ok(())
     }
 }
 
 pub trait DatabaseResultExt<T> {
-    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError>;
+    #[track_caller]
+    fn db_context(self, operation: &'static str) -> Result<T, DatabaseError>;
 }
 
-impl<T> DatabaseResultExt<T> for Result<T, DbErr> {
+impl<T, E: Into<DatabaseFailure>> DatabaseResultExt<T> for Result<T, E> {
     #[track_caller]
-    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError> {
-        self.map_err(|err| DatabaseError::new(err).db_operation(operation))
-    }
-}
-
-impl<T> DatabaseResultExt<T> for Result<T, DatabaseError> {
-    #[track_caller]
-    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError> {
-        self.map_err(|err| err.db_operation(operation))
+    fn db_context(self, operation: &'static str) -> Result<T, DatabaseError> {
+        match self {
+            Ok(value) => Ok(value),
+            Err(error) => Err(error.into().context(operation)),
+        }
     }
 }
 

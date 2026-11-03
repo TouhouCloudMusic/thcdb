@@ -1,9 +1,13 @@
 import { useLingui } from "@lingui/solid/macro"
 import { Title } from "@solidjs/meta"
 import * as stylex from "@stylexjs/stylex"
+import { getResponseTraceId } from "@thc/api"
+import { Show } from "solid-js"
 
 import { palette } from "~/style/color/palette.stylex"
 import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
+import { ResponseTraceId } from "./ResponseTraceId"
 
 const styles = stylex.create({
 	page: {
@@ -30,8 +34,14 @@ const styles = stylex.create({
 	},
 })
 
-export function InternalServerError(props: { msg?: string | undefined }) {
+type InternalServerErrorProps = {
+	error?: unknown
+	msg?: string | undefined
+}
+
+export function InternalServerError(props: InternalServerErrorProps) {
 	const { t } = useLingui()
+	const traceId = () => getResponseTraceId(props.error)
 	return (
 		<div {...stylex.attrs(styles.page)}>
 			<Title>{t`500 Internal Server Error`}</Title>
@@ -43,6 +53,9 @@ export function InternalServerError(props: { msg?: string | undefined }) {
 				/>
 				<h1 {...stylex.attrs(styles.title)}>{t`500 Internal Server Error`}</h1>
 				<p {...stylex.attrs(styles.message)}>{props.msg}</p>
+				<Show when={traceId()}>
+					{(id) => <ResponseTraceId traceId={id()} />}
+				</Show>
 				<p {...stylex.attrs(styles.hint)}>
 					<button
 						type="button"

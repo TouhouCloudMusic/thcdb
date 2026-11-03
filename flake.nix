@@ -33,6 +33,30 @@
           webPackage = builtins.fromJSON (builtins.readFile ./web/package.json);
           webPlaywrightVersion = webPackage.devDependencies.playwright;
 
+          just = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
+            pname = "just";
+            # Keep in sync with .github/workflows/web.yml.
+            version = "1.59.0";
+            src = pkgs.fetchurl {
+              url = "https://github.com/casey/just/releases/download/${finalAttrs.version}/just-${finalAttrs.version}-${pkgs.stdenv.hostPlatform.parsed.cpu.name}-unknown-linux-musl.tar.gz";
+              hash =
+                {
+                  x86_64-linux = "sha256-QJBEYXtvBlF8EDXlXKOMjIVv+LZQ5BvCqh74LVkDoj4=";
+                  aarch64-linux = "sha256-I4cbFwK/1VD7X5AXeP1CkOzy7gNKRaiJ++ltibGICG0=";
+                }
+                .${system};
+            };
+            sourceRoot = ".";
+            nativeBuildInputs = [ pkgs.installShellFiles ];
+            installPhase = ''
+              runHook preInstall
+              install -Dm755 just "$out/bin/just"
+              installManPage just.1
+              installShellCompletion --cmd just completions/just.{bash,fish,zsh}
+              runHook postInstall
+            '';
+          });
+
           python = pkgs.python3;
           schemathesis = pkgs.buildFHSEnv {
             name = "schemathesis";

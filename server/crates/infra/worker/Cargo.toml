@@ -12,10 +12,19 @@ name = "infra_worker"
 path = "src/lib.rs"
 
 [dependencies]
-infra_error.workspace  = true
-apalis.workspace       = true
-apalis-cron.workspace  = true
-apalis-redis.workspace = true
-log.workspace          = true
-serde.workspace        = true
-tokio.workspace        = true
+chrono.workspace              = true
+infra_error.workspace         = true
+infra_observability.workspace = true
+fastrace.workspace            = true
+futures-util.workspace        = true
+apalis.workspace              = true
+apalis-cron.workspace         = true
+apalis-redis.workspace        = true
+log                           = { workspace = true, features = [ "kv" ] }
+serde.workspace               = true
+tokio.workspace               = true
+tower                         = "0.5.2"
+
+[dev-dependencies]
+logforth.workspace   = true
+serde_json.workspace = true

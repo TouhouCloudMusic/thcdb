@@ -10,6 +10,7 @@ import {
 	MixerHorizontalIcon,
 	TargetIcon,
 	CrumpledPaperIcon,
+	ActivityLogIcon,
 	HomeIcon,
 	PersonIcon,
 } from "@thc/icons/radix"
@@ -178,6 +179,15 @@ export function LeftSidebarView(props: { authorization?: UserAuthorization }) {
 						<PersonIcon {...stylex.attrs(sidebar.icon)} />
 						<span {...stylex.attrs(sidebar.content)}>{t`Users`}</span>
 					</Link>
+					<a
+						class={sidebarLink}
+						aria-label={t`Open Grafana`}
+						title={t`Open Grafana`}
+						href="/observability/"
+					>
+						<ActivityLogIcon {...stylex.attrs(sidebar.icon)} />
+						<span {...stylex.attrs(sidebar.content)}>Grafana</span>
+					</a>
 				</div>
 			</Show>
 

@@ -6,13 +6,11 @@ use entity::{
     artist, credit_role, release, release_artist, release_credit, release_disc,
     release_track, song, song_credit,
 };
-use infra_db::SeaOrmRepository;
+use infra_db::{DatabaseConnection, SeaOrmRepository};
 use infra_testing::test_connection;
 use itertools::Itertools;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{
-    ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel,
-};
+use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel};
 
 use super::*;
 use crate::model::{

@@ -33,20 +33,23 @@ services:
   server:
     image: "${SERVER_IMAGE:-ghcr.io/touhoucloudmusic/thcdb-server}:${IMAGE_TAG:-main}"
     restart: unless-stopped
+    stop_grace_period: 90s
     init: true
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    env_file:
-      - .env
+    env_file: .env
     environment:
       MIDDLEWARE__SESSION_SECURE: "${SESSION_SECURE:-true}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}"
 
       DATABASE_URL: "postgres://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
       REDIS_URL: "redis://redis:6379"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://jaeger:4318/v1/traces
+      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://loki:3100/otlp/v1/logs
+      METRICS_ADDR: 0.0.0.0:9464
     volumes:
       - publicdata:/app/public
     healthcheck:
@@ -55,6 +58,62 @@ services:
       timeout: 3s
       retries: 12
       start_period: 10s
+    networks:
+      - backend
+
+  jaeger-init:
+    image: alpine:3.24.3
+    user: "0:0"
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        mkdir -p /data/keys /data/values
+        chown 10001:10001 /data/keys /data/values
+    volumes:
+      - jaegerdata:/data
+    network_mode: none
+
+  jaeger:
+    image: jaegertracing/jaeger:2.20.0
+    restart: unless-stopped
+    depends_on:
+      jaeger-init:
+        condition: service_completed_successfully
+    command: ["--config", "/etc/jaeger/config.yaml"]
+    volumes:
+      - ./observability/jaeger/config.yaml:/etc/jaeger/config.yaml:ro
+      - jaegerdata:/var/lib/jaeger
+    networks:
+      - backend
+
+  loki:
+    image: grafana/loki:3.7.8
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./observability/loki/config.yaml:/etc/loki/config.yaml:ro
+      - lokidata:/loki
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    restart: unless-stopped
+    volumes:
+      - ./observability/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana:13.2.2
+    restart: unless-stopped
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./observability/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     networks:
       - backend
 
@@ -76,4 +135,8 @@ networks:
 volumes:
   pgdata:
   redisdata:
+  jaegerdata:
+  lokidata:
+  prometheusdata:
+  grafanadata:
   publicdata:

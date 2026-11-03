@@ -10,9 +10,9 @@ use entity::{
     release_track, song_artist, song_credit, song_language, song_link,
     song_localized_title, song_relation,
 };
-use infra_db::SeaOrmRepository;
+use infra_db::{DatabaseConnection, SeaOrmRepository};
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{DatabaseConnection, EntityTrait, IntoActiveModel, QueryOrder};
+use sea_orm::{EntityTrait, IntoActiveModel, QueryOrder};
 
 use super::{find_by_id, find_pending_correction, load_relation_summaries};
 use crate::features::song::model::{
