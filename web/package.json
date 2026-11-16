@@ -57,7 +57,7 @@
 		"@lingui/cli": "6.6.0",
 		"@lingui/format-po": "6.6.0",
 		"@lingui/vite-plugin": "6.6.0",
-		"@rolldown/plugin-babel": "0.2.3",
+		"@rolldown/plugin-babel": "0.3.0",
 		"@solidjs/testing-library": "^0.8.10",
 		"@storybook/addon-a11y": "10.6.1",
 		"@storybook/addon-docs": "10.6.1",
