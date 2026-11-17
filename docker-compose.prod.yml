@@ -1,21 +1,4 @@
 services:
-  db:
-    image: postgres:18-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: "${POSTGRES_USER:?POSTGRES_USER is required}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
-      POSTGRES_DB: "${POSTGRES_DB:?POSTGRES_DB is required}"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - pgdata:/var/lib/postgresql
-    networks:
-      - backend
-
   redis:
     image: valkey/valkey:9-alpine@sha256:b4ee67d73e00393e712accc72cfd7003b87d0fcd63f0eba798b23251bfc9c394
     restart: unless-stopped
@@ -36,16 +19,16 @@ services:
     stop_grace_period: 90s
     init: true
     depends_on:
-      db:
-        condition: service_healthy
       redis:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file: .env
     environment:
       MIDDLEWARE__SESSION_SECURE: "${SESSION_SECURE:-true}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}"
 
-      DATABASE_URL: "postgres://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
+      DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
       REDIS_URL: "redis://redis:6379"
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://jaeger:4318/v1/traces
       OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://loki:3100/otlp/v1/logs
@@ -133,7 +116,6 @@ networks:
   backend:
 
 volumes:
-  pgdata:
   redisdata:
   jaegerdata:
   lokidata:
