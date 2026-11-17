@@ -41,6 +41,7 @@ export default defineConfig({
 				plugins: [msw()],
 				test: {
 					name: "browser",
+					fileParallelism: false,
 					setupFiles: ["./src/test/vitest.setup.ts", "./src/test/msw.setup.ts"],
 					include: ["./src/**/*.browser.test.{ts,tsx}"],
 					browser,
@@ -64,6 +65,7 @@ export default defineConfig({
 				},
 				test: {
 					name: "storybook",
+					fileParallelism: false,
 					setupFiles: ["./src/test/vitest.setup.ts"],
 					browser: {
 						...browser,
