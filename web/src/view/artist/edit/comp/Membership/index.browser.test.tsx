@@ -110,7 +110,7 @@ async function addMembership(header: HTMLElement, artist: SimpleArtist) {
 	await userEvent.click(
 		await within(dialog).findByRole("button", { name: artist.name }),
 	)
-	await userEvent.click(within(dialog).getByPlaceholderText("Search..."))
+	within(dialog).getByPlaceholderText("Search...").focus()
 	await userEvent.keyboard("{Escape}")
 	await waitFor(() => expect(dialog).not.toBeInTheDocument())
 }
