@@ -19,7 +19,7 @@ export type ForgotPasswordFn = (
 export async function sendResetCode(args: {
 	email: string
 	forgotPassword: ForgotPasswordFn
-	startCooldown(seconds: number): void
+	startCooldown: (seconds: number) => void
 	uiStore: ResetPasswordUiStore
 	requestFailedMessage: string
 }) {

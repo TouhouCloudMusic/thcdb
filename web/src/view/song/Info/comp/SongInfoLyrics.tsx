@@ -64,7 +64,7 @@ export function SongInfoLyrics() {
 				value={selectedLangId().toString()}
 				onChange={(value) => {
 					if (value === undefined) return
-					setActiveLang(Number.parseInt(value, 10))
+					setActiveLang(Number(value))
 				}}
 				itemComponent={(option) => (
 					<Select.Item

@@ -16,7 +16,7 @@ import type { LanguageInput } from "shiki"
 import { createResource, createRoot } from "solid-js"
 
 type Markdown = {
-	render(text: string): Promise<DocumentFragment>
+	render: (text: string) => Promise<DocumentFragment>
 }
 
 // import Markdownit from "markdown-it"

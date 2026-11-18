@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
-import { EntityId_fromStr } from "~/domain/shared"
 import { findCreditRoleByIdOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
 
@@ -43,8 +43,8 @@ const styles = stylex.create({
 
 export const Route = createFileRoute("/credit-role/$id")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const id = EntityId_fromStr(params.id)
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: id } }) => {
 		const data = await QUERY_CLIENT.ensureQueryData(
 			findCreditRoleByIdOptions({ path: { id } }),
 		)
@@ -55,8 +55,7 @@ export const Route = createFileRoute("/credit-role/$id")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const id = () => EntityId_fromStr(params().id)
+	const id = Route.useRouteContext({ select: (context) => context.entityId })
 	const query = useQuery(() =>
 		findCreditRoleByIdOptions({ path: { id: id() } }),
 	)

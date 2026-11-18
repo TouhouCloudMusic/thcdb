@@ -175,14 +175,16 @@ function CommentRenderNode_flattenReplies(
 	const replies: CommentRenderReply[] = []
 	for (const reply of node.replies) {
 		if (!CommentRenderNode_shouldRender(reply)) continue
-		replies.push({
-			comment: reply.comment,
-			replyToName:
-				node.comment.in_reply_to_comment_id == null
-					? undefined
-					: node.comment.author.name,
-		})
-		replies.push(...CommentRenderNode_flattenReplies(reply))
+		replies.push(
+			{
+				comment: reply.comment,
+				replyToName:
+					node.comment.in_reply_to_comment_id == null
+						? undefined
+						: node.comment.author.name,
+			},
+			...CommentRenderNode_flattenReplies(reply),
+		)
 	}
 	return replies
 }

@@ -10,7 +10,7 @@ import { setDay, setMonth, setYear, storeToValue, valueToStore } from "./state"
 export interface DateWithPrecisionProps {
 	styles?: StyleXStyles
 	value?: Partial<TDateWithPrecision.In>
-	setValue(val?: TDateWithPrecision.In): void
+	setValue: (val?: TDateWithPrecision.In) => void
 }
 
 export function DateWithPrecision(props: DateWithPrecisionProps) {

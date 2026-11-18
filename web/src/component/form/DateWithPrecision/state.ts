@@ -13,9 +13,7 @@ function createNumericInputSchema(maxDigits: number) {
 		v.string(),
 		v.regex(/^\d*$/u),
 		v.transform((value) => value.slice(0, maxDigits)),
-		v.transform((value) =>
-			value === "" ? undefined : Number.parseInt(value, 10),
-		),
+		v.transform((value) => (value === "" ? undefined : Number(value))),
 	)
 }
 

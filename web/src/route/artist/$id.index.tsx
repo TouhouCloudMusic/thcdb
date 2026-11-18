@@ -9,12 +9,12 @@ import { createMemo, createSignal, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 
 import { RELEASE_TYPES } from "~/domain/release"
-import { EntityId_fromStr } from "~/domain/shared"
 import type { ArtistCreditScope, ArtistCreditSort } from "~/hey-api"
 import {
 	findManyCreditRolesSummaryOptions,
 	getArtistCreditsInfiniteOptions,
 } from "~/hey-api/@tanstack/solid-query.gen"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { createEntityVisit } from "~/state/visit"
 import { ArtistProfilePage } from "~/view/artist/profile"
@@ -33,9 +33,8 @@ const INIT_DISCOGRAPHY_KEYS = {
 
 export const Route = createFileRoute("/artist/$id/")({
 	component: RouteComponent,
-	loader: async ({ params: { id } }) => {
-		const parsedId = EntityId_fromStr(id)
-
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const [data] = await Promise.all([
 			QUERY_CLIENT.ensureQueryData(ArtistQueryOption.findById(parsedId)),
 			QUERY_CLIENT.ensureQueryData(
@@ -53,8 +52,9 @@ export const Route = createFileRoute("/artist/$id/")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const artistId = () => Number.parseInt(params().id, 10)
+	const artistId = Route.useRouteContext({
+		select: (context) => context.entityId,
+	})
 	const query = useQuery(() => ArtistQueryOption.findById(artistId()))
 	createEntityVisit(
 		"artist",

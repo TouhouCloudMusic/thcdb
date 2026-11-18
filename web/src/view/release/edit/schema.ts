@@ -77,14 +77,18 @@ const trackSchema = v.pipe(
 	})),
 )
 
+const releaseFields = NewRelease.pipe[0].entries
+const atLeastOneArtist = releaseFields.artists.pipe[1]
+const artistsSchema = v.pipe(
+	v.array(ArtistReference),
+	v.transform((artists) => artists.map((artist) => artist.id)),
+	atLeastOneArtist,
+)
+
 const release = v.pipe(
 	v.object({
-		...NewRelease.pipe[0].entries,
-		artists: v.pipe(
-			v.array(ArtistReference),
-			v.transform((artists) => artists.map((artist) => artist.id)),
-			NewRelease.pipe[0].entries.artists.pipe[1],
-		),
+		...releaseFields,
+		artists: artistsSchema,
 		events: v.pipe(
 			v.array(EventReference),
 			v.transform((events) => events.map((event) => event.id)),

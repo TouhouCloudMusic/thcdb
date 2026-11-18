@@ -18,6 +18,7 @@ import * as typography from "~/style/typography"
 import { SignInIdentifierField } from "./component/SignInIdentifierField"
 import { authStyles } from "./styles"
 import { setVerificationSession } from "./verify_email/session"
+
 const styles = stylex.create({
 	passwordField: { marginTop: px[16] },
 	passwordHeading: {

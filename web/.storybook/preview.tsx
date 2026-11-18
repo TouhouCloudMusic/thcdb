@@ -32,7 +32,7 @@ export default definePreview({
 		controls: {
 			disableSaveFromUI: true,
 			matchers: {
-				color: /(background|color)$/iu,
+				color: /(?:background|color)$/iu,
 				date: /Date$/iu,
 			},
 		},

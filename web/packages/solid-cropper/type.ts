@@ -68,10 +68,10 @@ export interface CropperElement extends HTMLElement {
 	slottable?: boolean
 	themeColor?: string
 
-	$getShadowRoot(): ShadowRoot
-	$addStyles(styles: string): CSSStyleSheet | HTMLStyleElement
-	$emit(type: string, detail?: unknown, options?: CustomEventInit): boolean
-	$nextTick(callback?: Function): Promise<void>
+	$getShadowRoot: () => ShadowRoot
+	$addStyles: (styles: string) => CSSStyleSheet | HTMLStyleElement
+	$emit: (type: string, detail?: unknown, options?: CustomEventInit) => boolean
+	$nextTick: (callback?: Function) => Promise<void>
 
 	readonly $name: string
 	readonly $version: string
@@ -102,28 +102,29 @@ export interface CropperSelection extends CropperElement, Selection {
 	precise: boolean
 
 	// Methods
-	$center(): CropperSelection
-	$move(x: number, y?: number): CropperSelection
-	$moveTo(x: number, y?: number): CropperSelection
-	$resize(
+	$center: () => CropperSelection
+	$move: (x: number, y?: number) => CropperSelection
+	$moveTo: (x: number, y?: number) => CropperSelection
+	$resize: (
 		action: ActionType,
 		offsetX?: number,
 		offsetY?: number,
 		aspectRatio?: number,
-	): CropperSelection
-	$zoom(scale: number, x?: number, y?: number): CropperSelection
-	$change(
+	) => CropperSelection
+	$zoom: (scale: number, x?: number, y?: number) => CropperSelection
+	// oxlint-disable-next-line eslint/max-params -- Cropper exposes $change with positional arguments.
+	$change: (
 		x: number,
 		y: number,
 		width?: number,
 		height?: number,
 		aspectRatio?: number,
-	): CropperSelection
-	$reset(): CropperSelection
-	$clear(): CropperSelection
-	$render(): CropperSelection
+	) => CropperSelection
+	$reset: () => CropperSelection
+	$clear: () => CropperSelection
+	$render: () => CropperSelection
 	// @ts-expect-error
-	$toCanvas(options?: CanvasOptions): Promise<HTMLCanvasElement>
+	$toCanvas: (options?: CanvasOptions) => Promise<HTMLCanvasElement>
 }
 
 // CropperGrid interface
@@ -166,8 +167,8 @@ export interface Cropper {
 	// getCropperCanvas(): CropperCanvas | null
 	// // @ts-expect-error
 	// getCropperImage(): CropperImage | null
-	getCropperSelection(): CropperSelection | null
-	getCropperSelections(): NodeListOf<CropperSelection> | null
+	getCropperSelection: () => CropperSelection | null
+	getCropperSelections: () => NodeListOf<CropperSelection> | null
 }
 
 // Constructor type

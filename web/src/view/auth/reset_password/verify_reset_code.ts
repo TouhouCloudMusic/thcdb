@@ -21,7 +21,7 @@ export async function verifyResetCode(args: {
 	email: string
 	code: string
 	verifyResetCode: VerifyResetCodeFn
-	onSuccess(session: ResetPasswordSession): Promise<void>
+	onSuccess: (session: ResetPasswordSession) => Promise<void>
 	uiStore: ResetPasswordUiStore
 	requestFailedMessage: string
 }) {

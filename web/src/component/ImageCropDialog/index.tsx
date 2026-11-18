@@ -620,7 +620,7 @@ function Content(props: ContentProps) {
 					}
 				>
 					<FileField.ItemList>
-						{(_) => (
+						{() => (
 							<div {...stylex.attrs(styles.grid)}>
 								<div {...stylex.attrs(styles.toolbar)}>
 									<FileField.Trigger

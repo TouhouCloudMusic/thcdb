@@ -5,7 +5,7 @@ import { Option as O } from "effect"
 import { createEffect, Show } from "solid-js"
 
 import { AuthGuard } from "~/component/route"
-import { EntityId_fromStr } from "~/domain/shared"
+import { loadEntityId } from "~/route/-entityId"
 import { languageListQueryOptions } from "~/state/language"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import {
@@ -18,12 +18,11 @@ import { EditReleasePage } from "~/view/release/edit"
 
 export const Route = createFileRoute("/release/$id_/edit")({
 	component: RouteComponent,
+	beforeLoad: loadEntityId,
 	validateSearch: pendingCorrectionEditSearchSchema,
 	loaderDeps: getEditSearchDeps,
-	loader: async ({ params: { id }, deps }) => {
+	loader: async ({ context: { entityId: parsedId }, deps }) => {
 		void QUERY_CLIENT.prefetchQuery(languageListQueryOptions())
-
-		const parsedId = EntityId_fromStr(id)
 
 		const data = await QUERY_CLIENT.ensureQueryData(
 			ReleaseQueryOption.findById(parsedId),
@@ -47,9 +46,7 @@ export const Route = createFileRoute("/release/$id_/edit")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const id = params().id
-	const parsedId = EntityId_fromStr(id)
+	const { entityId: parsedId } = Route.useRouteContext()()
 	const query = useQuery(() => ReleaseQueryOption.findById(parsedId))
 	const loaderData = Route.useLoaderData()
 	const editCorrectionId = () => loaderData().editCorrectionId

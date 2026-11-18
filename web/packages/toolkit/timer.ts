@@ -3,7 +3,7 @@ import type { VoidFn } from "./types"
 // oxlint-disable typescript-eslint/no-unsafe-type-assertion
 export type DebouncedFn<Args extends unknown[] = never[]> = {
 	(...args: Args): void
-	cancel(): void
+	cancel: () => void
 }
 export function debounce(
 	timeout: number,

@@ -5,7 +5,7 @@ import { Option as O } from "effect"
 import { createEffect, Show } from "solid-js"
 
 import { AuthGuard } from "~/component/route"
-import { EntityId_fromStr } from "~/domain/shared"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import {
 	ensurePendingCorrectionEditable,
@@ -17,11 +17,10 @@ import { EditTagPage } from "~/view/tag/edit"
 
 export const Route = createFileRoute("/tag/$id_/edit")({
 	component: RouteComponent,
+	beforeLoad: loadEntityId,
 	validateSearch: pendingCorrectionEditSearchSchema,
 	loaderDeps: getEditSearchDeps,
-	loader: async ({ params: { id }, deps }) => {
-		const parsedId = EntityId_fromStr(id)
-
+	loader: async ({ context: { entityId: parsedId }, deps }) => {
 		const data = await QUERY_CLIENT.ensureQueryData(
 			TagQueryOption.findById(parsedId),
 		)
@@ -44,9 +43,7 @@ export const Route = createFileRoute("/tag/$id_/edit")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const id = params().id
-	const parsedId = EntityId_fromStr(id)
+	const { entityId: parsedId } = Route.useRouteContext()()
 	const query = useQuery(() => TagQueryOption.findById(parsedId))
 	const loaderData = Route.useLoaderData()
 	const editCorrectionId = () => loaderData().editCorrectionId

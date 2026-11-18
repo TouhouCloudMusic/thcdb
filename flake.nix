@@ -3,8 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    fenix = {
-      url = "github:nix-community/fenix";
+    just-lsp = {
+      url = "github:terror/just-lsp/0.11.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
@@ -13,7 +13,6 @@
   outputs =
     inputs@{
       self,
-      fenix,
       nixpkgs,
       ...
     }:
@@ -25,13 +24,16 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [
-              fenix.overlays.default
-              inputs.llm-agents.overlays.shared-nixpkgs
-            ];
+            overlays = [ inputs.llm-agents.overlays.shared-nixpkgs ];
           };
           webPackage = builtins.fromJSON (builtins.readFile ./web/package.json);
           webPlaywrightVersion = webPackage.devDependencies.playwright;
+          npmArch =
+            {
+              x86_64-linux = "x64";
+              aarch64-linux = "arm64";
+            }
+            .${system};
 
           just = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
             pname = "just";
@@ -53,6 +55,50 @@
               install -Dm755 just "$out/bin/just"
               installManPage just.1
               installShellCompletion --cmd just completions/just.{bash,fish,zsh}
+              runHook postInstall
+            '';
+          });
+
+          pnpm = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
+            pname = "pnpm";
+            version = pkgs.lib.removePrefix "pnpm@" webPackage.packageManager;
+            src = pkgs.fetchurl {
+              url = "https://registry.npmjs.org/@pnpm/exe.linux-${npmArch}-musl/-/exe.linux-${npmArch}-musl-${finalAttrs.version}.tgz";
+              hash =
+                {
+                  x86_64-linux = "sha512-MnC5vpIXYubhDZCgCwlfJMg7Cg6HupN2IuouT9gD/tUmOfVdQYqeyYccWbthyo/Jeto8de1oQlxeRN1+1Hl2DQ==";
+                  aarch64-linux = "sha512-Ceit9zn4g5ZqCJtx1fV8eJE7p8aeXMrGZ+Dc01vRqZLIUNgNeI+Ur0ruyqxtsnJx6rGADyXzohumxPLHjaJ5AQ==";
+                }
+                .${system};
+            };
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+            installPhase = ''
+              runHook preInstall
+              install -Dm755 pnpm "$out/bin/pnpm"
+              makeWrapper "$out/bin/pnpm" "$out/bin/pnpx" --add-flags dlx
+              ln -s pnpm "$out/bin/pn"
+              ln -s pnpx "$out/bin/pnx"
+              runHook postInstall
+            '';
+          });
+
+          tsrs = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
+            pname = "tsrs";
+            version = webPackage.devDependencies.tsrs;
+            src = pkgs.fetchurl {
+              url = "https://registry.npmjs.org/@tsrs/linux-${npmArch}-musl/-/linux-${npmArch}-musl-${finalAttrs.version}.tgz";
+              hash =
+                {
+                  x86_64-linux = "sha512-zm89HYpXAv36XuXrEsfxAEmGTehY5K0L27+tFmJzxX2CqLwki0AX4FGA78Fy97x8Yk8kOR8FJO2xTvSW9vXBIg==";
+                  aarch64-linux = "sha512-ZTZxIv/W4qiqDBCXcDlr8ma76JCO0DQHbUukuhpSpKHz3E2m5FCwLcra/NTqAVniyLU6/RjIOCIcDRpVQvq6cQ==";
+                }
+                .${system};
+            };
+            installPhase = ''
+              runHook preInstall
+              mkdir -p "$out/libexec/tsrs"
+              install -m755 tsrs "$out/libexec/tsrs"
+              install -m644 lib*.d.ts "$out/libexec/tsrs"
               runHook postInstall
             '';
           });
@@ -81,29 +127,25 @@
         {
           default = pkgs.mkShell {
             buildInputs = with pkgs; [ openssl ];
+            TSRS_BINARY = "${tsrs}/libexec/tsrs/tsrs";
             packages = with pkgs; [
               actionlint
               dprint
               just
-              just-lsp
-              nodejs_22
-              pnpm_11
+              inputs.just-lsp.packages.${system}.default
+              nodejs_24
+              pnpm
               prek
               sea-orm-cli
+              taplo
               typescript
               ty
               uv
               python
               ruff
               playwright-driver.browsers
-              (pkgs.fenix.complete.withComponents [
-                "cargo"
-                "clippy"
-                "rust-src"
-                "rustc-codegen-cranelift-preview"
-                "rustfmt"
-              ])
-              rust-analyzer-nightly
+              rust-analyzer-unwrapped
+              rustup
               clang
               mold
               pkg-config

@@ -4,12 +4,12 @@ import { createFileRoute, notFound } from "@tanstack/solid-router"
 import { produce } from "immer"
 
 import { showErrorToast } from "~/component/toast"
-import { EntityId_fromStr } from "~/domain/shared"
 import {
 	entityCorrectionsOptions,
 	findSongByIdOptions,
 	setRatingMutation,
 } from "~/hey-api/@tanstack/solid-query.gen"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { useCurrentUser } from "~/state/user"
 import { createEntityVisit } from "~/state/visit"
@@ -18,9 +18,8 @@ import { SongInfoPage } from "~/view/song/Info"
 
 export const Route = createFileRoute("/song/$id")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const parsedId = EntityId_fromStr(params.id)
-
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const [data] = await Promise.all([
 			QUERY_CLIENT.ensureQueryData(
 				findSongByIdOptions({ path: { id: parsedId } }),
@@ -48,10 +47,11 @@ function RouteComponent() {
 	const { t } = useLingui()
 	const user = useCurrentUser()
 
-	const params = Route.useParams()
 	const loaderData = Route.useLoaderData()
 
-	const songId = () => EntityId_fromStr(params().id)
+	const songId = Route.useRouteContext({
+		select: (context) => context.entityId,
+	})
 
 	createEntityVisit("song", songId)
 

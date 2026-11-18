@@ -6,10 +6,10 @@ import { createStore, produce } from "solid-js/store"
 import { assertContext } from "~/utils/solid"
 
 export type ComboboxListContext = {
-	all(): HTMLElement[]
-	first(): HTMLElement | undefined
-	push(elm: HTMLElement): number
-	remove(idx: number): void
+	all: () => HTMLElement[]
+	first: () => HTMLElement | undefined
+	push: (elm: HTMLElement) => number
+	remove: (idx: number) => void
 }
 
 const ListContext = createContext<ComboboxListContext>()

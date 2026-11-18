@@ -14,12 +14,12 @@ import {
 	ARTIST_PROFILE_IMAGE_MIN_WIDTH,
 	AVATAR_MIN_FILE_SIZE,
 } from "~/constant/server"
-import { EntityId_fromStr } from "~/domain/shared"
 import {
 	pendingImageQueueCountQueryKey,
 	pendingImageQueueInfiniteQueryKey,
 	profileImageQueueInfiniteQueryKey,
 } from "~/hey-api/@tanstack/solid-query.gen"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import {
 	createEntityImageUploadStore,
@@ -28,9 +28,8 @@ import {
 
 export const Route = createFileRoute("/artist/$id_/image-upload")({
 	component: RouteComponent,
-	loader: async ({ params: { id } }) => {
-		const parsedId = EntityId_fromStr(id)
-
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const data = await QUERY_CLIENT.ensureQueryData(
 			ArtistQueryOption.findById(parsedId),
 		)
@@ -43,8 +42,7 @@ export const Route = createFileRoute("/artist/$id_/image-upload")({
 
 function RouteComponent() {
 	const { t } = useLingui()
-	const params = Route.useParams()
-	const artistId = EntityId_fromStr(params().id)
+	const { entityId: artistId } = Route.useRouteContext()()
 	const query = useQuery(() => ArtistQueryOption.findById(artistId))
 	const uploadMutation = ArtistMutation.getUploadProfileImageInstance()
 	const queryClient = useQueryClient()

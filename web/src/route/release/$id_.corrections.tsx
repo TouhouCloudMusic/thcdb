@@ -4,14 +4,14 @@ import { CorrectionQueryOption, ReleaseQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { Show } from "solid-js"
 
-import { EntityId_fromStr } from "~/domain/shared"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { EntityCorrectionListPage } from "~/view/correction/EntityCorrectionListPage"
 
 export const Route = createFileRoute("/release/$id_/corrections")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const parsedId = EntityId_fromStr(params.id)
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const data = await QUERY_CLIENT.ensureQueryData(
 			ReleaseQueryOption.findById(parsedId),
 		)
@@ -28,8 +28,7 @@ export const Route = createFileRoute("/release/$id_/corrections")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const releaseId = EntityId_fromStr(params().id)
+	const { entityId: releaseId } = Route.useRouteContext()()
 	const query = useQuery(() => ReleaseQueryOption.findById(releaseId))
 
 	return (

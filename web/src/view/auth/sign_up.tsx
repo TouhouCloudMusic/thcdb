@@ -18,6 +18,7 @@ import { PasswordField } from "./component/PasswordField"
 import { UsernameField } from "./component/UsernameField"
 import { authStyles } from "./styles"
 import { setVerificationSession } from "./verify_email/session"
+
 const styles = stylex.create({
 	email: { marginTop: px[16] },
 	password: { marginTop: px[16] },

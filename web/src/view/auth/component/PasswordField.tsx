@@ -119,10 +119,8 @@ const PASSWORD_ALLOWED_CHARS_REGEX = new RegExp(
 	"u",
 )
 const PASSWORD_ALLOWED_SYMBOLS = (() => {
-	const m = /^\^\[([^\]]+)\]/u.exec(USER_PASSWORD_REGEX_STR)
-	if (!m) return "`~!@#$%^&*()-_=+"
-
-	const charset = m[1]
+	const charset = /^\^\[(?<charset>[^\]]+)\]/u.exec(USER_PASSWORD_REGEX_STR)
+		?.groups?.["charset"]
 	if (!charset) return "`~!@#$%^&*()-_=+"
 
 	return charset

@@ -11,8 +11,9 @@ export const EntityId = v.pipe(
 	v.maxValue(i32_MAX),
 )
 
-export const EntityId_fromStr = (str: string) =>
-	v.parse(EntityId, Number.parseInt(str, 10))
+export const EntityId_fromStr = v.safeParser(
+	v.pipe(v.string(), v.transform(Number), EntityId),
+)
 
 export const EntityIdent = v.pipe(
 	v.string(),

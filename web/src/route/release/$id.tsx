@@ -4,12 +4,12 @@ import { createFileRoute, notFound } from "@tanstack/solid-router"
 import { produce } from "immer"
 
 import { showErrorToast } from "~/component/toast"
-import { EntityId_fromStr } from "~/domain/shared"
 import {
 	entityCorrectionsOptions,
 	findReleaseByIdOptions,
 	setRatingMutation,
 } from "~/hey-api/@tanstack/solid-query.gen"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { useCurrentUser } from "~/state/user"
 import { createEntityVisit } from "~/state/visit"
@@ -18,9 +18,8 @@ import { ReleaseInfoPage } from "~/view/release/Info"
 
 export const Route = createFileRoute("/release/$id")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const parsedId = EntityId_fromStr(params.id)
-
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const [data] = await Promise.all([
 			QUERY_CLIENT.ensureQueryData(
 				findReleaseByIdOptions({ path: { id: parsedId } }),
@@ -43,10 +42,11 @@ export const Route = createFileRoute("/release/$id")({
 function RouteComponent() {
 	const { t } = useLingui()
 	const user = useCurrentUser()
-	const params = Route.useParams()
 	const loaderData = Route.useLoaderData()
 
-	const releaseId = () => EntityId_fromStr(params().id)
+	const releaseId = Route.useRouteContext({
+		select: (context) => context.entityId,
+	})
 
 	const query = useQuery(() =>
 		findReleaseByIdOptions({ path: { id: releaseId() } }),

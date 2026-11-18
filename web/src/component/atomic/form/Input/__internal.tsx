@@ -37,8 +37,8 @@ interface ContextStore {
 
 type Context = {
 	required?: boolean
-	setInputId(str: string): void
-	setValid(bool: boolean): void
+	setInputId: (str: string) => void
+	setValid: (bool: boolean) => void
 } & ContextStore
 
 const Context = createContext<Context>()

@@ -1134,6 +1134,7 @@ function ImageQueueSubscribeButton(props: {
 				path: { id: entryId },
 				query: { subscribed: !props.isSubscribed },
 			})
+			// oxlint-disable-next-line promise/prefer-catch -- Only a rejected subscription request should show the failure toast.
 			.then(
 				userCtx.bindCurrentSession((response) => {
 					queryClient.setQueryData<DataImageQueueDetail>(

@@ -36,27 +36,27 @@ const SongRelation = v.pipe(
 	})),
 )
 
+const SelectedLanguage = v.message(
+	v.pipe(
+		v.undefinedable(LanguageReference),
+		v.guard((language) => language !== undefined),
+	),
+	"Language not selected",
+)
+
+const UniqueSongRelations = NewSong.entries.relations.pipe[1]
+const SongFields = v.object({
+	...NewSong.entries,
+	artists: v.array(ArtistReference),
+	languages: v.array(SelectedLanguage),
+	localized_titles: v.array(LocalizedName),
+	credits: v.array(SongCredit),
+	relations: v.pipe(v.array(SongRelation), UniqueSongRelations),
+})
+
 export const SongFormSchema = NewCorrection(
 	v.pipe(
-		v.object({
-			...NewSong.entries,
-			artists: v.array(ArtistReference),
-			languages: v.array(
-				v.message(
-					v.pipe(
-						v.undefinedable(LanguageReference),
-						v.guard((language) => language !== undefined),
-					),
-					"Language not selected",
-				),
-			),
-			localized_titles: v.array(LocalizedName),
-			credits: v.array(SongCredit),
-			relations: v.pipe(
-				v.array(SongRelation),
-				NewSong.entries.relations.pipe[1],
-			),
-		}),
+		SongFields,
 		v.transform(({ artists, languages, ...data }) => ({
 			...data,
 			artists: artists.map((artist) => artist.id),

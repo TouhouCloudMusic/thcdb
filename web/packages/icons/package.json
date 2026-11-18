@@ -6,7 +6,7 @@
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
-	"packageManager": "pnpm@11.1.2",
+	"packageManager": "pnpm@12.21.0",
 	"dependencies": {
 		"solid-js": "^1.9.12"
 	},

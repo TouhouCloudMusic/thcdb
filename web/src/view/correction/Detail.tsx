@@ -284,7 +284,7 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 	const entityRoute = () => ENTITY_ROUTE_MAP[props.correction.entity_type]
 	const entityLabel = () =>
 		(
-			({
+			{
 				Artist: t`Artist`,
 				Label: t`Label`,
 				Release: t`Release`,
@@ -293,7 +293,7 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 				Event: t`Event`,
 				SongLyrics: t`Song lyrics`,
 				CreditRole: t`Credit role`,
-			}) satisfies Record<EntityType, string>
+			} satisfies Record<EntityType, string>
 		)[props.correction.entity_type]
 	const entityTypeText = () => entityLabel().toLowerCase()
 
@@ -608,6 +608,7 @@ function CorrectionSubscribeButton(props: CorrectionSubscribeButtonProps) {
 				path: { id: correctionId },
 				query: { subscribed: !props.isSubscribed },
 			})
+			// oxlint-disable-next-line promise/prefer-catch -- Only a rejected subscription request should show the failure toast.
 			.then(
 				userCtx.bindCurrentSession((response) => {
 					queryClient.setQueryData<CorrectionDetail>(

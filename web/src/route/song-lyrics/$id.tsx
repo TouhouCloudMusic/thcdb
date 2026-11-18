@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/solid-query"
 import { Link, createFileRoute, notFound } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
-import { EntityId_fromStr } from "~/domain/shared"
 import { findSongLyricsByIdOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { link } from "~/style/link"
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
@@ -41,8 +41,8 @@ const styles = stylex.create({
 
 export const Route = createFileRoute("/song-lyrics/$id")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const id = EntityId_fromStr(params.id)
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: id } }) => {
 		const data = await QUERY_CLIENT.ensureQueryData(
 			findSongLyricsByIdOptions({ path: { id } }),
 		)
@@ -53,8 +53,7 @@ export const Route = createFileRoute("/song-lyrics/$id")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const id = () => EntityId_fromStr(params().id)
+	const id = Route.useRouteContext({ select: (context) => context.entityId })
 	const query = useQuery(() =>
 		findSongLyricsByIdOptions({ path: { id: id() } }),
 	)

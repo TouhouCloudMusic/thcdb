@@ -4,14 +4,14 @@ import { CorrectionQueryOption, LabelQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { Show } from "solid-js"
 
-import { EntityId_fromStr } from "~/domain/shared"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { LabelInfoPage } from "~/view/label/Info"
 
 export const Route = createFileRoute("/label/$id")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const parsedId = EntityId_fromStr(params.id)
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const [data] = await Promise.all([
 			QUERY_CLIENT.ensureQueryData(LabelQueryOption.findById(parsedId)),
 			QUERY_CLIENT.ensureQueryData(
@@ -26,8 +26,7 @@ export const Route = createFileRoute("/label/$id")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const labelId = EntityId_fromStr(params().id)
+	const { entityId: labelId } = Route.useRouteContext()()
 	const query = useQuery(() => LabelQueryOption.findById(labelId))
 	const correctionHistoryQuery = useQuery(() =>
 		CorrectionQueryOption.history("label", labelId),

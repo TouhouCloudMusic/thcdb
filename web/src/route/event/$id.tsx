@@ -4,14 +4,14 @@ import { CorrectionQueryOption, EventQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { Show } from "solid-js"
 
-import { EntityId_fromStr } from "~/domain/shared"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { EventInfoPage } from "~/view/event/Info"
 
 export const Route = createFileRoute("/event/$id")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const parsedId = EntityId_fromStr(params.id)
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const [data] = await Promise.all([
 			QUERY_CLIENT.ensureQueryData(EventQueryOption.findById(parsedId)),
 			QUERY_CLIENT.ensureQueryData(
@@ -25,8 +25,7 @@ export const Route = createFileRoute("/event/$id")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const eventId = EntityId_fromStr(params().id)
+	const { entityId: eventId } = Route.useRouteContext()()
 	const query = useQuery(() => EventQueryOption.findById(eventId))
 	const correctionHistoryQuery = useQuery(() =>
 		CorrectionQueryOption.history("event", eventId),

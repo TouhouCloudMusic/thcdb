@@ -15,8 +15,8 @@ export type ResetPasswordByKeyFn = (
 export async function resetPasswordByKey(args: {
 	password: string
 	resetPasswordByKey: ResetPasswordByKeyFn
-	onInvalidResetKey?(): void | Promise<void>
-	onSuccess(): Promise<void>
+	onInvalidResetKey?: () => void | Promise<void>
+	onSuccess: () => Promise<void>
 	uiStore: ResetPasswordUiStore
 	requestFailedMessage: string
 	invalidOrExpiredResetKeyMessage: string

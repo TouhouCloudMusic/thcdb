@@ -1,6 +1,7 @@
 import * as stylex from "@stylexjs/stylex"
 
 import { colors, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
 export const authStyles = stylex.create({
 	header: { marginBottom: px[24] },
 	title: {

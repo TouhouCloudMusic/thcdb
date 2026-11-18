@@ -11,7 +11,7 @@ COPY patches ./patches
 
 ENV CI=true
 
-RUN npm install --global --no-audit --no-fund pnpm@11.1.2 \
+RUN npm install --global --no-audit --no-fund pnpm@12.21.0 \
   && pnpm fetch
 
 COPY . ./

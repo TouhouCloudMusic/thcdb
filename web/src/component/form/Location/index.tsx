@@ -18,7 +18,7 @@ export type LocationProps = {
 	styles?: StyleXStyles
 	label: string
 	value?: LocationType | null
-	setValue(val?: LocationType): void
+	setValue: (val?: LocationType) => void
 }
 export function Location(props: LocationProps) {
 	const { t } = useLingui()

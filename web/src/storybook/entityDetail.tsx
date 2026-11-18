@@ -65,11 +65,11 @@ function EntityDetailStoryState(props: ParentProps) {
 		if (path === "/api/profile") {
 			return Response.json({ status: "Ok", data: STORY_PROFILE })
 		}
-		if (/^\/api\/(artist|release|song)\/\d+\/tags$/u.test(path)) {
+		if (/^\/api\/(?:artist|release|song)\/\d+\/tags$/u.test(path)) {
 			return Response.json(STORY_TAGS)
 		}
 		if (
-			/^\/api\/(artist|release|song|event|label)\/\d+\/comments$/u.test(path)
+			/^\/api\/(?:artist|release|song|event|label)\/\d+\/comments$/u.test(path)
 		) {
 			return Response.json(STORY_COMMENTS)
 		}

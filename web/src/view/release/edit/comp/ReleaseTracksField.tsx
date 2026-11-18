@@ -206,7 +206,10 @@ export function ReleaseTracksField(props: {
 							{currentDiscName()} {isDefaultName() && "(default)"}
 						</div>
 						<Show when={discCount() > 0}>
-							{(_) => {
+							{(
+								// oxlint-disable-next-line eslint/no-unused-vars -- Solid Show recognizes render props by function arity.
+								_,
+							) => {
 								const name = useField(
 									() => props.of,
 									() => ({

@@ -258,10 +258,12 @@ function getInitialEntryId(status: StoryStatus) {
 }
 
 function parseEntryId(pathname: string, fallback: number) {
-	const match = /^\/image-queue\/(\d+)$/u.exec(pathname)
-	if (!match) return fallback
+	const entryId = /^\/image-queue\/(?<entryId>\d+)$/u.exec(pathname)?.groups?.[
+		"entryId"
+	]
+	if (entryId === undefined) return fallback
 
-	const value = Number(match[1])
+	const value = Number(entryId)
 	return Number.isFinite(value) ? value : fallback
 }
 

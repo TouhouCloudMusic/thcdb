@@ -4,6 +4,7 @@ import type { ComponentProps, JSX } from "solid-js"
 import { splitProps } from "solid-js"
 
 import { Intersperse } from "../../data/Intersperse"
+
 const styles = stylex.create({ list: { display: "flex", flexWrap: "wrap" } })
 type ListProps<T> = {
 	items: T[] | null | undefined

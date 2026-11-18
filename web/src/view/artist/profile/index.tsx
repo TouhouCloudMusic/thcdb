@@ -118,8 +118,8 @@ export type ArtistContext = {
 	appearances: InfiniteQuery<Discography>
 	discographies: {
 		data: Record<ReleaseType, Discography[]>
-		hasNext(type: ReleaseType): boolean
-		next(type: ReleaseType): Promise<void>
+		hasNext: (type: ReleaseType) => boolean
+		next: (type: ReleaseType) => Promise<void>
 		isLoading: boolean
 	}
 	credits: ArtistCreditsModel
@@ -133,8 +133,8 @@ export type ArtistProfilePageProps = {
 	appearances: InfiniteQuery<Discography>
 	discographies: {
 		data: Record<ReleaseType, Discography[]>
-		hasNext(type: ReleaseType): boolean
-		next(type: ReleaseType): Promise<void>
+		hasNext: (type: ReleaseType) => boolean
+		next: (type: ReleaseType) => Promise<void>
 		isLoading: boolean
 	}
 	credits: ArtistCreditsModel

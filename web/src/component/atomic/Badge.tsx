@@ -6,6 +6,7 @@ import { Show, splitProps } from "solid-js"
 import type { AppColor } from "~/component"
 import { palette } from "~/style/color/palette.stylex"
 import { radius, lineHeights, fontSizes, px } from "~/style/tokens.stylex"
+
 const styles = stylex.create({
 	base: {
 		display: "inline-flex",

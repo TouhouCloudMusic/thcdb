@@ -1,8 +1,10 @@
 [toolchain]
 channel = "nightly"
+profile = "minimal"
 components = [
     "rustfmt",
     "clippy",
+    "rust-src",
     "rustc-codegen-cranelift-preview",
 ]
 targets = [

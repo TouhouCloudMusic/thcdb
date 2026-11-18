@@ -26,6 +26,7 @@ export function useArrayField<
 		},
 		fieldAt: (index: Accessor<number>) =>
 			useField<Schema, ItemPath>(form, () => ({
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Appending an index to the schema's array path yields an item path.
 				path: [...array.path, index()] as [...typeof array.path, number]
 					& ValidPath<InferInput<Schema>, ItemPath>,
 			})),

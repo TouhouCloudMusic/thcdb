@@ -14,12 +14,12 @@ import {
 	RELEASE_COVER_IMAGE_MIN_HEIGHT,
 	RELEASE_COVER_IMAGE_MIN_WIDTH,
 } from "~/constant/server"
-import { EntityId_fromStr } from "~/domain/shared"
 import {
 	pendingImageQueueCountQueryKey,
 	pendingImageQueueInfiniteQueryKey,
 	profileImageQueueInfiniteQueryKey,
 } from "~/hey-api/@tanstack/solid-query.gen"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import {
 	createEntityImageUploadStore,
@@ -28,9 +28,8 @@ import {
 
 export const Route = createFileRoute("/release/$id_/image-upload")({
 	component: RouteComponent,
-	loader: async ({ params: { id } }) => {
-		const parsedId = EntityId_fromStr(id)
-
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const data = await QUERY_CLIENT.ensureQueryData(
 			ReleaseQueryOption.findById(parsedId),
 		)
@@ -43,8 +42,7 @@ export const Route = createFileRoute("/release/$id_/image-upload")({
 
 function RouteComponent() {
 	const { t } = useLingui()
-	const params = Route.useParams()
-	const releaseId = EntityId_fromStr(params().id)
+	const { entityId: releaseId } = Route.useRouteContext()()
 	const query = useQuery(() => ReleaseQueryOption.findById(releaseId))
 	const uploadMutation = ReleaseMutation.getUploadCoverArtInstance()
 	const queryClient = useQueryClient()

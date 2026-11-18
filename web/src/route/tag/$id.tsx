@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound } from "@tanstack/solid-router"
 import { batch, createSignal, Show } from "solid-js"
 
-import { EntityId_fromStr } from "~/domain/shared"
 import type { EntityUserCollectionSort } from "~/hey-api"
 import {
 	entityUserCollectionsOptions,
@@ -10,6 +9,7 @@ import {
 	findTagByIdOptions,
 	findTagEntitiesOptions,
 } from "~/hey-api/@tanstack/solid-query.gen"
+import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { TagInfoPage } from "~/view/tag/Info"
 import type { TagEntitySort } from "~/view/tag/Info"
@@ -18,8 +18,8 @@ const TAG_ENTITY_PAGE_LIMIT = 5
 
 export const Route = createFileRoute("/tag/$id")({
 	component: RouteComponent,
-	loader: async ({ params }) => {
-		const parsedId = EntityId_fromStr(params.id)
+	beforeLoad: loadEntityId,
+	loader: async ({ context: { entityId: parsedId } }) => {
 		const [tag] = await Promise.all([
 			QUERY_CLIENT.ensureQueryData(
 				findTagByIdOptions({ path: { id: parsedId } }),
@@ -38,8 +38,7 @@ export const Route = createFileRoute("/tag/$id")({
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
-	const tagId = () => EntityId_fromStr(params().id)
+	const tagId = Route.useRouteContext({ select: (context) => context.entityId })
 
 	const query = useQuery(() => findTagByIdOptions({ path: { id: tagId() } }))
 	const correctionHistoryQuery = useQuery(() =>

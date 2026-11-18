@@ -1,12 +1,11 @@
-import { i18n as baseI18n } from "@lingui/core"
+import { i18n } from "@lingui/core"
 
+export { i18n } from "@lingui/core"
 export { Trans, useLingui } from "@lingui/solid"
 
 const catalogs = import.meta.glob<{ messages: Record<string, string> }>(
 	"../../locales/*.po",
 )
-
-export const i18n = baseI18n
 
 export async function loadLocale(locale: string) {
 	const key = `../../locales/${locale}.po`
@@ -18,5 +17,5 @@ export async function loadLocale(locale: string) {
 
 	const { messages } = await catalogLoader()
 
-	baseI18n.loadAndActivate({ locale, messages })
+	i18n.loadAndActivate({ locale, messages })
 }

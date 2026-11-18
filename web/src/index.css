@@ -5,18 +5,8 @@ html {
 	color: #1b1e25;
 	background-color: white;
 	font-family:
-		Geist,
-		-apple-system,
-		"Noto Sans SC",
-		BlinkMacSystemFont,
-		Roboto,
-		Oxygen,
-		Ubuntu,
-		Cantarell,
-		"Segoe UI",
-		system-ui,
-		"Open Sans",
-		"Helvetica Neue",
+		Geist, -apple-system, "Noto Sans SC", BlinkMacSystemFont, Roboto, Oxygen,
+		Ubuntu, Cantarell, "Segoe UI", system-ui, "Open Sans", "Helvetica Neue",
 		sans-serif;
 }
 

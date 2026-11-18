@@ -56,10 +56,9 @@ export type Expand<O> = O extends never
 								if: IsRecord<T[K]>
 								then: Expand<T[K]>
 								else: NonNullable<T[K]> extends unknown[]
-									?
-											| Expand<NonNullable<T[K]>[number]>[]
-											| If<IsUndefinable<Required<T>[K]>, undefined, never>
-											| If<IsNullable<T[K]>, null, never>
+									? | Expand<NonNullable<T[K]>[number]>[]
+										| If<IsUndefinable<Required<T>[K]>, undefined, never>
+										| If<IsNullable<T[K]>, null, never>
 									: T[K]
 							}>
 				}
@@ -83,14 +82,13 @@ export type RevExactRecursive<T> = {
 		NonNullable<T[K]> extends never
 			? never
 			: NonNullable<T[K]> extends unknown[]
-				?
-						| RevExactRecursive<NonNullable<T[K]>[number]>[]
-						| If<IsNullable<T[K]>, null, never>
-						| If<
-								And<IsUndefinable<T[K]>, Not<IsOptionalKey<T, K>>>,
-								undefined,
-								never
-						  >
+				? | RevExactRecursive<NonNullable<T[K]>[number]>[]
+					| If<IsNullable<T[K]>, null, never>
+					| If<
+							And<IsUndefinable<T[K]>, Not<IsOptionalKey<T, K>>>,
+							undefined,
+							never
+					  >
 				: T[K]
 	> extends infer result
 		? result | If<IsOptionalKey<T, K> | IsUndefinable<T[K]>, undefined, never>
