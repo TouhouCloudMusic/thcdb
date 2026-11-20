@@ -33,7 +33,7 @@
 		"arktype": "^2.2.0",
 		"cropperjs": "^2.1.1",
 		"dayjs": "^1.11.20",
-		"dompurify": "3.4.15",
+		"dompurify": "3.4.17",
 		"effect": "^3.21.2",
 		"fast-check": "^4.6.0",
 		"immer": "^11.1.17",
