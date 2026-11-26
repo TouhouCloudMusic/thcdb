@@ -564,7 +564,9 @@ function EntityTagRow(props: EntityTagRowProps) {
 							onClick={() => void props.onRemoveVote(props.tag.id)}
 							title={t`Remove`}
 						>
-							<Cross1Icon {...stylex.attrs(styles.plusIcon)} />
+							<Button.Icon>
+								<Cross1Icon {...stylex.attrs(styles.plusIcon)} />
+							</Button.Icon>
 						</Button>
 					</Show>
 				</div>

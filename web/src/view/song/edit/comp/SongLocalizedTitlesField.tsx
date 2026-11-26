@@ -112,7 +112,9 @@ function LocalizedTitleRow(props: { of: SongFormStore; index: number }) {
 					size="sm"
 					styles={rowStyles.removeButton}
 				>
-					<Cross1Icon />
+					<Button.Icon>
+						<Cross1Icon />
+					</Button.Icon>
 				</Button>
 			</div>
 			<ul>

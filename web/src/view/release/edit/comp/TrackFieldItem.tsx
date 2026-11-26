@@ -134,7 +134,9 @@ export function TrackItem(props: {
 					tone="gray"
 					size="sm"
 				>
-					<Cross1Icon />
+					<Button.Icon>
+						<Cross1Icon />
+					</Button.Icon>
 				</Button>
 			</div>
 			<InputField.Root>
@@ -224,7 +226,9 @@ function TrackArtistsField(props: {
 								tone="gray"
 								size="sm"
 							>
-								<Cross1Icon />
+								<Button.Icon>
+									<Cross1Icon />
+								</Button.Icon>
 							</Button>
 						</li>
 					)}

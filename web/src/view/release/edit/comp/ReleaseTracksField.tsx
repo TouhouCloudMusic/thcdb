@@ -237,7 +237,9 @@ export function ReleaseTracksField(props: {
 							onClick={onAddDisc}
 							title={t`Add disc`}
 						>
-							<PlusIcon {...stylex.attrs(styles.icon)} />
+							<Button.Icon>
+								<PlusIcon {...stylex.attrs(styles.icon)} />
+							</Button.Icon>
 						</Button>
 					</div>
 					<Button

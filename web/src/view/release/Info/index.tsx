@@ -3,7 +3,7 @@ import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
 import { Suspense } from "solid-js"
 
-import { buttonStyles } from "~/component/atomic/button"
+import { buttonSizeStyles, buttonStyles } from "~/component/atomic/button"
 import type { CorrectionHistoryItem, Release } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
 import { link } from "~/style/link"
@@ -123,7 +123,7 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 												buttonStyles.base,
 												buttonStyles.outline,
 												buttonStyles.gray,
-												buttonStyles.sm,
+												buttonSizeStyles.sm,
 											).class
 										}
 									>

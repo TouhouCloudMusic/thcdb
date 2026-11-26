@@ -200,7 +200,12 @@ const styles = stylex.create({
 		placeItems: "center",
 		padding: px[4],
 	},
-	bellIcon: { margin: "auto", width: px[16], height: px[16] },
+	bellIcon: {
+		margin: "auto",
+		width: px[16],
+		height: px[16],
+		color: colors.icon,
+	},
 	unread: {
 		position: "absolute",
 		right: "-.375rem",
@@ -487,7 +492,6 @@ function UnauthenticatedButtons() {
 						buttonStyles.base,
 						buttonStyles.ghost,
 						buttonStyles.gray,
-						buttonStyles.ghostGray,
 						styles.authButton,
 						styles.signIn,
 					).class

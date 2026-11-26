@@ -8,7 +8,7 @@ import { pipe } from "@thc/toolkit"
 import { ArrExt } from "@thc/toolkit/data"
 import { untrack } from "solid-js"
 
-import { buttonStyles } from "~/component/atomic/button"
+import { buttonSizeStyles, buttonStyles } from "~/component/atomic/button"
 import { link } from "~/style/link"
 import { px } from "~/style/tokens.stylex"
 
@@ -41,7 +41,7 @@ const linkStyles = [
 	buttonStyles.base,
 	buttonStyles.outline,
 	buttonStyles.gray,
-	buttonStyles.sm,
+	buttonSizeStyles.sm,
 ]
 
 type EntityCorrectionMetadataSectionProps = {

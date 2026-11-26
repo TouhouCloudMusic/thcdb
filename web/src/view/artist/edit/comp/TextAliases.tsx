@@ -91,7 +91,9 @@ function TextAliasRow(props: { index: number }) {
 				size="sm"
 				styles={rowStyles.removeButton}
 			>
-				<Cross1Icon />
+				<Button.Icon>
+					<Cross1Icon />
+				</Button.Icon>
 			</Button>
 		</li>
 	)

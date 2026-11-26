@@ -104,7 +104,9 @@ function MembershipRow(props: { membershipIndex: number }) {
 					size="sm"
 					styles={itemStyles.removeButton}
 				>
-					<Cross1Icon />
+					<Button.Icon>
+						<Cross1Icon />
+					</Button.Icon>
 				</Button>
 			</div>
 			<MembershipRoleField membershipIndex={props.membershipIndex} />

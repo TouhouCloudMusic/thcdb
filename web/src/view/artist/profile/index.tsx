@@ -10,7 +10,7 @@ import type {
 } from "@thc/api"
 import { createContext, Suspense } from "solid-js"
 
-import { buttonStyles } from "~/component/atomic/button"
+import { buttonSizeStyles, buttonStyles } from "~/component/atomic/button"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
@@ -203,7 +203,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 												buttonStyles.base,
 												buttonStyles.outline,
 												buttonStyles.gray,
-												buttonStyles.sm,
+												buttonSizeStyles.sm,
 												styles.action,
 											).class
 										}

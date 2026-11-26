@@ -186,7 +186,9 @@ function TenureRow(props: {
 				size="sm"
 				styles={entryStyles.removeButton}
 			>
-				<Cross1Icon />
+				<Button.Icon>
+					<Cross1Icon />
+				</Button.Icon>
 			</Button>
 			<ul>
 				<For each={props.errors}>

@@ -35,7 +35,9 @@ export function AddToUserCollectionButton(props: Props) {
 				size="sm"
 				styles={props.styles}
 			>
-				<PlusIcon {...stylex.attrs(styles.plusIcon)} />
+				<Button.Icon>
+					<PlusIcon {...stylex.attrs(styles.plusIcon)} />
+				</Button.Icon>
 				{t`Add to Collection`}
 			</Button>
 

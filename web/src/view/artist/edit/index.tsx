@@ -97,7 +97,9 @@ function PageHeader(props: { type: Props["type"] }) {
 					size="sm"
 					styles={styles.backButton}
 				>
-					<ArrowLeftIcon {...stylex.attrs(styles.backIcon)} />
+					<Button.Icon>
+						<ArrowLeftIcon {...stylex.attrs(styles.backIcon)} />
+					</Button.Icon>
 				</Button>
 				<h1 {...stylex.attrs(typography.heading.md)}>
 					<Show

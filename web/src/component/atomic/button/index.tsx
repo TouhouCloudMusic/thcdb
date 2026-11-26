@@ -3,17 +3,95 @@ import { Button as KobalteButton } from "@kobalte/core/button"
 import type { ButtonRootProps } from "@kobalte/core/button"
 import type { StyleXStyles } from "@stylexjs/stylex"
 import * as stylex from "@stylexjs/stylex"
+import type { ParentProps } from "solid-js"
 import { createMemo, mergeProps, splitProps } from "solid-js"
 
-import { buttonVars } from "~/component/atomic/button/button.stylex"
+import {
+	buttonLayoutVars,
+	buttonVars,
+} from "~/component/atomic/button/button.stylex"
 import { palette } from "~/style/color/palette.stylex"
 import {
 	radius,
 	colors,
+	controlHeights,
 	lineHeights,
 	fontSizes,
 	px,
 } from "~/style/tokens.stylex"
+
+const hasContainerHeight = "@container (block-size > 0px)"
+const supportsFontMetricUnits = "@supports (padding-inline: calc(1lh - 1cap))"
+const borderedWidth = "1px"
+const defaultGap = px[8]
+const fallbackLineHeight = "1.5em"
+const fallbackCapHeight = "1em"
+const fallbackCapInset = `(${fallbackLineHeight} - ${fallbackCapHeight}) / 2`
+const capInset = "(1lh - 1cap) / 2"
+const innerHeight = `(${buttonLayoutVars.targetHeight} - 2 * ${buttonLayoutVars.borderWidth})`
+const fallbackBlockPadding = `max(0px, (${innerHeight} - ${fallbackLineHeight}) / 2)`
+const blockPadding = `max(0px, (${innerHeight} - 1lh) / 2)`
+const blockSpacing = {
+	default: fallbackBlockPadding,
+	[supportsFontMetricUnits]: blockPadding,
+} as const
+const inlineSpacing = {
+	default: `calc(${fallbackBlockPadding} + ${fallbackCapInset})`,
+	[supportsFontMetricUnits]: `calc(${blockPadding} + ${capInset})`,
+} as const
+const sizeStyles = stylex.create({
+	inferredHeight: {
+		[buttonLayoutVars.targetHeight]: {
+			default: buttonLayoutVars.presetHeight,
+			[hasContainerHeight]: "100cqb",
+		},
+	},
+	targetHeight: (height: string) => ({
+		[buttonLayoutVars.targetHeight]: height,
+	}),
+	spacing: {
+		minHeight: buttonLayoutVars.targetHeight,
+		paddingBlock: blockSpacing,
+		paddingInline: inlineSpacing,
+		gap: inlineSpacing,
+	},
+	containerSpacing: {
+		minHeight: {
+			default: null,
+			[hasContainerHeight]: buttonLayoutVars.targetHeight,
+		},
+		paddingBlock: { default: null, [hasContainerHeight]: blockSpacing },
+		paddingInline: { default: null, [hasContainerHeight]: inlineSpacing },
+		gap: { default: defaultGap, [hasContainerHeight]: inlineSpacing },
+	},
+	xs: {
+		[buttonLayoutVars.presetHeight]: controlHeights.xs,
+		fontSize: fontSizes.xs,
+		lineHeight: lineHeights.xs,
+	},
+	sm: {
+		[buttonLayoutVars.presetHeight]: controlHeights.sm,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+	},
+	md: {
+		[buttonLayoutVars.presetHeight]: controlHeights.md,
+		fontSize: fontSizes.base,
+		lineHeight: lineHeights.base,
+	},
+	lg: {
+		[buttonLayoutVars.presetHeight]: controlHeights.lg,
+		fontSize: fontSizes.xl,
+		lineHeight: lineHeights.xl,
+	},
+})
+
+export const buttonSizeStyles = {
+	xs: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.xs],
+	sm: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.sm],
+	md: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.md],
+	lg: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.lg],
+} as const
 
 export const buttonStyles = stylex.create({
 	gray: {
@@ -22,21 +100,13 @@ export const buttonStyles = stylex.create({
 		[buttonVars.solidBackgroundHover]: palette.slate[900],
 		[buttonVars.solidBackgroundActive]: palette.slate[800],
 		[buttonVars.focusRing]: palette.slate[500],
-		[buttonVars.softBackgroundHover]: palette.slate[200],
-		[buttonVars.softBackgroundActive]: palette.slate[300],
-		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[100]} 90%, transparent)`,
-		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[100]} 80%, transparent)`,
-		[buttonVars.softText]: palette.slate[700],
 		[buttonVars.ghostText]: palette.slate[800],
-		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
-		[buttonVars.surfaceBackground]: palette.slate[100],
-		[buttonVars.surfaceBackgroundHover]: palette.slate[200],
-		[buttonVars.surfaceBackgroundActive]: palette.slate[300],
+		[buttonVars.tint]: palette.slate[100],
+		[buttonVars.tintHover]: palette.slate[200],
+		[buttonVars.tintActive]: palette.slate[300],
+		[buttonVars.tintText]: palette.slate[700],
 		[buttonVars.border]: palette.slate[400],
-		[buttonVars.surfaceText]: palette.slate[700],
-		[buttonVars.outlineBackgroundActive]: palette.slate[100],
 		[buttonVars.borderHover]: palette.slate[500],
-		[buttonVars.outlineText]: palette.slate[600],
 	},
 	slate: {
 		[buttonVars.solidFocusRing]: palette.slate[500],
@@ -44,21 +114,13 @@ export const buttonStyles = stylex.create({
 		[buttonVars.solidBackgroundHover]: palette.slate[600],
 		[buttonVars.solidBackgroundActive]: palette.slate[500],
 		[buttonVars.focusRing]: palette.slate[500],
-		[buttonVars.softBackgroundHover]: palette.slate[900],
-		[buttonVars.softBackgroundActive]: palette.slate[900],
-		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[900]} 90%, transparent)`,
-		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[900]} 80%, transparent)`,
-		[buttonVars.softText]: palette.slate[700],
 		[buttonVars.ghostText]: palette.slate[700],
-		[buttonVars.ghostBackgroundDisabled]: palette.slate[200],
-		[buttonVars.surfaceBackground]: palette.slate[100],
-		[buttonVars.surfaceBackgroundHover]: palette.slate[200],
-		[buttonVars.surfaceBackgroundActive]: palette.slate[300],
+		[buttonVars.tint]: palette.slate[100],
+		[buttonVars.tintHover]: palette.slate[200],
+		[buttonVars.tintActive]: palette.slate[300],
+		[buttonVars.tintText]: palette.slate[700],
 		[buttonVars.border]: palette.slate[400],
-		[buttonVars.surfaceText]: palette.slate[700],
-		[buttonVars.outlineBackgroundActive]: palette.slate[100],
 		[buttonVars.borderHover]: palette.slate[500],
-		[buttonVars.outlineText]: palette.slate[600],
 	},
 	blue: {
 		[buttonVars.solidFocusRing]: palette.blue[500],
@@ -66,21 +128,13 @@ export const buttonStyles = stylex.create({
 		[buttonVars.solidBackgroundHover]: palette.blue[600],
 		[buttonVars.solidBackgroundActive]: palette.blue[500],
 		[buttonVars.focusRing]: palette.blue[500],
-		[buttonVars.softBackgroundHover]: palette.blue[800],
-		[buttonVars.softBackgroundActive]: palette.blue[900],
-		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[100]} 90%, transparent)`,
-		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[100]} 80%, transparent)`,
-		[buttonVars.softText]: palette.blue[700],
 		[buttonVars.ghostText]: palette.blue[700],
-		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
-		[buttonVars.surfaceBackground]: palette.blue[100],
-		[buttonVars.surfaceBackgroundHover]: palette.blue[200],
-		[buttonVars.surfaceBackgroundActive]: palette.blue[300],
+		[buttonVars.tint]: palette.blue[100],
+		[buttonVars.tintHover]: palette.blue[200],
+		[buttonVars.tintActive]: palette.blue[300],
+		[buttonVars.tintText]: palette.blue[700],
 		[buttonVars.border]: palette.blue[300],
-		[buttonVars.surfaceText]: palette.blue[700],
-		[buttonVars.outlineBackgroundActive]: palette.blue[100],
 		[buttonVars.borderHover]: palette.blue[400],
-		[buttonVars.outlineText]: palette.blue[600],
 	},
 	reimu: {
 		[buttonVars.solidFocusRing]: palette.reimu[600],
@@ -88,21 +142,13 @@ export const buttonStyles = stylex.create({
 		[buttonVars.solidBackgroundHover]: palette.reimu[650],
 		[buttonVars.solidBackgroundActive]: palette.reimu[500],
 		[buttonVars.focusRing]: palette.reimu[600],
-		[buttonVars.softBackgroundHover]: palette.reimu[600],
-		[buttonVars.softBackgroundActive]: palette.reimu[600],
-		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.slate[100]} 90%, transparent)`,
-		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.slate[100]} 80%, transparent)`,
-		[buttonVars.softText]: palette.reimu[600],
 		[buttonVars.ghostText]: palette.reimu[700],
-		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
-		[buttonVars.surfaceBackground]: palette.reimu[100],
-		[buttonVars.surfaceBackgroundHover]: palette.reimu[200],
-		[buttonVars.surfaceBackgroundActive]: palette.reimu[300],
+		[buttonVars.tint]: palette.reimu[100],
+		[buttonVars.tintHover]: palette.reimu[200],
+		[buttonVars.tintActive]: palette.reimu[300],
+		[buttonVars.tintText]: palette.reimu[700],
 		[buttonVars.border]: palette.reimu[300],
-		[buttonVars.surfaceText]: palette.reimu[700],
-		[buttonVars.outlineBackgroundActive]: palette.reimu[100],
 		[buttonVars.borderHover]: palette.reimu[400],
-		[buttonVars.outlineText]: palette.reimu[600],
 	},
 	marisa: {
 		[buttonVars.solidFocusRing]: palette.marisa[500],
@@ -110,21 +156,13 @@ export const buttonStyles = stylex.create({
 		[buttonVars.solidBackgroundHover]: palette.marisa[600],
 		[buttonVars.solidBackgroundActive]: palette.marisa[500],
 		[buttonVars.focusRing]: palette.marisa[500],
-		[buttonVars.softBackgroundHover]: palette.marisa[800],
-		[buttonVars.softBackgroundActive]: palette.marisa[900],
-		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.marisa[900]} 90%, transparent)`,
-		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.marisa[900]} 80%, transparent)`,
-		[buttonVars.softText]: palette.marisa[700],
 		[buttonVars.ghostText]: palette.marisa[700],
-		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
-		[buttonVars.surfaceBackground]: palette.marisa[100],
-		[buttonVars.surfaceBackgroundHover]: palette.marisa[200],
-		[buttonVars.surfaceBackgroundActive]: palette.marisa[300],
+		[buttonVars.tint]: palette.marisa[100],
+		[buttonVars.tintHover]: palette.marisa[200],
+		[buttonVars.tintActive]: palette.marisa[300],
+		[buttonVars.tintText]: palette.marisa[800],
 		[buttonVars.border]: palette.marisa[300],
-		[buttonVars.surfaceText]: palette.marisa[800],
-		[buttonVars.outlineBackgroundActive]: palette.marisa[200],
 		[buttonVars.borderHover]: palette.marisa[400],
-		[buttonVars.outlineText]: palette.marisa[600],
 	},
 	green: {
 		[buttonVars.solidFocusRing]: palette.green[500],
@@ -132,34 +170,30 @@ export const buttonStyles = stylex.create({
 		[buttonVars.solidBackgroundHover]: palette.green[600],
 		[buttonVars.solidBackgroundActive]: palette.green[500],
 		[buttonVars.focusRing]: palette.green[500],
-		[buttonVars.softBackgroundHover]: palette.green[900],
-		[buttonVars.softBackgroundActive]: palette.green[900],
-		[buttonVars.softBackgroundDarkHover]: `color-mix(in oklab, ${palette.green[900]} 90%, transparent)`,
-		[buttonVars.softBackgroundDarkActive]: `color-mix(in oklab, ${palette.green[900]} 80%, transparent)`,
-		[buttonVars.softText]: palette.green[700],
 		[buttonVars.ghostText]: palette.green[700],
-		[buttonVars.ghostBackgroundDisabled]: palette.slate[300],
-		[buttonVars.surfaceBackground]: palette.green[100],
-		[buttonVars.surfaceBackgroundHover]: palette.green[200],
-		[buttonVars.surfaceBackgroundActive]: palette.green[300],
+		[buttonVars.tint]: palette.green[100],
+		[buttonVars.tintHover]: palette.green[200],
+		[buttonVars.tintActive]: palette.green[300],
+		[buttonVars.tintText]: palette.green[800],
 		[buttonVars.border]: palette.green[300],
-		[buttonVars.surfaceText]: palette.green[800],
-		[buttonVars.outlineBackgroundActive]: palette.green[100],
 		[buttonVars.borderHover]: palette.green[400],
-		[buttonVars.outlineText]: palette.green[600],
 	},
 	base: {
+		[buttonLayoutVars.borderWidth]: "0px",
 		display: "inline-flex",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: px[8],
+		gap: defaultGap,
 		borderRadius: radius.sm,
 		fontWeight: 500,
 		userSelect: "none",
 		whiteSpace: "nowrap",
 		outlineWidth: 1,
 		outlineStyle: "solid",
-		outlineColor: "transparent",
+		outlineColor: {
+			default: "transparent",
+			":focus-visible": buttonVars.focusRing,
+		},
 		outlineOffset: -1,
 		pointerEvents: {
 			default: null,
@@ -169,30 +203,6 @@ export const buttonStyles = stylex.create({
 			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
 		transitionDuration: "100ms",
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-	},
-	xs: {
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
-		paddingBlock: px[4],
-		paddingInline: px[6],
-	},
-	sm: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		paddingBlock: px[4],
-		paddingInline: px[10],
-	},
-	md: {
-		fontSize: fontSizes.base,
-		lineHeight: lineHeights.base,
-		paddingBlock: px[6],
-		paddingInline: px[14],
-	},
-	lg: {
-		fontSize: fontSizes.xl,
-		lineHeight: lineHeights.xl,
-		paddingBlock: px[16],
-		paddingInline: px[32],
 	},
 	solid: {
 		boxShadow: {
@@ -219,143 +229,64 @@ export const buttonStyles = stylex.create({
 			':is(:where([data-mode="dark"] *):disabled)': `color-mix(in oklab, ${palette.slate[800]} 60%, transparent)`,
 		},
 	},
-	softGray: {
-		boxShadow: "none",
-		backgroundColor: {
-			default: colors.backgroundPrimary,
-			":hover": {
-				default: null,
-				"@media (hover: hover)": {
-					default: buttonVars.softBackgroundHover,
-					':is(:where([data-mode="dark"] *))':
-						buttonVars.softBackgroundDarkHover,
-				},
-			},
-			":active": buttonVars.softBackgroundActive,
-			":disabled": palette.slate[400],
-			':is(:where([data-mode="dark"] *):active)':
-				buttonVars.softBackgroundDarkActive,
-		},
-		color: buttonVars.softText,
-	},
-	softDarkHover: {
-		backgroundColor: {
-			default: palette.slate[100],
-			":hover": {
-				default: null,
-				"@media (hover: hover)": {
-					default: buttonVars.softBackgroundHover,
-					':is(:where([data-mode="dark"] *))':
-						buttonVars.softBackgroundDarkHover,
-				},
-			},
-			":active": buttonVars.softBackgroundActive,
-			':is(:where([data-mode="dark"] *):active)':
-				buttonVars.softBackgroundDarkActive,
-		},
-	},
 	soft: {
-		boxShadow: `0 1px 2px 0 ${palette.slate[100]}`,
-		outlineColor: {
-			default: "transparent",
-			":focus-visible": buttonVars.focusRing,
-		},
 		backgroundColor: {
-			default: palette.slate[100],
-			":hover": {
+			default: buttonVars.tint,
+			"@media (hover: hover)": {
 				default: null,
-				"@media (hover: hover)": buttonVars.softBackgroundHover,
+				":is(:not(:disabled):not(:active):hover)": buttonVars.tintHover,
 			},
-			":active": buttonVars.softBackgroundActive,
+			":active": buttonVars.tintActive,
+			":disabled": colors.backgroundSecondary,
 		},
 		color: {
-			default: buttonVars.softText,
-			":hover": {
-				default: null,
-				"@media (hover: hover)": palette.white,
-			},
-			":active": palette.white,
+			default: buttonVars.tintText,
+			":disabled": palette.slate[600],
 		},
 	},
-	ghostGray: {
+	ghost: {
 		backgroundColor: {
-			default: colors.backgroundPrimary,
-			":hover": {
+			default: "transparent",
+			"@media (hover: hover)": {
 				default: null,
-				"@media (hover: hover)": palette.slate[100],
+				":is(:not(:disabled):not(:active):hover)": palette.slate[100],
 			},
 			":active": palette.slate[200],
-			":disabled": {
-				default: colors.backgroundSecondary,
-				":hover": {
-					default: null,
-					"@media (hover: hover)": colors.backgroundSecondary,
-				},
-				":active": colors.backgroundSecondary,
-			},
+			":disabled": colors.backgroundSecondary,
 		},
 		color: {
 			default: buttonVars.ghostText,
 			":disabled": palette.slate[600],
 		},
-		boxShadow: {
-			default: "none",
-			":disabled": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-		},
-	},
-	ghost: {
-		backgroundColor: {
-			default: colors.backgroundPrimary,
-			":hover": {
-				default: null,
-				"@media (hover: hover)": palette.slate[100],
-			},
-			":active": palette.slate[200],
-			":disabled": {
-				default: buttonVars.ghostBackgroundDisabled,
-				":hover": {
-					default: null,
-					"@media (hover: hover)": colors.backgroundSecondary,
-				},
-				":active": colors.backgroundSecondary,
-			},
-		},
-		outlineColor: {
-			default: "transparent",
-			":focus-visible": buttonVars.focusRing,
-		},
-		color: buttonVars.ghostText,
 	},
 	surface: {
-		borderWidth: 1,
+		[buttonLayoutVars.borderWidth]: borderedWidth,
+		borderWidth: buttonLayoutVars.borderWidth,
 		borderStyle: "solid",
 		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-		outlineColor: {
-			default: "transparent",
-			":focus-visible": buttonVars.focusRing,
-		},
 		backgroundColor: {
-			default: buttonVars.surfaceBackground,
-			":hover": {
+			default: buttonVars.tint,
+			"@media (hover: hover)": {
 				default: null,
-				"@media (hover: hover)": buttonVars.surfaceBackgroundHover,
+				":is(:not(:disabled):not(:active):hover)": buttonVars.tintHover,
 			},
-			":active": buttonVars.surfaceBackgroundActive,
+			":active": buttonVars.tintActive,
 		},
 		borderColor: buttonVars.border,
-		color: buttonVars.surfaceText,
+		color: buttonVars.tintText,
 	},
 	outline: {
-		borderWidth: 1,
+		[buttonLayoutVars.borderWidth]: borderedWidth,
+		borderWidth: buttonLayoutVars.borderWidth,
 		borderStyle: "solid",
 		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-		outlineColor: {
-			default: "transparent",
-			":focus-visible": buttonVars.focusRing,
-		},
 		backgroundColor: {
 			default: palette.white,
-			":active": buttonVars.outlineBackgroundActive,
+			"@media (hover: hover)": {
+				default: null,
+				":is(:not(:disabled):not(:active):hover)": buttonVars.tint,
+			},
+			":active": buttonVars.tintHover,
 			":disabled": palette.slate[100],
 		},
 		borderColor: {
@@ -367,34 +298,47 @@ export const buttonStyles = stylex.create({
 			":disabled": palette.slate[200],
 		},
 		color: {
-			default: buttonVars.outlineText,
+			default: buttonVars.tintText,
 			":disabled": palette.slate[400],
 		},
 	},
-	outlineMarisa: {
-		backgroundColor: {
-			default: palette.white,
-			":hover": {
-				default: null,
-				"@media (hover: hover)": palette.marisa[100],
-			},
-			":active": buttonVars.outlineBackgroundActive,
-			":disabled": palette.slate[100],
+})
+
+const iconSlotSize = {
+	default: fallbackLineHeight,
+	[supportsFontMetricUnits]: "1lh",
+} as const
+const iconStyles = stylex.create({
+	slot: {
+		display: "grid",
+		flex: "none",
+		gridTemplate: "100% / 100%",
+		placeItems: "center",
+		inlineSize: iconSlotSize,
+		blockSize: iconSlotSize,
+		marginInline: {
+			default: `calc(-1 * (${fallbackCapInset}))`,
+			[supportsFontMetricUnits]: `calc(-1 * (${capInset}))`,
 		},
 	},
 })
+
+function Icon(props: ParentProps) {
+	return <span {...stylex.attrs(iconStyles.slot)}>{props.children}</span>
+}
 
 export type ButtonProps = PolymorphicProps<
 	"button",
 	ButtonRootProps<"button"> & {
 		appearance?: "solid" | "soft" | "ghost" | "surface" | "outline"
 		tone?: "gray" | "slate" | "blue" | "reimu" | "marisa" | "green"
-		size?: "xs" | "sm" | "md" | "lg"
+		size?: keyof typeof buttonSizeStyles
+		targetHeight?: string
 		styles?: StyleXStyles
 	}
 >
 
-export function Button(props: ButtonProps) {
+function Root(props: ButtonProps) {
 	const merged = mergeProps(
 		{ appearance: "soft", tone: "gray" } satisfies ButtonProps,
 		props,
@@ -403,31 +347,26 @@ export function Button(props: ButtonProps) {
 		"appearance",
 		"tone",
 		"size",
+		"targetHeight",
 		"styles",
 	])
-	const attrs = createMemo(() =>
-		stylex.attrs(
+	const attrs = createMemo(() => {
+		const size = local.size
+		const targetHeight = local.targetHeight
+		return stylex.attrs(
 			buttonStyles.base,
 			buttonStyles[local.appearance],
 			buttonStyles[local.tone],
-			local.appearance === "soft"
-				&& local.tone === "gray"
-				&& buttonStyles.softGray,
-			local.appearance === "soft"
-				&& (local.tone === "slate"
-					|| local.tone === "marisa"
-					|| local.tone === "green")
-				&& buttonStyles.softDarkHover,
-			local.appearance === "ghost"
-				&& local.tone === "gray"
-				&& buttonStyles.ghostGray,
-			local.appearance === "outline"
-				&& local.tone === "marisa"
-				&& buttonStyles.outlineMarisa,
-			local.size && buttonStyles[local.size],
+			size && sizeStyles[size],
+			size !== undefined || targetHeight !== undefined
+				? sizeStyles.spacing
+				: sizeStyles.containerSpacing,
+			targetHeight === undefined
+				? sizeStyles.inferredHeight
+				: sizeStyles.targetHeight(targetHeight),
 			local.styles,
-		),
-	)
+		)
+	})
 
 	return (
 		<KobalteButton
@@ -438,3 +377,5 @@ export function Button(props: ButtonProps) {
 		/>
 	)
 }
+
+export const Button = /*#__PURE__*/ Object.assign(Root, { Icon })

@@ -73,7 +73,9 @@ function AlternativeNameRow(props: { index: number }) {
 				tone="gray"
 				size="sm"
 			>
-				<Cross1Icon />
+				<Button.Icon>
+					<Cross1Icon />
+				</Button.Icon>
 			</Button>
 		</li>
 	)

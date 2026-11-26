@@ -8,7 +8,11 @@ import type { JSX } from "solid-js"
 
 import { inputStyles } from "~/component/atomic/Input"
 import { Avatar } from "~/component/atomic/avatar"
-import { Button, buttonStyles } from "~/component/atomic/button"
+import {
+	Button,
+	buttonSizeStyles,
+	buttonStyles,
+} from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { showErrorToast, showSuccessToast } from "~/component/toast"
@@ -542,8 +546,7 @@ function CorrectionActions(props: CorrectionActionsProps) {
 										buttonStyles.base,
 										buttonStyles.soft,
 										buttonStyles.gray,
-										buttonStyles.softGray,
-										buttonStyles.sm,
+										buttonSizeStyles.sm,
 									).class
 								}
 							>

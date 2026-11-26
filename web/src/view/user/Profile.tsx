@@ -9,7 +9,11 @@ import { Badge } from "~/component/atomic/Badge"
 import { inputStyles } from "~/component/atomic/Input"
 import { Tab } from "~/component/atomic/Tab"
 import { Avatar } from "~/component/atomic/avatar"
-import { Button, buttonStyles } from "~/component/atomic/button"
+import {
+	Button,
+	buttonSizeStyles,
+	buttonStyles,
+} from "~/component/atomic/button"
 import type { ToolbarSelectOption } from "~/component/atomic/form/ToolbarSelect"
 import {
 	toolbarStyles,
@@ -800,7 +804,7 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 								buttonStyles.base,
 								buttonStyles.outline,
 								buttonStyles.gray,
-								buttonStyles.md,
+								buttonSizeStyles.md,
 								profileStyles.action,
 							).class
 						}
