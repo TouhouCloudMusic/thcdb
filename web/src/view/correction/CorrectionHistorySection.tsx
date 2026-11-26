@@ -5,7 +5,7 @@ import { Link } from "@tanstack/solid-router"
 import type { CorrectionHistoryItem } from "@thc/api"
 import { For, Suspense } from "solid-js"
 
-import { buttonStyles } from "~/component/atomic/button"
+import { buttonSizeStyles, buttonStyles } from "~/component/atomic/button"
 import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
 import {
@@ -140,7 +140,7 @@ function CorrectionHistoryItemEntry(props: CorrectionHistoryItemProps) {
 							buttonStyles.base,
 							buttonStyles.outline,
 							buttonStyles.gray,
-							buttonStyles.sm,
+							buttonSizeStyles.sm,
 							styles.viewDiff,
 						).class
 					}

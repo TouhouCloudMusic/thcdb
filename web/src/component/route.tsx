@@ -113,7 +113,6 @@ function AuthRequired() {
 								buttonStyles.base,
 								buttonStyles.soft,
 								buttonStyles.slate,
-								buttonStyles.softDarkHover,
 							).class
 						}
 					>

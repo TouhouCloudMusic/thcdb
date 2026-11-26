@@ -8,7 +8,11 @@ import { createSignal, Show } from "solid-js"
 import type { ParentProps } from "solid-js"
 import * as v from "valibot"
 
-import { Button, buttonStyles } from "~/component/atomic/button"
+import {
+	Button,
+	buttonSizeStyles,
+	buttonStyles,
+} from "~/component/atomic/button"
 import { pendingCorrectionOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import type { PendingCorrectionData } from "~/hey-api/types.gen"
 import { palette } from "~/style/color/palette.stylex"
@@ -381,7 +385,7 @@ export function PendingCorrectionNoticePanel(
 								buttonStyles.base,
 								buttonStyles.solid,
 								buttonStyles.gray,
-								buttonStyles.sm,
+								buttonSizeStyles.sm,
 							).class
 						}
 					>

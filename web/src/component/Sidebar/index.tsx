@@ -45,6 +45,5 @@ export const sidebarLink = stylex.attrs(
 	buttonStyles.base,
 	buttonStyles.ghost,
 	buttonStyles.gray,
-	buttonStyles.ghostGray,
 	sidebar.item,
 ).class

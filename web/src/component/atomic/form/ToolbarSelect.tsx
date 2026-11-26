@@ -2,7 +2,7 @@ import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 
 import { palette } from "~/style/color/palette.stylex"
-import { colors, fontSizes, px } from "~/style/tokens.stylex"
+import { colors, controlHeights, fontSizes, px } from "~/style/tokens.stylex"
 
 import { Select } from "./select"
 
@@ -14,7 +14,7 @@ export type ToolbarSelectOption<T extends string> = {
 
 export const toolbarStyles = stylex.create({
 	control: {
-		height: px[36],
+		height: controlHeights.md,
 		borderColor: {
 			default: palette.slate[400],
 			":hover": { default: null, "@media (hover: hover)": palette.slate[500] },

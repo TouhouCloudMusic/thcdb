@@ -73,7 +73,9 @@ function ExternalLinkRow(props: { field: ArrayField<string>; index: number }) {
 				size="sm"
 				styles={rowStyles.remove}
 			>
-				<Cross1Icon />
+				<Button.Icon>
+					<Cross1Icon />
+				</Button.Icon>
 			</Button>
 		</InputField.Root>
 	)

@@ -131,7 +131,9 @@ function TagGroups(props: {
 								tone="gray"
 								size="xs"
 							>
-								<PlusIcon {...stylex.attrs(styles.icon)} />
+								<Button.Icon>
+									<PlusIcon {...stylex.attrs(styles.icon)} />
+								</Button.Icon>
 							</Button>
 						</ul>
 						<Show when={index() < props.data.length - 1}>

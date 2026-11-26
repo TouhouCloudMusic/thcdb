@@ -1,7 +1,7 @@
 import * as stylex from "@stylexjs/stylex"
 
 import { palette } from "~/style/color/palette.stylex"
-import { radius, colors, px } from "~/style/tokens.stylex"
+import { radius, colors, controlHeights, px } from "~/style/tokens.stylex"
 
 // TODO: border color
 export const inputStyles = stylex.create({
@@ -28,5 +28,5 @@ export const inputStyles = stylex.create({
 		transitionDuration: "100ms",
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
-	input: { paddingLeft: px[8], height: px[32] },
+	input: { paddingLeft: px[8], height: controlHeights.sm },
 })

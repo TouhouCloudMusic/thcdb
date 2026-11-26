@@ -215,7 +215,9 @@ function CollectionField(props: CollectionFieldProps) {
 					styles={styles.createCollection}
 					onClick={props.onCreateCollection}
 				>
-					<PlusIcon {...stylex.attrs(styles.plusIcon)} />
+					<Button.Icon>
+						<PlusIcon {...stylex.attrs(styles.plusIcon)} />
+					</Button.Icon>
 					<div>{t`New collection`}</div>
 				</Button>
 			</div>

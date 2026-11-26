@@ -68,6 +68,13 @@ export const px = stylex.defineConsts({
 	1536: "96rem",
 } as const)
 
+export const controlHeights = stylex.defineConsts({
+	xs: px[28],
+	sm: px[32],
+	md: px[36],
+	lg: px[48],
+})
+
 export const radius = stylex.defineConsts({
 	xs: "0.125rem",
 	sm: "0.25rem",

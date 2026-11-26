@@ -63,7 +63,9 @@ export function ResponseTraceId(props: ResponseTraceIdProps) {
 					aria-label={t`Copy trace ID`}
 					onClick={() => void copyTraceId()}
 				>
-					<CopyIcon aria-hidden="true" />
+					<Button.Icon>
+						<CopyIcon aria-hidden="true" />
+					</Button.Icon>
 				</Button>
 			</div>
 			<output>

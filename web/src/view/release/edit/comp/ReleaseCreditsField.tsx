@@ -181,7 +181,9 @@ function CreditRow(props: {
 					size="sm"
 					styles={rowStyles.removeButton}
 				>
-					<Cross1Icon />
+					<Button.Icon>
+						<Cross1Icon />
+					</Button.Icon>
 				</Button>
 			</div>
 			<div {...stylex.attrs(rowStyles.tracks)}>
