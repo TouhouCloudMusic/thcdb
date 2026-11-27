@@ -45,7 +45,7 @@ services:
       - backend
 
   jaeger-init:
-    image: alpine:3.24.3
+    image: alpine:3.24.4
     user: "0:0"
     command:
       - /bin/sh
@@ -71,7 +71,7 @@ services:
       - backend
 
   loki:
-    image: grafana/loki:3.7.8
+    image: grafana/loki:3.7.10
     restart: unless-stopped
     command: ["-config.file=/etc/loki/config.yaml"]
     volumes:
