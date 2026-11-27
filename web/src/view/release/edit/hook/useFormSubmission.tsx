@@ -1,6 +1,7 @@
-import type { NewCorrectionNewRelease, Release } from "@thc/api"
+import type { NewCorrectionNewRelease } from "@thc/api"
 import { ReleaseMutation } from "@thc/query"
 
+import type { Release } from "~/hey-api"
 import { createEntityFormSubmit } from "~/view/correction/pendingCorrection"
 
 type Props =

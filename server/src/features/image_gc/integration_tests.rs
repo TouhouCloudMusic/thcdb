@@ -123,10 +123,13 @@ async fn insert_rejected_queue(
     conn: &DatabaseConnection,
     image_id: i32,
     user_id: i32,
+    artist_id: i32,
 ) -> Result<image_queue::Model> {
     let queue = image_queue::Entity::insert(image_queue::ActiveModel {
         id: NotSet,
         image_id: Set(Some(image_id)),
+        artist_id: Set(Some(artist_id)),
+        release_id: Set(None),
         status: Set(ImageQueueStatus::Rejected),
         handled_at: Set(Some(Utc::now().fixed_offset())),
         handled_by: Set(Some(user_id)),
@@ -134,6 +137,7 @@ async fn insert_rejected_queue(
         reverted_by: Set(None),
         created_at: NotSet,
         created_by: Set(user_id),
+        description: NotSet,
     })
     .exec_with_returning(conn)
     .await?;
@@ -149,7 +153,11 @@ async fn rejected_queue_keeps_image_referenced() -> Result<()> {
     let image =
         insert_image(&conn, uploader.id, "rejected-queue-image").await?;
 
-    insert_rejected_queue(&conn, image.id, uploader.id).await?;
+    let artist =
+        MockArtist::named(format!("rejected queue artist {}", uploader.id))
+            .insert(&conn)
+            .await?;
+    insert_rejected_queue(&conn, image.id, uploader.id, artist.id).await?;
     let image = image::Entity::find_by_id(image.id)
         .one(&conn)
         .await?
@@ -166,11 +174,12 @@ async fn retention_starts_only_after_last_reference_is_removed() -> Result<()> {
         .await?;
     let image =
         insert_image(&conn, uploader.id, "queue-retention-image").await?;
-    let queue = insert_rejected_queue(&conn, image.id, uploader.id).await?;
     let artist =
         MockArtist::named(format!("retained image artist {}", uploader.id))
             .insert(&conn)
             .await?;
+    let queue =
+        insert_rejected_queue(&conn, image.id, uploader.id, artist.id).await?;
     artist_image::Entity::insert(artist_image::ActiveModel {
         artist_id: Set(artist.id),
         image_id: Set(image.id),
@@ -220,13 +229,14 @@ async fn concurrent_reference_removals_start_retention() -> Result<()> {
         .await?;
     let image =
         insert_image(&conn, uploader.id, "concurrent-retention-image").await?;
-    let queue = insert_rejected_queue(&conn, image.id, uploader.id).await?;
     let artist = MockArtist::named(format!(
         "concurrent retention artist {}",
         uploader.id
     ))
     .insert(&conn)
     .await?;
+    let queue =
+        insert_rejected_queue(&conn, image.id, uploader.id, artist.id).await?;
     artist_image::Entity::insert(artist_image::ActiveModel {
         artist_id: Set(artist.id),
         image_id: Set(image.id),

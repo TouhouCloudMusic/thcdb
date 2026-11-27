@@ -164,7 +164,10 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 					<div {...stylex.attrs(styles.content)}>
 						<div {...stylex.attrs(styles.overview)}>
 							<div {...stylex.attrs(styles.portrait)}>
-								<Image.Root>
+								<Image.Root
+									url={props.artist.profile_image_url}
+									size={9}
+								>
 									<Image.Fallback>
 										{(state) =>
 											state == Image.State.Error ? (
@@ -174,11 +177,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 											)
 										}
 									</Image.Fallback>
-									<Image.Thumbnail
-										url={props.artist.profile_image_url}
-										size={9}
-										styles={[styles.image]}
-									/>
+									<Image.Img styles={[styles.image]} />
 								</Image.Root>
 							</div>
 							<div {...stylex.attrs(styles.details)}>

@@ -9,13 +9,13 @@ use constants::{
 };
 use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
+use image_queue_core::QueueTarget;
 use infra_db::SeaOrmRepository;
 use infra_error::EntityNotFound;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use user_core::UserSummary;
 
-use super::model::{ReleaseCoverArtInput, ReleaseImageQueue};
-use super::repo;
+use super::model::ReleaseCoverArtInput;
 use crate::features::image_metadata::CurrentImageMetadata;
 use crate::features::image_queue::repo::{
     self as image_queue_repo, NewImageQueue,
@@ -97,6 +97,7 @@ impl Service {
             bytes,
             user,
             release_id,
+            description,
         } = dto;
 
         if !release_repo::exists(&self.repo.conn, release_id).await? {
@@ -122,16 +123,14 @@ impl Service {
             )
             .await?;
 
-        let new_image_queue = NewImageQueue::new(&user, &created_image);
+        let new_image_queue = NewImageQueue::new(
+            &user,
+            &created_image,
+            QueueTarget::Release(release_id),
+            description,
+        );
         let image_queue_entry =
             image_queue_repo::create(&tx_repo, new_image_queue).await?;
-
-        let release_image_queue_entry = ReleaseImageQueue {
-            release_id,
-            queue_id: image_queue_entry.id,
-            r#type: entity::sea_orm_active_enums::ReleaseImageType::Cover,
-        };
-        repo::create(&tx_repo, release_image_queue_entry).await?;
 
         drop(image_service);
 
@@ -153,6 +152,7 @@ impl Service {
             .filter(release_image::Column::ReleaseId.eq(release_id))
             .filter(release_image::Column::Type.eq(ReleaseImageType::Cover))
             .order_by_desc(image_entity::Column::UploadedAt)
+            .order_by_desc(image_entity::Column::Id)
             .one(&self.repo.conn)
             .await
             .db_context("find current release cover art")?;

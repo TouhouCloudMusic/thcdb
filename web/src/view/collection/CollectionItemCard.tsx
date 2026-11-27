@@ -284,17 +284,16 @@ function ArtistCard(props: { id: number; summary: ArtistSummary }) {
 			}
 		>
 			<div {...stylex.attrs(styles.artistImage)}>
-				<Image.Root>
-					<Show when={props.summary.profile_image_url}>
-						{(url) => (
-							<Image.Thumbnail
-								url={url()}
-								size={7}
-								styles={styles.img}
-							/>
-						)}
-					</Show>
-				</Image.Root>
+				<Show when={props.summary.profile_image_url}>
+					{(url) => (
+						<Image.Root
+							url={url()}
+							size={7}
+						>
+							<Image.Img styles={styles.img} />
+						</Image.Root>
+					)}
+				</Show>
 			</div>
 			<div {...stylex.attrs(styles.entitySummary)}>
 				<span {...stylex.attrs(styles.entityName)}>{props.summary.name}</span>
@@ -324,17 +323,16 @@ function ReleaseCard(props: { id: number; summary: ReleaseSummary }) {
 			}
 		>
 			<div {...stylex.attrs(styles.coverImage)}>
-				<Image.Root>
-					<Show when={props.summary.cover_art_url}>
-						{(url) => (
-							<Image.Thumbnail
-								url={url()}
-								size={7}
-								styles={styles.img}
-							/>
-						)}
-					</Show>
-				</Image.Root>
+				<Show when={props.summary.cover_art_url}>
+					{(url) => (
+						<Image.Root
+							url={url()}
+							size={7}
+						>
+							<Image.Img styles={styles.img} />
+						</Image.Root>
+					)}
+				</Show>
 			</div>
 			<div {...stylex.attrs(styles.entitySummary)}>
 				<span {...stylex.attrs(styles.entityName)}>{props.summary.title}</span>
@@ -373,17 +371,16 @@ function SongCard(props: { id: number; summary: SongSummary }) {
 			}
 		>
 			<div {...stylex.attrs(styles.coverImage)}>
-				<Image.Root>
-					<Show when={props.summary.cover_art_url}>
-						{(url) => (
-							<Image.Thumbnail
-								url={url()}
-								size={7}
-								styles={styles.img}
-							/>
-						)}
-					</Show>
-				</Image.Root>
+				<Show when={props.summary.cover_art_url}>
+					{(url) => (
+						<Image.Root
+							url={url()}
+							size={7}
+						>
+							<Image.Img styles={styles.img} />
+						</Image.Root>
+					)}
+				</Show>
 			</div>
 			<div {...stylex.attrs(styles.entitySummary)}>
 				<span {...stylex.attrs(styles.entityName)}>{props.summary.title}</span>

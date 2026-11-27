@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound } from "@tanstack/solid-router"
-import { CorrectionQueryOption, ReleaseQueryOption } from "@thc/query"
-import { Option as O } from "effect"
+import { CorrectionQueryOption } from "@thc/query"
 import { Show } from "solid-js"
 
+import { findReleaseByIdOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { EntityCorrectionListPage } from "~/view/correction/EntityCorrectionListPage"
@@ -12,10 +12,10 @@ export const Route = createFileRoute("/release/$id_/corrections")({
 	component: RouteComponent,
 	beforeLoad: loadEntityId,
 	loader: async ({ context: { entityId: parsedId } }) => {
-		const data = await QUERY_CLIENT.ensureQueryData(
-			ReleaseQueryOption.findById(parsedId),
+		const { data } = await QUERY_CLIENT.ensureQueryData(
+			findReleaseByIdOptions({ path: { id: parsedId } }),
 		)
-		if (O.isNone(data)) {
+		if (data === null) {
 			throw notFound()
 		}
 
@@ -29,10 +29,13 @@ export const Route = createFileRoute("/release/$id_/corrections")({
 
 function RouteComponent() {
 	const { entityId: releaseId } = Route.useRouteContext()()
-	const query = useQuery(() => ReleaseQueryOption.findById(releaseId))
+	const query = useQuery(() => ({
+		...findReleaseByIdOptions({ path: { id: releaseId } }),
+		throwOnError: true,
+	}))
 
 	return (
-		<Show when={query.data && O.getOrUndefined(query.data)}>
+		<Show when={query.data?.data}>
 			{(release) => (
 				<EntityCorrectionListPage
 					entityType="release"

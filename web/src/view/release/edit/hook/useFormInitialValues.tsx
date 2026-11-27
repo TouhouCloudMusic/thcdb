@@ -1,8 +1,8 @@
 import type { DeepPartial } from "@formisch/solid"
 /* eslint-disable solid/reactivity */
-import type { Release } from "@thc/api"
 
 import { DateWithPrecision } from "~/domain/shared"
+import type { Release } from "~/hey-api"
 
 import type { ReleaseFormInput } from "../schema"
 

@@ -65,24 +65,23 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 					class={stylex.attrs(link.base, styles.release, styles.cardLink).class}
 				>
 					<div {...stylex.attrs(styles.cover)}>
-						<Image.Root>
-							<Image.Thumbnail
-								url={release.cover_art_url}
-								size={9}
+						<Image.Root
+							url={release.cover_art_url}
+							size={9}
+						>
+							<Image.Img
 								alt={release.title}
 								styles={styles.image}
 							/>
 							<Image.Fallback>
-								{(state) =>
-									state !== Image.State.Ok && (
-										// TODO: Better fallback
-										<div {...stylex.attrs(styles.fallback)}>
-											<span {...stylex.attrs(styles.fallbackLabel)}>
-												{t`No cover art`}
-											</span>
-										</div>
-									)
-								}
+								{() => (
+									// TODO: Better fallback
+									<div {...stylex.attrs(styles.fallback)}>
+										<span {...stylex.attrs(styles.fallbackLabel)}>
+											{t`No cover art`}
+										</span>
+									</div>
+								)}
 							</Image.Fallback>
 						</Image.Root>
 					</div>

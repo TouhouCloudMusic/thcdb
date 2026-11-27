@@ -46,6 +46,16 @@ msgstr "[UNIMPLEMENTED] Chart"
 msgid "[UNIMPLEMENTED] Recommendation"
 msgstr "[UNIMPLEMENTED] Recommendation"
 
+#. placeholder {0}: status()
+#: src/view/image_queue/submission.tsx
+msgid "{0} by <0/>"
+msgstr "{0} by <0/>"
+
+#. placeholder {0}: props.pendingCount
+#: src/view/moderation/index.tsx
+msgid "{0} pending"
+msgstr "{0} pending"
+
 #. placeholder {0}: props.list.totalItems
 #: src/view/admin/users.tsx
 msgid "{0} users"
@@ -107,6 +117,10 @@ msgstr "{count} votes · relevance {relevance}"
 msgid "{rating} out of 5 stars"
 msgstr "{rating} out of 5 stars"
 
+#: src/view/image_queue/user.tsx
+msgid "{username}’s Image Queue History"
+msgstr "{username}’s Image Queue History"
+
 #: src/view/NotFound.tsx
 msgid "404 Not Found"
 msgstr "404 Not Found"
@@ -132,10 +146,6 @@ msgstr "Account"
 msgid "Action"
 msgstr "Action"
 
-#: src/view/image_queue/detail.tsx
-msgid "Actions"
-msgstr "Actions"
-
 #: src/view/user/Profile.tsx
 msgid "Activity"
 msgstr "Activity"
@@ -148,9 +158,17 @@ msgstr "Add"
 msgid "Add a comment..."
 msgstr "Add a comment..."
 
+#: src/view/image_queue/detail/view.tsx
+msgid "Add artist profile image"
+msgstr "Add artist profile image"
+
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add disc"
 msgstr "Add disc"
+
+#: src/view/image_queue/detail/view.tsx
+msgid "Add release cover"
+msgstr "Add release cover"
 
 #: src/view/entity_tags/EntityTags.tsx
 msgid "Add tag"
@@ -247,7 +265,7 @@ msgid "Appearances"
 msgstr "Appearances"
 
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/submission.tsx
 msgid "Approve"
 msgstr "Approve"
 
@@ -255,22 +273,21 @@ msgstr "Approve"
 msgid "Approve correction?"
 msgstr "Approve correction?"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/submission.tsx
 msgid "Approve image?"
 msgstr "Approve image?"
+
+#: src/view/image_queue/submission.tsx
+msgid "Approve the image for {name}?"
+msgstr "Approve the image for {name}?"
 
 #: src/view/notification/NotificationCard.tsx
 msgid "approved"
 msgstr "approved"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
+#: src/component/image_queue/statusLabels.ts
 msgid "Approved"
 msgstr "Approved"
-
-#: src/view/image_queue/user.tsx
-msgid "APPROVED"
-msgstr "APPROVED"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Are you sure you want to delete this collection? This action cannot be undone."
@@ -297,9 +314,17 @@ msgstr "Are you sure you want to remove this item from the collection?"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
 msgid "Artist"
 msgstr "Artist"
+
+#: src/view/image_queue/listRow.tsx
+msgid "Artist image"
+msgstr "Artist image"
+
+#: src/view/image_queue/detail/view.tsx
+msgid "Artist profile image update"
+msgstr "Artist profile image update"
 
 #: src/view/artist/edit/comp/ArtistType.tsx
 msgid "Artist Type"
@@ -348,6 +373,11 @@ msgstr "Before"
 msgid "Born"
 msgstr "Born"
 
+#: src/view/image_queue/detail/view.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Breadcrumb"
+msgstr "Breadcrumb"
+
 #: src/view/Homepage/component/ExploreCard.tsx
 msgid "Browse circles and solo creators with filters and sorting."
 msgstr "Browse circles and solo creators with filters and sorting."
@@ -361,19 +391,14 @@ msgstr "by"
 #: src/view/collection/CollectionFormDialog.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/submission.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
+#: src/component/image_queue/statusLabels.ts
 msgid "Cancelled"
 msgstr "Cancelled"
-
-#: src/view/image_queue/user.tsx
-msgid "CANCELLED"
-msgstr "CANCELLED"
 
 #: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
 msgid "Catalog No."
@@ -446,6 +471,7 @@ msgstr "Comment cannot be empty"
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/comment/EntityCommentsTabTrigger.tsx
 #: src/view/correction/CorrectionComments.tsx
+#: src/view/image_queue/detail/view.tsx
 msgid "Comments"
 msgstr "Comments"
 
@@ -512,9 +538,12 @@ msgstr "Could not update rating"
 msgid "Country / Region"
 msgstr "Country / Region"
 
+#: src/view/image_queue/listRow.tsx
+msgid "Cover"
+msgstr "Cover"
+
 #: src/route/release/$id_.image-upload.tsx
 #: src/view/Homepage/component/NewMusic.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/notification/NotificationCard.tsx
 msgid "cover art"
 msgstr "cover art"
@@ -561,17 +590,8 @@ msgid "Create tag"
 msgstr "Create tag"
 
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Created"
 msgstr "Created"
-
-#: src/view/image_queue/user.tsx
-msgid "CREATED"
-msgstr "CREATED"
-
-#: src/view/image_queue/manage.tsx
-msgid "Created at"
-msgstr "Created at"
 
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
 #: src/view/release/explore/filter.tsx
@@ -613,7 +633,7 @@ msgstr "Crop failed."
 msgid "Cropper is not ready yet."
 msgstr "Cropper is not ready yet."
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/view.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Current"
 msgstr "Current"
@@ -621,10 +641,6 @@ msgstr "Current"
 #: src/view/artist/edit/comp/Locations.tsx
 msgid "Current Location"
 msgstr "Current Location"
-
-#: src/view/image_queue/detail.tsx
-msgid "Current target image"
-msgstr "Current target image"
 
 #: src/view/Homepage/component/HomeStats.tsx
 msgid "Database statistics"
@@ -680,6 +696,8 @@ msgstr "Descending"
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/event/edit/comp/EventDescriptionField.tsx
 #: src/view/event/Info/index.tsx
+#: src/view/image_queue/submission.tsx
+#: src/view/image_upload/EntityImageUploadPage.tsx
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/edit/comp/TagDescription.tsx
 msgid "Description"
@@ -792,6 +810,15 @@ msgstr "Email is required"
 msgid "End date"
 msgstr "End date"
 
+#. placeholder {0}: props.title
+#: src/view/image_queue/detail/view.tsx
+msgid "Enlarge image: {0}"
+msgstr "Enlarge image: {0}"
+
+#: src/component/image/__internal.tsx
+msgid "Enlarged image"
+msgstr "Enlarged image"
+
 #: src/view/auth/verify_email/index.tsx
 msgid "Enter the 6-digit code sent to your email."
 msgstr "Enter the 6-digit code sent to your email."
@@ -825,6 +852,10 @@ msgstr "Events"
 #: src/view/tag/TagTree.tsx
 msgid "Expand"
 msgstr "Expand"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Explain the change or cite the image source."
+msgstr "Explain the change or cite the image source."
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
@@ -877,6 +908,14 @@ msgstr "Failed to load collections"
 msgid "Failed to load collections."
 msgstr "Failed to load collections."
 
+#: src/component/image/__internal.tsx
+msgid "Failed to load image"
+msgstr "Failed to load image"
+
+#: src/view/image_queue/detail/index.tsx
+msgid "Failed to load image queue entry."
+msgstr "Failed to load image queue entry."
+
 #: src/view/image_queue/manage.tsx
 msgid "Failed to load image queue."
 msgstr "Failed to load image queue."
@@ -884,6 +923,10 @@ msgstr "Failed to load image queue."
 #: src/view/collection/CollectionDetail.tsx
 msgid "Failed to load items."
 msgstr "Failed to load items."
+
+#: src/view/image_queue/list.tsx
+msgid "Failed to load more entries."
+msgstr "Failed to load more entries."
 
 #: src/view/notification/InboxPage.tsx
 msgid "Failed to load more notifications."
@@ -913,6 +956,14 @@ msgstr "Failed to mark notification read"
 msgid "Failed to mark notification unread"
 msgstr "Failed to mark notification unread"
 
+#: src/view/image_queue/list.tsx
+msgid "Failed to refresh entries."
+msgstr "Failed to refresh entries."
+
+#: src/view/image_queue/detail/index.tsx
+msgid "Failed to refresh image queue entry."
+msgstr "Failed to refresh image queue entry."
+
 #: src/route/notifications.tsx
 msgid "Failed to refresh notifications"
 msgstr "Failed to refresh notifications"
@@ -922,7 +973,7 @@ msgid "Failed to update saved notification"
 msgstr "Failed to update saved notification"
 
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/state.ts
 msgid "Failed to update subscription"
 msgstr "Failed to update subscription"
 
@@ -975,6 +1026,10 @@ msgstr "Follow"
 #: src/view/tag/Info/index.tsx
 msgid "Follow count"
 msgstr "Follow count"
+
+#: src/view/image_queue/detail/view.tsx
+msgid "Follow submission"
+msgstr "Follow submission"
 
 #: src/view/user/Profile.tsx
 msgid "Followed"
@@ -1033,13 +1088,9 @@ msgstr "Grid view"
 msgid "Group"
 msgstr "Group"
 
-#: src/view/image_queue/detail.tsx
-msgid "Handled"
-msgstr "Handled"
-
 #: src/view/image_queue/user.tsx
-msgid "HANDLED / REVERTED"
-msgstr "HANDLED / REVERTED"
+msgid "Handled by {reviewer}"
+msgstr "Handled by {reviewer}"
 
 #: src/view/NotFound.tsx
 msgid "Hey you, lost one. why you are here? <0>You should go back...</0>"
@@ -1055,7 +1106,6 @@ msgid "Home"
 msgstr "Home"
 
 #: src/view/admin/users.tsx
-#: src/view/image_queue/user.tsx
 msgid "ID"
 msgstr "ID"
 
@@ -1063,24 +1113,26 @@ msgstr "ID"
 msgid "If eligible, a verification code has been sent."
 msgstr "If eligible, a verification code has been sent."
 
-#: src/view/image_queue/user.tsx
-msgid "IMAGE"
-msgstr "IMAGE"
-
 #: src/component/form/ImageCropper.tsx
 msgid "Image Cropper Placeholder"
 msgstr "Image Cropper Placeholder"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/view.tsx
 #: src/view/notification/InboxPage.tsx
 msgid "Image queue"
 msgstr "Image queue"
 
 #: src/view/image_queue/manage.tsx
+#: src/view/image_queue/user.tsx
+#: src/view/moderation/index.tsx
 msgid "Image Queue"
 msgstr "Image Queue"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/user.tsx
+msgid "Image Queue History"
+msgstr "Image Queue History"
+
+#: src/view/image_queue/detail/view.tsx
 msgid "Image queue navigation"
 msgstr "Image queue navigation"
 
@@ -1242,8 +1294,9 @@ msgstr "Loading ratings…"
 msgid "Loading..."
 msgstr "Loading..."
 
+#: src/component/image/__internal.tsx
 #: src/view/auth/component/Guard.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/index.tsx
 #: src/view/notification/InboxPage.tsx
 msgid "Loading…"
 msgstr "Loading…"
@@ -1310,9 +1363,11 @@ msgstr "Members"
 msgid "Membership"
 msgstr "Membership"
 
+#: src/view/image_queue/detail/view.tsx
 #: src/view/image_queue/manage.tsx
-msgid "MODERATION"
-msgstr "MODERATION"
+#: src/view/moderation/index.tsx
+msgid "Moderation"
+msgstr "Moderation"
 
 #: src/component/form/DateWithPrecision/index.tsx
 msgid "Month"
@@ -1374,7 +1429,7 @@ msgstr "New password"
 msgid "Newest first"
 msgstr "Newest first"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/view.tsx
 msgid "Next"
 msgstr "Next"
 
@@ -1382,21 +1437,13 @@ msgstr "Next"
 msgid "Next disc"
 msgstr "Next disc"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/view.tsx
 msgid "Next image queue entry"
 msgstr "Next image queue entry"
 
 #: src/component/Pagination.tsx
 msgid "Next page"
 msgstr "Next page"
-
-#: src/view/image_queue/detail.tsx
-msgid "No actions available for this account."
-msgstr "No actions available for this account."
-
-#: src/view/image_queue/detail.tsx
-msgid "No actions available."
-msgstr "No actions available."
 
 #: src/view/user/Profile.tsx
 msgid "No activity"
@@ -1470,16 +1517,8 @@ msgid "No diff data."
 msgstr "No diff data."
 
 #: src/view/image_queue/manage.tsx
-msgid "No entries found"
-msgstr "No entries found"
-
-#: src/view/image_queue/manage.tsx
 msgid "No entries match the current filters."
 msgstr "No entries match the current filters."
-
-#: src/view/image_queue/user.tsx
-msgid "No entries yet"
-msgstr "No entries yet"
 
 #: src/view/event/explore.tsx
 msgid "No events found"
@@ -1489,7 +1528,7 @@ msgstr "No events found"
 msgid "No events found."
 msgstr "No events found."
 
-#: src/view/image_queue/detail.tsx
+#: src/component/image/__internal.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "No image"
 msgstr "No image"
@@ -1510,8 +1549,7 @@ msgstr "No matching credits"
 msgid "No matching relations"
 msgstr "No matching relations"
 
-#: src/view/image_queue/manage.tsx
-#: src/view/image_queue/user.tsx
+#: src/view/image_queue/list.tsx
 msgid "No more entries"
 msgstr "No more entries"
 
@@ -1661,14 +1699,9 @@ msgstr "Password"
 msgid "Password reset complete"
 msgstr "Password reset complete"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
+#: src/component/image_queue/statusLabels.ts
 msgid "Pending"
 msgstr "Pending"
-
-#: src/view/image_queue/user.tsx
-msgid "PENDING"
-msgstr "PENDING"
 
 #: src/view/correction/pendingCorrection.tsx
 msgid "Pending correction exists"
@@ -1690,7 +1723,7 @@ msgstr "Popular Releases"
 msgid "Positive:"
 msgstr "Positive:"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/view.tsx
 msgid "Previous"
 msgstr "Previous"
 
@@ -1702,7 +1735,7 @@ msgstr "Previous approved baseline"
 msgid "Previous disc"
 msgstr "Previous disc"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail/view.tsx
 msgid "Previous image queue entry"
 msgstr "Previous image queue entry"
 
@@ -1725,10 +1758,13 @@ msgid "Profile banner"
 msgstr "Profile banner"
 
 #: src/route/artist/$id_.image-upload.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/notification/NotificationCard.tsx
 msgid "profile image"
 msgstr "profile image"
+
+#: src/view/image_queue/detail/view.tsx
+msgid "Proposed"
+msgstr "Proposed"
 
 #: src/component/form/Location/index.tsx
 msgid "Province"
@@ -1738,14 +1774,6 @@ msgstr "Province"
 #: src/view/user/Profile.tsx
 msgid "Public"
 msgstr "Public"
-
-#: src/view/image_queue/detail.tsx
-msgid "Queued"
-msgstr "Queued"
-
-#: src/view/image_queue/detail.tsx
-msgid "Queued upload preview"
-msgstr "Queued upload preview"
 
 #: src/view/rating/EntityRating.tsx
 msgid "Rating"
@@ -1768,7 +1796,7 @@ msgid "Recording start"
 msgstr "Recording start"
 
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/submission.tsx
 msgid "Reject"
 msgstr "Reject"
 
@@ -1776,7 +1804,7 @@ msgstr "Reject"
 msgid "Reject correction?"
 msgstr "Reject correction?"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/submission.tsx
 msgid "Reject image?"
 msgstr "Reject image?"
 
@@ -1784,14 +1812,9 @@ msgstr "Reject image?"
 msgid "rejected"
 msgstr "rejected"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
+#: src/component/image_queue/statusLabels.ts
 msgid "Rejected"
 msgstr "Rejected"
-
-#: src/view/image_queue/user.tsx
-msgid "REJECTED"
-msgstr "REJECTED"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/song/Info/comp/SongInfoRelations.tsx
@@ -1806,10 +1829,14 @@ msgstr "Relations"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
 #: src/view/song/Info/index.tsx
 msgid "Release"
 msgstr "Release"
+
+#: src/view/image_queue/detail/view.tsx
+msgid "Release cover update"
+msgstr "Release cover update"
 
 #: src/view/release/edit/index.tsx
 #: src/view/release/explore/filter.tsx
@@ -1903,26 +1930,39 @@ msgstr "restricted collection"
 
 #: src/view/artist/profile/comp/ArtistCredits.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/image_queue/detail/index.tsx
+#: src/view/image_queue/list.tsx
 #: src/view/notification/InboxPage.tsx
 msgid "Retry"
 msgstr "Retry"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/submission.tsx
 msgid "Revert"
 msgstr "Revert"
+
+#: src/view/image_queue/submission.tsx
+msgid "Revert image approval?"
+msgstr "Revert image approval?"
+
+#: src/view/image_queue/submission.tsx
+msgid "Revert the image approval for {name}?"
+msgstr "Revert the image approval for {name}?"
 
 #: src/view/notification/NotificationCard.tsx
 msgid "reverted"
 msgstr "reverted"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
+#: src/component/image_queue/statusLabels.ts
 msgid "Reverted"
 msgstr "Reverted"
 
 #: src/view/image_queue/user.tsx
-msgid "REVERTED"
-msgstr "REVERTED"
+msgid "Reverted by {reviewer}"
+msgstr "Reverted by {reviewer}"
+
+#: src/view/image_queue/submission.tsx
+msgid "Review failed: {message}"
+msgstr "Review failed: {message}"
 
 #: src/view/admin/users.tsx
 msgid "Roles"
@@ -2221,13 +2261,14 @@ msgstr "Start Location"
 msgid "Status"
 msgstr "Status"
 
-#: src/view/image_queue/user.tsx
-msgid "STATUS"
-msgstr "STATUS"
-
 #: src/view/correction/Detail.tsx
 msgid "Status updated"
 msgstr "Status updated"
+
+#. placeholder {0}: label()
+#: src/view/image_queue/listRow.tsx
+msgid "Status: {0}"
+msgstr "Status: {0}"
 
 #: src/view/auth/component/PasswordField.tsx
 msgid "Strong enough"
@@ -2243,10 +2284,6 @@ msgstr "Submit"
 msgid "Submit failed."
 msgstr "Submit failed."
 
-#: src/view/image_queue/detail.tsx
-msgid "Submitted by"
-msgstr "Submitted by"
-
 #: src/component/form/FormActionBar.tsx
 msgid "Submitting"
 msgstr "Submitting"
@@ -2256,7 +2293,6 @@ msgid "Submitting..."
 msgstr "Submitting..."
 
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Subscribe"
 msgstr "Subscribe"
 
@@ -2338,14 +2374,6 @@ msgstr "This will apply the correction to the target entity."
 #: src/view/correction/Detail.tsx
 msgid "This will mark the correction as rejected."
 msgstr "This will mark the correction as rejected."
-
-#: src/view/image_queue/detail.tsx
-msgid "This will mark the queued image as approved."
-msgstr "This will mark the queued image as approved."
-
-#: src/view/image_queue/detail.tsx
-msgid "This will mark the queued image as rejected."
-msgstr "This will mark the queued image as rejected."
 
 #: src/view/release/edit/comp/LocalizedTitlesField.tsx
 #: src/view/release/edit/comp/TitleField.tsx
@@ -2431,14 +2459,14 @@ msgstr "Type: Own"
 msgid "Unfollow"
 msgstr "Unfollow"
 
+#: src/view/image_queue/detail/view.tsx
+msgid "Unfollow submission"
+msgstr "Unfollow submission"
+
 #: src/view/artist/ArtistTypeLabel.tsx
-#: src/view/image_queue/detail.tsx
+#: src/view/artist/explore.comp.tsx
 msgid "Unknown"
 msgstr "Unknown"
-
-#: src/view/image_queue/user.tsx
-msgid "UNKNOWN"
-msgstr "UNKNOWN"
 
 #: src/view/Homepage/component/ReleaseCard.tsx
 msgid "Unknown artist"
@@ -2474,7 +2502,6 @@ msgid "Unspecified role"
 msgstr "Unspecified role"
 
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Unsubscribe"
 msgstr "Unsubscribe"
 
@@ -2563,11 +2590,6 @@ msgstr "View"
 msgid "View correction"
 msgstr "View correction"
 
-#. placeholder {0}: props.item.id
-#: src/view/image_queue/manage.tsx
-msgid "View image queue item #{0}"
-msgstr "View image queue item #{0}"
-
 #: src/view/Homepage/component/NewMusic.tsx
 msgid "View more"
 msgstr "View more"
@@ -2591,10 +2613,6 @@ msgstr "Visibility: Public"
 #: src/view/user/Profile.tsx
 msgid "Votes"
 msgstr "Votes"
-
-#: src/view/image_queue/detail.tsx
-msgid "Working…"
-msgstr "Working…"
 
 #: src/view/comment/CommentThread.tsx
 msgid "Write a reply..."

@@ -38,26 +38,3 @@ export const getInstance = () =>
 		mutationKey: ["release::mutate"],
 		throwOnError: true,
 	}))
-
-type UploadCoverArtParams = {
-	id: number
-	file: File
-}
-
-export const getUploadCoverArtInstance = () =>
-	useMutation(() => ({
-		mutationFn: async (params: UploadCoverArtParams) => {
-			const result = await ReleaseApi.uploadCoverArt({
-				releaseId: params.id,
-				file: params.file,
-			})
-			return Either.match(result, {
-				onRight: (data) => data,
-				onLeft: (error) => {
-					throw toMutationError(error, "Upload failed.")
-				},
-			})
-		},
-		mutationKey: ["release::cover-art::upload"],
-		throwOnError: true,
-	}))

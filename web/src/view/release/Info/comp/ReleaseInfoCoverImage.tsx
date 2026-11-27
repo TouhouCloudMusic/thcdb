@@ -38,7 +38,10 @@ export function ReleaseInfoCoverImage() {
 	const ctx = assertContext(ReleaseInfoPageContext)
 
 	return (
-		<Image.Root>
+		<Image.Root
+			url={ctx.release.cover_art_url}
+			size={9}
+		>
 			<div {...stylex.attrs(styles.cover)}>
 				<Image.Fallback>
 					{(state) => (
@@ -51,9 +54,7 @@ export function ReleaseInfoCoverImage() {
 						</div>
 					)}
 				</Image.Fallback>
-				<Image.Thumbnail
-					url={ctx.release.cover_art_url}
-					size={9}
+				<Image.Img
 					alt={ctx.release.title}
 					styles={styles.image}
 				/>

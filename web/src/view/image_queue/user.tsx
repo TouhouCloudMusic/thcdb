@@ -1,474 +1,149 @@
 import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
-import { Link, useNavigate } from "@tanstack/solid-router"
-import { For, Match, Show, Switch } from "solid-js"
+import { Link } from "@tanstack/solid-router"
+import { createUniqueId, Show } from "solid-js"
 
-import { Badge } from "~/component/atomic/Badge"
-import { Button } from "~/component/atomic/button"
-import type {
-	CursorResponseUserImageQueueItem,
-	ImageQueueStatus,
-} from "~/hey-api"
+import { buttonSizeStyles, buttonStyles } from "~/component/atomic/button"
+import type { CursorResponseUserImageQueueItem } from "~/hey-api"
 import { PageLayout } from "~/layout"
 import { palette } from "~/style/color/palette.stylex"
-import { link } from "~/style/link"
-import {
-	radius,
-	fonts,
-	lineHeights,
-	fontSizes,
-	px,
-} from "~/style/tokens.stylex"
-import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
+import { px } from "~/style/tokens.stylex"
+import type { InfiniteQueryState } from "~/utils/adapter/tanstack/infiniteQueryState"
 
-import { animationStyles } from "../../style/animations.stylex"
+import { ImageQueueList } from "./list"
+import { listPageStyles } from "./listPage.stylex"
+import { ImageQueueDate, ImageQueueRow, rowMetadataStyles } from "./listRow"
 
-const styles = stylex.create({
-	queueRow: {
-		display: "grid",
-		gridTemplateColumns: "4rem 10rem 9rem 12rem 1fr",
-		alignItems: "center",
-		paddingInline: px[16],
-		paddingBlock: px[12],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
+const rowStyles = stylex.create({
+	list: {
+		borderTopWidth: 1,
+		borderTopStyle: "solid",
+		borderTopColor: palette.slate[200],
+		gridTemplateColumns: {
+			default: "3rem minmax(0, 1fr) max-content",
+			"@container (min-width: 40rem)":
+				"3rem max-content minmax(0, 1fr) fit-content(12rem) max-content",
+		},
 	},
-	skeletonRow: {
-		display: "grid",
-		gridTemplateColumns: "4rem 10rem 9rem 12rem 1fr",
-		alignItems: "center",
-		paddingInline: px[16],
-		paddingBlock: px[12],
+	submittedAt: {
+		gridColumn: "2",
+		gridRow: "2",
+		justifySelf: { default: "end", "@container (min-width: 40rem)": "start" },
 	},
-	queueListChild: {
-		borderTopWidth: { default: null, ":not(:last-child)": 0 },
-		borderBottomWidth: { default: null, ":not(:last-child)": "1px" },
-		borderTopStyle: { default: null, ":not(:last-child)": "solid" },
-		borderBottomStyle: { default: null, ":not(:last-child)": "solid" },
-		borderColor: { default: null, ":not(:last-child)": palette.slate[100] },
+	reviewer: {
+		gridColumn: { default: "1", "@container (min-width: 40rem)": "-3 / -2" },
 	},
-	page: { padding: px[32] },
-	content: { display: "flex", flexDirection: "column", gap: px[24] },
+	eventRow: {
+		gridRow: { default: "3", "@container (min-width: 40rem)": "2" },
+	},
+})
+
+type UserImageQueueItem = CursorResponseUserImageQueueItem["items"][number]
+
+function HistoryQueueRow(props: { item: UserImageQueueItem }) {
+	const { t } = useLingui()
+	const reverted = () => props.item.status === "Reverted"
+	const reviewerLabel = () => {
+		const reviewer = reverted()
+			? props.item.reverted_by?.name
+			: props.item.handled_by?.name
+		if (!reviewer) return
+		return reverted() ? t`Reverted by ${reviewer}` : t`Handled by ${reviewer}`
+	}
+
+	return (
+		<ImageQueueRow item={props.item}>
+			<ImageQueueDate
+				value={props.item.created_at}
+				styles={rowStyles.submittedAt}
+			/>
+			<Show when={reviewerLabel()}>
+				{(label) => (
+					<span
+						title={label()}
+						{...stylex.attrs(
+							rowMetadataStyles.actor,
+							rowMetadataStyles.truncated,
+							rowStyles.reviewer,
+							rowStyles.eventRow,
+						)}
+					>
+						{label()}
+					</span>
+				)}
+			</Show>
+			<Show when={reverted() ? props.item.reverted_at : props.item.handled_at}>
+				{(date) => (
+					<ImageQueueDate
+						value={date()}
+						styles={[rowMetadataStyles.eventDate, rowStyles.eventRow]}
+					/>
+				)}
+			</Show>
+		</ImageQueueRow>
+	)
+}
+
+const pageStyles = stylex.create({
 	header: {
 		display: "flex",
 		flexWrap: "wrap",
 		alignItems: "center",
 		justifyContent: "space-between",
-		gap: px[16],
-	},
-	heading: { minWidth: "0rem" },
-	eyebrow: {
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
-		fontWeight: 500,
-		letterSpacing: "0.22em",
-		color: palette.slate[500],
-	},
-	title: {
-		marginTop: px[8],
-		fontSize: fontSizes["2xl"],
-		lineHeight: lineHeights["2xl"],
-		fontWeight: 300,
-		letterSpacing: "-0.025em",
-		color: palette.slate[900],
-	},
-	actions: {
-		display: "flex",
-		flexWrap: "wrap",
-		alignItems: "center",
 		gap: px[12],
-	},
-	panel: {
-		overflow: "hidden",
-		borderRadius: radius.sm,
-		borderStyle: "solid",
-		borderWidth: "1px",
-		borderColor: palette.slate[300],
-		backgroundColor: palette.white,
-		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-	},
-	tableHeader: {
-		display: "grid",
-		gridTemplateColumns: "4rem 10rem 9rem 12rem 1fr",
-		alignItems: "center",
-		borderBottomStyle: "solid",
-		borderBottomWidth: "1px",
-		borderColor: palette.slate[200],
-		paddingInline: px[16],
-		paddingBlock: px[12],
-		fontSize: "11px",
-		fontWeight: 500,
-		letterSpacing: "0.18em",
-		color: palette.slate[500],
-	},
-	error: {
-		padding: px[24],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: palette.reimu[700],
-	},
-	emptyState: { padding: px[40] },
-	emptyTitle: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		fontWeight: 500,
-		color: palette.slate[900],
-	},
-	emptyDescription: {
-		marginTop: px[4],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: palette.slate[500],
-	},
-	progress: { height: px[4] },
-	appendedList: {
-		borderTopStyle: "solid",
-		borderTopWidth: "1px",
-		borderColor: palette.slate[100],
-	},
-	listEnd: {
-		borderTopStyle: "solid",
-		borderTopWidth: "1px",
-		borderColor: palette.slate[100],
-		paddingInline: px[16],
-		paddingBlock: px[16],
-		textAlign: "center",
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: palette.slate[400],
-	},
-	queueId: {
-		fontFamily: fonts.mono,
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
-		color: palette.slate[600],
-	},
-	queueLink: {
-		color: palette.slate[900],
-		textDecorationLine: {
-			default: "none",
-			":hover": { default: null, "@media (hover: hover)": "underline" },
-		},
-	},
-	muted: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: palette.slate[500],
-	},
-	missing: { color: palette.slate[400] },
-	statusCell: { justifySelf: "flex-start" },
-	status: { paddingInline: px[8], paddingBlock: px[2] },
-	targetDetails: {
-		display: "flex",
-		flexDirection: "column",
-		gap: px[4],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-	},
-	targetLabel: { color: palette.slate[500] },
-	targetName: { color: palette.slate[700] },
-	targetId: {
-		marginLeft: px[8],
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
-		color: palette.slate[400],
-	},
-	skeletonId: {
-		height: px[16],
-		width: px[80],
-		borderRadius: radius.sm,
-		backgroundColor: palette.slate[200],
-	},
-	skeletonType: {
-		height: px[16],
-		width: px[96],
-		borderRadius: radius.sm,
-		backgroundColor: palette.slate[100],
-	},
-	skeletonStatus: {
-		height: px[20],
-		width: px[96],
-		borderRadius: radius.full,
-		backgroundColor: palette.slate[200],
-	},
-	skeletonDate: {
-		height: px[16],
-		width: px[128],
-		borderRadius: radius.sm,
-		backgroundColor: palette.slate[100],
-	},
-	skeletonTarget: {
-		height: px[16],
-		width: px[256],
-		borderRadius: radius.sm,
-		backgroundColor: palette.slate[200],
+		overflowWrap: "anywhere",
 	},
 })
-
-const DATE_TIME = new Intl.DateTimeFormat(undefined, {
-	dateStyle: "medium",
-	timeStyle: "short",
-})
-
-export const USER_IMAGE_QUEUE_PAGE_SIZE = 20
-
-const statusTone = (status: ImageQueueStatus) => {
-	switch (status) {
-		case "Pending": {
-			return { color: "Marisa" } as const
-		}
-		case "Approved": {
-			return { color: "Green" } as const
-		}
-		case "Rejected": {
-			return { color: "Reimu" } as const
-		}
-		case "Cancelled": {
-			return { color: "Slate" } as const
-		}
-		case "Reverted": {
-			return { color: "Blue" } as const
-		}
-		default: {
-			return { color: "Slate" } as const
-		}
-	}
-}
-
-const formatDateTime = (value: string | null | undefined) => {
-	if (!value) return "—"
-	const date = new Date(value)
-	if (Number.isNaN(date.getTime())) return value
-	return DATE_TIME.format(date)
-}
 
 type Props = {
-	items: UserImageQueueItem[]
-	isLoading: boolean
-	isError: boolean
-	hasNextPage: boolean
-	isFetchingNextPage: boolean
-	onLoadMore: () => void
+	username?: string
+	list: InfiniteQueryState<UserImageQueueItem>
 }
 
 export function UserImageQueuePage(props: Props) {
 	const { t } = useLingui()
-	const navigate = useNavigate()
-
-	const setSentinelRef = createInfiniteScroll({
-		enabled: () => props.hasNextPage && !props.isFetchingNextPage,
-		onLoadMore: () => props.onLoadMore(),
-	})
-
-	return (
-		<PageLayout styles={styles.page}>
-			<div {...stylex.attrs(styles.content)}>
-				<header {...stylex.attrs(styles.header)}>
-					<div {...stylex.attrs(styles.heading)}>
-						<div {...stylex.attrs(styles.eyebrow)}>USER</div>
-						<h1 {...stylex.attrs(styles.title)}>Image Queue History</h1>
-					</div>
-
-					<div {...stylex.attrs(styles.actions)}>
-						<Button
-							onClick={() => {
-								void navigate({
-									to: "/image-queue",
-									search: { status: "pending" },
-								})
-							}}
-							appearance="outline"
-							tone="slate"
-							size="sm"
-						>
-							Go to moderation
-						</Button>
-					</div>
-				</header>
-
-				<section {...stylex.attrs(styles.panel)}>
-					<div {...stylex.attrs(styles.tableHeader)}>
-						<div>{t`ID`}</div>
-						<div>{t`IMAGE`}</div>
-						<div>{t`STATUS`}</div>
-						<div>{t`CREATED`}</div>
-						<div>{t`HANDLED / REVERTED`}</div>
-					</div>
-
-					<Switch>
-						<Match when={props.isLoading}>
-							<div>
-								<For each={Array.from({ length: USER_IMAGE_QUEUE_PAGE_SIZE })}>
-									{() => <RowSkeleton />}
-								</For>
-							</div>
-						</Match>
-
-						<Match when={props.isError}>
-							<div {...stylex.attrs(styles.error)}>
-								{t`Failed to load user image queue.`}
-							</div>
-						</Match>
-
-						<Match when={props.items.length === 0}>
-							<div {...stylex.attrs(styles.emptyState)}>
-								<div {...stylex.attrs(styles.emptyTitle)}>
-									{t`No entries yet`}
-								</div>
-								<div {...stylex.attrs(styles.emptyDescription)}>
-									{t`This user has no image queue history.`}
-								</div>
-							</div>
-						</Match>
-
-						<Match when={true}>
-							<div>
-								<For each={props.items}>
-									{(item) => <UserQueueRow item={item} />}
-								</For>
-							</div>
-						</Match>
-					</Switch>
-
-					<div
-						ref={setSentinelRef}
-						{...stylex.attrs(styles.progress)}
-					></div>
-
-					<Show when={props.isFetchingNextPage}>
-						<div {...stylex.attrs(styles.appendedList)}>
-							<For
-								each={Array.from({
-									length: Math.min(10, USER_IMAGE_QUEUE_PAGE_SIZE),
-								})}
-							>
-								{() => <RowSkeleton />}
-							</For>
-						</div>
-					</Show>
-
-					<Show when={!props.hasNextPage && props.items.length > 0}>
-						<div {...stylex.attrs(styles.listEnd)}>{t`No more entries`}</div>
-					</Show>
-				</section>
-			</div>
-		</PageLayout>
-	)
-}
-
-type UserImageQueueItem = CursorResponseUserImageQueueItem["items"][number]
-
-function UserQueueRow(props: { item: UserImageQueueItem }) {
-	const tone = () => statusTone(props.item.status)
-
-	return (
-		<div {...stylex.attrs(styles.queueRow, styles.queueListChild)}>
-			<div {...stylex.attrs(styles.queueId)}>
-				<Link
-					to="/image-queue/$id"
-					params={{ id: props.item.id.toString() }}
-					class={
-						stylex.attrs(link.base, link.withUnderline, styles.queueLink).class
-					}
-				>
-					{props.item.id}
-				</Link>
-			</div>
-
-			<div {...stylex.attrs(styles.muted)}>
-				<Show
-					when={props.item.image_id}
-					fallback={<span {...stylex.attrs(styles.missing)}>—</span>}
-				>
-					{props.item.image_id}
-				</Show>
-			</div>
-
-			<div {...stylex.attrs(styles.statusCell)}>
-				<Badge
-					color={tone().color}
-					styles={styles.status}
-				>
-					<UserImageQueueStatusLabel status={props.item.status} />
-				</Badge>
-			</div>
-
-			<div {...stylex.attrs(styles.muted)}>
-				{formatDateTime(props.item.created_at)}
-			</div>
-
-			<div {...stylex.attrs(styles.targetDetails)}>
-				<div {...stylex.attrs(styles.targetLabel)}>
-					Handled:{" "}
-					<span {...stylex.attrs(styles.targetName)}>
-						{formatDateTime(props.item.handled_at)}
-					</span>
-					<Show when={props.item.handled_by}>
-						<span {...stylex.attrs(styles.targetId)}>
-							{props.item.handled_by?.name}
-						</span>
-					</Show>
-				</div>
-
-				<div {...stylex.attrs(styles.targetLabel)}>
-					Reverted:{" "}
-					<span {...stylex.attrs(styles.targetName)}>
-						{formatDateTime(props.item.reverted_at)}
-					</span>
-					<Show when={props.item.reverted_by}>
-						<span {...stylex.attrs(styles.targetId)}>
-							{props.item.reverted_by?.name}
-						</span>
-					</Show>
-				</div>
-			</div>
-		</div>
-	)
-}
-
-function UserImageQueueStatusLabel(props: { status: ImageQueueStatus }) {
-	const { t } = useLingui()
-
-	const label = () => {
-		switch (props.status) {
-			case "Pending": {
-				return t`PENDING`
-			}
-			case "Approved": {
-				return t`APPROVED`
-			}
-			case "Rejected": {
-				return t`REJECTED`
-			}
-			case "Cancelled": {
-				return t`CANCELLED`
-			}
-			case "Reverted": {
-				return t`REVERTED`
-			}
-			default: {
-				return t`UNKNOWN`
-			}
-		}
+	const headingId = createUniqueId()
+	const title = () => {
+		const username = props.username
+		return username
+			? t`${username}’s Image Queue History`
+			: t`Image Queue History`
 	}
 
-	return <>{label()}</>
-}
-
-function RowSkeleton() {
 	return (
-		<div
-			{...stylex.attrs(
-				animationStyles.pulse,
-				styles.skeletonRow,
-				styles.queueListChild,
-			)}
-		>
-			<div {...stylex.attrs(styles.skeletonId)}></div>
-			<div {...stylex.attrs(styles.skeletonType)}></div>
-			<div {...stylex.attrs(styles.skeletonStatus)}></div>
-			<div {...stylex.attrs(styles.skeletonDate)}></div>
-			<div {...stylex.attrs(styles.skeletonTarget)}></div>
-		</div>
+		<PageLayout styles={listPageStyles.layout}>
+			<header {...stylex.attrs(pageStyles.header)}>
+				<h1
+					id={headingId}
+					{...stylex.attrs(listPageStyles.title)}
+				>
+					{title()}
+				</h1>
+				<Link
+					to="/image-queue"
+					search={{ status: "pending" }}
+					class={
+						stylex.attrs(
+							buttonStyles.base,
+							buttonStyles.outline,
+							buttonStyles.slate,
+							buttonSizeStyles.sm,
+						).class
+					}
+				>{t`Image Queue`}</Link>
+			</header>
+
+			<section aria-labelledby={headingId}>
+				<ImageQueueList
+					as="ol"
+					styles={rowStyles.list}
+					state={props.list}
+					emptyMessage={t`This user has no image queue history.`}
+					errorMessage={t`Failed to load user image queue.`}
+				>
+					{(item) => <HistoryQueueRow item={item} />}
+				</ImageQueueList>
+			</section>
+		</PageLayout>
 	)
 }

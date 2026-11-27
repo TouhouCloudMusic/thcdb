@@ -115,7 +115,10 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 				value="Comments"
 				{...stylex.attrs(styles.tabPanel)}
 			>
-				<EntityComments model={props.comments} />
+				<EntityComments.Root model={props.comments}>
+					<EntityComments.Form />
+					<EntityComments.List />
+				</EntityComments.Root>
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

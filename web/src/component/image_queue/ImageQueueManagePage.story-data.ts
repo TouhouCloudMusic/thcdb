@@ -19,6 +19,28 @@ type StoryEntrySeed = {
 	name: string
 	imageId: number | null
 	createdAt: string
+	targetName?: string
+	imageUrl?: string
+}
+
+function createStoryEntry(seed: StoryEntrySeed): StoryEntry {
+	return {
+		type: seed.type,
+		item: {
+			id: seed.id,
+			image_id: seed.imageId,
+			image_url: seed.imageUrl,
+			target: seed.targetName
+				? { name: seed.targetName, type: seed.type }
+				: undefined,
+			status: seed.status,
+			created_at: seed.createdAt,
+			created_by: {
+				id: seed.id * 10,
+				name: seed.name,
+			},
+		},
+	}
 }
 
 export const STORY_ENTRIES: StoryEntry[] = [
@@ -61,6 +83,8 @@ export const STORY_ENTRIES: StoryEntry[] = [
 		name: "Everett Bauch",
 		imageId: 151,
 		createdAt: "2026-02-15T10:24:00.000Z",
+		targetName: "Yuyuko Saigyouji",
+		imageUrl: "/avatar.png",
 	}),
 	createStoryEntry({
 		id: 20,
@@ -85,6 +109,8 @@ export const STORY_ENTRIES: StoryEntry[] = [
 		name: "Mina Kuroda",
 		imageId: 1530,
 		createdAt: "2026-02-25T15:10:00.000Z",
+		targetName: "Lovelight",
+		imageUrl: "/img/cover/release/1.png",
 	}),
 	createStoryEntry({
 		id: 14,
@@ -93,6 +119,7 @@ export const STORY_ENTRIES: StoryEntry[] = [
 		name: "Patty Reilly IV",
 		imageId: null,
 		createdAt: "2026-02-15T00:39:00.000Z",
+		targetName: "Undefined Fantastic Object",
 	}),
 	createStoryEntry({
 		id: 13,
@@ -159,23 +186,3 @@ export const STORY_ENTRIES: StoryEntry[] = [
 		createdAt: "2026-02-27T20:17:00.000Z",
 	}),
 ]
-
-export const PENDING_COUNT = STORY_ENTRIES.filter(
-	(entry) => entry.item.status === "Pending",
-).length
-
-function createStoryEntry(seed: StoryEntrySeed): StoryEntry {
-	return {
-		type: seed.type,
-		item: {
-			id: seed.id,
-			image_id: seed.imageId,
-			status: seed.status,
-			created_at: seed.createdAt,
-			created_by: {
-				id: seed.id * 10,
-				name: seed.name,
-			},
-		},
-	}
-}

@@ -1,11 +1,9 @@
-use entity::sea_orm_active_enums::{
-    ArtistImageType, ImageQueueStatus, ReleaseImageType,
-};
+use entity::sea_orm_active_enums::ImageQueueStatus;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 
 use super::ImageQueueType;
-use crate::features::image_queue::shared::UserSummary;
+use crate::features::image_queue::shared::{ImageQueueListTarget, UserSummary};
 
 #[derive(Debug, Clone, Deserialize, IntoParams)]
 pub(crate) struct ImageQueueFilterQuery {
@@ -32,6 +30,8 @@ pub(crate) struct PendingImageQueueItem {
     status: ImageQueueStatus,
     created_at: chrono::DateTime<chrono::FixedOffset>,
     created_by: UserSummary,
+    image_url: Option<String>,
+    target: Option<ImageQueueListTarget>,
 }
 
 impl PendingImageQueueItem {
@@ -44,6 +44,8 @@ impl PendingImageQueueItem {
             ..
         }: &entity::image_queue::Model,
         created_by: UserSummary,
+        image_url: Option<String>,
+        target: Option<ImageQueueListTarget>,
     ) -> Self {
         Self {
             id,
@@ -51,6 +53,8 @@ impl PendingImageQueueItem {
             status,
             created_at,
             created_by,
+            image_url,
+            target,
         }
     }
 }
@@ -83,35 +87,20 @@ impl ImageSummary {
 }
 
 #[derive(Serialize, ToSchema)]
-pub(crate) struct ArtistImageQueueTarget {
-    artist_id: i32,
-    r#type: ArtistImageType,
-}
-
-impl From<entity::artist_image_queue::Model> for ArtistImageQueueTarget {
-    fn from(
-        entity::artist_image_queue::Model {
-            artist_id, r#type, ..
-        }: entity::artist_image_queue::Model,
-    ) -> Self {
-        Self { artist_id, r#type }
-    }
-}
-
-#[derive(Serialize, ToSchema)]
-pub(crate) struct ReleaseImageQueueTarget {
-    release_id: i32,
-    r#type: ReleaseImageType,
-}
-
-impl From<entity::release_image_queue::Model> for ReleaseImageQueueTarget {
-    fn from(
-        entity::release_image_queue::Model {
-            release_id, r#type, ..
-        }: entity::release_image_queue::Model,
-    ) -> Self {
-        Self { release_id, r#type }
-    }
+#[serde(tag = "kind", rename_all = "lowercase")]
+pub(crate) enum ImageQueueTarget {
+    Artist {
+        id: i32,
+        name: String,
+        #[schema(required = true)]
+        current_image_url: Option<String>,
+    },
+    Release {
+        id: i32,
+        name: String,
+        #[schema(required = true)]
+        current_image_url: Option<String>,
+    },
 }
 
 #[derive(Serialize, ToSchema)]
@@ -123,12 +112,12 @@ pub(crate) struct ImageQueueDetail {
     pub(crate) status: ImageQueueStatus,
     pub(crate) created_at: chrono::DateTime<chrono::FixedOffset>,
     pub(crate) created_by: UserSummary,
+    pub(crate) description: Option<String>,
     pub(crate) handled_at: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub(crate) handled_by: Option<UserSummary>,
     pub(crate) reverted_at: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub(crate) reverted_by: Option<UserSummary>,
     pub(crate) image: Option<ImageSummary>,
-    pub(crate) artist: Option<ArtistImageQueueTarget>,
-    pub(crate) release: Option<ReleaseImageQueueTarget>,
+    pub(crate) target: ImageQueueTarget,
     pub(crate) is_subscribed: bool,
 }

@@ -38,6 +38,7 @@ export type UseEntityCommentsOptions = {
 		updatedAt: number
 	}
 	listEnabled?: boolean
+	onCommentCreated?: () => void
 }
 
 const COMMENT_PAGE_LIMIT = 20
@@ -67,11 +68,6 @@ export function useEntityComments(
 		},
 	})
 
-	const countQuery = useQuery(() => ({
-		...findEntityCommentsOptions(countRequest()),
-		enabled: options().initialPage == null,
-	}))
-
 	const commentsOptions = () => ({
 		...findEntityCommentsInfiniteOptions(commentsRequest()),
 		enabled: options().listEnabled ?? true,
@@ -93,6 +89,17 @@ export function useEntityComments(
 		: useInfiniteQuery(commentsOptions)
 
 	const loadedPages = () => commentsPagesQuery.data?.pages ?? []
+	const listCount = () =>
+		commentsPagesQuery.isPending
+			? undefined
+			: loadedPages()[0]?.data.active_count
+	const countQuery = useQuery(() => ({
+		...findEntityCommentsOptions(countRequest()),
+		enabled:
+			options().listEnabled === false
+			|| (commentsPagesQuery.isError && listCount() === undefined),
+	}))
+
 	const comments = () =>
 		ArrExt.dedupeByKey(
 			loadedPages().flatMap((page) => page.data.items),
@@ -101,9 +108,16 @@ export function useEntityComments(
 
 	return {
 		activeCommentCount() {
-			return initialPage
-				? loadedPages()[0]?.data.active_count
+			const count = countQuery.isPending
+				? undefined
 				: countQuery.data?.data.active_count
+			if (
+				options().listEnabled === false
+				&& count !== undefined
+				&& countQuery.dataUpdatedAt > commentsPagesQuery.dataUpdatedAt
+			)
+				return count
+			return listCount() ?? count
 		},
 		canManage() {
 			return hasUserPermission(
@@ -113,13 +127,10 @@ export function useEntityComments(
 		},
 		comments,
 		async createComment(content, inReplyToCommentId) {
-			if (commentsPagesQuery.isPending || !commentsPagesQuery.data) {
-				await commentsPagesQuery.refetch({ throwOnError: true })
-			}
-
 			const path = commentsRequest().path
 			const queryKey = findEntityCommentsInfiniteQueryKey(commentsRequest())
 			const countQueryKey = findEntityCommentsQueryKey(countRequest())
+			const onCommentCreated = options().onCommentCreated
 
 			const readThroughCommentId = comments().findLast(
 				(comment) => comment.author.id !== userCtx.profile?.id,
@@ -127,6 +138,7 @@ export function useEntityComments(
 
 			const addCreatedCommentToCache = userCtx.bindCurrentSession(
 				(comment: Comment) => {
+					void queryClient.cancelQueries({ queryKey, exact: true })
 					queryClient.setQueryData<InfiniteData<FindEntityCommentsResponse>>(
 						queryKey,
 						(data) => {
@@ -149,6 +161,10 @@ export function useEntityComments(
 							})
 						},
 					)
+					if (!queryClient.getQueryData(queryKey)) {
+						void queryClient.invalidateQueries({ queryKey, exact: true })
+					}
+					onCommentCreated?.()
 				},
 			)
 
@@ -174,6 +190,7 @@ export function useEntityComments(
 
 			await deleteMutation.mutateAsync({ path: { id: commentId } })
 
+			void queryClient.cancelQueries({ queryKey, exact: true })
 			queryClient.setQueryData<InfiniteData<FindEntityCommentsResponse>>(
 				queryKey,
 				(data) => {

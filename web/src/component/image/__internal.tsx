@@ -1,202 +1,246 @@
+import * as kDialog from "@kobalte/core/dialog"
+import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
-import type { ComponentProps, JSX, ParentProps } from "solid-js"
+import type { Accessor, ComponentProps, JSX, ParentProps } from "solid-js"
 import {
-	mergeProps,
-	splitProps,
 	createContext,
-	useContext,
+	createMemo,
+	createSignal,
 	Show,
-	createEffect,
+	splitProps,
+	useContext,
 } from "solid-js"
-import { createStore } from "solid-js/store"
-import { Portal } from "solid-js/web"
 
+import { Dialog } from "~/component/dialog"
 import type { ThumbnailSize } from "~/hey-api"
-import { palette } from "~/style/color/palette.stylex"
+import { colors, fontSizes, lineHeights, px } from "~/style/tokens.stylex"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { callHandlerUnion } from "~/utils/dom/event"
+import { assertContext } from "~/utils/solid/assertContext"
 
 export const enum State {
 	Loading,
 	Error,
 	Ok,
+	Missing,
+}
+
+type LoadState = Exclude<State, State.Missing>
+type FallbackState = Exclude<State, State.Ok>
+
+type ImageSource = {
+	src: string
+	hasFailed: Accessor<boolean>
+	markLoaded: () => void
+	markFailed: () => void
 }
 
 type ImageContext = {
-	state: State
-	setState: (state: State) => void
-	isOk: boolean
-	isLoading: boolean
-	isError: boolean
-	src?: string
-	setSrc: (src?: string) => void
-	alt?: string
-	setAlt: (alt?: string) => void
+	source: Accessor<ImageSource | undefined>
+	fallbackState: Accessor<FallbackState | undefined>
+	originalSrc: Accessor<string | undefined>
 }
 
 const ImageContext = createContext<ImageContext>()
 
-type RootProps = ParentProps
+type RootProps = ParentProps<{
+	url: string | URL | null | undefined
+	size?: ThumbnailSize
+}>
 
 export function Root(props: RootProps) {
-	const [store, setStore] = createStore<ImageContext>({
-		state: State.Loading,
-		setState(state) {
-			setStore("state", state)
-		},
-		get isLoading() {
-			return this.state === State.Loading
-		},
-		get isError() {
-			return this.state === State.Error
-		},
-		get isOk() {
-			return this.state === State.Ok
-		},
-		setSrc(src) {
-			setStore("src", src)
-		},
-		setAlt(alt) {
-			setStore("alt", alt)
-		},
+	const originalSrc = createMemo(() => imgUrl(props.url))
+	const src = createMemo(() =>
+		props.size === undefined ? originalSrc() : imgUrl(props.url, props.size),
+	)
+	const image = createMemo(() => {
+		const currentSrc = src()
+		if (!currentSrc) return
+
+		const [loadState, setLoadState] = createSignal<LoadState>(State.Loading)
+		return {
+			loadState,
+			source: {
+				src: currentSrc,
+				hasFailed: () => loadState() === State.Error,
+				markLoaded: () => setLoadState(State.Ok),
+				markFailed: () => setLoadState(State.Error),
+			},
+		}
 	})
+	const source = () => image()?.source
+	const fallbackState = () => {
+		const state = image()?.loadState() ?? State.Missing
+		return state === State.Ok ? undefined : state
+	}
 
 	return (
-		<ImageContext.Provider value={store}>
+		<ImageContext.Provider value={{ source, fallbackState, originalSrc }}>
 			{props.children}
 		</ImageContext.Provider>
 	)
 }
 
-type ImgProps = Omit<ComponentProps<"img">, "class"> & {
-	styles?: StyleXStyles
-}
-
 const styles = stylex.create({
 	image: { objectFit: "cover" },
-	preview: {
-		position: "fixed",
-		inset: 0,
-		zIndex: 50,
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: palette.black,
-		margin: 0,
-		cursor: "zoom-out",
-		appearance: "none",
-		borderStyle: "none",
-		padding: 0,
+	fallback: {
+		display: "grid",
+		placeItems: "center",
+		padding: px[8],
+		textAlign: "center",
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		color: colors.textTertiary,
+		backgroundColor: colors.backgroundSecondary,
 	},
-	previewImage: { maxHeight: "90%", maxWidth: "90%", objectFit: "contain" },
 })
-function Img(props: ImgProps) {
-	const context = useContext(ImageContext)!
 
-	createEffect(() => {
-		context.setSrc(props.src)
-	})
-
-	createEffect(() => {
-		context.setAlt(props.alt)
-	})
-
-	const [local, rest] = splitProps(props, ["styles"])
-	const img_props = mergeProps(rest, {
-		onLoad(e) {
-			context.setState(State.Ok)
-			callHandlerUnion(e, props.onLoad)
-		},
-		onError(e) {
-			context.setState(State.Error)
-			callHandlerUnion(e, props.onError)
-		},
-	} satisfies Partial<ComponentProps<"img">>)
-
-	return (
-		<Show when={!context.isError && props.src}>
-			<img
-				{...img_props}
-				{...stylex.attrs(styles.image, local.styles)}
-				alt={props.alt ?? ""}
-			/>
-		</Show>
-	)
-}
-
-type OriginalProps = Omit<ImgProps, "src"> & {
-	url: string | URL | null | undefined
-}
-
-export function Original(props: OriginalProps) {
-	const [local, imageProps] = splitProps(props, ["url"])
-	return (
-		<Img
-			{...imageProps}
-			src={imgUrl(local.url)}
-		/>
-	)
-}
-
-type ThumbnailProps = Omit<ImgProps, "src"> & {
-	url: string | URL | null | undefined
-	size: ThumbnailSize
-}
-
-export function Thumbnail(props: ThumbnailProps) {
-	const [local, imageProps] = splitProps(props, ["url", "size"])
-	return (
-		<Img
-			{...imageProps}
-			src={imgUrl(local.url, local.size)}
-		/>
-	)
-}
-
-type FallbackProps = {
-	children: (props: Omit<State, State.Ok>) => JSX.Element
-}
-
-export function Fallback(props: FallbackProps) {
-	const context = useContext(ImageContext)!
-	return (
-		<Show when={context.state !== State.Ok}>
-			{props.children(context.state)}
-		</Show>
-	)
-}
-
-export type PreiewProps = {
+type ImgProps = Omit<ComponentProps<"img">, "class" | "src"> & {
 	styles?: StyleXStyles
-	open?: boolean
-	close?: () => void
 }
-export function Preview(props: PreiewProps) {
-	const context = useContext(ImageContext)!
 
-	const handleKeyToggle = (e: KeyboardEvent) => {
-		if (e.key === "Enter" || e.key === " ") {
-			props.close?.()
+export function Img(props: ImgProps) {
+	const { source } = assertContext(ImageContext, "ImageContext")
+	const [local, imageProps] = splitProps(props, [
+		"alt",
+		"styles",
+		"onLoad",
+		"onError",
+	])
+	return (
+		<Show
+			when={source()}
+			keyed
+		>
+			{(image) => (
+				<Show when={!image.hasFailed()}>
+					<img
+						{...imageProps}
+						{...stylex.attrs(styles.image, local.styles)}
+						src={image.src}
+						alt={local.alt ?? ""}
+						onLoad={(event) => {
+							image.markLoaded()
+							callHandlerUnion(event, local.onLoad)
+						}}
+						onError={(event) => {
+							image.markFailed()
+							callHandlerUnion(event, local.onError)
+						}}
+					/>
+				</Show>
+			)}
+		</Show>
+	)
+}
+
+function DefaultFallback(props: { state: FallbackState }) {
+	const { t } = useLingui()
+	const label = () => {
+		switch (props.state) {
+			case State.Loading: {
+				return t`Loading…`
+			}
+			case State.Error: {
+				return t`Failed to load image`
+			}
+			case State.Missing: {
+				return t`No image`
+			}
 		}
 	}
 
+	return <div {...stylex.attrs(styles.fallback)}>{label()}</div>
+}
+
+type FallbackProps = {
+	state?: FallbackState
+	children?: (state: FallbackState) => JSX.Element
+}
+
+export function Fallback(props: FallbackProps) {
+	const context = useContext(ImageContext)
+	const fallback = createMemo(() => {
+		const state = props.state ?? context?.fallbackState()
+		return state === undefined ? undefined : { state }
+	})
+
 	return (
-		<Show when={props.open}>
-			<Portal>
-				<button
-					type="button"
-					onClick={() => props.close?.()}
-					onKeyDown={(e) => handleKeyToggle(e)}
-					{...stylex.attrs(styles.preview, props.styles)}
+		<Show
+			when={fallback()}
+			keyed
+		>
+			{({ state }) =>
+				props.children ? (
+					props.children(state)
+				) : (
+					<DefaultFallback state={state} />
+				)
+			}
+		</Show>
+	)
+}
+
+const VIEWER_MAX_HEIGHT = "75dvh"
+
+const previewStyles = stylex.create({
+	content: {
+		position: "fixed",
+		zIndex: 50,
+		left: "50%",
+		top: "50%",
+		translate: "-50% -50%",
+		width: "max-content",
+		outline: "none",
+	},
+	image: {
+		display: "block",
+		height: "auto",
+		maxWidth: `min(90dvw, calc(100dvw - ${px[32]}))`,
+		maxHeight: VIEWER_MAX_HEIGHT,
+		objectFit: "contain",
+	},
+	imageSize: (aspectRatio: number) => ({
+		width: `calc(${VIEWER_MAX_HEIGHT} * ${aspectRatio})`,
+	}),
+})
+
+type PreviewProps = ParentProps<{
+	alt?: string
+	styles?: StyleXStyles
+}>
+
+export function Preview(props: PreviewProps) {
+	const { t } = useLingui()
+	const { originalSrc } = assertContext(ImageContext, "ImageContext")
+	const [aspectRatio, setAspectRatio] = createSignal(1)
+
+	return (
+		<kDialog.Root>
+			{props.children}
+			<kDialog.Portal>
+				<Dialog.Overlay />
+				<kDialog.Content
+					aria-label={t`Enlarged image`}
+					{...stylex.attrs(previewStyles.content, props.styles)}
 				>
 					<img
-						src={context.src}
-						alt={context.alt}
-						{...stylex.attrs(styles.previewImage)}
+						src={originalSrc()}
+						alt={props.alt ?? ""}
+						onLoad={(event) =>
+							setAspectRatio(
+								event.currentTarget.naturalWidth
+									/ event.currentTarget.naturalHeight,
+							)
+						}
+						{...stylex.attrs(
+							previewStyles.image,
+							previewStyles.imageSize(aspectRatio()),
+						)}
 					/>
-				</button>
-			</Portal>
-		</Show>
+				</kDialog.Content>
+			</kDialog.Portal>
+		</kDialog.Root>
 	)
 }

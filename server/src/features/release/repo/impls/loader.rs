@@ -269,6 +269,7 @@ impl RelatedEntities {
                     )
                     .find_also_related(entity::image::Entity)
                     .order_by_desc(entity::image::Column::UploadedAt)
+                    .order_by_desc(entity::image::Column::Id)
                     .all(db)
                     .await?
                     .into_iter()

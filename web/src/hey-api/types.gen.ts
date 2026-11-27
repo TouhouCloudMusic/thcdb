@@ -52,13 +52,6 @@ export type ArtistCredits = {
 	next_cursor?: string | null
 }
 
-export type ArtistImageQueueTarget = {
-	artist_id: number
-	type: ArtistImageType
-}
-
-export type ArtistImageType = "Profile"
-
 export type ArtistListItem = {
 	id: number
 	name: string
@@ -69,6 +62,7 @@ export type ArtistListItem = {
 
 export type ArtistProfileImageFormData = {
 	data: Blob | File
+	description: string
 }
 
 export type ArtistReleaseArtist = {
@@ -292,6 +286,8 @@ export type CursorResponsePendingImageQueueItem = {
 		status: ImageQueueStatus
 		created_at: string
 		created_by: UserSummary
+		image_url?: string | null
+		target?: null | ImageQueueListTarget
 	}>
 	next_cursor?: number | null
 }
@@ -400,6 +396,8 @@ export type CursorResponseUserImageQueueItem = {
 	items: Array<{
 		id: number
 		image_id?: number | null
+		image_url?: string | null
+		target?: null | ImageQueueListTarget
 		status: ImageQueueStatus
 		created_at: string
 		handled_at?: string | null
@@ -936,14 +934,19 @@ export type ImageQueueDetail = {
 	status: ImageQueueStatus
 	created_at: string
 	created_by: UserSummary
+	description?: string | null
 	handled_at?: string | null
 	handled_by?: null | UserSummary
 	reverted_at?: string | null
 	reverted_by?: null | UserSummary
 	image?: null | ImageSummary
-	artist?: null | ArtistImageQueueTarget
-	release?: null | ReleaseImageQueueTarget
+	target: ImageQueueTarget
 	is_subscribed: boolean
+}
+
+export type ImageQueueListTarget = {
+	name: string
+	type: ImageQueueType
 }
 
 export type ImageQueueModerationAction = "Approved" | "Rejected" | "Reverted"
@@ -954,6 +957,20 @@ export type ImageQueueStatus =
 	| "Rejected"
 	| "Cancelled"
 	| "Reverted"
+
+export type ImageQueueTarget =
+	| {
+			id: number
+			name: string
+			current_image_url: string | null
+			kind: "artist"
+	  }
+	| {
+			id: number
+			name: string
+			current_image_url: string | null
+			kind: "release"
+	  }
 
 export type ImageQueueType = "artist" | "release"
 
@@ -1605,6 +1622,7 @@ export type ReleaseArtist = {
 
 export type ReleaseCoverArtFormData = {
 	data: Blob | File
+	description: string
 }
 
 export type ReleaseCredit = {
@@ -1621,13 +1639,6 @@ export type ReleaseDisc = {
 	id: number
 	name?: string | null
 }
-
-export type ReleaseImageQueueTarget = {
-	release_id: number
-	type: ReleaseImageType
-}
-
-export type ReleaseImageType = "Cover"
 
 export type ReleaseListItem = {
 	id: number

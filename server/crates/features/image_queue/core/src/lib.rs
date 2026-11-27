@@ -10,7 +10,7 @@ use sea_query::OnConflict;
 
 mod target;
 
-pub use target::{ImageQueueTarget, load_targets};
+pub use target::{NamedQueueTarget, QueueTarget, load_targets};
 
 #[infra_db::observe("image_queue.exists")]
 pub async fn exists(

@@ -125,10 +125,9 @@ function CorrectionHistoryItemEntry(props: CorrectionHistoryItemProps) {
 				<div {...stylex.attrs(styles.identifier)}>#{props.item.id}</div>
 
 				<div {...stylex.attrs(styles.timestamp)}>
-					{formatTimestamp(
-						props.item.handled_at ?? props.item.created_at,
-						t`None`,
-					)}
+					{formatTimestamp(props.item.handled_at ?? props.item.created_at, {
+						emptyText: t`None`,
+					})}
 				</div>
 				<Link
 					to="/correction/$id"
