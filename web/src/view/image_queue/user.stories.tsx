@@ -1,6 +1,8 @@
+import { createSignal, Show } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { CursorResponseUserImageQueueItem } from "~/hey-api"
+import { ready } from "~/type/asyncData"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { UserImageQueuePage } from "./user"
@@ -30,16 +32,33 @@ const ITEMS: CursorResponseUserImageQueueItem["items"] = [
 	},
 ]
 
-function StoryRoot(props: { state: "list" | "empty" | "loading" | "error" }) {
+type StoryState = "list" | "empty" | "loading" | "error"
+
+function HistoryExample(props: { initialState: StoryState }) {
+	const [state, setState] = createSignal(props.initialState)
 	return (
 		<UserImageQueuePage
-			items={props.state === "list" ? ITEMS : []}
-			isLoading={props.state === "loading"}
-			isError={props.state === "error"}
-			hasNextPage={false}
-			isFetchingNextPage={false}
-			onLoadMore={() => undefined}
+			list={(() => {
+				const kind = state()
+				if (kind === "error") return { kind, retry: () => setState("list") }
+				if (kind === "loading") return { kind }
+				return ready({
+					items: kind === "list" ? ITEMS : [],
+					pagination: { kind: "end" },
+				})
+			})()}
 		/>
+	)
+}
+
+function StoryRoot(props: { state: StoryState }) {
+	return (
+		<Show
+			when={props.state}
+			keyed
+		>
+			{(state) => <HistoryExample initialState={state} />}
+		</Show>
 	)
 }
 

@@ -1,6 +1,7 @@
 use axum::Json;
 use axum::body::Bytes;
 use axum::extract::{DefaultBodyLimit, Path, State};
+use axum::response::{IntoResponse, Response};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use constants::REQUEST_BODY_MAX_SIZE;
 use utoipa::ToSchema;
@@ -16,8 +17,9 @@ use crate::features::correction::{
     CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::features::image_metadata::CurrentImageMetadata;
+use crate::features::image_queue::description::SubmissionDescription;
 use crate::features::release_image::{self, ReleaseCoverArtInput};
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Release";
 
@@ -133,14 +135,16 @@ async fn get_release_cover_art_metadata(
 
 #[derive(Debug, ToSchema, TryFromMultipart)]
 pub struct ReleaseCoverArtFormData {
-    #[form_data(limit = "10MiB")]
+    #[form_data(field_name = "data", limit = "10MiB")]
     #[schema(
+        rename = "data",
         value_type = String,
         format = Binary,
         maximum = 10485760, // 10 MiB
         minimum = 1024    // 1 KiB
     )]
-    pub data: FieldData<Bytes>,
+    pub file: FieldData<Bytes>,
+    pub description: String,
 }
 
 #[utoipa::path(
@@ -160,12 +164,23 @@ async fn upload_release_cover_art(
     State(service): State<state::ReleaseImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ReleaseCoverArtFormData>,
-) -> Result<Data<i32>, release_image::Error> {
+) -> Response {
+    let description = match SubmissionDescription::try_from(form.description) {
+        Ok(description) => description,
+        Err(err) => {
+            return AppError::bad_request(err.to_string()).into_response();
+        }
+    };
+
     let dto = ReleaseCoverArtInput {
-        bytes: form.data.contents,
+        bytes: form.file.contents,
         user,
         release_id: id,
+        description,
     };
-    let entry_id = service.upload_cover_art(dto).await?;
-    Ok(Data::from(entry_id))
+    service
+        .upload_cover_art(dto)
+        .await
+        .map(Data::from)
+        .into_response()
 }

@@ -3,9 +3,13 @@ import type { ArtistCommonFilter, ReleaseType } from "@thc/api"
 import { ArtistApi } from "@thc/api"
 import { Either, identity } from "effect"
 
+export function profileQueryKey(id: number) {
+	return ["artist::profile", id] as const
+}
+
 export function findById(id: number, filter?: ArtistCommonFilter) {
 	return queryOptions({
-		queryKey: ["artist::profile", id, filter],
+		queryKey: [...profileQueryKey(id), filter],
 		queryFn: async () => {
 			const result = await ArtistApi.findOne({
 				path: { id },

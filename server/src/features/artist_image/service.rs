@@ -10,13 +10,13 @@ use constants::{
 };
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
+use image_queue_core::QueueTarget;
 use infra_db::SeaOrmRepository;
 use infra_error::EntityNotFound;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use user_core::UserSummary;
 
-use super::model::{ArtistImageQueue, ArtistProfileImageInput};
-use super::repo;
+use super::model::ArtistProfileImageInput;
 use crate::features::artist::find::repo as artist_repo;
 use crate::features::image_metadata::CurrentImageMetadata;
 use crate::features::image_queue::repo::{
@@ -100,6 +100,7 @@ impl Service {
             bytes,
             user,
             artist_id,
+            description,
         } = dto;
 
         if !artist_repo::exists(&self.repo.conn, artist_id).await? {
@@ -124,15 +125,15 @@ impl Service {
             )
             .await?;
 
-        let new_image_queue = NewImageQueue::new(&user, &image);
+        let new_image_queue = NewImageQueue::new(
+            &user,
+            &image,
+            QueueTarget::Artist(artist_id),
+            description,
+        );
 
         let image_queue =
             image_queue_repo::create(&tx_repo, new_image_queue).await?;
-
-        let artist_image_queue =
-            ArtistImageQueue::profile(artist_id, image_queue.id);
-
-        repo::create(&tx_repo, artist_image_queue).await?;
 
         drop(image_service);
 
@@ -156,6 +157,7 @@ impl Service {
             .filter(artist_image::Column::ArtistId.eq(artist_id))
             .filter(artist_image::Column::Type.eq(ArtistImageType::Profile))
             .order_by_desc(image_entity::Column::UploadedAt)
+            .order_by_desc(image_entity::Column::Id)
             .one(&self.repo.conn)
             .await
             .db_context("find current artist profile image")?;

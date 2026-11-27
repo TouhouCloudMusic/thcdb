@@ -77,7 +77,6 @@ const styles = stylex.create({
 		color: palette.reimu[600],
 	},
 	replyInput: { marginTop: px[8] },
-	replyActions: { display: "flex", gap: px[8] },
 	item: { paddingTop: px[16], paddingBottom: px[16] },
 	comment: { display: "flex", gap: px[12] },
 	indented: { marginLeft: px[44] },
@@ -146,7 +145,14 @@ const styles = stylex.create({
 		color: palette.slate[400],
 		fontStyle: "italic",
 	},
-	composerActions: { display: "flex", justifyContent: "flex-end" },
+	inputActions: {
+		display: "flex",
+		alignItems: "center",
+		flexWrap: "wrap",
+		gap: px[8],
+	},
+	trailingInputActions: { justifyContent: "flex-end" },
+	distributedInputActions: { justifyContent: "space-between" },
 })
 
 type CommentRenderNode = {
@@ -228,38 +234,53 @@ function useCommentInputStore(options: {
 		setContent(value)
 		if (value.trim()) setValidationError(undefined)
 	}
-	const submit = () => {
-		const text = content().trim()
+	const draft = () => content().trim()
+	const postDraft = async () => {
+		const text = draft()
 		if (!text) {
 			setValidationError(t`Comment cannot be empty`)
-			return
+			return false
 		}
 		setValidationError(undefined)
-		submitMutation.mutate(text)
+		try {
+			await submitMutation.mutateAsync(text)
+			return true
+		} catch {
+			return false
+		}
 	}
 
 	return {
 		content,
+		draft,
 		errorMessage,
 		isSubmitting: () => submitMutation.isPending,
 		setContent: setInputContent,
-		submit,
+		postDraft,
 	}
 }
+
+export type CommentComposerActions = (input: {
+	draft: Accessor<string>
+	disabled: Accessor<boolean>
+	postDraft: () => Promise<boolean>
+}) => JSX.Element
 
 type CommentInputProps = {
 	onSubmit: (content: string) => Promise<void>
 	placeholder: string
 	submitText: JSX.Element
-	actionStyles: StyleXStyles
 	onCancel?: () => void
 	styles?: StyleXStyles
+	disabled?: boolean
+	actions?: CommentComposerActions
 }
 
 function CommentInput(props: CommentInputProps) {
 	const input = useCommentInputStore({
 		onSubmit: (content) => props.onSubmit(content),
 	})
+	const disabled = () => input.isSubmitting() || props.disabled === true
 
 	return (
 		<div {...stylex.attrs(props.styles)}>
@@ -268,22 +289,32 @@ function CommentInput(props: CommentInputProps) {
 				value={input.content()}
 				aria-label={props.placeholder}
 				onInput={(e) => input.setContent(e.currentTarget.value)}
-				disabled={input.isSubmitting()}
+				disabled={disabled()}
 				rows={3}
 				placeholder={props.placeholder}
 			></textarea>
 			<Show when={input.errorMessage()}>
 				{(message) => (
-					<p {...stylex.attrs(styles.inputChild, styles.inputError)}>
+					<p
+						role="alert"
+						{...stylex.attrs(styles.inputChild, styles.inputError)}
+					>
 						{message()}
 					</p>
 				)}
 			</Show>
-			<div {...stylex.attrs(props.actionStyles, styles.inputChild)}>
+			<div
+				{...stylex.attrs(
+					styles.inputChild,
+					styles.inputActions,
+					props.actions && styles.distributedInputActions,
+					!props.actions && !props.onCancel && styles.trailingInputActions,
+				)}
+			>
 				<Button
-					disabled={input.isSubmitting()}
-					onClick={input.submit}
-					appearance="solid"
+					disabled={disabled()}
+					onClick={() => void input.postDraft()}
+					appearance={props.actions ? "outline" : "solid"}
 					tone="gray"
 					size="sm"
 				>
@@ -307,6 +338,11 @@ function CommentInput(props: CommentInputProps) {
 						</Button>
 					)}
 				</Show>
+				{props.actions?.({
+					draft: input.draft,
+					disabled,
+					postDraft: input.postDraft,
+				})}
 			</div>
 		</div>
 	)
@@ -322,7 +358,6 @@ function ReplyInput(props: {
 	return (
 		<CommentInput
 			styles={[styles.replyInput, props.styles]}
-			actionStyles={styles.replyActions}
 			placeholder={t`Write a reply...`}
 			submitText={<Trans>Reply</Trans>}
 			onSubmit={props.onSubmit}
@@ -504,47 +539,38 @@ function CommentThreadListItem(props: CommentThreadListItemProps) {
 	)
 }
 
-function TopLevelInput(props: {
-	onSubmit: (content: string) => Promise<void>
-	currentUser: UserProfile | undefined
-}) {
-	const { t } = useLingui()
-
-	return (
-		<div {...stylex.attrs(styles.comment)}>
-			<Show when={props.currentUser}>
-				<Avatar
-					user={props.currentUser}
-					styles={styles.avatar}
-				/>
-			</Show>
-			<CommentInput
-				styles={styles.body}
-				actionStyles={styles.composerActions}
-				placeholder={t`Add a comment...`}
-				submitText={<Trans>Comment</Trans>}
-				onSubmit={props.onSubmit}
-			/>
-		</div>
-	)
-}
-
 type CommentComposerProps = {
 	onSubmit: (content: string) => Promise<void>
 	currentUser: UserProfile | undefined
-	signedOutFallback: JSX.Element
+	signedOutFallback?: JSX.Element
+	disabled?: boolean
+	actions?: CommentComposerActions
 }
 
 export function CommentComposer(props: CommentComposerProps) {
+	const { t } = useLingui()
+
 	return (
 		<Show
-			when={props.currentUser !== undefined}
+			when={props.currentUser}
 			fallback={props.signedOutFallback}
 		>
-			<TopLevelInput
-				onSubmit={props.onSubmit}
-				currentUser={props.currentUser}
-			/>
+			{(currentUser) => (
+				<div {...stylex.attrs(styles.comment)}>
+					<Avatar
+						user={currentUser()}
+						styles={styles.avatar}
+					/>
+					<CommentInput
+						styles={styles.body}
+						placeholder={t`Add a comment...`}
+						submitText={<Trans>Comment</Trans>}
+						onSubmit={props.onSubmit}
+						disabled={props.disabled}
+						actions={props.actions}
+					/>
+				</div>
+			)}
 		</Show>
 	)
 }

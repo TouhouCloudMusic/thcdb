@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './route/__root'
 import { Route as SearchRouteImport } from './route/search'
 import { Route as NotificationsRouteImport } from './route/notifications'
+import { Route as ModerationRouteImport } from './route/moderation'
 import { Route as AuthRouteImport } from './route/auth'
 import { Route as AboutRouteImport } from './route/about'
 import { Route as IndexRouteImport } from './route/index'
@@ -69,7 +70,7 @@ import { Route as ArtistIdCorrectionsRouteImport } from './route/artist/$id_.cor
 import { Route as userProfileImageQueueRouteImport } from './route/(user)/profile_.image-queue'
 import { Route as userProfileEditRouteImport } from './route/(user)/profile_.edit'
 import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_.$username'
-import { Route as userProfileUsernameImageQueueRouteImport } from './route/(user)/profile_.$username.image-queue'
+import { Route as userProfileUsernameImageQueueRouteImport } from './route/(user)/profile_.$username_.image-queue'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -79,6 +80,11 @@ const SearchRoute = SearchRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModerationRoute = ModerationRouteImport.update({
+  id: '/moderation',
+  path: '/moderation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -374,15 +380,16 @@ const userProfileUsernameRoute = userProfileUsernameRouteImport.update({
 } as any)
 const userProfileUsernameImageQueueRoute =
   userProfileUsernameImageQueueRouteImport.update({
-    id: '/image-queue',
-    path: '/image-queue',
-    getParentRoute: () => userProfileUsernameRoute,
+    id: '/(user)/profile_/$username_/image-queue',
+    path: '/profile/$username/image-queue',
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
+  '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
@@ -420,7 +427,7 @@ export interface FileRoutesByFullPath {
   '/chart/': typeof ChartIndexRoute
   '/image-queue/': typeof ImageQueueIndexRoute
   '/recommendation/': typeof RecommendationIndexRoute
-  '/profile/$username': typeof userProfileUsernameRouteWithChildren
+  '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
   '/profile/image-queue': typeof userProfileImageQueueRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
@@ -445,6 +452,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
@@ -482,7 +490,7 @@ export interface FileRoutesByTo {
   '/chart': typeof ChartIndexRoute
   '/image-queue': typeof ImageQueueIndexRoute
   '/recommendation': typeof RecommendationIndexRoute
-  '/profile/$username': typeof userProfileUsernameRouteWithChildren
+  '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
   '/profile/image-queue': typeof userProfileImageQueueRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
@@ -509,6 +517,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
+  '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/(user)/profile': typeof userProfileRoute
@@ -546,7 +555,7 @@ export interface FileRoutesById {
   '/chart/': typeof ChartIndexRoute
   '/image-queue/': typeof ImageQueueIndexRoute
   '/recommendation/': typeof RecommendationIndexRoute
-  '/(user)/profile_/$username': typeof userProfileUsernameRouteWithChildren
+  '/(user)/profile_/$username': typeof userProfileUsernameRoute
   '/(user)/profile_/edit': typeof userProfileEditRoute
   '/(user)/profile_/image-queue': typeof userProfileImageQueueRoute
   '/artist/$id_/corrections': typeof ArtistIdCorrectionsRoute
@@ -566,7 +575,7 @@ export interface FileRoutesById {
   '/tag/$id_/edit': typeof TagIdEditRoute
   '/artist/$id/': typeof ArtistIdIndexRoute
   '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
-  '/(user)/profile_/$username/image-queue': typeof userProfileUsernameImageQueueRoute
+  '/(user)/profile_/$username_/image-queue': typeof userProfileUsernameImageQueueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -574,6 +583,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/moderation'
     | '/notifications'
     | '/search'
     | '/profile'
@@ -636,6 +646,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/moderation'
     | '/notifications'
     | '/search'
     | '/profile'
@@ -699,6 +710,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/moderation'
     | '/notifications'
     | '/search'
     | '/(user)/profile'
@@ -756,13 +768,14 @@ export interface FileRouteTypes {
     | '/tag/$id_/edit'
     | '/artist/$id/'
     | '/auth/reset-password/'
-    | '/(user)/profile_/$username/image-queue'
+    | '/(user)/profile_/$username_/image-queue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRouteWithChildren
+  ModerationRoute: typeof ModerationRoute
   NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
   userProfileRoute: typeof userProfileRoute
@@ -795,7 +808,7 @@ export interface RootRouteChildren {
   ChartIndexRoute: typeof ChartIndexRoute
   ImageQueueIndexRoute: typeof ImageQueueIndexRoute
   RecommendationIndexRoute: typeof RecommendationIndexRoute
-  userProfileUsernameRoute: typeof userProfileUsernameRouteWithChildren
+  userProfileUsernameRoute: typeof userProfileUsernameRoute
   userProfileEditRoute: typeof userProfileEditRoute
   userProfileImageQueueRoute: typeof userProfileImageQueueRoute
   ArtistIdCorrectionsRoute: typeof ArtistIdCorrectionsRoute
@@ -813,6 +826,7 @@ export interface RootRouteChildren {
   TagIdCorrectionsRoute: typeof TagIdCorrectionsRoute
   TagIdEditRoute: typeof TagIdEditRoute
   ArtistIdIndexRoute: typeof ArtistIdIndexRoute
+  userProfileUsernameImageQueueRoute: typeof userProfileUsernameImageQueueRoute
 }
 
 declare module '@tanstack/solid-router' {
@@ -829,6 +843,13 @@ declare module '@tanstack/solid-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moderation': {
+      id: '/moderation'
+      path: '/moderation'
+      fullPath: '/moderation'
+      preLoaderRoute: typeof ModerationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1237,12 +1258,12 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof userProfileUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(user)/profile_/$username/image-queue': {
-      id: '/(user)/profile_/$username/image-queue'
-      path: '/image-queue'
+    '/(user)/profile_/$username_/image-queue': {
+      id: '/(user)/profile_/$username_/image-queue'
+      path: '/profile/$username/image-queue'
       fullPath: '/profile/$username/image-queue'
       preLoaderRoute: typeof userProfileUsernameImageQueueRouteImport
-      parentRoute: typeof userProfileUsernameRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1269,21 +1290,11 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface userProfileUsernameRouteChildren {
-  userProfileUsernameImageQueueRoute: typeof userProfileUsernameImageQueueRoute
-}
-
-const userProfileUsernameRouteChildren: userProfileUsernameRouteChildren = {
-  userProfileUsernameImageQueueRoute: userProfileUsernameImageQueueRoute,
-}
-
-const userProfileUsernameRouteWithChildren =
-  userProfileUsernameRoute._addFileChildren(userProfileUsernameRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRouteWithChildren,
+  ModerationRoute: ModerationRoute,
   NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
   userProfileRoute: userProfileRoute,
@@ -1316,7 +1327,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChartIndexRoute: ChartIndexRoute,
   ImageQueueIndexRoute: ImageQueueIndexRoute,
   RecommendationIndexRoute: RecommendationIndexRoute,
-  userProfileUsernameRoute: userProfileUsernameRouteWithChildren,
+  userProfileUsernameRoute: userProfileUsernameRoute,
   userProfileEditRoute: userProfileEditRoute,
   userProfileImageQueueRoute: userProfileImageQueueRoute,
   ArtistIdCorrectionsRoute: ArtistIdCorrectionsRoute,
@@ -1334,6 +1345,7 @@ const rootRouteChildren: RootRouteChildren = {
   TagIdCorrectionsRoute: TagIdCorrectionsRoute,
   TagIdEditRoute: TagIdEditRoute,
   ArtistIdIndexRoute: ArtistIdIndexRoute,
+  userProfileUsernameImageQueueRoute: userProfileUsernameImageQueueRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

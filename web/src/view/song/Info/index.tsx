@@ -239,7 +239,10 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 				value="Comments"
 				{...stylex.attrs(styles.tabContent)}
 			>
-				<EntityComments model={props.comments} />
+				<EntityComments.Root model={props.comments}>
+					<EntityComments.Form />
+					<EntityComments.List />
+				</EntityComments.Root>
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

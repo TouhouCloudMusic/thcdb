@@ -1,16 +1,15 @@
 import * as stylex from "@stylexjs/stylex"
 import { useRouterState } from "@tanstack/solid-router"
-import type { Artist, ImageQueueDetail, Release, UserSummary } from "@thc/api"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import type { ImageQueueDetail, UserSummary } from "~/hey-api"
 import { palette } from "~/style/color/palette.stylex"
 import { lineHeights, fontSizes, px } from "~/style/tokens.stylex"
-import { imgUrl } from "~/utils/adapter/static_file"
 import { StoryLayout, StoryRouterProvider } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
-import { ImageQueueDetailView } from "~/view/image_queue/detail"
+import { ImageQueueDetailView } from "~/view/image_queue/detail/view"
 
 const styles = stylex.create({
 	narrow: { width: "100%", maxWidth: px[640], marginInline: "auto" },
@@ -35,28 +34,25 @@ const STORY_ENTRIES = [
 		nextId: 204,
 		status: "Pending",
 		createdAt: "2026-03-16T09:15:00.000Z",
+		description: "The scan includes the complete front cover.",
 		createdBy: {
 			id: 119,
 			name: "Sanae Kochiya",
 		},
 		image: {
 			id: 805,
-			url: "/img/logo.png",
+			url: "/img/cover/release/1.png",
 			uploaded_at: "2026-03-16T09:15:00.000Z",
 			uploaded_by: {
 				id: 119,
 				name: "Sanae Kochiya",
 			},
 		},
-		release: {
-			release_id: 52,
-			type: "Cover",
-		},
-		targetRelease: {
+		target: {
+			kind: "release",
 			id: 52,
-			title: "東方風神録",
-			release_type: "Album",
-			cover_art_url: "/img/logo.png",
+			name: "東方風神録",
+			current_image_url: null,
 		},
 	}),
 	createStoryEntry({
@@ -82,15 +78,11 @@ const STORY_ENTRIES = [
 				name: "Maribel Hearn",
 			},
 		},
-		artist: {
-			artist_id: 44,
-			type: "Profile",
-		},
-		targetArtist: {
+		target: {
+			kind: "artist",
 			id: 44,
 			name: "Maribel Hearn",
-			artist_type: "Solo",
-			profile_image_url: "/avatar.png",
+			current_image_url: "/avatar.png",
 		},
 	}),
 	createStoryEntry({
@@ -99,6 +91,7 @@ const STORY_ENTRIES = [
 		nextId: 202,
 		status: "Pending",
 		createdAt: "2026-03-15T12:20:00.000Z",
+		description: "The artist’s website has a higher-resolution portrait.",
 		createdBy: {
 			id: 118,
 			name: "Renko Usami",
@@ -112,15 +105,11 @@ const STORY_ENTRIES = [
 				name: "Renko Usami",
 			},
 		},
-		artist: {
-			artist_id: 17,
-			type: "Profile",
-		},
-		targetArtist: {
+		target: {
+			kind: "artist",
 			id: 17,
 			name: "Yuyuko Saigyouji",
-			artist_type: "Solo",
-			profile_image_url: "/avatar.png",
+			current_image_url: "/avatar.png",
 		},
 	}),
 	createStoryEntry({
@@ -144,15 +133,11 @@ const STORY_ENTRIES = [
 				name: "Keine Kamishirasawa",
 			},
 		},
-		release: {
-			release_id: 31,
-			type: "Cover",
-		},
-		targetRelease: {
+		target: {
+			kind: "release",
 			id: 31,
-			title: "Perfect Memento in Strict Sense",
-			release_type: "Album",
-			cover_art_url: "/img/logo.png",
+			name: "Perfect Memento in Strict Sense",
+			current_image_url: "/img/logo.png",
 		},
 	}),
 	createStoryEntry({
@@ -167,15 +152,11 @@ const STORY_ENTRIES = [
 		handledAt: "2026-03-12T07:05:00.000Z",
 		handledBy: STORY_REVIEWER,
 		image: null,
-		release: {
-			release_id: 30,
-			type: "Cover",
-		},
-		targetRelease: {
+		target: {
+			kind: "release",
 			id: 30,
-			title: "Undefined Fantastic Object",
-			release_type: "Album",
-			cover_art_url: null,
+			name: "Undefined Fantastic Object",
+			current_image_url: null,
 		},
 	}),
 ] satisfies StoryEntry[]
@@ -186,8 +167,6 @@ type StoryStatus = (typeof STATUS_OPTIONS)[number]
 
 type StoryEntry = {
 	detail: ImageQueueDetail
-	targetArtist?: Artist
-	targetRelease?: Release
 }
 
 type StoryEntrySeed = {
@@ -196,20 +175,19 @@ type StoryEntrySeed = {
 	nextId?: number
 	status: ImageQueueDetail["status"]
 	createdAt: string
+	description?: string
 	createdBy: UserSummary
 	handledAt?: string | null
 	handledBy?: UserSummary | null
 	revertedAt?: string | null
 	revertedBy?: UserSummary | null
 	image: ImageQueueDetail["image"]
-	artist?: NonNullable<ImageQueueDetail["artist"]>
-	release?: NonNullable<ImageQueueDetail["release"]>
-	targetArtist?: Artist
-	targetRelease?: Release
+	target: ImageQueueDetail["target"]
 }
 
 type StoryRootProps = {
 	status: StoryStatus
+	firstUpload: boolean
 }
 
 function createStoryEntry(seed: StoryEntrySeed): StoryEntry {
@@ -221,18 +199,16 @@ function createStoryEntry(seed: StoryEntrySeed): StoryEntry {
 			image_id: seed.image?.id ?? null,
 			status: seed.status,
 			created_at: seed.createdAt,
+			description: seed.description ?? null,
 			created_by: seed.createdBy,
 			handled_at: seed.handledAt ?? null,
 			handled_by: seed.handledBy ?? null,
 			reverted_at: seed.revertedAt ?? null,
 			reverted_by: seed.revertedBy ?? null,
 			image: seed.image,
-			artist: seed.artist ?? null,
-			release: seed.release ?? null,
+			target: seed.target,
 			is_subscribed: false,
 		},
-		targetArtist: seed.targetArtist,
-		targetRelease: seed.targetRelease,
 	}
 }
 
@@ -269,16 +245,6 @@ function parseEntryId(pathname: string, fallback: number) {
 
 function findEntry(entries: StoryEntry[], id: number) {
 	return entries.find((entry) => entry.detail.id === id)
-}
-
-function getTargetName(entry: StoryEntry) {
-	return entry.targetArtist?.name ?? entry.targetRelease?.title
-}
-
-function getTargetImageSrc(entry: StoryEntry) {
-	const url =
-		entry.targetArtist?.profile_image_url ?? entry.targetRelease?.cover_art_url
-	return imgUrl(url)
 }
 
 function updateStoryEntry(
@@ -336,19 +302,20 @@ function updateStoryEntries(
 }
 
 function StoryRoot(props: StoryRootProps) {
+	const initialEntry = () =>
+		props.status === "Pending" && props.firstUpload
+			? 205
+			: getInitialEntryId(props.status)
 	return (
 		<Show
-			when={props.status}
+			when={initialEntry()}
 			keyed
 		>
-			{(status) => {
-				const initialEntryId = getInitialEntryId(status)
-				return (
-					<StoryRouterProvider initialEntry={`/image-queue/${initialEntryId}`}>
-						<StoryScene initialEntryId={initialEntryId} />
-					</StoryRouterProvider>
-				)
-			}}
+			{(id) => (
+				<StoryRouterProvider initialEntry={`/image-queue/${id}`}>
+					<StoryScene initialEntryId={id} />
+				</StoryRouterProvider>
+			)}
 		</Show>
 	)
 }
@@ -371,6 +338,22 @@ function StoryScene(props: { initialEntryId: number }) {
 			updateStoryEntries(entries, currentEntryId(), action),
 		)
 	}
+	const toggleSubscription = () => {
+		const id = currentEntryId()
+		setStoryEntries((entries) =>
+			entries.map((entry) =>
+				entry.detail.id === id
+					? {
+							...entry,
+							detail: {
+								...entry.detail,
+								is_subscribed: !entry.detail.is_subscribed,
+							},
+						}
+					: entry,
+			),
+		)
+	}
 
 	return (
 		<Switch>
@@ -378,14 +361,17 @@ function StoryScene(props: { initialEntryId: number }) {
 				{(entry) => (
 					<ImageQueueDetailView
 						detail={entry().detail}
-						canModerate={true}
-						isModerating={false}
-						onModerate={updateCurrentEntry}
-						targetName={getTargetName(entry())}
-						targetImageSrc={getTargetImageSrc(entry())}
-						targetImageLoading={false}
-						targetImageError={false}
+						review={{
+							targetName: entry().detail.target.name,
+							disabled: false,
+							onModerate: updateCurrentEntry,
+						}}
 						comments={COMMENTS}
+						subscription={{
+							isSubscribed: entry().detail.is_subscribed,
+							disabled: false,
+							toggle: toggleSubscription,
+						}}
 					/>
 				)}
 			</Match>
@@ -408,9 +394,14 @@ const meta = {
 			control: { type: "radio" },
 			options: STATUS_OPTIONS,
 		},
+		firstUpload: {
+			control: "boolean",
+			if: { arg: "status", eq: "Pending" },
+		},
 	},
 	args: {
 		status: "Pending",
+		firstUpload: false,
 	},
 } satisfies Meta<typeof StoryRoot>
 

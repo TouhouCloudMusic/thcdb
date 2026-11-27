@@ -1,10 +1,6 @@
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import {
-	adaptApiResult,
-	adaptApiResultOptional,
-	adaptFetchResponseFromResponse,
-} from "../../shared"
+import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
 export async function explore(options?: Opt<"explore_release">) {
 	const res = await FetchClient.GET("/release/explore", {
@@ -60,24 +56,5 @@ export async function updatePendingCorrection(
 		},
 	)
 
-	return adaptApiResult(res)
-}
-
-export async function uploadCoverArt(options: {
-	releaseId: number
-	file: File
-}) {
-	const body = new FormData()
-	body.append("data", options.file)
-
-	const response = await fetch(`/api/release/${options.releaseId}/cover-art`, {
-		method: "POST",
-		headers: {
-			Accept: "application/json",
-		},
-		body,
-	})
-
-	const res = await adaptFetchResponseFromResponse<number>(response)
 	return adaptApiResult(res)
 }

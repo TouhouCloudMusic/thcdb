@@ -8,6 +8,7 @@ import * as ImageCropDialog from "~/component/ImageCropDialog"
 import { formatBytes } from "~/component/ImageCropDialog/utils"
 import type { FileSizeRange } from "~/component/ImageCropDialog/utils"
 import { Button } from "~/component/atomic/button"
+import { InputField } from "~/component/atomic/form/Input"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import { palette } from "~/style/color/palette.stylex"
@@ -71,6 +72,8 @@ const styles = stylex.create({
 		marginBlockEnd: { default: null, ":not(:last-child)": px[16] },
 	},
 	actions: { display: "grid", alignContent: "flex-start", gap: px[12] },
+	noteField: { gap: px[4], minWidth: 0 },
+	noteInput: { width: "100%", minHeight: px[96], resize: "vertical" },
 	figureChild: {
 		marginBlockEnd: { default: null, ":not(:last-child)": px[8] },
 	},
@@ -191,7 +194,7 @@ type PreviewBoxProps = Omit<PreviewFigureProps, "label">
 function PreviewBox(props: PreviewBoxProps) {
 	return (
 		<div {...stylex.attrs(styles.previewBox, styles.figureChild)}>
-			<Image.Root>
+			<Image.Root url={props.src}>
 				<Image.Fallback>
 					{(state) => (
 						<Show when={!props.src || state !== Image.State.Loading}>
@@ -201,8 +204,7 @@ function PreviewBox(props: PreviewBoxProps) {
 						</Show>
 					)}
 				</Image.Fallback>
-				<Image.Original
-					url={props.src}
+				<Image.Img
 					alt={props.alt}
 					styles={styles.previewImage}
 				/>
@@ -247,49 +249,72 @@ function CurrentImageFigure(props: CurrentImageFigureProps) {
 }
 
 type ImageUploadActionsProps = {
-	hasDraft: boolean
-	isUploading: boolean
-	submitError?: string
-	onOpen: () => void
-	onSubmit: () => Promise<void>
+	store: EntityImageUploadStore
 	styles?: StyleXStyles
 }
 
 function ImageUploadActions(props: ImageUploadActionsProps) {
 	const { t } = useLingui()
 	return (
-		<section {...stylex.attrs(styles.actions, props.styles)}>
+		<form
+			{...stylex.attrs(styles.actions, props.styles)}
+			onSubmit={(event) => {
+				event.preventDefault()
+				void props.store.onSubmit()
+			}}
+		>
 			<Button
-				disabled={props.isUploading}
-				onClick={props.onOpen}
+				type="button"
+				disabled={props.store.isUploading}
+				onClick={props.store.onOpen}
 				appearance="soft"
 				tone="reimu"
 				size="sm"
 				styles={styles.actionButton}
 			>
-				{props.hasDraft ? t`Select another image` : t`Select image`}
+				{props.store.hasDraft ? t`Select another image` : t`Select image`}
 			</Button>
 
+			<InputField.Root
+				name="description"
+				value={props.store.description}
+				onChange={props.store.setDescription}
+				required
+				disabled={props.store.isUploading}
+				styles={styles.noteField}
+			>
+				<InputField.Label>{t`Description`}</InputField.Label>
+				<InputField.Textarea
+					placeholder={t`Explain the change or cite the image source.`}
+					styles={styles.noteInput}
+				/>
+			</InputField.Root>
+
 			<Button
-				disabled={!props.hasDraft || props.isUploading}
-				onClick={() => {
-					void props.onSubmit()
-				}}
+				type="submit"
+				disabled={!props.store.canSubmit}
 				appearance="solid"
 				tone="reimu"
 				size="sm"
 				styles={styles.actionButton}
 			>
 				<Show
-					when={props.isUploading}
+					when={props.store.isUploading}
 					fallback={t`Submit`}
 				>
 					Uploading…
 				</Show>
 			</Button>
 
-			<Show when={props.submitError}>
-				{(error) => <div {...stylex.attrs(styles.error)}>{error()}</div>}
+			<Show when={props.store.submitError}>
+				{(error) => (
+					<div
+						role="alert"
+						{...stylex.attrs(styles.error)}
+					>
+						{error()}
+					</div>
+				)}
 			</Show>
 
 			<Link
@@ -300,7 +325,7 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 				<span>{t`Open image queue`}</span>
 				<span aria-hidden="true">→</span>
 			</Link>
-		</section>
+		</form>
 	)
 }
 
@@ -385,11 +410,7 @@ export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 						styles={styles.draftFigure}
 					/>
 					<ImageUploadActions
-						hasDraft={props.store.hasDraft}
-						isUploading={props.store.isUploading}
-						submitError={props.store.submitError}
-						onOpen={props.store.onOpen}
-						onSubmit={props.store.onSubmit}
+						store={props.store}
 						styles={styles.uploadActions}
 					/>
 				</article>

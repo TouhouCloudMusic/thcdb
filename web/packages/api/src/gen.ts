@@ -1721,13 +1721,6 @@ export type components = {
         ArtistCreditScope: "all" | "release" | "song";
         /** @enum {string} */
         ArtistCreditSort: "newest" | "oldest";
-        ArtistImageQueueTarget: {
-            /** Format: int32 */
-            artist_id: number;
-            type: components["schemas"]["ArtistImageType"];
-        };
-        /** @enum {string} */
-        ArtistImageType: "Profile";
         ArtistListItem: {
             artist_type: components["schemas"]["ArtistType"];
             current_location: components["schemas"]["Location"];
@@ -1739,6 +1732,7 @@ export type components = {
         ArtistProfileImageFormData: {
             /** Format: binary */
             data: string;
+            description: string;
         };
         ArtistReleaseArtist: {
             /** Format: int32 */
@@ -1977,7 +1971,9 @@ export type components = {
                 id: number;
                 /** Format: int32 */
                 image_id?: number | null;
+                image_url?: string | null;
                 status: components["schemas"]["ImageQueueStatus"];
+                target?: null | components["schemas"]["ImageQueueListTarget"];
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
@@ -2103,10 +2099,12 @@ export type components = {
                 id: number;
                 /** Format: int32 */
                 image_id?: number | null;
+                image_url?: string | null;
                 /** Format: date-time */
                 reverted_at?: string | null;
                 reverted_by?: null | components["schemas"]["UserSummary"];
                 status: components["schemas"]["ImageQueueStatus"];
+                target?: null | components["schemas"]["ImageQueueListTarget"];
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
@@ -2561,10 +2559,10 @@ export type components = {
         /** @enum {string} */
         ImageQueueAction: "Approve" | "Reject" | "Revert";
         ImageQueueDetail: {
-            artist?: null | components["schemas"]["ArtistImageQueueTarget"];
             /** Format: date-time */
             created_at: string;
             created_by: components["schemas"]["UserSummary"];
+            description?: string | null;
             /** Format: date-time */
             handled_at?: string | null;
             handled_by?: null | components["schemas"]["UserSummary"];
@@ -2578,16 +2576,35 @@ export type components = {
             next_id?: number | null;
             /** Format: int32 */
             previous_id?: number | null;
-            release?: null | components["schemas"]["ReleaseImageQueueTarget"];
             /** Format: date-time */
             reverted_at?: string | null;
             reverted_by?: null | components["schemas"]["UserSummary"];
             status: components["schemas"]["ImageQueueStatus"];
+            target: components["schemas"]["ImageQueueTarget"];
+        };
+        ImageQueueListTarget: {
+            name: string;
+            type: components["schemas"]["ImageQueueType"];
         };
         /** @enum {string} */
         ImageQueueModerationAction: "Approved" | "Rejected" | "Reverted";
         /** @enum {string} */
         ImageQueueStatus: "Pending" | "Approved" | "Rejected" | "Cancelled" | "Reverted";
+        ImageQueueTarget: {
+            current_image_url: string | null;
+            /** Format: int32 */
+            id: number;
+            /** @enum {string} */
+            kind: "artist";
+            name: string;
+        } | {
+            current_image_url: string | null;
+            /** Format: int32 */
+            id: number;
+            /** @enum {string} */
+            kind: "release";
+            name: string;
+        };
         /** @enum {string} */
         ImageQueueType: "artist" | "release";
         ImageSummary: {
@@ -3241,6 +3258,7 @@ export type components = {
         ReleaseCoverArtFormData: {
             /** Format: binary */
             data: string;
+            description: string;
         };
         ReleaseCredit: {
             artist: components["schemas"]["ReleaseArtist"];
@@ -3258,13 +3276,6 @@ export type components = {
             id: number;
             name?: string | null;
         };
-        ReleaseImageQueueTarget: {
-            /** Format: int32 */
-            release_id: number;
-            type: components["schemas"]["ReleaseImageType"];
-        };
-        /** @enum {string} */
-        ReleaseImageType: "Cover";
         ReleaseListItem: {
             artists: components["schemas"]["SimpleArtist"][];
             catalog_numbers: string[];
@@ -3631,8 +3642,6 @@ export type ArtistCommonFilter = components['schemas']['ArtistCommonFilter'];
 export type ArtistCredits = components['schemas']['ArtistCredits'];
 export type ArtistCreditScope = components['schemas']['ArtistCreditScope'];
 export type ArtistCreditSort = components['schemas']['ArtistCreditSort'];
-export type ArtistImageQueueTarget = components['schemas']['ArtistImageQueueTarget'];
-export type ArtistImageType = components['schemas']['ArtistImageType'];
 export type ArtistListItem = components['schemas']['ArtistListItem'];
 export type ArtistProfileImageFormData = components['schemas']['ArtistProfileImageFormData'];
 export type ArtistReleaseArtist = components['schemas']['ArtistReleaseArtist'];
@@ -3770,8 +3779,10 @@ export type HomeStatistics = components['schemas']['HomeStatistics'];
 export type HttpUrl = components['schemas']['HttpUrl'];
 export type ImageQueueAction = components['schemas']['ImageQueueAction'];
 export type ImageQueueDetail = components['schemas']['ImageQueueDetail'];
+export type ImageQueueListTarget = components['schemas']['ImageQueueListTarget'];
 export type ImageQueueModerationAction = components['schemas']['ImageQueueModerationAction'];
 export type ImageQueueStatus = components['schemas']['ImageQueueStatus'];
+export type ImageQueueTarget = components['schemas']['ImageQueueTarget'];
 export type ImageQueueType = components['schemas']['ImageQueueType'];
 export type ImageSummary = components['schemas']['ImageSummary'];
 export type InitDiscography = components['schemas']['InitDiscography'];
@@ -3842,8 +3853,6 @@ export type ReleaseCoverArtFormData = components['schemas']['ReleaseCoverArtForm
 export type ReleaseCredit = components['schemas']['ReleaseCredit'];
 export type ReleaseDetail = components['schemas']['ReleaseDetail'];
 export type ReleaseDisc = components['schemas']['ReleaseDisc'];
-export type ReleaseImageQueueTarget = components['schemas']['ReleaseImageQueueTarget'];
-export type ReleaseImageType = components['schemas']['ReleaseImageType'];
 export type ReleaseListItem = components['schemas']['ReleaseListItem'];
 export type ReleaseRef = components['schemas']['ReleaseRef'];
 export type ReleaseSortField = components['schemas']['ReleaseSortField'];

@@ -1,3 +1,4 @@
+pub(crate) mod description;
 mod http;
 mod manage;
 pub(crate) mod repo;

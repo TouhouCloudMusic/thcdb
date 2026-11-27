@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use comment_repo::{CommentTarget, CommentTargetKind};
 use entity::enums::EntityType;
-use image_queue_core::ImageQueueTarget;
+use image_queue_core::{NamedQueueTarget, QueueTarget};
 use infra_db::error::{DatabaseFailure, DatabaseResultExt};
 use sea_orm::ConnectionTrait;
 use user_core::{UserSummary, load_users};
@@ -193,15 +193,14 @@ impl References {
         }));
 
         let entity_names = queries::load_entity_names(conn, &ids).await?;
+        let image_queue_ids: Vec<_> =
+            ids.iter(ReferenceKind::ImageQueue).collect();
         let image_queues: HashMap<i32, ImageQueueMeta> =
-            image_queue_core::load_targets(
-                conn,
-                ids.iter(ReferenceKind::ImageQueue),
-            )
-            .await?
-            .into_iter()
-            .map(|(id, target)| (id, (id, target).into()))
-            .collect();
+            image_queue_core::load_targets(conn, &image_queue_ids)
+                .await?
+                .into_iter()
+                .map(|(id, target)| (id, (id, target).into()))
+                .collect();
         let users = load_users(conn, ids.iter(ReferenceKind::User))
             .await
             .db_context("load notification users")?;
@@ -395,15 +394,13 @@ pub(super) struct ImageQueueMeta {
     pub(super) image_type: NotificationImageType,
 }
 
-impl From<(i32, ImageQueueTarget)> for ImageQueueMeta {
-    fn from((id, target): (i32, ImageQueueTarget)) -> Self {
-        let (name, image_type) = match target {
-            ImageQueueTarget::Artist {
-                name, image_type, ..
-            } => (name, image_type.into()),
-            ImageQueueTarget::Release {
-                title, image_type, ..
-            } => (title, image_type.into()),
+impl From<(i32, NamedQueueTarget)> for ImageQueueMeta {
+    fn from(
+        (id, NamedQueueTarget { target, name }): (i32, NamedQueueTarget),
+    ) -> Self {
+        let image_type = match target {
+            QueueTarget::Artist(_) => NotificationImageType::Profile,
+            QueueTarget::Release(_) => NotificationImageType::Cover,
         };
 
         Self {

@@ -39,20 +39,15 @@ const styles = stylex.create({
 export function SongInfoCoverImage() {
 	const context = assertContext(SongInfoPageContext)
 	return (
-		<Image.Root>
+		<Image.Root
+			url={context.song.releases?.[0]?.cover_art_url}
+			size={9}
+		>
 			<div {...stylex.attrs(styles.cover)}>
 				<Image.Fallback>
-					{(state) =>
-						state != Image.State.Ok && (
-							<div {...stylex.attrs(styles.imagePlaceholder)}></div>
-						)
-					}
+					{() => <div {...stylex.attrs(styles.imagePlaceholder)}></div>}
 				</Image.Fallback>
-				<Image.Thumbnail
-					url={context.song.releases?.[0]?.cover_art_url}
-					size={9}
-					styles={[styles.image]}
-				/>
+				<Image.Img styles={[styles.image]} />
 			</div>
 		</Image.Root>
 	)

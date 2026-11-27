@@ -11,7 +11,9 @@ use utoipa_axum::routes;
 use super::repo::{self, UserFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::features::image_queue::shared::UserSummary;
+use crate::features::image_queue::shared::{
+    ImageQueueListTarget, UserSummary, load_list_metadata,
+};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::{AppError, Data};
@@ -26,6 +28,8 @@ data! {
 struct UserImageQueueItem {
     id: i32,
     image_id: Option<i32>,
+    image_url: Option<String>,
+    target: Option<ImageQueueListTarget>,
     status: ImageQueueStatus,
     created_at: chrono::DateTime<chrono::FixedOffset>,
     handled_at: Option<chrono::DateTime<chrono::FixedOffset>>,
@@ -37,12 +41,16 @@ struct UserImageQueueItem {
 impl UserImageQueueItem {
     const fn new(
         model: &image_queue_entity::Model,
+        image_url: Option<String>,
+        target: Option<ImageQueueListTarget>,
         handled_by: Option<UserSummary>,
         reverted_by: Option<UserSummary>,
     ) -> Self {
         Self {
             id: model.id,
             image_id: model.image_id,
+            image_url,
+            target,
             status: model.status,
             created_at: model.created_at,
             handled_at: model.handled_at,
@@ -103,6 +111,7 @@ async fn load_user_image_queue(
         repo::find_by_user(repo, filter, pagination.limit(), pagination.cursor)
             .await?;
 
+    let mut metadata = load_list_metadata(repo, &paginated.items).await?;
     let user_ids = paginated
         .items
         .iter()
@@ -125,8 +134,15 @@ async fn load_user_image_queue(
             };
             let handled_by = model.handled_by.map(resolve_user);
             let reverted_by = model.reverted_by.map(resolve_user);
+            let (image_url, target) = metadata.take(&model);
 
-            UserImageQueueItem::new(&model, handled_by, reverted_by)
+            UserImageQueueItem::new(
+                &model,
+                image_url,
+                target,
+                handled_by,
+                reverted_by,
+            )
         })
         .collect();
 

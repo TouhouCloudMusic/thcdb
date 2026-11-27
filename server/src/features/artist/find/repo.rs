@@ -118,6 +118,7 @@ pub(super) async fn find_many_impl(
         .filter(artist_image::Column::ArtistId.is_in(ids.iter().copied()))
         .find_also_related(image::Entity)
         .order_by_desc(image::Column::UploadedAt)
+        .order_by_desc(image::Column::Id)
         .all(db)
         .await
         .db_context("load artist images")?;

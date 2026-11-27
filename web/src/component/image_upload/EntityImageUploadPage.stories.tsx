@@ -8,10 +8,10 @@ import {
 	createEntityImageUploadStore,
 	EntityImageUploadPage,
 } from "~/view/image_upload/EntityImageUploadPage"
+import type { EntityImageUploadStoreOptions } from "~/view/image_upload/store"
 
-type StoryRootProps = Omit<EntityImageUploadPageProps, "store"> & {
-	onUpload: (file: File) => Promise<void>
-}
+type StoryRootProps = Omit<EntityImageUploadPageProps, "store">
+	& Pick<EntityImageUploadStoreOptions, "onUpload">
 
 const DIFF_PREVIEW_FILE = new File(
 	[
@@ -27,9 +27,7 @@ const DIFF_PREVIEW_FILE = new File(
 	"diff-preview.svg",
 	{ type: "image/svg+xml" },
 )
-const PENDING_UPLOAD = new Promise<void>((resolve) => {
-	void resolve
-})
+const { promise: PENDING_UPLOAD } = Promise.withResolvers<undefined>()
 
 async function fileToDataUrl(file: File) {
 	const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -55,9 +53,15 @@ async function fileToDataUrl(file: File) {
 	return dataUrl
 }
 
+async function onUploadStoryStub({ file }: { file: File }) {
+	logImage(await fileToDataUrl(file))
+}
+
 function StoryRoot(props: StoryRootProps) {
 	const store = createEntityImageUploadStore({
-		onUpload: (file) => props.onUpload(file),
+		get onUpload() {
+			return props.onUpload
+		},
 	})
 
 	return (
@@ -96,11 +100,12 @@ function DiffStoryRoot(props: Omit<EntityImageUploadPageProps, "store">) {
 
 function UploadingStoryRoot(props: Omit<EntityImageUploadPageProps, "store">) {
 	const store = createEntityImageUploadStore({
-		onUpload: onUploadPendingStoryStub,
+		onUpload: () => PENDING_UPLOAD,
 		initialDraftFile: DIFF_PREVIEW_FILE,
 	})
 
 	onMount(() => {
+		store.setDescription("Original image from the artist’s website.")
 		void store.onSubmit()
 	})
 
@@ -116,14 +121,6 @@ function UploadingStoryRoot(props: Omit<EntityImageUploadPageProps, "store">) {
 			store={store}
 		/>
 	)
-}
-
-async function onUploadStoryStub(file: File) {
-	logImage(await fileToDataUrl(file))
-}
-
-async function onUploadPendingStoryStub() {
-	await PENDING_UPLOAD
 }
 
 const meta = {

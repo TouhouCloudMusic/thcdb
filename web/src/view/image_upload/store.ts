@@ -1,8 +1,10 @@
 import { onCleanup } from "solid-js"
-import { createStore } from "solid-js/store"
+import { createStore, produce } from "solid-js/store"
+
+import { getErrorMessage } from "~/utils/getErrorMessage"
 
 export type EntityImageUploadStoreOptions = {
-	onUpload: (file: File) => Promise<void>
+	onUpload: (submission: { file: File; description: string }) => Promise<void>
 	initialDraftFile?: File
 	initialDraftPreviewUrl?: string
 	submitFailedMessage?: string
@@ -13,6 +15,9 @@ export type EntityImageUploadStore = {
 	setIsOpen: (next: boolean) => void
 	draftPreviewUrl: string | undefined
 	hasDraft: boolean
+	description: string
+	setDescription: (description: string) => void
+	canSubmit: boolean
 	submitError: string | undefined
 	isUploading: boolean
 	onOpen: () => void
@@ -25,16 +30,9 @@ type EntityImageUploadState = {
 	draftFile: File | undefined
 	draftPreviewUrl: string | undefined
 	shouldRevokeDraftPreviewUrl: boolean
+	description: string
 	submitError: string | undefined
 	isUploading: boolean
-}
-
-function getSubmitErrorMessage(error: unknown, submitFailedMessage: string) {
-	if (error instanceof Error && error.message) {
-		return error.message
-	}
-
-	return submitFailedMessage
 }
 
 function revokeDraftPreviewUrl(url: string | undefined, shouldRevoke: boolean) {
@@ -55,12 +53,17 @@ export function createEntityImageUploadStore(
 		draftFile: options.initialDraftFile,
 		draftPreviewUrl: initialDraftPreviewUrl,
 		shouldRevokeDraftPreviewUrl,
+		description: "",
 		submitError: undefined,
 		isUploading: false,
 	})
 
 	const setIsOpen = (next: boolean) => {
-		setState("isOpen", next)
+		setState(
+			produce((draft) => {
+				draft.isOpen = next
+			}),
+		)
 	}
 
 	const setDraft = (file: File) => {
@@ -68,12 +71,15 @@ export function createEntityImageUploadStore(
 			state.draftPreviewUrl,
 			state.shouldRevokeDraftPreviewUrl,
 		)
-		setState({
-			draftFile: file,
-			draftPreviewUrl: globalThis.URL.createObjectURL(file),
-			shouldRevokeDraftPreviewUrl: true,
-			submitError: undefined,
-		})
+		const previewUrl = globalThis.URL.createObjectURL(file)
+		setState(
+			produce((draft) => {
+				draft.draftFile = file
+				draft.draftPreviewUrl = previewUrl
+				draft.shouldRevokeDraftPreviewUrl = true
+				draft.submitError = undefined
+			}),
+		)
 	}
 
 	const onOpen = () => {
@@ -86,27 +92,44 @@ export function createEntityImageUploadStore(
 		return Promise.resolve()
 	}
 
-	const onSubmit = async () => {
-		const file = state.draftFile
-		if (!file || state.isUploading) return
+	const setDescription = (description: string) => {
+		setState(
+			produce((draft) => {
+				draft.description = description
+				draft.submitError = undefined
+			}),
+		)
+	}
 
-		setState({
-			isUploading: true,
-			submitError: undefined,
-		})
+	const submittableFile = () =>
+		state.isUploading || !state.description.trim() ? undefined : state.draftFile
+
+	const onSubmit = async () => {
+		const file = submittableFile()
+		if (!file) return
+
+		setState(
+			produce((draft) => {
+				draft.isUploading = true
+				draft.submitError = undefined
+			}),
+		)
 
 		try {
-			await options.onUpload(file)
+			await options.onUpload({ file, description: state.description })
 		} catch (error) {
+			const fallback = options.submitFailedMessage ?? "Submit failed."
 			setState(
-				"submitError",
-				getSubmitErrorMessage(
-					error,
-					options.submitFailedMessage ?? "Submit failed.",
-				),
+				produce((draft) => {
+					draft.submitError = getErrorMessage(error, fallback) || fallback
+				}),
 			)
 		} finally {
-			setState("isUploading", false)
+			setState(
+				produce((draft) => {
+					draft.isUploading = false
+				}),
+			)
 		}
 	}
 
@@ -127,6 +150,13 @@ export function createEntityImageUploadStore(
 		},
 		get hasDraft() {
 			return state.draftPreviewUrl !== undefined
+		},
+		get description() {
+			return state.description
+		},
+		setDescription,
+		get canSubmit() {
+			return submittableFile() !== undefined
 		},
 		get submitError() {
 			return state.submitError

@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{DefaultBodyLimit, Path, State};
+use axum::response::{IntoResponse, Response};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use bytes::Bytes;
 use constants::REQUEST_BODY_MAX_SIZE;
@@ -17,7 +18,8 @@ use crate::features::correction::{
     CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::features::image_metadata::CurrentImageMetadata;
-use crate::shared::http::api_response::Data;
+use crate::features::image_queue::description::SubmissionDescription;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Artist";
 
@@ -136,14 +138,16 @@ async fn get_artist_profile_image_metadata(
 
 #[derive(Debug, ToSchema, TryFromMultipart)]
 pub struct ArtistProfileImageFormData {
-    #[form_data(limit = "25MiB")]
+    #[form_data(field_name = "data", limit = "25MiB")]
     #[schema(
+        rename = "data",
         value_type = String,
         format = Binary,
         maximum = 26214400,
         minimum = 1024
     )]
-    pub data: FieldData<Bytes>,
+    pub file: FieldData<Bytes>,
+    pub description: String,
 }
 
 #[utoipa::path(
@@ -163,13 +167,23 @@ async fn upload_artist_profile_image(
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ArtistProfileImageFormData>,
-) -> Result<Data<i32>, artist_image::Error> {
-    let data = form.data.contents;
+) -> Response {
+    let description = match SubmissionDescription::try_from(form.description) {
+        Ok(description) => description,
+        Err(err) => {
+            return AppError::bad_request(err.to_string()).into_response();
+        }
+    };
+
     let dto = ArtistProfileImageInput {
-        bytes: data,
+        bytes: form.file.contents,
         user,
         artist_id: id,
+        description,
     };
-    let entry_id = service.upload_profile_image(dto).await?;
-    Ok(Data::from(entry_id))
+    service
+        .upload_profile_image(dto)
+        .await
+        .map(Data::from)
+        .into_response()
 }

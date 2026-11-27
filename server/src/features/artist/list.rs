@@ -65,6 +65,7 @@ pub(crate) async fn load_items(
         )
         .filter(artist_image::Column::Type.eq(ArtistImageType::Profile))
         .order_by_desc(image::Column::UploadedAt)
+        .order_by_desc(image::Column::Id)
         .into_tuple::<(i32, String)>()
         .all(db)
         .await

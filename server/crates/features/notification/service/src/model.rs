@@ -1,5 +1,4 @@
 use chrono::{DateTime, FixedOffset};
-use entity::enums::{ArtistImageType, ReleaseImageType};
 use notification_core::{
     CorrectionModerationAction, ImageQueueModerationAction,
     NotificationCategory,
@@ -74,22 +73,6 @@ pub enum CommentPreview {
 pub enum NotificationImageType {
     Profile,
     Cover,
-}
-
-impl From<ArtistImageType> for NotificationImageType {
-    fn from(value: ArtistImageType) -> Self {
-        match value {
-            ArtistImageType::Profile => Self::Profile,
-        }
-    }
-}
-
-impl From<ReleaseImageType> for NotificationImageType {
-    fn from(value: ReleaseImageType) -> Self {
-        match value {
-            ReleaseImageType::Cover => Self::Cover,
-        }
-    }
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]

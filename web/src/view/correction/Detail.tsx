@@ -356,7 +356,9 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 						{...stylex.attrs(styles.fieldChild, styles.fieldLabel)}
 					>{t`Created`}</div>
 					<span {...stylex.attrs(styles.fieldChild)}>
-						{formatTimestamp(props.correction.created_at, t`None`)}
+						{formatTimestamp(props.correction.created_at, {
+							emptyText: t`None`,
+						})}
 					</span>
 				</div>
 				<div>
@@ -751,7 +753,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		if (value === COMPARE_BASELINE_VALUE) return t`Previous approved baseline`
 		const target = compareOptions().find((item) => item.id.toString() === value)
 		if (!target) return value
-		return `#${target.id} ${target.type} (${formatTimestamp(target.handled_at ?? target.created_at, t`None`)})`
+		return `#${target.id} ${target.type} (${formatTimestamp(target.handled_at ?? target.created_at, { emptyText: t`None` })})`
 	}
 
 	const submitCorrectionDecision = (decision: CorrectionDecision) => {
@@ -868,6 +870,12 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 								const model = useEntityComments(() => ({
 									entityType: "correction",
 									entityId: correctionId,
+									onCommentCreated: () => {
+										void queryClient.invalidateQueries({
+											queryKey:
+												CorrectionQueryOption.detail(correctionId).queryKey,
+										})
+									},
 									initialPage: {
 										data: correction().comments,
 										updatedAt: correctionQuery.dataUpdatedAt,

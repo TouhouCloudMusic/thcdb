@@ -1,8 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useQuery, useQueryClient } from "@tanstack/solid-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, notFound, useNavigate } from "@tanstack/solid-router"
-import { ReleaseMutation, ReleaseQueryOption } from "@thc/query"
-import { Option as O } from "effect"
 import { Show } from "solid-js"
 
 import { AuthGuard } from "~/component/route"
@@ -15,12 +13,13 @@ import {
 	RELEASE_COVER_IMAGE_MIN_WIDTH,
 } from "~/constant/server"
 import {
-	pendingImageQueueCountQueryKey,
-	pendingImageQueueInfiniteQueryKey,
-	profileImageQueueInfiniteQueryKey,
+	findReleaseByIdOptions,
+	uploadReleaseCoverArtMutation,
 } from "~/hey-api/@tanstack/solid-query.gen"
+import { invalidateAfterImageQueueSubmission } from "~/query/imageQueue"
 import { loadEntityId } from "~/route/-entityId"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { useCurrentUser } from "~/state/user"
 import {
 	createEntityImageUploadStore,
 	EntityImageUploadPage,
@@ -31,39 +30,36 @@ export const Route = createFileRoute("/release/$id_/image-upload")({
 	beforeLoad: loadEntityId,
 	loader: async ({ context: { entityId: parsedId } }) => {
 		const data = await QUERY_CLIENT.ensureQueryData(
-			ReleaseQueryOption.findById(parsedId),
+			findReleaseByIdOptions({ path: { id: parsedId } }),
 		)
-		if (O.isNone(data)) {
+		if (data.data === null) {
 			throw notFound()
 		}
-		return data
+		return data.data
 	},
 })
 
 function RouteComponent() {
 	const { t } = useLingui()
 	const { entityId: releaseId } = Route.useRouteContext()()
-	const query = useQuery(() => ReleaseQueryOption.findById(releaseId))
-	const uploadMutation = ReleaseMutation.getUploadCoverArtInstance()
+	const query = useQuery(() => ({
+		...findReleaseByIdOptions({ path: { id: releaseId } }),
+		throwOnError: true,
+	}))
+	const uploadMutation = useMutation(uploadReleaseCoverArtMutation)
 	const queryClient = useQueryClient()
+	const userCtx = useCurrentUser()
 	const navigate = useNavigate()
 	const store = createEntityImageUploadStore({
 		submitFailedMessage: t`Submit failed.`,
-		onUpload: async (file: File) => {
-			const entryId = await uploadMutation.mutateAsync({ id: releaseId, file })
+		onUpload: async ({ file, description }) => {
+			const username = userCtx.profile?.name
+			const { data: entryId } = await uploadMutation.mutateAsync({
+				path: { id: releaseId },
+				body: { data: file, description },
+			})
 
-			void queryClient.invalidateQueries({
-				queryKey: ["release::info", releaseId],
-			})
-			void queryClient.invalidateQueries({
-				queryKey: pendingImageQueueInfiniteQueryKey(),
-			})
-			void queryClient.invalidateQueries({
-				queryKey: pendingImageQueueCountQueryKey(),
-			})
-			void queryClient.invalidateQueries({
-				queryKey: profileImageQueueInfiniteQueryKey(),
-			})
+			invalidateAfterImageQueueSubmission(queryClient, entryId, username)
 
 			await navigate({
 				to: "/image-queue/$id",
@@ -74,7 +70,7 @@ function RouteComponent() {
 
 	return (
 		<AuthGuard>
-			<Show when={query.data && O.getOrUndefined(query.data)}>
+			<Show when={query.data?.data}>
 				{(release) => (
 					<EntityImageUploadPage
 						entityLabel="Release"

@@ -28,8 +28,6 @@ pub(crate) enum Error {
     NotFound,
     InvalidOperation,
     InvalidEntry,
-    UnknownTarget,
-    AmbiguousTarget,
     PermissionDenied,
     #[from]
     Database(DatabaseError),
@@ -55,14 +53,6 @@ impl IntoResponse for Error {
             }
             Error::InvalidEntry => {
                 AppError::bad_request("Invalid image queue entry")
-                    .into_response()
-            }
-            Error::UnknownTarget => {
-                AppError::bad_request("Unknown image queue target")
-                    .into_response()
-            }
-            Error::AmbiguousTarget => {
-                AppError::bad_request("Ambiguous image queue target")
                     .into_response()
             }
             Error::PermissionDenied => PermissionDenied.into_response(),

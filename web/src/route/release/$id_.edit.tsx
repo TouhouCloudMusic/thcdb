@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound, useNavigate } from "@tanstack/solid-router"
-import { ReleaseQueryOption } from "@thc/query"
-import { Option as O } from "effect"
 import { createEffect, Show } from "solid-js"
 
 import { AuthGuard } from "~/component/route"
+import { findReleaseByIdOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { loadEntityId } from "~/route/-entityId"
 import { languageListQueryOptions } from "~/state/language"
 import { QUERY_CLIENT } from "~/state/tanstack"
@@ -24,10 +23,10 @@ export const Route = createFileRoute("/release/$id_/edit")({
 	loader: async ({ context: { entityId: parsedId }, deps }) => {
 		void QUERY_CLIENT.prefetchQuery(languageListQueryOptions())
 
-		const data = await QUERY_CLIENT.ensureQueryData(
-			ReleaseQueryOption.findById(parsedId),
+		const { data } = await QUERY_CLIENT.ensureQueryData(
+			findReleaseByIdOptions({ path: { id: parsedId } }),
 		)
-		if (O.isNone(data)) {
+		if (data === null) {
 			throw notFound()
 		}
 
@@ -47,7 +46,10 @@ export const Route = createFileRoute("/release/$id_/edit")({
 
 function RouteComponent() {
 	const { entityId: parsedId } = Route.useRouteContext()()
-	const query = useQuery(() => ReleaseQueryOption.findById(parsedId))
+	const query = useQuery(() => ({
+		...findReleaseByIdOptions({ path: { id: parsedId } }),
+		throwOnError: true,
+	}))
 	const loaderData = Route.useLoaderData()
 	const editCorrectionId = () => loaderData().editCorrectionId
 	const blockingCorrectionId = () => loaderData().blockingCorrectionId
@@ -62,11 +64,11 @@ function RouteComponent() {
 	return (
 		<AuthGuard>
 			<PendingCorrectionBoundary correctionId={blockingCorrectionId()}>
-				<Show when={query.data}>
-					{(r) => (
+				<Show when={query.data?.data}>
+					{(release) => (
 						<EditReleasePage
 							type="edit"
-							release={O.getOrThrow(r())}
+							release={release()}
 							pendingCorrectionId={editCorrectionId()}
 						/>
 					)}

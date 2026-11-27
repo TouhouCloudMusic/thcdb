@@ -4,14 +4,11 @@ export type * from "./gen"
 export type * from "./type"
 
 export type {
-	ArtistImageQueueTarget,
-	ArtistImageType,
 	ImageQueueAction,
 	ImageQueueDetail,
 	ImageQueueStatus,
+	ImageQueueTarget,
 	ImageQueueType,
 	ImageSummary,
-	ReleaseImageQueueTarget,
-	ReleaseImageType,
 	UserSummary,
 } from "./gen"

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use entity::enums::{ArtistImageType, ReleaseImageType};
-use entity::{artist, artist_image_queue, release, release_image_queue};
+use entity::{artist, image_queue, release};
 use infra_db::error::{
     BrokenEntityReference, DatabaseError, DatabaseFailure, DatabaseResultExt,
 };
@@ -10,107 +9,87 @@ use sea_orm::{
     QuerySelect, RelationTrait,
 };
 
-pub enum ImageQueueTarget {
-    Artist {
-        artist_id: i32,
-        name: String,
-        image_type: ArtistImageType,
-    },
-    Release {
-        release_id: i32,
-        title: String,
-        image_type: ReleaseImageType,
-    },
+#[derive(Clone, Copy, Debug)]
+pub enum QueueTarget {
+    Artist(i32),
+    Release(i32),
+}
+
+impl QueueTarget {
+    fn from_ids(
+        queue_id: i32,
+        artist_id: Option<i32>,
+        release_id: Option<i32>,
+    ) -> Result<Self, DatabaseError> {
+        match (artist_id, release_id) {
+            (Some(id), None) => Ok(Self::Artist(id)),
+            (None, Some(id)) => Ok(Self::Release(id)),
+            _ => Err(DatabaseFailure::internal(format!(
+                "Image queue entry {queue_id} must have exactly one target"
+            ))
+            .context("resolve image queue target")),
+        }
+    }
+}
+
+impl TryFrom<&image_queue::Model> for QueueTarget {
+    type Error = DatabaseError;
+
+    fn try_from(queue: &image_queue::Model) -> Result<Self, Self::Error> {
+        Self::from_ids(queue.id, queue.artist_id, queue.release_id)
+    }
+}
+
+pub struct NamedQueueTarget {
+    pub target: QueueTarget,
+    pub name: String,
 }
 
 #[infra_db::observe("image_queue.load_targets")]
 pub async fn load_targets(
     conn: &impl ConnectionTrait,
-    ids: impl Iterator<Item = i32> + Clone,
-) -> Result<HashMap<i32, ImageQueueTarget>, DatabaseError> {
-    let mut ids = ids.peekable();
-    if ids.peek().is_none() {
+    ids: &[i32],
+) -> Result<HashMap<i32, NamedQueueTarget>, DatabaseError> {
+    if ids.is_empty() {
         return Ok(HashMap::new());
     }
 
-    let artist_targets = artist_image_queue::Entity::find()
+    let rows = image_queue::Entity::find()
         .select_only()
-        .column(artist_image_queue::Column::QueueId)
-        .column(artist_image_queue::Column::ArtistId)
+        .column(image_queue::Column::Id)
+        .column(image_queue::Column::ArtistId)
+        .column(image_queue::Column::ReleaseId)
         .column(artist::Column::Name)
-        .column(artist_image_queue::Column::Type)
-        .join(
-            JoinType::LeftJoin,
-            artist_image_queue::Relation::Artist.def(),
-        )
-        .filter(artist_image_queue::Column::QueueId.is_in(ids.clone()))
-        .into_tuple::<(i32, i32, Option<String>, ArtistImageType)>()
-        .all(conn)
-        .await
-        .db_context("load artist image queue targets")?;
-    let release_targets = release_image_queue::Entity::find()
-        .select_only()
-        .column(release_image_queue::Column::QueueId)
-        .column(release_image_queue::Column::ReleaseId)
         .column(release::Column::Title)
-        .column(release_image_queue::Column::Type)
-        .join(
-            JoinType::LeftJoin,
-            release_image_queue::Relation::Release.def(),
-        )
-        .filter(release_image_queue::Column::QueueId.is_in(ids))
-        .into_tuple::<(i32, i32, Option<String>, ReleaseImageType)>()
+        .join(JoinType::LeftJoin, image_queue::Relation::Artist.def())
+        .join(JoinType::LeftJoin, image_queue::Relation::Release.def())
+        .filter(image_queue::Column::Id.is_in(ids.iter().copied()))
+        .into_tuple::<(
+            i32,
+            Option<i32>,
+            Option<i32>,
+            Option<String>,
+            Option<String>,
+        )>()
         .all(conn)
         .await
-        .db_context("load release image queue targets")?;
+        .db_context("load image queue targets")?;
 
-    let targets = artist_targets
-        .into_iter()
-        .map(|(queue_id, artist_id, name, image_type)| {
-            let name = name.ok_or_else(|| {
-                DatabaseFailure::broken_reference(BrokenEntityReference {
-                    entity: "artist",
-                    id: artist_id,
-                })
-            })?;
-
-            Ok::<_, DatabaseFailure>((
-                queue_id,
-                ImageQueueTarget::Artist {
-                    artist_id,
-                    name,
-                    image_type,
-                },
-            ))
-        })
-        .chain(release_targets.into_iter().map(
-            |(queue_id, release_id, title, image_type)| {
-                let title = title.ok_or_else(|| {
-                    DatabaseFailure::broken_reference(BrokenEntityReference {
-                        entity: "release",
-                        id: release_id,
-                    })
-                })?;
-
-                Ok::<_, DatabaseFailure>((
-                    queue_id,
-                    ImageQueueTarget::Release {
-                        release_id,
-                        title,
-                        image_type,
-                    },
-                ))
-            },
-        ));
-
-    let mut targets_by_queue = HashMap::new();
-    for target in targets {
-        let (queue_id, target) = target?;
-        assert!(
-            targets_by_queue.insert(queue_id, target).is_none(),
-            "image queue {queue_id} must have exactly one target"
-        );
+    let mut targets = HashMap::with_capacity(rows.len());
+    for (queue_id, artist_id, release_id, artist_name, release_title) in rows {
+        let target = QueueTarget::from_ids(queue_id, artist_id, release_id)?;
+        let (name, entity, id) = match target {
+            QueueTarget::Artist(id) => (artist_name, "artist", id),
+            QueueTarget::Release(id) => (release_title, "release", id),
+        };
+        let name = name.ok_or_else(|| {
+            DatabaseFailure::broken_reference(BrokenEntityReference {
+                entity,
+                id,
+            })
+        })?;
+        targets.insert(queue_id, NamedQueueTarget { target, name });
     }
 
-    Ok(targets_by_queue)
+    Ok(targets)
 }

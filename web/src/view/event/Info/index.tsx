@@ -194,7 +194,10 @@ function EventInfoTabs() {
 				value="Comments"
 				{...stylex.attrs(styles.tabContent)}
 			>
-				<EntityComments model={comments} />
+				<EntityComments.Root model={comments}>
+					<EntityComments.Form />
+					<EntityComments.List />
+				</EntityComments.Root>
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

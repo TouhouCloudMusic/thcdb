@@ -43,9 +43,18 @@ const MOCK_COMMENTS_WITH_DELETED: Comment[] = MOCK_COMMENTS.map((item) =>
 
 const EMPTY_MODEL = createMockEntityComments()
 
+function EntityCommentsStory(props: { model: typeof EMPTY_MODEL }) {
+	return (
+		<EntityComments.Root model={props.model}>
+			<EntityComments.Form />
+			<EntityComments.List />
+		</EntityComments.Root>
+	)
+}
+
 const meta = {
 	title: "View/Comment/EntityComments",
-	component: EntityComments,
+	component: EntityCommentsStory,
 	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.Padded,
@@ -56,7 +65,7 @@ const meta = {
 	argTypes: {
 		model: { control: false },
 	},
-} satisfies Meta<typeof EntityComments>
+} satisfies Meta<typeof EntityCommentsStory>
 
 export default meta
 

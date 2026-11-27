@@ -2,23 +2,25 @@ use auth_core::permission::{Permission, user_has_permission};
 use chrono::Utc;
 use domain::shared::CursorResponse;
 use entity::sea_orm_active_enums::ImageQueueStatus;
-use entity::{image_queue, image_queue_subscription};
-use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
+use entity::{artist, image_queue, image_queue_subscription, release};
+use image_queue_core::QueueTarget;
+use infra_db::SeaOrmRepository;
 use notification_core::ImageQueueModerationAction;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel,
-    PaginatorTrait, QueryFilter,
+    PaginatorTrait, QueryFilter, QuerySelect,
 };
 use user_core::load_users;
 
 use super::model::{
-    ImageQueueAction, ImageQueueDetail, ImageQueueFilterQuery, ImageSummary,
-    PendingImageQueueItem,
+    ImageQueueAction, ImageQueueDetail, ImageQueueFilterQuery,
+    ImageQueueTarget, ImageSummary, PendingImageQueueItem,
 };
-use super::repo::QueueTarget;
 use super::{Error, repo};
-use crate::features::image_queue::shared::UserSummary;
+use crate::features::artist::list as artist_list;
+use crate::features::image_queue::shared::{UserSummary, load_list_metadata};
+use crate::features::release::list::load_cover_art_urls;
 use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::infra::database::error::{BrokenEntityReference, DatabaseResultExt};
 use crate::shared::error::InternalError;
@@ -52,6 +54,8 @@ impl Service {
         )
         .await?;
 
+        let mut metadata =
+            load_list_metadata(&self.repo, &paginated.items).await?;
         let user_ids = paginated
             .items
             .iter()
@@ -69,8 +73,11 @@ impl Service {
                     .get(&model.created_by)
                     .cloned()
                     .unwrap_or_else(|| UserSummary::unknown(model.created_by));
+                let (image_url, target) = metadata.take(&model);
 
-                PendingImageQueueItem::new(&model, created_by)
+                PendingImageQueueItem::new(
+                    &model, created_by, image_url, target,
+                )
             })
             .collect();
 
@@ -90,6 +97,56 @@ impl Service {
         Ok(count)
     }
 
+    async fn load_detail_target(
+        &self,
+        target: QueueTarget,
+    ) -> Result<ImageQueueTarget, Error> {
+        let db = &self.repo.conn;
+        match target {
+            QueueTarget::Artist(id) => {
+                let artist =
+                    artist_list::load(artist::Entity::find_by_id(id), db)
+                        .await?
+                        .pop()
+                        .ok_or_else(|| {
+                            InternalError::new(BrokenEntityReference {
+                                entity: "image queue artist",
+                                id,
+                            })
+                        })?;
+
+                Ok(ImageQueueTarget::Artist {
+                    id,
+                    name: artist.name,
+                    current_image_url: artist.profile_image_url,
+                })
+            }
+            QueueTarget::Release(id) => {
+                let name = release::Entity::find_by_id(id)
+                    .select_only()
+                    .column(release::Column::Title)
+                    .into_tuple::<String>()
+                    .one(db)
+                    .await
+                    .db_context("load image queue release title")?
+                    .ok_or_else(|| {
+                        InternalError::new(BrokenEntityReference {
+                            entity: "image queue release",
+                            id,
+                        })
+                    })?;
+                let current_image_url =
+                    load_cover_art_urls(&[id], db).await?.remove(&id);
+
+                Ok(ImageQueueTarget::Release {
+                    id,
+                    name,
+                    current_image_url,
+                })
+            }
+        }
+    }
+
     pub(crate) async fn image_queue_detail(
         &self,
         user_id: Option<i32>,
@@ -98,8 +155,11 @@ impl Service {
         let detail = repo::find_detail(&self.repo, id)
             .await?
             .ok_or(Error::NotFound)?;
-
         let queue = detail.queue;
+        let target = self
+            .load_detail_target(QueueTarget::try_from(&queue)?)
+            .await?;
+
         let image = detail.image;
         let user_ids = [
             Some(queue.created_by),
@@ -160,13 +220,13 @@ impl Service {
             status: queue.status,
             created_at: queue.created_at,
             created_by,
+            description: queue.description,
             handled_at: queue.handled_at,
             handled_by,
             reverted_at: queue.reverted_at,
             reverted_by,
             image,
-            artist: detail.artist.map(Into::into),
-            release: detail.release.map(Into::into),
+            target,
             is_subscribed,
         })
     }
@@ -212,13 +272,13 @@ impl Service {
 
         match action {
             ImageQueueAction::Approve => {
-                let target = find_queue_target(&tx_repo, id).await?;
+                let target = QueueTarget::try_from(&model)?;
                 repo::publish_image(&tx_repo, target, image_id).await?;
             }
             ImageQueueAction::Reject => {}
             ImageQueueAction::Revert => {
-                let target = find_queue_target(&tx_repo, id).await?;
-                let entity = match &target {
+                let target = QueueTarget::try_from(&model)?;
+                let entity = match target {
                     QueueTarget::Artist(_) => "published artist image",
                     QueueTarget::Release(_) => "published release image",
                 };
@@ -278,17 +338,5 @@ impl Service {
         );
 
         Ok(())
-    }
-}
-
-async fn find_queue_target(
-    tx_repo: &SeaOrmTxRepo,
-    id: i32,
-) -> Result<QueueTarget, Error> {
-    match repo::find_queue_targets(tx_repo, id).await? {
-        (Some(artist), None) => Ok(QueueTarget::Artist(artist)),
-        (None, Some(release)) => Ok(QueueTarget::Release(release)),
-        (None, None) => Err(Error::UnknownTarget),
-        (Some(_), Some(_)) => Err(Error::AmbiguousTarget),
     }
 }

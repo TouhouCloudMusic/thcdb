@@ -19,23 +19,9 @@ export const vArtistCreditScope = v.picklist(["all", "release", "song"])
 
 export const vArtistCreditSort = v.picklist(["newest", "oldest"])
 
-export const vArtistImageType = v.picklist(["Profile"])
-
-export const vArtistImageQueueTarget = v.object({
-	artist_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	type: vArtistImageType,
-})
-
 export const vArtistProfileImageFormData = v.object({
 	data: v.string(),
+	description: v.string(),
 })
 
 export const vArtistReleaseArtist = v.object({
@@ -766,7 +752,49 @@ export const vImageQueueStatus = v.picklist([
 	"Reverted",
 ])
 
+export const vImageQueueTarget = v.union([
+	v.object({
+		id: v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+		name: v.string(),
+		current_image_url: v.nullable(v.string()),
+		kind: v.picklist(["artist"]),
+	}),
+	v.object({
+		id: v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+		name: v.string(),
+		current_image_url: v.nullable(v.string()),
+		kind: v.picklist(["release"]),
+	}),
+])
+
 export const vImageQueueType = v.picklist(["artist", "release"])
+
+export const vImageQueueListTarget = v.object({
+	name: v.string(),
+	type: vImageQueueType,
+})
 
 export const vLabelSummary = v.object({
 	id: v.pipe(
@@ -1542,6 +1570,7 @@ export const vReleaseArtist = v.object({
 
 export const vReleaseCoverArtFormData = v.object({
 	data: v.string(),
+	description: v.string(),
 })
 
 export const vReleaseCredit = v.object({
@@ -1568,21 +1597,6 @@ export const vReleaseDisc = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	name: v.nullish(v.string()),
-})
-
-export const vReleaseImageType = v.picklist(["Cover"])
-
-export const vReleaseImageQueueTarget = v.object({
-	release_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	type: vReleaseImageType,
 })
 
 export const vReleaseRef = v.object({
@@ -3901,6 +3915,8 @@ export const vCursorResponsePendingImageQueueItem = v.object({
 			status: vImageQueueStatus,
 			created_at: v.pipe(v.string(), v.isoTimestamp()),
 			created_by: vUserSummary,
+			image_url: v.nullish(v.string()),
+			target: v.nullish(vImageQueueListTarget),
 		}),
 	),
 	next_cursor: v.nullish(
@@ -3948,6 +3964,8 @@ export const vCursorResponseUserImageQueueItem = v.object({
 					),
 				),
 			),
+			image_url: v.nullish(v.string()),
+			target: v.nullish(vImageQueueListTarget),
 			status: vImageQueueStatus,
 			created_at: v.pipe(v.string(), v.isoTimestamp()),
 			handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
@@ -4114,13 +4132,13 @@ export const vImageQueueDetail = v.object({
 	status: vImageQueueStatus,
 	created_at: v.pipe(v.string(), v.isoTimestamp()),
 	created_by: vUserSummary,
+	description: v.nullish(v.string()),
 	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
 	handled_by: v.nullish(vUserSummary),
 	reverted_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
 	reverted_by: v.nullish(vUserSummary),
 	image: v.nullish(vImageSummary),
-	artist: v.nullish(vArtistImageQueueTarget),
-	release: v.nullish(vReleaseImageQueueTarget),
+	target: vImageQueueTarget,
 	is_subscribed: v.boolean(),
 })
 

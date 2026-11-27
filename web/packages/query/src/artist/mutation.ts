@@ -38,26 +38,3 @@ export const getInstance = () =>
 		mutationKey: [`artist::mutate`],
 		throwOnError: true,
 	}))
-
-type UploadProfileImageParams = {
-	id: number
-	file: File
-}
-
-export const getUploadProfileImageInstance = () =>
-	useMutation(() => ({
-		mutationFn: async (params: UploadProfileImageParams) => {
-			const result = await ArtistApi.uploadProfileImage({
-				artistId: params.id,
-				file: params.file,
-			})
-			return Either.match(result, {
-				onRight: (data) => data,
-				onLeft: (error) => {
-					throw toMutationError(error, "Upload failed.")
-				},
-			})
-		},
-		mutationKey: ["artist::profile-image::upload"],
-		throwOnError: true,
-	}))

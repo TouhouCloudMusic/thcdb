@@ -1,83 +1,39 @@
-import type { ImageQueueType } from "@thc/api"
-import { createMemo, createSignal, Show } from "solid-js"
+import { createWritableMemo } from "@solid-primitives/memo"
+import { createMemo } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import { vImageQueueStatus, vImageQueueType } from "~/hey-api/valibot.gen"
+import { ready } from "~/type/asyncData"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
-import {
-	ImageQueueManagePageContent,
-	STATUS_FILTER_OPTIONS,
-	TYPE_OPTIONS,
-} from "~/view/image_queue/manage"
-import type { StatusFilterKind } from "~/view/image_queue/manage"
+import { ImageQueueManagePageContent } from "~/view/image_queue/manage"
+import type { ImageQueueFilters } from "~/view/image_queue/manage"
 
-import { PENDING_COUNT, STORY_ENTRIES } from "./ImageQueueManagePage.story-data"
+import { STORY_ENTRIES } from "./ImageQueueManagePage.story-data"
 
-const PAGE_SIZE = 20
+function StoryRoot(props: ImageQueueFilters) {
+	const [filters, setFilters] = createWritableMemo(() => ({
+		type: props.type,
+		status: props.status,
+	}))
+	const list = createMemo(() => {
+		const { type, status } = filters()
+		const items = STORY_ENTRIES.filter(
+			(entry) =>
+				(type === undefined || entry.type === type)
+				&& (status === undefined || entry.item.status === status),
+		).map(({ item }) => item)
 
-type ImageQueueSearch = {
-	status: StatusFilterKind
-	type?: ImageQueueType
-}
-
-type StoryRootProps = ImageQueueSearch
-
-function StoryRoot(props: StoryRootProps) {
-	return (
-		<Show
-			when={{ status: props.status, type: props.type }}
-			keyed
-		>
-			{(filters) => <StoryScene initialFilters={filters} />}
-		</Show>
-	)
-}
-
-function StoryScene(props: { initialFilters: ImageQueueSearch }) {
-	const [filters, setFilters] = createSignal(props.initialFilters)
-	const filteredEntries = createMemo(() => {
-		const currentFilters = filters()
-
-		return STORY_ENTRIES.filter((entry) => {
-			if (
-				currentFilters.type !== undefined
-				&& entry.type !== currentFilters.type
-			) {
-				return false
-			}
-
-			return (
-				currentFilters.status !== "pending" || entry.item.status === "Pending"
-			)
-		})
+		return ready({ items, pagination: { kind: "end" as const } })
 	})
-	const items = createMemo(() =>
-		filteredEntries()
-			.slice(0, PAGE_SIZE)
-			.map((entry) => entry.item),
-	)
 
 	return (
 		<ImageQueueManagePageContent
 			filters={filters()}
-			pendingCount={PENDING_COUNT}
-			items={items()}
-			isListLoading={false}
-			isListError={false}
-			isFetchingNextPage={false}
-			hasNextPage={filteredEntries().length > PAGE_SIZE}
-			onTypeChange={(value) => {
-				setFilters((current) => ({
-					...current,
-					type: value === "all" ? undefined : value,
-				}))
-			}}
-			onStatusChange={(value) => {
-				setFilters((current) => ({
-					...current,
-					status: value,
-				}))
-			}}
-			onLoadNextPage={() => null}
+			list={list()}
+			onTypeChange={(type) => setFilters((current) => ({ ...current, type }))}
+			onStatusChange={(status) =>
+				setFilters((current) => ({ ...current, status }))
+			}
 		/>
 	)
 }
@@ -95,15 +51,14 @@ const meta = {
 	argTypes: {
 		status: {
 			control: { type: "radio" },
-			options: STATUS_FILTER_OPTIONS,
+			options: [undefined, ...vImageQueueStatus.options],
 		},
 		type: {
 			control: { type: "select" },
-			options: [undefined, ...TYPE_OPTIONS],
+			options: [undefined, ...vImageQueueType.options],
 		},
 	},
 	args: {
-		status: "all",
 		type: "release",
 	},
 } satisfies Meta<typeof StoryRoot>
