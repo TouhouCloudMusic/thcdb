@@ -2,16 +2,15 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use domain::shared::CursorResponse;
 use serde::Deserialize;
+use tag_vote_core::{EntityType, Score, TagAggregate};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::model::{EntityType, Score, TagAggregate};
-use super::{Error, repo};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::shared::http::PaginationQuery;
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "TagVote";
 
@@ -60,9 +59,16 @@ async fn vote_tag(
     State(repo): State<state::SeaOrmRepository>,
     Path(TagVotePath { entity_type, id }): Path<TagVotePath>,
     Json(body): Json<VoteBody>,
-) -> Result<(), Error> {
-    repo::upsert(&repo, entity_type, id, body.tag_id, user.id, body.score)
-        .await?;
+) -> Result<(), AppError> {
+    tag_vote_core::upsert(
+        &repo,
+        entity_type,
+        id,
+        body.tag_id,
+        user.id,
+        body.score,
+    )
+    .await?;
     Ok(())
 }
 
@@ -81,8 +87,8 @@ async fn delete_vote(
     State(repo): State<state::SeaOrmRepository>,
     Path(TagVotePath { entity_type, id }): Path<TagVotePath>,
     Json(body): Json<DeleteVoteBody>,
-) -> Result<(), Error> {
-    repo::delete(&repo, entity_type, id, body.tag_id, user.id).await?;
+) -> Result<(), AppError> {
+    tag_vote_core::delete(&repo, entity_type, id, body.tag_id, user.id).await?;
     Ok(())
 }
 
@@ -100,9 +106,9 @@ async fn get_tags(
     State(repo): State<state::SeaOrmRepository>,
     Path(TagVotePath { entity_type, id }): Path<TagVotePath>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<TagAggregate>>, Error> {
+) -> Result<Data<CursorResponse<TagAggregate>>, AppError> {
     let user_id = session.user.as_ref().map(|u| u.id);
-    let tags = repo::get_tags(
+    let tags = tag_vote_core::get_tags(
         &repo,
         entity_type,
         id,

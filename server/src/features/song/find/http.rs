@@ -1,18 +1,26 @@
 use axum::extract::{Path, Query, State};
 use domain::shared::PageResponse;
-use rating_core::{RatingTarget, RatingTargetKind};
 use serde::Deserialize;
+use song_repo::list::SongListing;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{PageQuery, SongFilter};
+use super::{PageQuery, SongFilter, detail, explore};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::song::list::SongListing;
 use crate::features::song::model::{Song, SongDetail};
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
+
+impl From<detail::DetailError> for AppError {
+    fn from(error: detail::DetailError) -> Self {
+        match error {
+            detail::DetailError::Database(source) => source.into(),
+            detail::DetailError::Rating(source) => source.into(),
+        }
+    }
+}
 
 const TAG: &str = "Song";
 
@@ -47,21 +55,14 @@ async fn find_song_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<SongDetail>>, AppError> {
-    let Some(song) = super::repo::find_by_id(&repo, id).await? else {
-        return Ok(Data::from(None));
-    };
-
-    let rating = rating_core::get(
-        &repo.conn,
-        RatingTarget {
-            kind: RatingTargetKind::Song,
-            id,
-        },
+    let detail = detail::find_detail(
+        &repo,
+        id,
         session.user.as_ref().map(|user| user.id),
     )
     .await?;
 
-    Ok(Data::from(Some(SongDetail { song, rating })))
+    Ok(Data::from(detail))
 }
 
 #[utoipa::path(
@@ -78,7 +79,7 @@ async fn find_song_pending_correction(
     State(repo): State<state::SeaOrmRepository>,
     Path((id, correction_id)): Path<(i32, i32)>,
 ) -> Result<Data<Option<Song>>, DatabaseError> {
-    super::repo::find_pending_correction(&repo, id, correction_id)
+    detail::find_pending_correction(&repo, id, correction_id)
         .await
         .map(Data::from)
 }
@@ -101,7 +102,7 @@ async fn find_song_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<Song>>, DatabaseError> {
-    super::repo::find_by_keyword(&repo, &query.keyword)
+    detail::find_by_keyword(&repo, &query.keyword)
         .await
         .map(Data::from)
 }
@@ -127,7 +128,7 @@ async fn explore_song(
         normalized:? = normalized;
         "incoming explore query"
     );
-    super::repo::find_by_filter(&repo, normalized, pagination)
+    explore::find_by_filter(&repo, normalized, pagination)
         .await
         .map(Data::from)
 }

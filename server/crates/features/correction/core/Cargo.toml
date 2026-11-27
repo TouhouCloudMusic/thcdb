@@ -1,0 +1,21 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-correction-core"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "correction_core"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace      = true
+derive_more.workspace = true
+entity.workspace      = true
+fastrace.workspace    = true
+infra_db.workspace    = true
+log.workspace         = true
+sea-orm.workspace     = true

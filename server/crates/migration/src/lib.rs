@@ -79,6 +79,7 @@ migrations![
     m20260915_000001_add_song_relation_direction,
     m20260922_000000_create_entity_popularity,
     m20261126_000000_add_image_queue_submission_note,
+    m20261126_000000_cascade_artist_membership_metadata,
     m20261127_000000_move_image_queue_targets,
 ];
 

@@ -24,14 +24,17 @@ pub enum CorrectionSortField {
     UpdatedAt,
 }
 
+pub(crate) const DEFAULT_CORRECTION_SORT: (CorrectionSortField, SortDirection) =
+    (CorrectionSortField::CreatedAt, SortDirection::Desc);
+
 pub const fn apply_sort_defaults(
     sort_field: &mut Option<CorrectionSortField>,
     sort_direction: &mut Option<SortDirection>,
 ) {
     if sort_field.is_none() {
-        *sort_field = Some(CorrectionSortField::CreatedAt);
+        *sort_field = Some(DEFAULT_CORRECTION_SORT.0);
     }
     if sort_direction.is_none() {
-        *sort_direction = Some(SortDirection::Desc);
+        *sort_direction = Some(DEFAULT_CORRECTION_SORT.1);
     }
 }

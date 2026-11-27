@@ -62,6 +62,18 @@ pub enum ModerationError {
     Internal(#[error(source)] InternalError),
 }
 
+impl From<correction_core::ModerationError> for ModerationError {
+    fn from(source: correction_core::ModerationError) -> Self {
+        match source {
+            correction_core::ModerationError::NotFound => Self::NotFound,
+            correction_core::ModerationError::AlreadyHandled => {
+                Self::AlreadyHandled
+            }
+            correction_core::ModerationError::Database(source) => source.into(),
+        }
+    }
+}
+
 impl From<infra_db::error::DatabaseError> for ModerationError {
     fn from(source: infra_db::error::DatabaseError) -> Self {
         Self::Database(source.into())
@@ -122,15 +134,32 @@ mod tests {
     use axum::response::IntoResponse;
 
     use super::SubmissionError;
-    use crate::features::song::model::{ValidationError, ValidationErrorKind};
 
     #[test]
     fn validation_returns_bad_request() {
-        let err = SubmissionError::Validation(
-            ValidationError::from(ValidationErrorKind::SelfRelation)
-                .to_string(),
-        );
+        use artist_repo::write::ValidationError as ArtistError;
+        use song_repo::write::ValidationError as SongError;
 
-        assert_eq!(err.into_response().status(), StatusCode::BAD_REQUEST);
+        for (err, message) in [
+            (
+                SubmissionError::from(SongError::SelfRelation),
+                "Validation error: Song relation cannot target the same song",
+            ),
+            (
+                SubmissionError::from(SongError::DuplicateRelation),
+                "Validation error: Song relation cannot be duplicated",
+            ),
+            (
+                SubmissionError::from(ArtistError::UnknownTypeArtistHasMembers),
+                "Validation error: Unknown type artist cannot have members",
+            ),
+            (
+                SubmissionError::from(ArtistError::InvalidTenure),
+                "Validation error: Invalid tenure",
+            ),
+        ] {
+            assert_eq!(err.to_string(), message);
+            assert_eq!(err.into_response().status(), StatusCode::BAD_REQUEST);
+        }
     }
 }

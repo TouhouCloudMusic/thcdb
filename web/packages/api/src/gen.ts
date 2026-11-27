@@ -2461,6 +2461,10 @@ export type components = {
         };
         /** @enum {string} */
         EditableUserRole: "Moderator";
+        EditSongLyrics: {
+            content: string;
+            is_main: boolean;
+        };
         /** @enum {string} */
         EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "correction" | "image-queue";
         EntityIdent: string;
@@ -2701,6 +2705,14 @@ export type components = {
             catalog_number: string;
             /** Format: int32 */
             label_id?: number | null;
+        };
+        NewCorrection_EditSongLyrics: {
+            data: {
+                content: string;
+                is_main: boolean;
+            };
+            description: string;
+            type: components["schemas"]["CorrectionType"];
         };
         NewCorrection_NewArtist: {
             data: {
@@ -3761,6 +3773,7 @@ export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
 export type Disc = components['schemas']['Disc'];
 export type EditableUserRole = components['schemas']['EditableUserRole'];
+export type EditSongLyrics = components['schemas']['EditSongLyrics'];
 export type EntityCommentTarget = components['schemas']['EntityCommentTarget'];
 export type EntityIdent = components['schemas']['EntityIdent'];
 export type EntityMeta = components['schemas']['EntityMeta'];
@@ -3799,6 +3812,7 @@ export type Membership = components['schemas']['Membership'];
 export type Message = components['schemas']['Message'];
 export type NewArtist = components['schemas']['NewArtist'];
 export type NewCatalogNumber = components['schemas']['NewCatalogNumber'];
+export type NewCorrectionEditSongLyrics = components['schemas']['NewCorrection_EditSongLyrics'];
 export type NewCorrectionNewArtist = components['schemas']['NewCorrection_NewArtist'];
 export type NewCorrectionNewCreditRole = components['schemas']['NewCorrection_NewCreditRole'];
 export type NewCorrectionNewEvent = components['schemas']['NewCorrection_NewEvent'];
@@ -9019,7 +9033,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewCorrection_NewSongLyrics"];
+                "application/json": components["schemas"]["NewCorrection_EditSongLyrics"];
             };
         };
         responses: {
@@ -9069,7 +9083,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewCorrection_NewSongLyrics"];
+                "application/json": components["schemas"]["NewCorrection_EditSongLyrics"];
             };
         };
         responses: {

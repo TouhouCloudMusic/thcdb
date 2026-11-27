@@ -1,0 +1,33 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-release-repo"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "release_repo"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace     = true
+domain.workspace     = true
+entity.workspace     = true
+fastrace.workspace   = true
+garde.workspace      = true
+infra_db.workspace   = true
+itertools.workspace  = true
+libfp.workspace      = true
+sea-orm.workspace    = true
+sea-query.workspace  = true
+serde.workspace      = true
+serde_json.workspace = true
+serde_with.workspace = true
+tokio.workspace      = true
+utoipa.workspace     = true
+vecmap-rs            = "0.2.3"
+
+[dev-dependencies]
+anyhow.workspace = true

@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use artist_repo::list::{self as artist_list, ArtistListItem};
 use axum::extract::State;
 use entity::{artist, release, song, tag};
 use popularity_core::Ranking;
+use release_repo::ReleaseListItem;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
     QueryOrder, QuerySelect,
@@ -15,8 +17,6 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::artist::list::{self as artist_list, ArtistListItem};
-use crate::features::release::list::{self as release_list, ReleaseListItem};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::api_response::{AppError, Data};
 
@@ -108,7 +108,7 @@ async fn load_popular_items(
             if ranking.release_ids.is_empty() {
                 return Ok(Vec::new());
             }
-            release_list::load(
+            release_repo::load_list(
                 release::Entity::find().filter(
                     release::Column::Id
                         .is_in(ranking.release_ids.iter().copied()),
@@ -116,6 +116,7 @@ async fn load_popular_items(
                 conn,
             )
             .await
+            .map_err(DatabaseError::from)
         },
         async {
             if ranking.artist_ids.is_empty() {
@@ -129,6 +130,7 @@ async fn load_popular_items(
                 conn,
             )
             .await
+            .map_err(DatabaseError::from)
         },
     )?;
 
@@ -205,7 +207,7 @@ async fn load_random_releases(
         )
     };
 
-    let releases = release_list::load(
+    let releases = release_repo::load_list(
         select
             .order_by_asc(Expr::expr(Func::random()))
             .limit(count as u64),

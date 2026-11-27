@@ -461,6 +461,11 @@ export const vArtistSongCredit = v.object({
 	releases: v.array(vArtistSongCreditRelease),
 })
 
+export const vEditSongLyrics = v.strictObject({
+	content: v.string(),
+	is_main: v.boolean(),
+})
+
 export const vEditableUserRole = v.picklist(["Moderator"])
 
 export const vDataVecEditableUserRole = v.object({
@@ -1027,6 +1032,15 @@ export const vNewCatalogNumber = v.object({
 			),
 		),
 	),
+})
+
+export const vNewCorrectionEditSongLyrics = v.object({
+	data: v.strictObject({
+		content: v.string(),
+		is_main: v.boolean(),
+	}),
+	description: v.string(),
+	type: vCorrectionType,
 })
 
 export const vNewCorrectionNewCreditRole = v.object({
@@ -5699,7 +5713,7 @@ export const vFindSongLyricsByIdPath = v.object({
 
 export const vFindSongLyricsByIdResponse = vDataOptionSongLyrics
 
-export const vUpdateSongLyricsBody = vNewCorrectionNewSongLyrics
+export const vUpdateSongLyricsBody = vNewCorrectionEditSongLyrics
 
 export const vUpdateSongLyricsPath = v.object({
 	id: v.pipe(
@@ -5716,7 +5730,7 @@ export const vUpdateSongLyricsPath = v.object({
 export const vUpdateSongLyricsResponse = vDataCorrectionSubmitResult
 
 export const vUpdateSongLyricsPendingCorrectionBody =
-	vNewCorrectionNewSongLyrics
+	vNewCorrectionEditSongLyrics
 
 export const vUpdateSongLyricsPendingCorrectionPath = v.object({
 	id: v.pipe(

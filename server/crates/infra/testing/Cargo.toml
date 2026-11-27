@@ -12,16 +12,14 @@ name = "infra_testing"
 path = "src/lib.rs"
 
 [dependencies]
-auth_core.workspace         = true
-chrono.workspace            = true
-domain.workspace            = true
-entity.workspace            = true
-infra_db.workspace          = true
-infra_email.workspace       = true
-migration.workspace         = true
-sea-orm.workspace           = true
-sea-orm-migration.workspace = true
-sea-query.workspace         = true
-serde_json.workspace        = true
-tokio.workspace             = true
-url                         = "2.5.4"
+auth_core.workspace   = true
+chrono.workspace      = true
+domain.workspace      = true
+entity.workspace      = true
+infra_db              = { workspace = true, features = [ "migrations" ] }
+infra_email.workspace = true
+sea-orm.workspace     = true
+sea-query.workspace   = true
+serde_json.workspace  = true
+tokio.workspace       = true
+url                   = "2.5.4"

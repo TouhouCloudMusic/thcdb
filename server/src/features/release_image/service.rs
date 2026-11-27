@@ -22,7 +22,6 @@ use crate::features::image_queue::repo::{
 };
 use crate::features::image_upload;
 use crate::features::image_upload::{CreateImageMeta, ParseOption, Parser};
-use crate::features::release::find::repo as release_repo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::storage::GenericFileStorage;
 use crate::shared::http::api_response::AppError;
@@ -100,7 +99,10 @@ impl Service {
             description,
         } = dto;
 
-        if !release_repo::exists(&self.repo.conn, release_id).await? {
+        if !release_repo::exists(&self.repo.conn, release_id)
+            .await
+            .map_err(DatabaseError::from)?
+        {
             return Err(EntityNotFound::new("release", release_id).into());
         }
 

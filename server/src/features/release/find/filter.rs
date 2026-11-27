@@ -1,6 +1,4 @@
-use entity::release;
 use entity::sea_orm_active_enums::ReleaseType;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Select};
 use serde::{Deserialize, Serialize};
 use serde_with::{OneOrMany, serde_as};
 use utoipa::{IntoParams, ToSchema};
@@ -39,17 +37,5 @@ impl ReleaseFilter {
             self.sort_direction = Some(SortDirection::Desc);
         }
         self
-    }
-
-    pub fn into_select(self) -> Select<release::Entity> {
-        let mut select = release::Entity::find();
-
-        if let Some(release_types) = &self.release_types {
-            select = select.filter(
-                release::Column::ReleaseType.is_in(release_types.clone()),
-            );
-        }
-
-        select
     }
 }

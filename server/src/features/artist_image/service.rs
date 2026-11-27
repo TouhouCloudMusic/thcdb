@@ -17,7 +17,6 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use user_core::UserSummary;
 
 use super::model::ArtistProfileImageInput;
-use crate::features::artist::find::repo as artist_repo;
 use crate::features::image_metadata::CurrentImageMetadata;
 use crate::features::image_queue::repo::{
     self as image_queue_repo, NewImageQueue,
@@ -103,7 +102,10 @@ impl Service {
             description,
         } = dto;
 
-        if !artist_repo::exists(&self.repo.conn, artist_id).await? {
+        if !artist_repo::exists(&self.repo.conn, artist_id)
+            .await
+            .map_err(DatabaseError::from)?
+        {
             return Err(EntityNotFound::new("artist", artist_id).into());
         }
 

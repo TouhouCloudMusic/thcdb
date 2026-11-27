@@ -1,3 +1,4 @@
+use artist_repo::write::NewArtist;
 use axum::Json;
 use axum::extract::{DefaultBodyLimit, Path, State};
 use axum::response::{IntoResponse, Response};
@@ -8,7 +9,6 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::model::NewArtist;
 use super::{credits, find, release, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};

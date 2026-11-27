@@ -1,3 +1,6 @@
+use artist_repo::find;
+use artist_repo::list::ArtistListItem;
+use artist_repo::model::Artist;
 use axum::extract::{Path, Query, State};
 use domain::shared::PageResponse;
 use serde::Deserialize;
@@ -5,11 +8,9 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{ArtistFilter, CommonFilter, FindManyFilter, PageQuery, repo};
+use super::{ArtistFilter, CommonFilter, PageQuery, repo};
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
-use crate::features::artist::list::ArtistListItem;
-use crate::features::artist::model::Artist;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
 
@@ -49,18 +50,15 @@ async fn find_artist_by_id(
         CommonFilter,
     >,
 ) -> Result<Data<Option<Artist>>, DatabaseError> {
-    repo::find_one(&repo, id, common).await.map(Data::from)
+    find::find_one(&repo.conn, id, common.artist_types, common.exclusion)
+        .await
+        .map(Data::from)
+        .map_err(DatabaseError::from)
 }
 
 #[derive(Deserialize, IntoParams)]
 struct FindManyFilterDto {
     keyword: String,
-}
-
-impl From<FindManyFilterDto> for FindManyFilter {
-    fn from(value: FindManyFilterDto) -> Self {
-        Self::Keyword(value.keyword)
-    }
 }
 
 #[utoipa::path(
@@ -84,9 +82,15 @@ async fn find_many_artist(
         CommonFilter,
     >,
 ) -> Result<Data<Vec<Artist>>, DatabaseError> {
-    repo::find_many(&repo, query.into(), common)
-        .await
-        .map(Data::from)
+    find::find_many(
+        &repo.conn,
+        &query.keyword,
+        common.artist_types,
+        common.exclusion,
+    )
+    .await
+    .map(Data::from)
+    .map_err(DatabaseError::from)
 }
 
 #[utoipa::path(

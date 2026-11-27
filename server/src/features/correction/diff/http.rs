@@ -6,7 +6,7 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::features::correction::shared::repo as correction_diff;
-use crate::features::correction::{CorrectionDiff, ReadError, repo};
+use crate::features::correction::{CorrectionDiff, ReadError};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::Data;
 
@@ -28,30 +28,31 @@ async fn get_correction_diff(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<CorrectionDiff>, ReadError> {
-    let Some(current) = repo::find_by_id(&repo.conn, id)
+    let Some(current) = correction_core::find_by_id(&repo.conn, id)
         .await
         .db_context("find correction for diff")?
     else {
         return Err(ReadError::NotFound("Correction not found"));
     };
 
-    let current_revision = repo::latest_revision(&repo.conn, id)
+    let current_revision = correction_core::latest_revision(&repo.conn, id)
         .await
         .db_context("find current correction revision for diff")?
         .ok_or(ReadError::NotFound("Correction revision not found"))?;
 
-    let base = repo::find_base(&repo.conn, &current)
+    let base = correction_core::find_base(&repo.conn, &current)
         .await
         .db_context("find base correction for diff")?;
 
     let (base_snapshot, base_correction_id, base_history_id) =
         if let Some(base) = base {
-            let base_revision = repo::latest_revision(&repo.conn, base.id)
-                .await
-                .db_context("find base correction revision for diff")?
-                .ok_or(ReadError::NotFound(
-                    "Base correction revision not found",
-                ))?;
+            let base_revision =
+                correction_core::latest_revision(&repo.conn, base.id)
+                    .await
+                    .db_context("find base correction revision for diff")?
+                    .ok_or(ReadError::NotFound(
+                        "Base correction revision not found",
+                    ))?;
 
             let snapshot = correction_diff::snapshot_for_history(
                 &repo.conn,

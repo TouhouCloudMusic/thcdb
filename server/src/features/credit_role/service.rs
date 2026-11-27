@@ -1,13 +1,23 @@
 use axum::extract::FromRef;
+use credit_role_repo::write::{self, NewCreditRole};
+use entity::enums::EntityType;
 use infra_db::SeaOrmRepository;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::features::correction::{
-    CorrectionSubmitResult, NewCorrection, NewCorrectionMeta, SubmissionError,
-    service as correction_service,
+    CorrectionEntity, CorrectionSubmitResult, NewCorrection, NewCorrectionMeta,
+    SubmissionError, service as correction_service,
 };
-use crate::features::credit_role::model::NewCreditRole;
-use crate::features::user_event::{UserEvent, UserEventSender};
+use crate::features::user_event::UserEventSender;
+
+#[cfg(all(test, feature = "integration-test"))]
+mod tests;
+
+impl CorrectionEntity for NewCreditRole {
+    fn entity_type() -> EntityType {
+        EntityType::CreditRole
+    }
+}
 
 #[derive(Clone)]
 pub struct Service {
@@ -35,10 +45,10 @@ impl Service {
             .await
             .map_err(crate::infra::database::error::DatabaseError::from)?;
 
-        let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
+        let entity_id = write::create(tx_repo.conn(), &correction.data).await?;
 
         let history_id =
-            super::repo::create_history(&tx_repo, &correction.data).await?;
+            write::create_history(tx_repo.conn(), &correction.data).await?;
 
         let correction_id = correction_service::create(
             &tx_repo,
@@ -74,10 +84,10 @@ impl Service {
             .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         let history_id =
-            super::repo::create_history(&tx_repo, &correction.data).await?;
+            write::create_history(tx_repo.conn(), &correction.data).await?;
 
         let result = correction_service::upsert(
-            &tx_repo,
+            tx_repo,
             NewCorrectionMeta::<NewCreditRole> {
                 author: correction.author,
                 r#type: correction.r#type,
@@ -90,30 +100,6 @@ impl Service {
         )
         .await?;
 
-        match result {
-            correction_service::CorrectionUpsertResult::Submitted {
-                correction_id,
-                notification_recipients,
-            } => {
-                tx_repo.commit().await.map_err(
-                    crate::infra::database::error::DatabaseError::from,
-                )?;
-                self.user_events.publish(
-                    UserEvent::NotificationInboxUpdated,
-                    notification_recipients.user_ids,
-                );
-
-                Ok(CorrectionSubmitResult::submitted(correction_id, id))
-            }
-            correction_service::CorrectionUpsertResult::Conflict {
-                correction_id,
-            } => {
-                tx_repo.rollback().await.map_err(
-                    crate::infra::database::error::DatabaseError::from,
-                )?;
-
-                Ok(CorrectionSubmitResult::conflict(correction_id, id))
-            }
-        }
+        Ok(result.publish_and_respond(id, &self.user_events))
     }
 }

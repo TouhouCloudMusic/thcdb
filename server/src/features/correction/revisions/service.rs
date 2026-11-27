@@ -2,7 +2,7 @@ use infra_db::SeaOrmRepository;
 
 use super::model::CorrectionRevisionSummary;
 use super::repo;
-use crate::features::correction::{ReadError, shared};
+use crate::features::correction::ReadError;
 use crate::infra::database::error::DatabaseResultExt;
 
 #[derive(Clone)]
@@ -19,7 +19,7 @@ impl Service {
         &self,
         correction_id: i32,
     ) -> Result<Option<Vec<CorrectionRevisionSummary>>, ReadError> {
-        if !shared::repo::correction_exists(&self.repo.conn, correction_id)
+        if !correction_core::correction_exists(&self.repo.conn, correction_id)
             .await
             .db_context("find correction for revisions")?
         {

@@ -7,7 +7,7 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::features::correction::shared::repo as correction_diff;
-use crate::features::correction::{CorrectionDiff, ReadError, repo};
+use crate::features::correction::{CorrectionDiff, ReadError};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::Data;
 
@@ -36,14 +36,14 @@ async fn compare_corrections(
     Path(CompareCorrectionPath { id1, id2 }): Path<CompareCorrectionPath>,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<CorrectionDiff>, ReadError> {
-    let Some(left) = repo::find_by_id(&repo.conn, id1)
+    let Some(left) = correction_core::find_by_id(&repo.conn, id1)
         .await
         .db_context("find left correction for comparison")?
     else {
         return Err(ReadError::NotFound("Correction not found"));
     };
 
-    let Some(right) = repo::find_by_id(&repo.conn, id2)
+    let Some(right) = correction_core::find_by_id(&repo.conn, id2)
         .await
         .db_context("find right correction for comparison")?
     else {
@@ -58,12 +58,12 @@ async fn compare_corrections(
         ));
     }
 
-    let left_revision = repo::latest_revision(&repo.conn, id1)
+    let left_revision = correction_core::latest_revision(&repo.conn, id1)
         .await
         .db_context("find left correction revision for comparison")?
         .ok_or(ReadError::NotFound("Correction revision not found"))?;
 
-    let right_revision = repo::latest_revision(&repo.conn, id2)
+    let right_revision = correction_core::latest_revision(&repo.conn, id2)
         .await
         .db_context("find right correction revision for comparison")?
         .ok_or(ReadError::NotFound("Correction revision not found"))?;

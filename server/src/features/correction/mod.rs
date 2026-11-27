@@ -21,4 +21,4 @@ pub use model::{
     CorrectionSubmitResult, NewCorrection, NewCorrectionMeta,
     NewCorrectionRequest,
 };
-pub(crate) use repo::find_pending_history_id;
+pub(crate) use repo::{correction_sorted_entity_ids, find_pending_history_id};

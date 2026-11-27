@@ -1,3 +1,4 @@
+use artist_repo::list as artist_list;
 use auth_core::permission::{Permission, user_has_permission};
 use chrono::Utc;
 use domain::shared::CursorResponse;
@@ -6,6 +7,7 @@ use entity::{artist, image_queue, image_queue_subscription, release};
 use image_queue_core::QueueTarget;
 use infra_db::SeaOrmRepository;
 use notification_core::ImageQueueModerationAction;
+use release_repo::load_cover_art_urls;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel,
@@ -18,9 +20,7 @@ use super::model::{
     ImageQueueTarget, ImageSummary, PendingImageQueueItem,
 };
 use super::{Error, repo};
-use crate::features::artist::list as artist_list;
 use crate::features::image_queue::shared::{UserSummary, load_list_metadata};
-use crate::features::release::list::load_cover_art_urls;
 use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::infra::database::error::{BrokenEntityReference, DatabaseResultExt};
 use crate::shared::error::InternalError;

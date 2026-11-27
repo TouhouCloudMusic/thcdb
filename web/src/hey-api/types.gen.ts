@@ -804,6 +804,11 @@ export type Disc = {
 	name?: string | null
 }
 
+export type EditSongLyrics = {
+	content: string
+	is_main: boolean
+}
+
 export type EditableUserRole = "Moderator"
 
 export type EntityCommentTarget =
@@ -1080,6 +1085,15 @@ export type NewArtist = {
 export type NewCatalogNumber = {
 	catalog_number: string
 	label_id?: number | null
+}
+
+export type NewCorrectionEditSongLyrics = {
+	data: {
+		content: string
+		is_main: boolean
+	}
+	description: string
+	type: CorrectionType
 }
 
 export type NewCorrectionNewArtist = {
@@ -5172,7 +5186,7 @@ export type FindSongLyricsByIdResponse =
 	FindSongLyricsByIdResponses[keyof FindSongLyricsByIdResponses]
 
 export type UpdateSongLyricsData = {
-	body: NewCorrectionNewSongLyrics
+	body: NewCorrectionEditSongLyrics
 	path: {
 		id: number
 	}
@@ -5202,7 +5216,7 @@ export type UpdateSongLyricsResponse =
 	UpdateSongLyricsResponses[keyof UpdateSongLyricsResponses]
 
 export type UpdateSongLyricsPendingCorrectionData = {
-	body: NewCorrectionNewSongLyrics
+	body: NewCorrectionEditSongLyrics
 	path: {
 		/**
 		 * Song lyrics id
