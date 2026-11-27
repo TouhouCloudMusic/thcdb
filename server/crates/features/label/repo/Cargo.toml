@@ -1,0 +1,25 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-label-repo"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "label_repo"
+path = "src/lib.rs"
+
+[dependencies]
+artist_repo.workspace = true
+chrono.workspace      = true
+domain.workspace      = true
+entity.workspace      = true
+infra_db.workspace    = true
+itertools.workspace   = true
+sea-orm.workspace     = true
+sea-query.workspace   = true
+serde.workspace       = true
+serde_json.workspace  = true
+utoipa.workspace      = true

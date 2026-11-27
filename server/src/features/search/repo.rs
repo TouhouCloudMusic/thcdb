@@ -1,28 +1,31 @@
+use artist_repo::list::{ArtistListItem, ArtistRow};
 use domain::shared::CursorResponse;
 use entity::{
     artist, artist_localized_name, event, event_alternative_name, label,
     label_localized_name, release, release_localized_title, song,
     song_localized_title, tag, tag_alternative_name,
 };
+use event_repo::{EventListItem, EventRow};
 use infra_db::SeaOrmRepository;
+use label_repo::{LabelListItem, LabelRow};
+use release_repo::ReleaseListItem;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityName, EntityTrait, PartialModelTrait,
-    QuerySelect, QueryTrait,
+    QuerySelect, QueryTrait, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{
     Alias, Expr, ExprTrait, Func, JoinType, NullOrdering, Order, Query,
-    SelectStatement, UnionType,
+    SelectStatement, SimpleExpr, UnionType,
 };
+use song_repo::list::{SongListing, SongRow};
+use tag_repo::{TagListItem, TagRow};
 
 use super::SearchResult;
-use crate::features::artist::list::{ArtistListItem, ArtistRow};
-use crate::features::event::list::{EventListItem, EventRow};
-use crate::features::label::list::{LabelListItem, LabelRow};
-use crate::features::release::list::{ReleaseListItem, ReleaseRow};
-use crate::features::song::list::{SongListing, SongRow};
-use crate::features::tag::list::{TagListItem, TagRow};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
 
 fn match_name_select(keyword: &str, names: SelectStatement) -> SelectStatement {
     let search_term = Func::lower(keyword);
@@ -54,19 +57,11 @@ fn match_name_select(keyword: &str, names: SelectStatement) -> SelectStatement {
         .to_owned()
 }
 
-#[infra_db::observe("search.find_matches")]
-async fn search_matches<
-    E: EntityTrait,
-    R: PartialModelTrait,
-    A: ColumnTrait,
->(
-    db: &impl ConnectionTrait,
+fn ranked_select<E: EntityTrait, A: ColumnTrait>(
     search_term: &str,
     (entity_id, primary_name): (E::Column, E::Column),
     (alternative_id, alternative_name): (A, A),
-    limit: u32,
-    cursor: i32,
-) -> Result<CursorResponse<SearchResult<R>>, DatabaseError> {
+) -> (Select<E>, SimpleExpr) {
     let id = Alias::new("id");
     let name = Alias::new("name");
     let dist = Alias::new("dist");
@@ -89,8 +84,8 @@ async fn search_matches<
         .to_owned();
 
     let ranked_alias = Alias::new("ranked");
-    let mut query = R::select_cols(E::find().select_only()).into_query();
-    query
+    let mut select = E::find();
+    QueryTrait::query(&mut select)
         .join_subquery(
             JoinType::InnerJoin,
             match_name_select(search_term, names),
@@ -99,12 +94,33 @@ async fn search_matches<
                 .into_expr()
                 .equals((ranked_alias.clone(), id.clone())),
         )
-        .expr_as(
-            Expr::col((ranked_alias.clone(), matched_name.clone())),
-            matched_name,
-        )
         .order_by((ranked_alias.clone(), dist), Order::Asc)
-        .order_by((ranked_alias, id), Order::Asc)
+        .order_by((ranked_alias.clone(), id), Order::Asc);
+
+    (select, Expr::col((ranked_alias, matched_name)).into())
+}
+
+#[infra_db::observe("search.find_matches")]
+async fn search_matches<
+    E: EntityTrait,
+    R: PartialModelTrait,
+    A: ColumnTrait,
+>(
+    db: &impl ConnectionTrait,
+    search_term: &str,
+    (entity_id, primary_name): (E::Column, E::Column),
+    (alternative_id, alternative_name): (A, A),
+    limit: u32,
+    cursor: i32,
+) -> Result<CursorResponse<SearchResult<R>>, DatabaseError> {
+    let (select, matched_name) = ranked_select::<E, A>(
+        search_term,
+        (entity_id, primary_name),
+        (alternative_id, alternative_name),
+    );
+    let mut query = R::select_cols(select.select_only()).into_query();
+    query
+        .expr_as(matched_name, Alias::new("matched_name"))
         .offset(u64::try_from(cursor).unwrap_or(0))
         .limit(u64::from(limit) + 1);
 
@@ -194,20 +210,33 @@ define_search! {
             foreign_key: ArtistId,
         },
         row: ArtistRow => ArtistListItem,
-        load_items: crate::features::artist::list::load_items,
+        load_items: artist_repo::list::load_items,
     }
 }
 
-define_search! {
-    search_releases {
-        entity: release,
-        name: Title,
-        alternative: release_localized_title {
-            foreign_key: ReleaseId,
-        },
-        row: ReleaseRow => ReleaseListItem,
-        load_items: crate::features::release::list::load_items,
-    }
+pub async fn search_releases(
+    repo: &SeaOrmRepository,
+    search_term: &str,
+    limit: u32,
+    cursor: i32,
+) -> Result<CursorResponse<SearchResult<ReleaseListItem>>, DatabaseError> {
+    let (select, matched_name) = ranked_select::<release::Entity, _>(
+        search_term,
+        (release::Column::Id, release::Column::Title),
+        (
+            release_localized_title::Column::ReleaseId,
+            release_localized_title::Column::Title,
+        ),
+    );
+    let page = release_repo::load_list_with_match(
+        select,
+        matched_name,
+        limit,
+        cursor,
+        &repo.conn,
+    )
+    .await?;
+    Ok(page.map(|(item, matched_name)| SearchResult { item, matched_name }))
 }
 
 define_search! {
@@ -218,7 +247,7 @@ define_search! {
             foreign_key: SongId,
         },
         row: SongRow => SongListing,
-        load_items: crate::features::song::list::load_items,
+        load_items: song_repo::list::load_items,
     }
 }
 
@@ -258,7 +287,7 @@ define_search! {
             foreign_key: LabelId,
         },
         row: LabelRow => LabelListItem,
-        load_items: crate::features::label::list::load_items,
+        load_items: label_repo::load_list_items,
     }
 }
 
@@ -270,6 +299,6 @@ define_search! {
             foreign_key: TagId,
         },
         row: TagRow => TagListItem,
-        load_items: crate::features::tag::list::load_items,
+        load_items: tag_repo::load_list_items,
     }
 }

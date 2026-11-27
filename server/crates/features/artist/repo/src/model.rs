@@ -4,6 +4,8 @@ use entity::enums::ReleaseType;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
+pub use crate::read_model::{Artist, Membership};
+
 pub type Appearance = Discography;
 
 #[derive(Serialize, ToSchema)]

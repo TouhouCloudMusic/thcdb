@@ -20,7 +20,7 @@ impl Service {
         entity_type: entity::enums::EntityType,
         entity_id: i32,
     ) -> Result<Vec<CorrectionHistoryItem>, ReadError> {
-        let corrections = repo::list_approved_corrections(
+        let corrections = correction_core::list_approved_corrections(
             &self.repo.conn,
             entity_type,
             entity_id,

@@ -1,17 +1,17 @@
 use axum::extract::{Path, Query, State};
 use domain::shared::PageResponse;
 use rating_core::{RatingTarget, RatingTargetKind};
+use release_repo::{FindReleaseFilter, Release, ReleaseListItem};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::repo::{self, FindReleaseFilter};
-use super::{PageQuery, ReleaseFilter};
+use super::{PageQuery, ReleaseFilter, repo};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::release::list::ReleaseListItem;
-use crate::features::release::model::{Release, ReleaseDetail};
+use crate::features::release::model::ReleaseDetail;
+use crate::infra::database::cache::LANGUAGE_CACHE;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
@@ -48,7 +48,11 @@ async fn find_release_by_id(
     Path(id): Path<i32>,
 ) -> Result<Data<Option<ReleaseDetail>>, AppError> {
     let Some(release) =
-        repo::find_one(&repo, FindReleaseFilter::Id(id)).await?
+        release_repo::find_one(&repo.conn, FindReleaseFilter::Id(id), || {
+            LANGUAGE_CACHE.get_or_init(&repo.conn)
+        })
+        .await
+        .map_err(DatabaseError::from)?
     else {
         return Ok(Data::from(None));
     };
@@ -84,9 +88,13 @@ async fn find_release_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<Release>>, DatabaseError> {
-    repo::find_many(&repo, FindReleaseFilter::Keyword(query.keyword))
-        .await
-        .map(Data::from)
+    let releases = release_repo::find_many(
+        &repo.conn,
+        FindReleaseFilter::Keyword(query.keyword),
+        || LANGUAGE_CACHE.get_or_init(&repo.conn),
+    )
+    .await?;
+    Ok(Data::from(releases))
 }
 
 #[utoipa::path(

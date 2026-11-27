@@ -1,9 +1,9 @@
 use axum::Json;
 use axum::extract::{Path, State};
+use label_repo::write::NewLabel;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::model::NewLabel;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};

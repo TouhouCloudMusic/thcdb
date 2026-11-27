@@ -1,58 +1,13 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::future::Future;
 
 use domain::shared::{CursorResponse, PageResponse};
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
-    QueryOrder, Select,
+    ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, Select,
 };
 
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::http::{CorrectionSortField, PageQuery, PaginationQuery};
-
-#[infra_db::observe("correction.find_sorted_entity_ids")]
-pub async fn correction_sorted_entity_ids(
-    db: &impl ConnectionTrait,
-    entity_type: entity::enums::EntityType,
-    sort_field: CorrectionSortField,
-    sort_direction: sea_orm::Order,
-) -> Result<Vec<i32>, DatabaseError> {
-    use entity::correction::Column;
-    let sort_column = match sort_field {
-        CorrectionSortField::CreatedAt => Column::CreatedAt,
-        CorrectionSortField::UpdatedAt => Column::HandledAt,
-    };
-
-    let models: Vec<entity::correction::Model> =
-        entity::correction::Entity::find()
-            .filter(Column::EntityType.eq(entity_type))
-            .order_by(sort_column, sort_direction.clone())
-            .all(db)
-            .await
-            .db_context("load correction sort rows")?;
-
-    let entity_ids = if matches!(sort_direction, sea_orm::Order::Asc) {
-        // models are sorted oldest -> newest, order entities by their last occurrence.
-        let mut last_index: HashMap<i32, usize> = HashMap::new();
-        for (index, m) in models.iter().enumerate() {
-            last_index.insert(m.entity_id, index);
-        }
-
-        let mut entries: Vec<(i32, usize)> = last_index.into_iter().collect();
-        entries.sort_by_key(|(_, index)| *index);
-        entries.into_iter().map(|(id, _)| id).collect()
-    } else {
-        // models are sorted newest -> oldest (or custom field order),
-        // pick the first correction per entity.
-        let mut seen = HashSet::new();
-        models
-            .into_iter()
-            .filter_map(|m| seen.insert(m.entity_id).then_some(m.entity_id))
-            .collect()
-    };
-
-    Ok(entity_ids)
-}
+use crate::shared::http::{PageQuery, PaginationQuery};
 
 pub fn sort_by_id_list<T>(
     mut items: Vec<T>,

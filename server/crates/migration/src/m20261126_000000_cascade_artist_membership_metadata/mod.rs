@@ -1,0 +1,1 @@
+super::migration!(m20261126_000000_cascade_artist_membership_metadata);

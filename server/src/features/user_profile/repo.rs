@@ -1,8 +1,8 @@
 use auth_core::permission::Permission;
 use entity::enums::{CorrectionStatus, CorrectionType, CorrectionUserType};
 use entity::relation::UserRelationExt;
-use entity::user_following;
-use infra_db::SeaOrmRepository;
+use entity::{user, user_following};
+use infra_db::{DatabaseTransaction, SeaOrmRepository};
 use macros::FieldEnum;
 use sea_orm::prelude::Expr;
 use sea_orm::{
@@ -10,13 +10,45 @@ use sea_orm::{
     JoinType, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait,
     RelationTrait,
 };
-use sea_orm_migration::prelude::Alias;
-use sea_query::{Func, Query, SimpleExpr, UnionType};
+use sea_query::{Alias, Func, Query, SimpleExpr, UnionType};
 
 use crate::features::auth::UserRole;
 use crate::features::user::User;
 use crate::features::user_profile::{UserProfile, UserProfileStats};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+
+#[infra_db::observe("user_profile.find_user_id_by_name")]
+pub(crate) async fn find_user_id_by_name(
+    repo: &SeaOrmRepository,
+    name: &str,
+) -> Result<Option<i32>, DatabaseError> {
+    let user_id = user::Entity::find()
+        .select_only()
+        .column(user::Column::Id)
+        .filter(user::Column::Name.eq(name))
+        .into_tuple::<i32>()
+        .one(&repo.conn)
+        .await
+        .db_context("find user ID by name")?;
+
+    Ok(user_id)
+}
+
+#[infra_db::observe("user_profile.is_user_email_verified")]
+pub(crate) async fn is_user_email_verified(
+    tx: &DatabaseTransaction,
+    user_id: i32,
+) -> Result<bool, DatabaseError> {
+    let email_verified = user::Entity::find_by_id(user_id)
+        .select_only()
+        .column(user::Column::EmailVerified)
+        .into_tuple::<bool>()
+        .one(tx)
+        .await
+        .db_context("check follow target email verification")?;
+
+    Ok(email_verified.unwrap_or(false))
+}
 
 #[infra_db::observe("user_profile.find_by_name")]
 pub(crate) async fn find_by_name(

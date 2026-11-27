@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use entity::enums::CorrectionStatus;
-use entity::{correction as correction_entity, correction_revision, user};
+use entity::{correction_revision, user};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, JoinType, QueryFilter,
     QueryOrder, QuerySelect, RelationTrait,
@@ -12,23 +11,6 @@ use user_core::UserSummary;
 pub(super) struct CorrectionRevisionAuthor {
     pub(super) author: UserSummary,
     pub(super) description: String,
-}
-
-pub(super) async fn list_approved_corrections(
-    conn: &impl ConnectionTrait,
-    entity_type: entity::enums::EntityType,
-    entity_id: i32,
-) -> Result<Vec<correction_entity::Model>, DbErr> {
-    correction_entity::Entity::find()
-        .filter(correction_entity::Column::EntityId.eq(entity_id))
-        .filter(correction_entity::Column::EntityType.eq(entity_type))
-        .filter(
-            correction_entity::Column::Status.eq(CorrectionStatus::Approved),
-        )
-        .order_by_desc(correction_entity::Column::HandledAt)
-        .order_by_desc(correction_entity::Column::CreatedAt)
-        .all(conn)
-        .await
 }
 
 pub(super) async fn load_latest_revision_authors(

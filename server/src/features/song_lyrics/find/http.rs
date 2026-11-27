@@ -1,13 +1,13 @@
 use axum::extract::{Path, Query, State};
 use serde::Deserialize;
+use song_lyrics_repo::{FindManyFilter, FindOneFilter, SongLyrics};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::repo::{self, FindManyFilter, FindOneFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::song_lyrics::model::SongLyrics;
+use crate::infra::database::cache::LANGUAGE_CACHE;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::Data;
 
@@ -69,7 +69,11 @@ async fn find_one_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindOneSongLyricsQuery>,
 ) -> Result<Data<Option<SongLyrics>>, DatabaseError> {
-    repo::find_one(&repo, query.into()).await.map(Data::from)
+    Ok(song_lyrics_repo::find_one(&repo.conn, query.into(), || {
+        LANGUAGE_CACHE.get_or_init(&repo.conn)
+    })
+    .await?
+    .into())
 }
 
 #[utoipa::path(
@@ -85,7 +89,11 @@ async fn find_many_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindManySongLyricsQuery>,
 ) -> Result<Data<Vec<SongLyrics>>, DatabaseError> {
-    repo::find_many(&repo, query.into()).await.map(Data::from)
+    Ok(song_lyrics_repo::find_many(&repo.conn, query.into(), || {
+        LANGUAGE_CACHE.get_or_init(&repo.conn)
+    })
+    .await?
+    .into())
 }
 
 #[utoipa::path(
@@ -100,7 +108,13 @@ async fn find_song_lyrics_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<SongLyrics>>, DatabaseError> {
-    repo::find_one(&repo, FindOneFilter::Id { id })
-        .await
-        .map(Data::from)
+    Ok(
+        song_lyrics_repo::find_one(
+            &repo.conn,
+            FindOneFilter::Id { id },
+            || LANGUAGE_CACHE.get_or_init(&repo.conn),
+        )
+        .await?
+        .into(),
+    )
 }

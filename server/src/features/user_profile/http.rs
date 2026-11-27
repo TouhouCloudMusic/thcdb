@@ -56,12 +56,12 @@ async fn follow_user(
     Path(name): Path<String>,
     State(service): State<state::UserProfileService>,
 ) -> Result<Message, Error> {
-    let target_user = service
-        .find_user_by_name(&name)
+    let target_user_id = service
+        .find_user_id_by_name(&name)
         .await?
         .ok_or(Error::NotFound)?;
 
-    let res = service.follow(user.id, target_user.id).await?;
+    let res = service.follow(user.id, target_user_id).await?;
 
     if res == FollowResult::AlreadyFollowing {
         return Ok(Message::ok());
@@ -83,12 +83,12 @@ async fn unfollow_user(
     Path(name): Path<String>,
     State(service): State<state::UserProfileService>,
 ) -> Result<Message, Error> {
-    let target_user = service
-        .find_user_by_name(&name)
+    let target_user_id = service
+        .find_user_id_by_name(&name)
         .await?
         .ok_or(Error::NotFound)?;
 
-    service.unfollow(user.id, target_user.id).await?;
+    service.unfollow(user.id, target_user_id).await?;
 
     Ok(Message::ok())
 }

@@ -6,8 +6,11 @@ use crate::features::correction::{
     CorrectionSubmitResult, NewCorrection, NewCorrectionMeta, SubmissionError,
     service as correction_service,
 };
-use crate::features::song_lyrics::model::NewSongLyrics;
-use crate::features::user_event::{UserEvent, UserEventSender};
+use crate::features::song_lyrics::model::{EditSongLyrics, NewSongLyrics};
+use crate::features::user_event::UserEventSender;
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
 
 #[derive(Clone)]
 pub struct Service {
@@ -33,15 +36,30 @@ impl Service {
             SubmissionError::Validation(source.to_string())
         })?;
 
-        let tx_repo = self
-            .repo
-            .begin_tx()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        let tx_repo =
+            self.repo.begin_tx().await.map_err(DatabaseError::from)?;
 
-        let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
-        let history_id =
-            super::repo::create_history(&tx_repo, &correction.data).await?;
+        let lyrics = correction.data;
+        let entity_id = song_lyrics_repo::create(
+            tx_repo.conn(),
+            lyrics.song_id,
+            lyrics.language_id,
+            &lyrics.content,
+            lyrics.is_main,
+        )
+        .await?;
+        let history_id = song_lyrics_repo::create_history(
+            tx_repo.conn(),
+            entity_id,
+            &lyrics.content,
+            lyrics.is_main,
+        )
+        .await?
+        .ok_or(BrokenEntityReference {
+            entity: "song lyrics",
+            id: entity_id,
+        })
+        .db_context("resolve created song lyrics")?;
 
         let correction_id = correction_service::create(
             &tx_repo,
@@ -56,10 +74,7 @@ impl Service {
         )
         .await?;
 
-        tx_repo
-            .commit()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        tx_repo.commit().await.map_err(DatabaseError::from)?;
 
         Ok(CorrectionSubmitResult::submitted(correction_id, entity_id))
     }
@@ -67,25 +82,28 @@ impl Service {
     pub async fn upsert_correction(
         &self,
         lyrics_id: i32,
-        correction: NewCorrection<NewSongLyrics>,
+        correction: NewCorrection<EditSongLyrics>,
         mode: correction_service::CorrectionUpsertMode,
     ) -> Result<CorrectionSubmitResult, SubmissionError> {
         correction.data.validate().map_err(|source| {
             SubmissionError::Validation(source.to_string())
         })?;
 
-        let tx_repo = self
-            .repo
-            .begin_tx()
-            .await
-            .map_err(crate::infra::database::error::DatabaseError::from)?;
+        let tx_repo =
+            self.repo.begin_tx().await.map_err(DatabaseError::from)?;
 
-        let history_id =
-            super::repo::create_history(&tx_repo, &correction.data).await?;
+        let history_id = song_lyrics_repo::create_history(
+            tx_repo.conn(),
+            lyrics_id,
+            &correction.data.content,
+            correction.data.is_main,
+        )
+        .await?
+        .ok_or(SubmissionError::NotFound)?;
 
         let result = correction_service::upsert(
-            &tx_repo,
-            NewCorrectionMeta::<NewSongLyrics> {
+            tx_repo,
+            NewCorrectionMeta::<EditSongLyrics> {
                 author: correction.author,
                 r#type: correction.r#type,
                 entity_id: lyrics_id,
@@ -97,30 +115,6 @@ impl Service {
         )
         .await?;
 
-        match result {
-            correction_service::CorrectionUpsertResult::Submitted {
-                correction_id,
-                notification_recipients,
-            } => {
-                tx_repo.commit().await.map_err(
-                    crate::infra::database::error::DatabaseError::from,
-                )?;
-                self.user_events.publish(
-                    UserEvent::NotificationInboxUpdated,
-                    notification_recipients.user_ids,
-                );
-
-                Ok(CorrectionSubmitResult::submitted(correction_id, lyrics_id))
-            }
-            correction_service::CorrectionUpsertResult::Conflict {
-                correction_id,
-            } => {
-                tx_repo.rollback().await.map_err(
-                    crate::infra::database::error::DatabaseError::from,
-                )?;
-
-                Ok(CorrectionSubmitResult::conflict(correction_id, lyrics_id))
-            }
-        }
+        Ok(result.publish_and_respond(lyrics_id, &self.user_events))
     }
 }

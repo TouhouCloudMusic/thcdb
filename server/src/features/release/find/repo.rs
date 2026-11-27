@@ -1,89 +1,66 @@
-use entity::release;
+use domain::shared::PageResponse;
+use entity::enums::EntityType;
 use infra_db::SeaOrmRepository;
-use sea_orm::{
-    ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
-    QueryOrder, QuerySelect, Select,
-};
-use sea_query::extension::postgres::PgBinOper;
-use sea_query::{ExprTrait, Func, NullOrdering};
+use release_repo::ReleaseListItem;
 
-use super::filter::ReleaseSortField;
-use crate::features::release::list::{self, ReleaseListItem};
-use crate::features::release::model::Release;
-use crate::features::release::repo::find_many_impl;
+use super::{PageQuery, ReleaseFilter, ReleaseSortField};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
-use crate::shared::http::CorrectionSortField;
+use crate::shared::http::{CorrectionSortField, SortDirection};
 
-#[derive(Clone, Debug)]
-pub enum FindReleaseFilter {
-    Id(i32),
-    Keyword(String),
-    ReleaseTypes(Vec<entity::sea_orm_active_enums::ReleaseType>),
-}
-
-#[infra_db::observe("release.find_one")]
-pub(crate) async fn find_one(
+#[infra_db::observe("release.find_sorted_by_release_date")]
+async fn find_sorted_by_release_date(
     repo: &SeaOrmRepository,
-    filter: FindReleaseFilter,
-) -> Result<Option<Release>, DatabaseError> {
-    let mut releases =
-        find_many_impl(filter_into_select(filter).limit(1), &repo.conn).await?;
-    Ok(releases.pop())
+    filter: ReleaseFilter,
+    sort_direction: SortDirection,
+    pagination: PageQuery,
+) -> Result<PageResponse<ReleaseListItem>, DatabaseError> {
+    let (items, total_items) = release_repo::find_list_page(
+        &repo.conn,
+        filter.release_types,
+        Some(sort_direction.into()),
+        pagination.offset(),
+        pagination.limit(),
+    )
+    .await?;
+    Ok(pagination.to_response(items, total_items))
 }
 
-#[infra_db::observe("release.find_many")]
-pub(crate) async fn find_many(
+#[infra_db::observe("release.find_sorted_by_correction")]
+async fn find_sorted_by_correction(
     repo: &SeaOrmRepository,
-    filter: FindReleaseFilter,
-) -> Result<Vec<Release>, DatabaseError> {
-    Ok(find_many_impl(filter_into_select(filter), &repo.conn).await?)
-}
+    filter: ReleaseFilter,
+    sort_field: CorrectionSortField,
+    sort_direction: SortDirection,
+    pagination: PageQuery,
+) -> Result<PageResponse<ReleaseListItem>, DatabaseError> {
+    let entity_ids = crate::features::correction::correction_sorted_entity_ids(
+        &repo.conn,
+        EntityType::Release,
+        sort_field,
+        sort_direction.into(),
+    )
+    .await
+    .db_context("list correction-sorted release ids")?;
 
-#[infra_db::observe("release.exists")]
-pub(crate) async fn exists(
-    db: &impl ConnectionTrait,
-    id: i32,
-) -> Result<bool, DatabaseError> {
-    let count = release::Entity::find()
-        .select_only()
-        .expr(1)
-        .filter(release::Column::Id.eq(id))
-        .count(db)
-        .await?;
-    Ok(count > 0)
-}
+    let releases = release_repo::find_list_by_ids(
+        &repo.conn,
+        filter.release_types,
+        &entity_ids,
+    )
+    .await?;
+    let releases =
+        utils::sort_by_id_list(releases, &entity_ids, |release| release.id);
 
-fn filter_into_select(filter: FindReleaseFilter) -> Select<release::Entity> {
-    match filter {
-        FindReleaseFilter::Id(id) => {
-            release::Entity::find().filter(release::Column::Id.eq(id))
-        }
-        FindReleaseFilter::Keyword(keyword) => {
-            let search_term = Func::lower(keyword);
-            release::Entity::find()
-                .filter(
-                    Func::lower(release::Column::Title.into_expr())
-                        .binary(PgBinOper::Similarity, search_term.clone()),
-                )
-                .order_by_asc(
-                    Func::lower(release::Column::Title.into_expr())
-                        .binary(PgBinOper::SimilarityDistance, search_term),
-                )
-        }
-        FindReleaseFilter::ReleaseTypes(release_types) => {
-            release::Entity::find()
-                .filter(release::Column::ReleaseType.is_in(release_types))
-        }
-    }
+    Ok(utils::page_from_items(releases, &pagination))
 }
 
 #[infra_db::observe("release.find_by_filter")]
 pub(crate) async fn find_by_filter(
     repo: &SeaOrmRepository,
-    filter: super::ReleaseFilter,
-    pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<ReleaseListItem>, DatabaseError> {
+    filter: ReleaseFilter,
+    pagination: PageQuery,
+) -> Result<PageResponse<ReleaseListItem>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -121,91 +98,13 @@ pub(crate) async fn find_by_filter(
         return Ok(page);
     }
 
-    let select = filter.into_select();
-    let page = utils::find_many_page(
+    let (items, total_items) = release_repo::find_list_page(
         &repo.conn,
-        select,
-        pagination,
-        release::Column::Id,
-        |select| async {
-            list::load(select, &repo.conn)
-                .await
-                .db_context("load releases")
-        },
+        filter.release_types,
+        None,
+        pagination.offset(),
+        pagination.limit(),
     )
     .await?;
-    Ok(page)
-}
-
-#[infra_db::observe("release.find_sorted_by_release_date")]
-async fn find_sorted_by_release_date(
-    repo: &SeaOrmRepository,
-    filter: super::ReleaseFilter,
-    sort_direction: crate::shared::http::SortDirection,
-    pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<ReleaseListItem>, DatabaseError> {
-    let select = filter.into_select().order_by_with_nulls(
-        release::Column::ReleaseDate,
-        sort_direction.into(),
-        NullOrdering::Last,
-    );
-
-    let page = utils::find_many_page(
-        &repo.conn,
-        select,
-        pagination,
-        release::Column::Id,
-        |select| async {
-            list::load(select, &repo.conn)
-                .await
-                .db_context("load releases")
-        },
-    )
-    .await?;
-    Ok(page)
-}
-
-#[infra_db::observe("release.find_sorted_by_correction")]
-async fn find_sorted_by_correction(
-    repo: &SeaOrmRepository,
-    filter: super::ReleaseFilter,
-    sort_field: CorrectionSortField,
-    sort_direction: crate::shared::http::SortDirection,
-    pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<ReleaseListItem>, DatabaseError> {
-    use entity::enums::EntityType;
-
-    let entity_ids =
-        crate::infra::database::utils::correction_sorted_entity_ids(
-            &repo.conn,
-            EntityType::Release,
-            sort_field,
-            sort_direction.into(),
-        )
-        .await
-        .db_context("list correction-sorted release ids")?;
-
-    if entity_ids.is_empty() {
-        return Ok(utils::page_from_items(vec![], &pagination));
-    }
-
-    let mut select = release::Entity::find()
-        .filter(release::Column::Id.is_in(entity_ids.clone()));
-
-    if let Some(release_types) = filter.release_types {
-        select =
-            select.filter(release::Column::ReleaseType.is_in(release_types));
-    }
-
-    let mut releases = list::load(select, &repo.conn)
-        .await
-        .db_context("load releases")?;
-
-    releases = crate::infra::database::utils::sort_by_id_list(
-        releases,
-        &entity_ids,
-        |release| release.id,
-    );
-
-    Ok(utils::page_from_items(releases, &pagination))
+    Ok(pagination.to_response(items, total_items))
 }

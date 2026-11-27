@@ -25,9 +25,10 @@ impl Service {
         correction_id: i32,
         viewer_user_id: Option<i32>,
     ) -> Result<Option<CorrectionDetail>, ReadError> {
-        let Some(model) = repo::find_correction(&self.repo.conn, correction_id)
-            .await
-            .db_context("find correction detail")?
+        let Some(model) =
+            correction_core::find_correction(&self.repo.conn, correction_id)
+                .await
+                .db_context("find correction detail")?
         else {
             return Ok(None);
         };

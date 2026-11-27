@@ -1,18 +1,92 @@
 use auth_core::permission::{Permission, user_has_permission};
-use entity::enums::CorrectionStatus;
-use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
+use entity::correction;
+use entity::enums::EntityType;
+use infra_db::{DatabaseTransaction, SeaOrmRepository, SeaOrmTxRepo};
 use notification_core::{CorrectionModerationAction, NotificationRecipients};
 
 use super::{ModerationError, SubmissionError, repo};
 use crate::features::correction::{
-    CorrectionEntity, CorrectionFilter, NewCorrectionMeta,
+    CorrectionEntity, CorrectionFilter, CorrectionSubmitResult,
+    NewCorrectionMeta,
 };
+use crate::features::song_lyrics::moderation::{self, ApplyEditError};
 use crate::features::user::User;
 use crate::features::user_event::{UserEvent, UserEventSender};
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
+use crate::shared::error::InternalError;
 
 #[cfg(all(test, feature = "integration-test"))]
+mod event_moderation_tests;
+#[cfg(all(test, feature = "integration-test"))]
 mod observation_tests;
+
+async fn latest_history_id(
+    tx: &DatabaseTransaction,
+    correction_id: i32,
+) -> Result<i32, DatabaseError> {
+    let revision = correction_core::latest_revision(tx, correction_id)
+        .await
+        .db_context("load correction revision to apply")?
+        .ok_or(BrokenEntityReference {
+            entity: "correction revision",
+            id: correction_id,
+        })
+        .db_context("resolve history to apply")?;
+    Ok(revision.entity_history_id)
+}
+
+async fn apply_correction_update(
+    tx: &DatabaseTransaction,
+    correction: correction::Model,
+) -> Result<(), ModerationError> {
+    const OPERATION: &str = "correction.apply_update";
+    infra_db::trace(OPERATION, async {
+        let history_id = latest_history_id(tx, correction.id)
+            .await
+            .map_err(|error| error.context(OPERATION))?;
+        let entity_id = correction.entity_id;
+        let apply_result = match correction.entity_type {
+            EntityType::Artist => {
+                artist_repo::apply_history(tx, entity_id, history_id).await
+            }
+            EntityType::Label => {
+                label_repo::apply_history(tx, entity_id, history_id).await
+            }
+            EntityType::Release => {
+                release_repo::apply_history(tx, entity_id, history_id).await
+            }
+            EntityType::Song => {
+                song_repo::apply_history(tx, entity_id, history_id).await
+            }
+            EntityType::Tag => {
+                tag_repo::apply_history(tx, entity_id, history_id).await
+            }
+            EntityType::Event => {
+                event_repo::apply_history(tx, entity_id, history_id).await
+            }
+            EntityType::SongLyrics => {
+                match moderation::apply_edit(tx, entity_id, history_id).await {
+                    Ok(()) => Ok(()),
+                    Err(ApplyEditError::Database(error)) => Err(error),
+                    Err(error @ ApplyEditError::IdentityMismatch { .. }) => {
+                        return Err(InternalError::new(error).into());
+                    }
+                }
+            }
+            EntityType::CreditRole => {
+                credit_role_repo::apply_history(tx, entity_id, history_id).await
+            }
+        };
+
+        apply_result
+            .db_context("apply correction update")
+            .map_err(|error| error.context(OPERATION))?;
+        Ok(())
+    })
+    .await
+}
 
 #[fastrace::trace(name = "correction.service.approve")]
 pub async fn approve(
@@ -27,17 +101,13 @@ pub async fn approve(
         .await
         .db_context("begin approve correction transaction")?;
 
-    let correction = repo::lock_correction(&tx_repo, correction_id)
-        .await?
-        .ok_or(ModerationError::NotFound)?;
-    if correction.status != CorrectionStatus::Pending {
-        return Err(ModerationError::AlreadyHandled);
-    }
-
-    repo::approve(&tx_repo, correction, actor_user_id).await?;
+    let tx = tx_repo.conn();
+    let correction =
+        correction_core::approve(tx, correction_id, actor_user_id).await?;
+    apply_correction_update(tx, correction).await?;
 
     let notification_recipients = correction_notification::create_moderated(
-        tx_repo.conn(),
+        tx,
         actor_user_id,
         correction_id,
         CorrectionModerationAction::Approved,
@@ -69,17 +139,11 @@ pub async fn reject(
         .await
         .db_context("begin reject correction transaction")?;
 
-    let correction = repo::lock_correction(&tx_repo, correction_id)
-        .await?
-        .ok_or(ModerationError::NotFound)?;
-    if correction.status != CorrectionStatus::Pending {
-        return Err(ModerationError::AlreadyHandled);
-    }
-
-    repo::reject(&tx_repo, correction, actor_user_id).await?;
+    let tx = tx_repo.conn();
+    correction_core::reject(tx, correction_id, actor_user_id).await?;
 
     let notification_recipients = correction_notification::create_moderated(
-        tx_repo.conn(),
+        tx,
         actor_user_id,
         correction_id,
         CorrectionModerationAction::Rejected,
@@ -133,6 +197,30 @@ pub enum CorrectionUpsertResult {
     },
 }
 
+impl CorrectionUpsertResult {
+    pub(crate) fn publish_and_respond(
+        self,
+        entity_id: i32,
+        user_events: &UserEventSender,
+    ) -> CorrectionSubmitResult {
+        match self {
+            Self::Submitted {
+                correction_id,
+                notification_recipients,
+            } => {
+                user_events.publish(
+                    UserEvent::NotificationInboxUpdated,
+                    notification_recipients.user_ids,
+                );
+                CorrectionSubmitResult::submitted(correction_id, entity_id)
+            }
+            Self::Conflict { correction_id } => {
+                CorrectionSubmitResult::conflict(correction_id, entity_id)
+            }
+        }
+    }
+}
+
 async fn ensure_entity_exists<T: CorrectionEntity + Send + Sync>(
     repo: &SeaOrmTxRepo,
     entity_id: i32,
@@ -148,7 +236,7 @@ async fn ensure_entity_exists<T: CorrectionEntity + Send + Sync>(
 }
 
 #[fastrace::trace(name = "correction.service.upsert")]
-pub async fn upsert<T: CorrectionEntity + Send + Sync>(
+async fn upsert_in_transaction<T: CorrectionEntity + Send + Sync>(
     repo: &SeaOrmTxRepo,
     meta: NewCorrectionMeta<T>,
     mode: CorrectionUpsertMode,
@@ -253,6 +341,22 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
             }
         }
     };
+
+    Ok(result)
+}
+
+pub async fn upsert<T: CorrectionEntity + Send + Sync>(
+    repo: SeaOrmTxRepo,
+    meta: NewCorrectionMeta<T>,
+    mode: CorrectionUpsertMode,
+) -> Result<CorrectionUpsertResult, SubmissionError> {
+    let result = upsert_in_transaction(&repo, meta, mode).await?;
+
+    match &result {
+        CorrectionUpsertResult::Submitted { .. } => repo.commit().await?,
+        // The caller already wrote a candidate history in this transaction.
+        CorrectionUpsertResult::Conflict { .. } => repo.rollback().await?,
+    }
 
     Ok(result)
 }

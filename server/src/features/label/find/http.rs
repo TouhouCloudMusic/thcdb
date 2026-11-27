@@ -1,5 +1,6 @@
 use axum::extract::{Path, Query, State};
 use domain::shared::PageResponse;
+use label_repo::{Label, LabelListItem};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -8,8 +9,6 @@ use utoipa_axum::routes;
 use super::{LabelFilter, PageQuery};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::label::list::LabelListItem;
-use crate::features::label::model::Label;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
 
@@ -43,7 +42,7 @@ async fn find_label_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Label>>, DatabaseError> {
-    super::repo::find_by_id(&repo, id).await.map(Data::from)
+    Ok(label_repo::find_by_id(&repo.conn, id).await?.into())
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -64,9 +63,9 @@ async fn find_label_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwArgs>,
 ) -> Result<Data<Vec<Label>>, DatabaseError> {
-    super::repo::find_by_keyword(&repo, &query.keyword)
-        .await
-        .map(Data::from)
+    Ok(label_repo::find_by_keyword(&repo.conn, &query.keyword)
+        .await?
+        .into())
 }
 
 #[utoipa::path(

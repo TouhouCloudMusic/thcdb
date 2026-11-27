@@ -1,6 +1,8 @@
 use axum::extract::{Path, Query, State};
 use domain::shared::PageResponse;
 use serde::Deserialize;
+use tag_repo::{Tag, TagListItem};
+use tag_vote_core::EntityType;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -8,9 +10,6 @@ use utoipa_axum::routes;
 use super::{PageQuery, TagEntitySort, TagFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::tag::list::TagListItem;
-use crate::features::tag::model::Tag;
-use crate::features::tag_vote::EntityType;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
 
@@ -46,7 +45,7 @@ async fn find_tag_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Tag>>, DatabaseError> {
-    super::repo::find_by_id(&repo, id).await.map(Data::from)
+    Ok(tag_repo::find_by_id(&repo.conn, id).await?.into())
 }
 
 #[utoipa::path(
@@ -155,9 +154,9 @@ async fn find_tag_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwArgs>,
 ) -> Result<Data<Vec<Tag>>, DatabaseError> {
-    super::repo::find_by_keyword(&repo, &query.keyword)
-        .await
-        .map(Data::from)
+    Ok(tag_repo::find_by_keyword(&repo.conn, &query.keyword)
+        .await?
+        .into())
 }
 
 #[utoipa::path(

@@ -4,11 +4,11 @@ use axum::extract::{DefaultBodyLimit, Path, State};
 use axum::response::{IntoResponse, Response};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use constants::REQUEST_BODY_MAX_SIZE;
+use release_repo::write::NewRelease;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::model::NewRelease;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};

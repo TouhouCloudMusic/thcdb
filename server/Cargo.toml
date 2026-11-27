@@ -6,16 +6,25 @@ members = [
     "crates/domain",
     "crates/entity",
     "crates/features/artist/repo",
+    "crates/features/credit_role/repo",
+    "crates/features/event/repo",
+    "crates/features/label/repo",
+    "crates/features/release/repo",
+    "crates/features/song/repo",
+    "crates/features/song_lyrics/repo",
+    "crates/features/tag/repo",
     "crates/features/user/core",
     "crates/features/visit/core",
     "crates/features/popularity/core",
     "crates/features/rating/core",
+    "crates/features/tag_vote/core",
     "crates/features/auth/core",
     "crates/features/auth/worker",
     "crates/features/account/notification",
     "crates/features/comment/notification",
     "crates/features/comment/repo",
     "crates/features/comment/service",
+    "crates/features/correction/core",
     "crates/features/correction/subscription",
     "crates/features/correction/notification",
     "crates/features/image_queue/core",
@@ -44,9 +53,17 @@ members = [
 
 [workspace.dependencies]
 artist_repo                  = { package = "thcdb-feature-artist-repo", path = "crates/features/artist/repo" }
+credit_role_repo             = { package = "thcdb-feature-credit-role-repo", path = "crates/features/credit_role/repo" }
+event_repo                   = { package = "thcdb-feature-event-repo", path = "crates/features/event/repo" }
+label_repo                   = { package = "thcdb-feature-label-repo", path = "crates/features/label/repo" }
+release_repo                 = { package = "thcdb-feature-release-repo", path = "crates/features/release/repo" }
+song_repo                    = { package = "thcdb-feature-song-repo", path = "crates/features/song/repo" }
+song_lyrics_repo             = { package = "thcdb-feature-song-lyrics-repo", path = "crates/features/song_lyrics/repo" }
+tag_repo                     = { package = "thcdb-feature-tag-repo", path = "crates/features/tag/repo" }
 visit_core                   = { package = "thcdb-feature-visit-core", path = "crates/features/visit/core" }
 popularity_core              = { package = "thcdb-feature-popularity-core", path = "crates/features/popularity/core" }
 rating_core                  = { package = "thcdb-feature-rating-core", path = "crates/features/rating/core" }
+tag_vote_core                = { package = "thcdb-feature-tag-vote-core", path = "crates/features/tag_vote/core" }
 futures-util                 = "0.3"
 googletest                   = "0.14.3"
 constants                    = { package = "thcdb-constants", path = "crates/constants" }
@@ -71,6 +88,7 @@ account_notification         = { package = "thcdb-feature-account-notification",
 comment_notification         = { package = "thcdb-feature-comment-notification", path = "crates/features/comment/notification" }
 comment_repo                 = { package = "thcdb-feature-comment-repo", path = "crates/features/comment/repo" }
 comment_service              = { package = "thcdb-feature-comment-service", path = "crates/features/comment/service" }
+correction_core              = { package = "thcdb-feature-correction-core", path = "crates/features/correction/core" }
 correction_subscription      = { package = "thcdb-feature-correction-subscription", path = "crates/features/correction/subscription" }
 correction_notification      = { package = "thcdb-feature-correction-notification", path = "crates/features/correction/notification" }
 image_queue_core             = { package = "thcdb-feature-image-queue-core", path = "crates/features/image_queue/core" }
@@ -241,9 +259,17 @@ workspace = true
 [dependencies]
 infra_observability.workspace          = true
 artist_repo.workspace                  = true
+credit_role_repo.workspace             = true
+event_repo.workspace                   = true
+label_repo.workspace                   = true
+release_repo.workspace                 = true
+song_repo.workspace                    = true
+song_lyrics_repo.workspace             = true
+tag_repo.workspace                     = true
 visit_core.workspace                   = true
 popularity_core.workspace              = true
 rating_core.workspace                  = true
+tag_vote_core.workspace                = true
 user_core.workspace                    = true
 auth_core.workspace                    = true
 account_notification.workspace         = true
@@ -252,18 +278,18 @@ domain.workspace                       = true
 entity.workspace                       = true
 flow.workspace                         = true
 libfp.workspace                        = true
-infra_db.workspace                     = true
+infra_db                               = { workspace = true, features = [ "migrations" ] }
 infra_email.workspace                  = true
 infra_error.workspace                  = true
 infra_storage.workspace                = true
 infra_worker.workspace                 = true
 macros.workspace                       = true
-migration.workspace                    = true
 notification_core.workspace            = true
 notification_service.workspace         = true
 notification_worker.workspace          = true
 comment_notification.workspace         = true
 comment_service.workspace              = true
+correction_core.workspace              = true
 correction_subscription.workspace      = true
 correction_notification.workspace      = true
 image_queue_core.workspace             = true
@@ -336,7 +362,6 @@ pulldown-cmark = { version = "0.13.0", default-features = false, features = [
 rand.workspace = true
 regex = "1.11"
 sea-orm.workspace = true
-sea-orm-migration.workspace = true
 sea-query.workspace = true
 serde.workspace = true
 serde_repr.workspace = true
@@ -365,7 +390,6 @@ utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [
     "axum",
 ] }
-vecmap-rs = "0.2.3"
 zxcvbn = "3.1"
 xxhash-rust = { version = "0.8.18", features = [ "xxh3" ] }
 
@@ -416,4 +440,5 @@ release = [
 ]
 integration-test = [
     "artist_repo/integration-test",
+    "credit_role_repo/integration-test",
 ]

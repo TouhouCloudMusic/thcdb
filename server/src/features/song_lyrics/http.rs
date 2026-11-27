@@ -3,7 +3,7 @@ use axum::extract::{Path, State};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::model::NewSongLyrics;
+use super::model::{EditSongLyrics, NewSongLyrics};
 use super::{find, service};
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
@@ -12,6 +12,9 @@ use crate::features::correction::{
     CorrectionSubmitResult, NewCorrectionRequest, SubmissionError,
 };
 use crate::shared::http::api_response::Data;
+
+#[cfg(all(test, feature = "integration-test"))]
+mod integration_tests;
 
 const TAG: &str = "Song Lyrics";
 
@@ -50,7 +53,7 @@ async fn create_song_lyrics(
     post,
     tag = TAG,
     path = "/song-lyrics/{id}",
-    request_body = NewCorrectionRequest<NewSongLyrics>,
+    request_body = NewCorrectionRequest<EditSongLyrics>,
     responses(
 		(status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -59,7 +62,7 @@ async fn update_song_lyrics(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path(lyrics_id): Path<i32>,
-    Json(input): Json<NewCorrectionRequest<NewSongLyrics>>,
+    Json(input): Json<NewCorrectionRequest<EditSongLyrics>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(
@@ -80,7 +83,7 @@ async fn update_song_lyrics(
         ("id" = i32, Path, description = "Song lyrics id"),
         ("correction_id" = i32, Path, description = "Pending correction id"),
     ),
-    request_body = NewCorrectionRequest<NewSongLyrics>,
+    request_body = NewCorrectionRequest<EditSongLyrics>,
     responses(
         (status = 200, body = Data<CorrectionSubmitResult>),
     ),
@@ -89,7 +92,7 @@ async fn update_song_lyrics_pending_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<service::Service>,
     Path((lyrics_id, correction_id)): Path<(i32, i32)>,
-    Json(input): Json<NewCorrectionRequest<NewSongLyrics>>,
+    Json(input): Json<NewCorrectionRequest<EditSongLyrics>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service
         .upsert_correction(

@@ -1,8 +1,5 @@
-use entity::{song, song_language};
-use sea_orm::{
-    ColumnTrait, EntityTrait, QueryFilter, QuerySelect, QueryTrait, Select,
-};
-use sea_query::Expr;
+use entity::song;
+use sea_orm::Select;
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, OneOrMany, serde_as};
 use utoipa::{IntoParams, ToSchema};
@@ -41,31 +38,6 @@ impl SongFilter {
     }
 
     pub fn into_select(self) -> Select<song::Entity> {
-        let mut select = song::Entity::find();
-
-        if let Some(language_ids) = &self.language_ids {
-            select = Self::apply_language_filter(select, language_ids.clone());
-        }
-
-        select
-    }
-
-    fn apply_language_filter(
-        select: Select<song::Entity>,
-        language_ids: Vec<i32>,
-    ) -> Select<song::Entity> {
-        let subquery = song_language::Entity::find()
-            .select_only()
-            .expr(1)
-            .filter(Expr::eq(
-                Expr::col((
-                    song_language::Entity,
-                    song_language::Column::SongId,
-                )),
-                Expr::col((song::Entity, song::Column::Id)),
-            ))
-            .filter(song_language::Column::LanguageId.is_in(language_ids));
-
-        select.filter(Expr::exists(subquery.as_query().clone()))
+        song_repo::read::select_by_language_ids(self.language_ids)
     }
 }

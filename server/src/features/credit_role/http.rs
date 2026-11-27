@@ -1,9 +1,9 @@
 use axum::Json;
 use axum::extract::{Path, State};
+use credit_role_repo::write::NewCreditRole;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::model::NewCreditRole;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};

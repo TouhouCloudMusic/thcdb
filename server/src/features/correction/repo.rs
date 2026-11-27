@@ -1,4 +1,3 @@
-use chrono::Utc;
 use entity::correction::{Column, Entity};
 use entity::enums::{CorrectionStatus, CorrectionUserType, EntityType};
 use entity::{
@@ -8,19 +7,44 @@ use fastrace::prelude::LocalSpan;
 use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveEnum, ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
-    EntityTrait, IntoActiveModel, Order, PaginatorTrait, QueryFilter,
-    QueryOrder, QuerySelect, QueryTrait,
+    ActiveEnum, ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
+    IntoActiveModel, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
+    QueryTrait,
 };
-use sea_query::{Expr, NullOrdering, OnConflict, Query, all};
+use sea_query::{Expr, OnConflict, Query, all};
 
-use crate::features;
 use crate::features::correction::{
     Correction, CorrectionEntity, CorrectionFilter, CorrectionFilterStatus,
     NewCorrectionMeta,
 };
 use crate::features::user::User;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::http::CorrectionSortField;
+
+#[infra_db::observe("correction.find_sorted_entity_ids")]
+pub(crate) async fn correction_sorted_entity_ids(
+    db: &impl ConnectionTrait,
+    entity_type: EntityType,
+    sort_field: CorrectionSortField,
+    sort_direction: sea_orm::Order,
+) -> Result<Vec<i32>, DatabaseError> {
+    let sort_field = match sort_field {
+        CorrectionSortField::CreatedAt => {
+            correction_core::CorrectionSortField::CreatedAt
+        }
+        CorrectionSortField::UpdatedAt => {
+            correction_core::CorrectionSortField::HandledAt
+        }
+    };
+
+    correction_core::correction_sorted_entity_ids(
+        db,
+        entity_type,
+        sort_field,
+        sort_direction,
+    )
+    .await
+}
 
 #[infra_db::observe("correction.find_pending_history_id")]
 pub(crate) async fn find_pending_history_id(
@@ -29,33 +53,13 @@ pub(crate) async fn find_pending_history_id(
     entity_type: EntityType,
     correction_id: i32,
 ) -> Result<Option<i32>, DatabaseError> {
-    let Some(correction) = correction_entity::Entity::find()
-        .filter(correction_entity::Column::Id.eq(correction_id))
-        .filter(correction_entity::Column::EntityId.eq(entity_id))
-        .filter(correction_entity::Column::EntityType.eq(entity_type))
-        .filter(correction_entity::Column::Status.eq(CorrectionStatus::Pending))
-        .one(db)
-        .await
-        .db_context("find pending correction")?
-    else {
-        return Ok(None);
-    };
-
-    correction_revision::Entity::find()
-        .filter(correction_revision::Column::CorrectionId.eq(correction.id))
-        .order_by_desc(correction_revision::Column::EntityHistoryId)
-        .one(db)
-        .await
-        .db_context("find latest pending correction revision")?
-        .map(|revision| revision.entity_history_id)
-        .ok_or_else(|| {
-            crate::infra::database::error::BrokenEntityReference {
-                entity: "correction revision",
-                id: correction.id,
-            }
-            .into()
-        })
-        .map(Some)
+    correction_core::find_pending_history_id(
+        db,
+        entity_id,
+        entity_type,
+        correction_id,
+    )
+    .await
 }
 
 pub enum CreateResult {
@@ -257,82 +261,6 @@ pub async fn update(
     Ok(())
 }
 
-#[infra_db::observe("correction.lock")]
-pub(super) async fn lock_correction(
-    tx_repo: &SeaOrmTxRepo,
-    correction_id: i32,
-) -> Result<Option<correction_entity::Model>, DatabaseError> {
-    LocalSpan::add_property(|| ("correction_id", correction_id.to_string()));
-
-    let correction = correction_entity::Entity::find_by_id(correction_id)
-        .lock_exclusive()
-        .one(tx_repo.conn())
-        .await
-        .inspect_err(|err| {
-            log::error!(
-                target: "features.correction.repo",
-                operation = "correction.lock_by_id",
-                error:% = err;
-                "correction repository operation failed"
-            );
-        })
-        .db_context("lock correction")?;
-
-    Ok(correction)
-}
-
-#[infra_db::observe("correction.insert_approver")]
-async fn insert_approver(
-    tx_repo: &SeaOrmTxRepo,
-    correction_id: i32,
-    approver_id: i32,
-) -> Result<(), DatabaseError> {
-    correction_user::Entity::insert(correction_user::ActiveModel {
-        user_id: Set(approver_id),
-        correction_id: Set(correction_id),
-        user_type: Set(CorrectionUserType::Approver),
-    })
-    .exec(tx_repo.conn())
-    .await
-    .inspect_err(|err| {
-        log::error!(
-            target: "features.correction.repo",
-            operation = "correction_user.insert_approver",
-            error:% = err;
-            "correction repository operation failed"
-        );
-    })
-    .db_context("insert correction approver")?;
-
-    Ok(())
-}
-
-#[infra_db::observe("correction.update_status")]
-async fn update_correction_status(
-    tx_repo: &SeaOrmTxRepo,
-    correction: correction_entity::Model,
-    status: CorrectionStatus,
-) -> Result<correction_entity::Model, DatabaseError> {
-    let mut correction_active_model = correction.into_active_model();
-    correction_active_model.status = Set(status);
-    correction_active_model.handled_at = Set(Some(Utc::now().into()));
-
-    let correction = correction_active_model
-        .update(tx_repo.conn())
-        .await
-        .inspect_err(|err| {
-            log::error!(
-                target: "features.correction.repo",
-                operation = "correction.update_status",
-                error:% = err;
-                "correction repository operation failed"
-            );
-        })
-        .db_context("update correction status")?;
-
-    Ok(correction)
-}
-
 #[infra_db::observe("correction.find_pending_id")]
 pub async fn find_pending_id(
     repo: &SeaOrmRepository,
@@ -366,110 +294,6 @@ pub async fn find_pending_id(
         .db_context("find pending correction")?;
 
     Ok(model.map(|model| model.id))
-}
-
-#[infra_db::observe("correction.apply_update")]
-async fn apply_correction_update(
-    tx_repo: &SeaOrmTxRepo,
-    correction: correction_entity::Model,
-) -> Result<(), DatabaseError> {
-    let apply_update_res = match correction.entity_type {
-        EntityType::Artist => {
-            features::artist::repo::apply_update(correction, tx_repo.conn())
-                .await
-        }
-        EntityType::Label => {
-            features::label::repo::apply_update(correction, tx_repo.conn())
-                .await
-        }
-        EntityType::Release => {
-            features::release::repo::apply_update(correction, tx_repo.conn())
-                .await
-        }
-        EntityType::Song => {
-            features::song::repo::apply_update(correction, tx_repo.conn()).await
-        }
-        EntityType::Tag => {
-            features::tag::repo::apply_update(correction, tx_repo.conn()).await
-        }
-        EntityType::Event => {
-            features::event::repo::apply_update(correction, tx_repo.conn())
-                .await
-        }
-        EntityType::SongLyrics => {
-            features::song_lyrics::repo::apply_update(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
-        }
-        EntityType::CreditRole => {
-            features::credit_role::repo::apply_update(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
-        }
-    };
-
-    apply_update_res.db_context("apply correction update")?;
-    Ok(())
-}
-
-#[infra_db::observe("correction.approve")]
-pub async fn approve(
-    tx_repo: &SeaOrmTxRepo,
-    correction: correction_entity::Model,
-    approver_id: i32,
-) -> Result<(), DatabaseError> {
-    LocalSpan::add_properties(|| {
-        [
-            ("correction_id", correction.id.to_string()),
-            ("approver_id", approver_id.to_string()),
-            ("entity_id", correction.entity_id.to_string()),
-            ("entity_type", format!("{:?}", correction.entity_type)),
-        ]
-    });
-
-    insert_approver(tx_repo, correction.id, approver_id).await?;
-
-    let correction = update_correction_status(
-        tx_repo,
-        correction,
-        CorrectionStatus::Approved,
-    )
-    .await?;
-
-    apply_correction_update(tx_repo, correction).await?;
-
-    Ok(())
-}
-
-#[infra_db::observe("correction.reject")]
-pub async fn reject(
-    tx_repo: &SeaOrmTxRepo,
-    correction: correction_entity::Model,
-    approver_id: i32,
-) -> Result<(), DatabaseError> {
-    LocalSpan::add_properties(|| {
-        [
-            ("correction_id", correction.id.to_string()),
-            ("approver_id", approver_id.to_string()),
-            ("entity_id", correction.entity_id.to_string()),
-            ("entity_type", format!("{:?}", correction.entity_type)),
-        ]
-    });
-
-    insert_approver(tx_repo, correction.id, approver_id).await?;
-
-    let _ = update_correction_status(
-        tx_repo,
-        correction,
-        CorrectionStatus::Rejected,
-    )
-    .await?;
-
-    Ok(())
 }
 
 #[cfg(all(test, feature = "integration-test"))]
@@ -788,69 +612,4 @@ mod tests {
 
         Ok(())
     }
-}
-
-pub(crate) async fn find_by_id(
-    db: &impl ConnectionTrait,
-    id: i32,
-) -> Result<Option<correction_entity::Model>, sea_orm::DbErr> {
-    infra_db::trace("correction.find_by_id", async {
-        correction_entity::Entity::find_by_id(id).one(db).await
-    })
-    .await
-}
-
-pub(crate) async fn latest_revision(
-    db: &impl ConnectionTrait,
-    correction_id: i32,
-) -> Result<Option<correction_revision::Model>, sea_orm::DbErr> {
-    infra_db::trace("correction.latest_revision", async {
-        correction_revision::Entity::find()
-            .filter(correction_revision::Column::CorrectionId.eq(correction_id))
-            .order_by_desc(correction_revision::Column::EntityHistoryId)
-            .one(db)
-            .await
-    })
-    .await
-}
-
-pub(crate) async fn find_base(
-    db: &impl ConnectionTrait,
-    current: &correction_entity::Model,
-) -> Result<Option<correction_entity::Model>, sea_orm::DbErr> {
-    infra_db::trace("correction.find_base", async {
-        let mut query = correction_entity::Entity::find()
-            .filter(correction_entity::Column::EntityId.eq(current.entity_id))
-            .filter(
-                correction_entity::Column::EntityType.eq(current.entity_type),
-            )
-            .filter(
-                correction_entity::Column::Status
-                    .eq(CorrectionStatus::Approved),
-            )
-            .filter(correction_entity::Column::Id.ne(current.id));
-        if let Some(handled_at) = current.handled_at {
-            query = query.filter(
-                Condition::any()
-                    .add(correction_entity::Column::HandledAt.lt(handled_at))
-                    .add(
-                        correction_entity::Column::HandledAt.is_null().and(
-                            correction_entity::Column::CreatedAt
-                                .lt(current.created_at),
-                        ),
-                    ),
-            );
-        }
-        query
-            .order_by_with_nulls(
-                correction_entity::Column::HandledAt,
-                Order::Desc,
-                NullOrdering::Last,
-            )
-            .order_by_desc(correction_entity::Column::CreatedAt)
-            .order_by_desc(correction_entity::Column::Id)
-            .one(db)
-            .await
-    })
-    .await
 }

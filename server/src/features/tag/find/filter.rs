@@ -1,19 +1,10 @@
 use entity::sea_orm_active_enums::TagType;
-use entity::tag;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Select};
 use serde::Deserialize;
 use serde_with::{OneOrMany, serde_as};
+pub use tag_repo::TagEntitySort;
 use utoipa::{IntoParams, ToSchema};
 
 pub use crate::shared::http::{CorrectionSortField, PageQuery, SortDirection};
-
-#[derive(Clone, Copy, Debug, Default, Deserialize, ToSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum TagEntitySort {
-    #[default]
-    Popular,
-    ReleaseDate,
-}
 
 #[serde_as]
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
@@ -37,15 +28,5 @@ impl TagFilter {
             &mut self.sort_direction,
         );
         self
-    }
-
-    pub fn into_select(self) -> Select<tag::Entity> {
-        let mut select = tag::Entity::find();
-
-        if let Some(tag_types) = &self.tag_types {
-            select = select.filter(tag::Column::Type.is_in(tag_types.clone()));
-        }
-
-        select
     }
 }

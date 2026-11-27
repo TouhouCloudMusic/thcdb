@@ -6,7 +6,6 @@
 use std::sync::Arc;
 
 use ::sea_orm::{ConnectOptions, Database};
-use sea_orm_migration::MigratorTrait;
 
 mod connection;
 mod observation;
@@ -30,7 +29,10 @@ pub async fn get_connection(url: &str) -> DatabaseConnection {
     Database::connect(opt).await.unwrap().into()
 }
 
+#[cfg(feature = "migrations")]
 pub async fn run_migrations(conn: &DatabaseConnection) {
+    use sea_orm_migration::MigratorTrait;
+
     trace(
         "database.migrate",
         migration::Migrator::up(&conn.inner, None),

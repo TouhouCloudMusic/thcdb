@@ -5957,12 +5957,19 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "derive_more",
  "entity",
+ "enumset",
+ "fastrace",
+ "futures-util",
  "itertools 0.14.0",
  "libfp",
+ "macros",
  "sea-orm",
  "sea-query",
  "serde",
+ "serde_json",
+ "serde_with",
  "thcdb-domain",
  "thcdb-infra-db",
  "thcdb-infra-testing",
@@ -6061,6 +6068,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-feature-correction-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "entity",
+ "fastrace",
+ "log",
+ "sea-orm",
+ "thcdb-infra-db",
+]
+
+[[package]]
 name = "thcdb-feature-correction-notification"
 version = "0.1.0"
 dependencies = [
@@ -6085,6 +6105,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-feature-credit-role-repo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "entity",
+ "macros",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "thcdb-domain",
+ "thcdb-infra-db",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-event-repo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "entity",
+ "garde",
+ "itertools 0.14.0",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thcdb-domain",
+ "thcdb-infra-db",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
 name = "thcdb-feature-image-queue-core"
 version = "0.1.0"
 dependencies = [
@@ -6103,6 +6162,23 @@ dependencies = [
  "sea-orm",
  "thcdb-feature-notification-core",
  "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-label-repo"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "entity",
+ "itertools 0.14.0",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "thcdb-domain",
+ "thcdb-feature-artist-repo",
+ "thcdb-infra-db",
+ "utoipa",
 ]
 
 [[package]]
@@ -6203,6 +6279,104 @@ dependencies = [
  "sea-orm",
  "sea-query",
  "serde",
+ "thcdb-infra-db",
+ "thcdb-infra-error",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-release-repo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "entity",
+ "fastrace",
+ "garde",
+ "itertools 0.14.0",
+ "libfp",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thcdb-domain",
+ "thcdb-infra-db",
+ "tokio",
+ "utoipa",
+ "vecmap-rs",
+]
+
+[[package]]
+name = "thcdb-feature-song-lyrics-repo"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "thcdb-domain",
+ "thcdb-infra-db",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-song-repo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "derive_more",
+ "entity",
+ "fastrace",
+ "futures-util",
+ "itertools 0.14.0",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thcdb-domain",
+ "thcdb-feature-release-repo",
+ "thcdb-infra-db",
+ "tokio",
+ "tracing",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-tag-repo"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "itertools 0.14.0",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thcdb-domain",
+ "thcdb-feature-popularity-core",
+ "thcdb-infra-db",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-tag-vote-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "derive_more",
+ "entity",
+ "fastrace",
+ "macros",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_with",
+ "thcdb-domain",
  "thcdb-infra-db",
  "thcdb-infra-error",
  "thcdb-infra-testing",
@@ -6319,9 +6493,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "entity",
- "migration",
  "sea-orm",
- "sea-orm-migration",
  "sea-query",
  "serde_json",
  "thcdb-domain",
@@ -6406,7 +6578,6 @@ dependencies = [
  "logforth",
  "macros",
  "maud",
- "migration",
  "mimalloc",
  "moka",
  "nestify",
@@ -6419,7 +6590,6 @@ dependencies = [
  "rand 0.9.4",
  "regex",
  "sea-orm",
- "sea-orm-migration",
  "sea-query",
  "serde",
  "serde_json",
@@ -6437,15 +6607,24 @@ dependencies = [
  "thcdb-feature-auth-worker",
  "thcdb-feature-comment-notification",
  "thcdb-feature-comment-service",
+ "thcdb-feature-correction-core",
  "thcdb-feature-correction-notification",
  "thcdb-feature-correction-subscription",
+ "thcdb-feature-credit-role-repo",
+ "thcdb-feature-event-repo",
  "thcdb-feature-image-queue-core",
  "thcdb-feature-image-queue-notification",
+ "thcdb-feature-label-repo",
  "thcdb-feature-notification-core",
  "thcdb-feature-notification-service",
  "thcdb-feature-notification-worker",
  "thcdb-feature-popularity-core",
  "thcdb-feature-rating-core",
+ "thcdb-feature-release-repo",
+ "thcdb-feature-song-lyrics-repo",
+ "thcdb-feature-song-repo",
+ "thcdb-feature-tag-repo",
+ "thcdb-feature-tag-vote-core",
  "thcdb-feature-user-collection-notification",
  "thcdb-feature-user-core",
  "thcdb-feature-user-profile-notification",
@@ -6469,7 +6648,6 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "utoipa-scalar",
- "vecmap-rs",
  "xxhash-rust",
  "zxcvbn",
 ]

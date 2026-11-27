@@ -1,0 +1,127 @@
+use entity::{
+    release_disc, release_disc_history, release_track, release_track_artist,
+    release_track_artist_history, release_track_history,
+};
+use infra_db::DatabaseTransaction;
+use itertools::Itertools;
+use sea_orm::ActiveValue::{NotSet, Set};
+use sea_orm::{
+    ColumnTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter, QueryOrder,
+};
+use vecmap::VecMap;
+
+#[fastrace::trace(name = "release.update_tracks_and_discs")]
+pub(super) async fn update_release_track_and_disc(
+    release_id: i32,
+    history_id: i32,
+    db: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let existing_tracks = release_track::Entity::find()
+        .filter(release_track::Column::ReleaseId.eq(release_id))
+        .all(db)
+        .await?;
+
+    if !existing_tracks.is_empty() {
+        release_track_artist::Entity::delete_many()
+            .filter(
+                release_track_artist::Column::TrackId
+                    .is_in(existing_tracks.iter().map(|track| track.id)),
+            )
+            .exec(db)
+            .await?;
+    }
+
+    release_track::Entity::delete_many()
+        .filter(release_track::Column::ReleaseId.eq(release_id))
+        .exec(db)
+        .await?;
+    release_disc::Entity::delete_many()
+        .filter(release_disc::Column::ReleaseId.eq(release_id))
+        .exec(db)
+        .await?;
+
+    let disc_histories = release_disc_history::Entity::find()
+        .filter(release_disc_history::Column::HistoryId.eq(history_id))
+        .order_by_asc(release_disc_history::Column::Id)
+        .all(db)
+        .await?;
+
+    let track_histories = release_track_history::Entity::find()
+        .filter(release_track_history::Column::HistoryId.eq(history_id))
+        .order_by_asc(release_track_history::Column::Id)
+        .all(db)
+        .await?;
+    let track_artist_histories = track_histories
+        .load_many(release_track_artist_history::Entity, db)
+        .await?;
+
+    let id_idx_map = disc_histories
+        .iter()
+        .enumerate()
+        .map(|(i, d)| (d.id, i))
+        .collect::<VecMap<_, _>>();
+
+    let new_discs = sea_orm::Insert::many(disc_histories.into_iter().map(
+        |mut disc_history| {
+            let name = std::mem::take(&mut disc_history.name);
+            release_disc::ActiveModel {
+                id: NotSet,
+                release_id: Set(release_id),
+                name: Set(name),
+            }
+        },
+    ))
+    .exec_with_returning_many(db)
+    .await?;
+
+    let track_models = track_histories
+        .into_iter()
+        .map(|track_history| {
+            let disc_id = id_idx_map
+                .get(&track_history.disc_history_id)
+                .and_then(|idx| new_discs.get(*idx))
+                .expect("The disc should be exist in history")
+                .id;
+
+            release_track::ActiveModel {
+                id: NotSet,
+                release_id: Set(release_id),
+                song_id: Set(track_history.song_id),
+                track_number: Set(track_history.track_number),
+                display_title: Set(track_history.display_title),
+                duration: Set(track_history.duration),
+                disc_id: Set(disc_id),
+            }
+        })
+        .collect_vec();
+
+    let inserted_tracks = if track_models.is_empty() {
+        vec![]
+    } else {
+        release_track::Entity::insert_many(track_models)
+            .exec_with_returning_many(db)
+            .await?
+    };
+
+    let track_artist_models = track_artist_histories
+        .into_iter()
+        .zip_eq(inserted_tracks)
+        .flat_map(|(artist_histories, inserted_track)| {
+            let track_id = inserted_track.id;
+            artist_histories.into_iter().map(move |artist_history| {
+                release_track_artist::ActiveModel {
+                    track_id: Set(track_id),
+                    artist_id: Set(artist_history.artist_id),
+                }
+            })
+        })
+        .collect_vec();
+
+    if !track_artist_models.is_empty() {
+        release_track_artist::Entity::insert_many(track_artist_models)
+            .exec(db)
+            .await?;
+    }
+
+    Ok(())
+}

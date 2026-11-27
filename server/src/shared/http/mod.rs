@@ -3,6 +3,7 @@ mod sorting;
 mod subscription;
 
 pub use pagination::{PageQuery, PaginationQuery};
+pub(crate) use sorting::DEFAULT_CORRECTION_SORT;
 pub use sorting::{CorrectionSortField, SortDirection, apply_sort_defaults};
 pub(crate) use subscription::SubscriptionStatus;
 

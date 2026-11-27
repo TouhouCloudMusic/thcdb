@@ -5,7 +5,6 @@ use sea_orm::{
 };
 use sea_query::{OnConflict, all};
 
-use crate::features::auth;
 use crate::features::user::User;
 use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::features::user_profile::{
@@ -42,13 +41,13 @@ impl Service {
         Ok(())
     }
 
-    pub async fn find_user_by_name(
+    pub(crate) async fn find_user_id_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<User>, Error> {
-        let user = auth::repo::find_by_name(&self.repo.conn, name).await?;
+    ) -> Result<Option<i32>, Error> {
+        let user_id = repo::find_user_id_by_name(&self.repo, name).await?;
 
-        Ok(user)
+        Ok(user_id)
     }
 
     #[fastrace::trace(name = "user_profile.follow")]
@@ -67,11 +66,7 @@ impl Service {
             .await
             .db_context("begin user follow transaction")?;
         let conn = tx_repo.conn();
-        if auth::repo::find_by_id(conn, target_user_id)
-            .await?
-            .as_ref()
-            .is_none_or(|user| !user.email_verified)
-        {
+        if !repo::is_user_email_verified(conn, target_user_id).await? {
             return Err(Error::NotFound);
         }
 

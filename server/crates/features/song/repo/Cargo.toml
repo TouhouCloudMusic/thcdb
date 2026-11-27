@@ -1,0 +1,34 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-song-repo"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "song_repo"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace       = true
+derive_more.workspace  = true
+domain.workspace       = true
+entity.workspace       = true
+fastrace.workspace     = true
+futures-util.workspace = true
+infra_db.workspace     = true
+itertools.workspace    = true
+release_repo.workspace = true
+sea-orm.workspace      = true
+sea-query.workspace    = true
+serde.workspace        = true
+serde_json.workspace   = true
+serde_with.workspace   = true
+tokio.workspace        = true
+tracing.workspace      = true
+utoipa.workspace       = true
+
+[dev-dependencies]
+anyhow.workspace = true

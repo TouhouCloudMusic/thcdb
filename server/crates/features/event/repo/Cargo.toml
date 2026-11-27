@@ -1,0 +1,34 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-event-repo"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "event_repo"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace     = true
+domain.workspace     = true
+entity.workspace     = true
+garde.workspace      = true
+infra_db.workspace   = true
+itertools.workspace  = true
+sea-orm.workspace    = true
+sea-query.workspace  = true
+serde.workspace      = true
+serde_json.workspace = true
+serde_with.workspace = true
+utoipa.workspace     = true
+
+[dev-dependencies]
+anyhow.workspace        = true
+infra_testing.workspace = true
+tokio.workspace         = true
+
+[features]
+integration-test = [  ]
