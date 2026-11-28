@@ -14,6 +14,7 @@ const ORIGIN = globalThis.location.origin
 
 type ProfileScenario =
 	| "owner"
+	| "owner-followed-by-viewer"
 	| "visitor-following"
 	| "visitor-unfollowed"
 	| "empty"
@@ -36,37 +37,37 @@ const EXTRA_HIGHLIGHTS: readonly PinItem[] = [
 	{
 		accent: "Reimu",
 		kind: "Release",
-		title: "Touhou Cloud Essentials",
-		subtitle: "Compilation · 24 tracks · mock cover art",
+		title: "Lovelight",
+		subtitle: "Alstroemeria Records · Reitaisai 4",
 		coverUrl: "/img/cover/release/1.png",
 		to: { to: "/release/$id", params: { id: "1" } },
 	},
 	{
 		accent: "Blue",
 		kind: "Song",
-		title: "U.N. Owen was her? (arrange)",
-		subtitle: "Credit map · vocalist aliases · role normalization",
+		title: "U.N. Owen Was Her? (Piano ver.)",
+		subtitle: "Solo piano arrangement of Flandre’s theme",
 		to: { to: "/song/$id", params: { id: "9" } },
 	},
 	{
 		accent: "Slate",
 		kind: "Tag",
 		title: "Trance",
-		subtitle: "Genre tag · weighted votes · related sub-tags",
+		subtitle: "A genre for melodic electronic arrangements",
 		to: { to: "/tag/$id", params: { id: "3" } },
 	},
 	{
 		accent: "Green",
 		kind: "Artist",
 		title: "FELT",
-		subtitle: "Circle profile · releases · vocalist credits",
+		subtitle: "Doujin music circle",
 		to: { to: "/artist/$id", params: { id: "12" } },
 	},
 	{
 		accent: "Blue",
 		kind: "Release",
 		title: "Midnight Shrine Broadcast",
-		subtitle: "Live cut · remaster notes · alt sleeve",
+		subtitle: "Six live arrangements from the winter show",
 		coverUrl: "/img/cover/release/1.png",
 		to: { to: "/release/$id", params: { id: "42" } },
 	},
@@ -74,7 +75,7 @@ const EXTRA_HIGHLIGHTS: readonly PinItem[] = [
 		accent: "Green",
 		kind: "Artist",
 		title: "ShibayanRecords",
-		subtitle: "Discography cleanup · alias map · event links",
+		subtitle: "Known for vocal and electronic arrangements",
 		to: { to: "/artist/$id", params: { id: "52" } },
 	},
 ] satisfies readonly [PinItem, ...PinItem[]]
@@ -84,16 +85,16 @@ const EXTRA_ACTIVITY: readonly ActivityItem[] = [
 		at: "2025-12-28T10:42:00.000Z",
 		accent: "Reimu",
 		action: "Added release",
-		entity: "東方紅魔郷 Arrange Notes — Winter Press",
-		detail: "linked artists · set event · added catalog no.",
+		entity: "Scarlet Sessions",
+		detail: "Added the cover and track list from the CD booklet.",
 		link: { to: "/release/$id", params: { id: "101" } },
 	},
 	{
 		at: "2025-12-27T23:05:00.000Z",
 		accent: "Blue",
 		action: "Corrected credit",
-		entity: "U.N. Owen was her? (arrange)",
-		detail: "vocalist alias merged · role normalized",
+		entity: "U.N. Owen Was Her? (Piano ver.)",
+		detail: "Corrected the pianist credit using the liner notes.",
 		link: { to: "/song/$id", params: { id: "9" } },
 	},
 	{
@@ -101,7 +102,7 @@ const EXTRA_ACTIVITY: readonly ActivityItem[] = [
 		accent: "Slate",
 		action: "Tagged song",
 		entity: "少女さとり ～ 3rd eye",
-		detail: "genre=Orchestral · theme=Horror · instrument=Piano",
+		detail: "Added the Orchestral tag.",
 		link: { to: "/song/$id", params: { id: "12" } },
 	},
 	{
@@ -109,7 +110,7 @@ const EXTRA_ACTIVITY: readonly ActivityItem[] = [
 		accent: "Green",
 		action: "Created tag",
 		entity: "Live recording",
-		detail: "type=Recording · used by 6 releases",
+		detail: "For recordings made at concerts and live events.",
 		link: { to: "/tag/$id", params: { id: "21" } },
 	},
 	{
@@ -117,15 +118,15 @@ const EXTRA_ACTIVITY: readonly ActivityItem[] = [
 		accent: "Blue",
 		action: "Updated release notes",
 		entity: "Dream Layer EP",
-		detail: "localized title · release date precision",
+		detail: "Added the Japanese title and the original release date.",
 		link: { to: "/release/$id", params: { id: "103" } },
 	},
 	{
 		at: "2025-12-23T05:18:00.000Z",
 		accent: "Slate",
-		action: "Re-linked artist",
+		action: "Updated artist",
 		entity: "SOUND HOLIC",
-		detail: "merged duplicate profile · preserved aliases",
+		detail: "Linked two releases that were missing from the discography.",
 		link: { to: "/artist/$id", params: { id: "18" } },
 	},
 ] satisfies readonly [ActivityItem, ...ActivityItem[]]
@@ -146,12 +147,13 @@ const OWNER = {
 	name: "Hakurei Reimu",
 }
 
-const OWN_COLLECTIONS: readonly UserCollection[] = [
+export const OWN_COLLECTIONS: readonly UserCollection[] = [
 	{
 		id: 101,
 		owner: OWNER,
-		name: "Touhou essentials",
-		description: "Core releases, songs, and circles for quick checks.",
+		name: "Where to start with Touhou arranges",
+		description:
+			"The albums I send friends when they ask what to listen to first.",
 		is_public: true,
 		item_count: 24,
 		follower_count: 8,
@@ -160,8 +162,8 @@ const OWN_COLLECTIONS: readonly UserCollection[] = [
 	{
 		id: 102,
 		owner: OWNER,
-		name: "Private cleanup queue",
-		description: "Draft links and items that still need review.",
+		name: "Albums to check against the booklet",
+		description: "I still need to confirm a few track titles and credits.",
 		is_public: false,
 		item_count: 7,
 		follower_count: 0,
@@ -170,8 +172,9 @@ const OWN_COLLECTIONS: readonly UserCollection[] = [
 	{
 		id: 103,
 		owner: OWNER,
-		name: "Vocal arrangement notes",
-		description: "Songs with vocalist aliases and role normalization notes.",
+		name: "Touhou vocal favorites",
+		description:
+			"Vocal arranges I keep coming back to, from FELT to SOUND HOLIC.",
 		is_public: true,
 		item_count: 16,
 		follower_count: 5,
@@ -179,7 +182,7 @@ const OWN_COLLECTIONS: readonly UserCollection[] = [
 	},
 ]
 
-const FOLLOWED_COLLECTIONS = [
+export const FOLLOWED_COLLECTIONS = [
 	{
 		followed_at: "2026-05-20T12:00:00.000Z",
 		collection: {
@@ -188,8 +191,8 @@ const FOLLOWED_COLLECTIONS = [
 				id: 2,
 				name: "Kirisame Marisa",
 			},
-			name: "Arrangement references",
-			description: "Public collections followed from another profile.",
+			name: "Piano after midnight",
+			description: "Quiet piano arrangements for late-night listening.",
 			is_public: true,
 			item_count: 31,
 			follower_count: 12,
@@ -205,8 +208,8 @@ const FOLLOWED_COLLECTIONS = [
 				id: 3,
 				name: "Patchouli Knowledge",
 			},
-			name: "Library listening shelf",
-			description: "Release and song references for metadata passes.",
+			name: "Reitaisai finds",
+			description: "Albums I picked up at Reitaisai and want to hear again.",
 			is_public: true,
 			item_count: 14,
 			follower_count: 4,
@@ -240,12 +243,7 @@ function createOwnerProfile(): UserProfile {
 				name: "Moderator",
 			},
 		],
-		bio: [
-			"负责整理社团、专辑和曲目之间的链接。",
-			"",
-			"- 重点处理条目关联",
-			"- 也会补充说明文本",
-		].join("\n"),
+		bio: "I collect Touhou arrangements, especially piano and vocals. I add release dates and track credits when I can check them against the CD booklet.\n\nFELT and Alstroemeria Records are usually on repeat.",
 		stats: createScenarioStats("owner"),
 	}
 }
@@ -267,8 +265,8 @@ function createVisitorProfile(isFollowing: boolean): UserProfile {
 			},
 		],
 		bio: isFollowing
-			? "访客视角下用于检查 following 状态与无横幅布局。"
-			: "用于检查未关注访客的 CTA、横幅与信息区组合。",
+			? "I collect old Touhou CDs and add missing track credits when I have the booklet."
+			: "I mostly listen to piano and jazz arrangements. Lately I’ve been exploring older Reitaisai releases.",
 		stats: createScenarioStats(
 			isFollowing ? "visitor-following" : "visitor-unfollowed",
 		),
@@ -278,7 +276,7 @@ function createVisitorProfile(isFollowing: boolean): UserProfile {
 function createEmptyProfile(): UserProfile {
 	return {
 		id: 4,
-		name: "No Data User",
+		name: "Rinnosuke Morichika",
 		last_login: "2026-03-26T08:00:00.000Z",
 		avatar_url: undefined,
 		banner_url: undefined,
@@ -294,6 +292,9 @@ function createScenarioProfile(scenario: ProfileScenario): UserProfile {
 		case "owner": {
 			return createOwnerProfile()
 		}
+		case "owner-followed-by-viewer": {
+			return { ...createOwnerProfile(), is_following: true }
+		}
 		case "visitor-following": {
 			return createVisitorProfile(true)
 		}
@@ -308,6 +309,7 @@ function createScenarioProfile(scenario: ProfileScenario): UserProfile {
 
 function createScenarioStats(scenario: ProfileScenario): UserProfileStats {
 	switch (scenario) {
+		case "owner-followed-by-viewer":
 		case "owner": {
 			return {
 				edit_count: 152,
@@ -337,15 +339,16 @@ function createScenarioStats(scenario: ProfileScenario): UserProfileStats {
 
 function createFallbackBio(scenario: ProfileScenario) {
 	switch (scenario) {
+		case "owner-followed-by-viewer":
 		case "owner": {
 			return createOwnerProfile().bio
 		}
 		case "visitor-following":
 		case "visitor-unfollowed": {
-			return "补充简介后用来检查 markdown 与段落节奏。"
+			return "I’m working through my Touhou CD shelf, one album at a time."
 		}
 		case "empty": {
-			return "用于验证空资料场景被 controls 覆盖后的版面表现。"
+			return "I keep a list of albums I want to hear and fill in release details when I can."
 		}
 	}
 }
@@ -354,6 +357,7 @@ function createFallbackRoles(
 	scenario: ProfileScenario,
 ): NonNullable<UserProfile["roles"]> {
 	switch (scenario) {
+		case "owner-followed-by-viewer":
 		case "owner": {
 			return createOwnerProfile().roles ?? []
 		}
@@ -469,7 +473,11 @@ function StoryRoot(props: StoryRootProps) {
 
 	return (
 		<Profile
-			collections={OWN_COLLECTIONS}
+			collections={
+				state().isCurrentUser
+					? OWN_COLLECTIONS
+					: OWN_COLLECTIONS.filter((item) => item.is_public)
+			}
 			hasMoreCollections={false}
 			isFetchingMoreCollections={false}
 			onLoadMoreCollections={() => undefined}
@@ -511,7 +519,13 @@ const meta = {
 	argTypes: {
 		scenario: {
 			control: { type: "radio" },
-			options: ["owner", "visitor-following", "visitor-unfollowed", "empty"],
+			options: [
+				"owner",
+				"owner-followed-by-viewer",
+				"visitor-following",
+				"visitor-unfollowed",
+				"empty",
+			],
 		},
 		isSignedIn: { control: { type: "boolean" } },
 		hasBanner: { control: { type: "boolean" } },

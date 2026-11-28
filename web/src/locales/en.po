@@ -264,6 +264,10 @@ msgstr "An error occurred. Please try again."
 msgid "Appearances"
 msgstr "Appearances"
 
+#: src/view/user/Profile.tsx
+msgid "Apply"
+msgstr "Apply"
+
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/submission.tsx
 msgid "Approve"
@@ -393,6 +397,7 @@ msgstr "by"
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/submission.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
+#: src/view/user/Profile.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -420,6 +425,10 @@ msgstr "Checking session…"
 msgid "City"
 msgstr "City"
 
+#: src/view/user/Profile.tsx
+msgid "Clear visibility filter"
+msgstr "Clear visibility filter"
+
 #: src/view/tag/Info/Relations.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Collapse"
@@ -442,6 +451,10 @@ msgstr "Collection actions"
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Collection created"
 msgstr "Collection created"
+
+#: src/view/user/Profile.tsx
+msgid "Collection source"
+msgstr "Collection source"
 
 #: src/view/user/Profile.tsx
 msgid "Collection type"
@@ -601,6 +614,10 @@ msgstr "Created At"
 #: src/view/collection/CollectionDetail.tsx
 msgid "Created by"
 msgstr "Created by"
+
+#: src/view/user/Profile.tsx
+msgid "Created by me"
+msgstr "Created by me"
 
 #: src/view/user/Profile.tsx
 msgid "Created time"
@@ -1008,6 +1025,14 @@ msgstr "Filter by category"
 #: src/view/user/Profile.tsx
 msgid "Filter collections"
 msgstr "Filter collections"
+
+#: src/view/user/Profile.tsx
+msgid "Filter collections by visibility"
+msgstr "Filter collections by visibility"
+
+#: src/view/user/Profile.tsx
+msgid "Filters"
+msgstr "Filters"
 
 #: src/view/Homepage/component/ExploreCard.tsx
 msgid "Find tracks by title language, credits, and corrections."
@@ -1998,6 +2023,10 @@ msgstr "Saved"
 msgid "Saving…"
 msgstr "Saving…"
 
+#: src/view/user/Profile.tsx
+msgid "Search"
+msgstr "Search"
+
 #: src/component/form/SearchDialog/ArtistSearchDialog.tsx
 msgid "Search Artist"
 msgstr "Search Artist"
@@ -2244,6 +2273,7 @@ msgid "Sort: Item count"
 msgstr "Sort: Item count"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/user/Profile.tsx
 msgid "Source"
 msgstr "Source"
 

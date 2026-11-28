@@ -51,11 +51,12 @@ const meta = {
 	decorators: [withStoryRouter],
 	args: {
 		item: COLLECTION_ITEM,
+		showVisibility: true,
 	},
 	render: (props) => (
 		<div {...stylex.attrs(styles.shell)}>
 			<ul {...stylex.attrs(styles.list)}>
-				<CollectionRow item={props.item} />
+				<CollectionRow {...props} />
 			</ul>
 		</div>
 	),

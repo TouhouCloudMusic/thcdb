@@ -264,6 +264,10 @@ msgstr "发生错误，请重试。"
 msgid "Appearances"
 msgstr "参与发行"
 
+#: src/view/user/Profile.tsx
+msgid "Apply"
+msgstr "应用"
+
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/submission.tsx
 msgid "Approve"
@@ -393,6 +397,7 @@ msgstr "由"
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/submission.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
+#: src/view/user/Profile.tsx
 msgid "Cancel"
 msgstr "取消"
 
@@ -420,6 +425,10 @@ msgstr "正在检查会话…"
 msgid "City"
 msgstr "城市"
 
+#: src/view/user/Profile.tsx
+msgid "Clear visibility filter"
+msgstr "清除可见性筛选"
+
 #: src/view/tag/Info/Relations.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Collapse"
@@ -442,6 +451,10 @@ msgstr "收藏操作"
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Collection created"
 msgstr "收藏已创建"
+
+#: src/view/user/Profile.tsx
+msgid "Collection source"
+msgstr "收藏来源"
 
 #: src/view/user/Profile.tsx
 msgid "Collection type"
@@ -601,6 +614,10 @@ msgstr "创建于"
 #: src/view/collection/CollectionDetail.tsx
 msgid "Created by"
 msgstr "创建者"
+
+#: src/view/user/Profile.tsx
+msgid "Created by me"
+msgstr "我创建的"
 
 #: src/view/user/Profile.tsx
 msgid "Created time"
@@ -1008,6 +1025,14 @@ msgstr "按分类筛选"
 #: src/view/user/Profile.tsx
 msgid "Filter collections"
 msgstr "筛选收藏"
+
+#: src/view/user/Profile.tsx
+msgid "Filter collections by visibility"
+msgstr "按可见性筛选收藏"
+
+#: src/view/user/Profile.tsx
+msgid "Filters"
+msgstr "筛选"
 
 #: src/view/Homepage/component/ExploreCard.tsx
 msgid "Find tracks by title language, credits, and corrections."
@@ -1998,6 +2023,10 @@ msgstr "已保存"
 msgid "Saving…"
 msgstr "正在保存…"
 
+#: src/view/user/Profile.tsx
+msgid "Search"
+msgstr "搜索"
+
 #: src/component/form/SearchDialog/ArtistSearchDialog.tsx
 msgid "Search Artist"
 msgstr "搜索艺术家"
@@ -2244,6 +2273,7 @@ msgid "Sort: Item count"
 msgstr "排序：条目数"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/user/Profile.tsx
 msgid "Source"
 msgstr "来源"
 

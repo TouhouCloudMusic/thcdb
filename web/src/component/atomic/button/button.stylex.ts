@@ -2,12 +2,6 @@ import * as stylex from "@stylexjs/stylex"
 
 import { palette } from "~/style/color/palette.stylex"
 
-export const buttonLayoutVars = stylex.defineVars({
-	targetHeight: stylex.types.length("0px"),
-	presetHeight: "0px",
-	borderWidth: "0px",
-})
-
 export const buttonVars = stylex.defineVars({
 	solidFocusRing: palette.slate[600],
 	solidBackground: palette.slate[900],

@@ -1,10 +1,9 @@
 import * as stylex from "@stylexjs/stylex"
 import type { StyleXStyles } from "@stylexjs/stylex"
 
-import { palette } from "~/style/color/palette.stylex"
-import { colors, controlHeights, fontSizes, px } from "~/style/tokens.stylex"
-
+import { controlIconStyles } from "../controlSpacing"
 import { Select } from "./select"
+import { toolbarFieldStyles } from "./toolbarStyles"
 
 export type ToolbarSelectOption<T extends string> = {
 	value: T
@@ -12,31 +11,9 @@ export type ToolbarSelectOption<T extends string> = {
 	itemLabel: string
 }
 
-export const toolbarStyles = stylex.create({
-	control: {
-		height: controlHeights.md,
-		borderColor: {
-			default: palette.slate[400],
-			":hover": { default: null, "@media (hover: hover)": palette.slate[500] },
-			":focus-visible": palette.slate[500],
-		},
-		fontSize: fontSizes.sm,
-		lineHeight: "1.25rem",
-		outlineStyle: "none",
-		outlineOffset: 0,
-		transitionProperty:
-			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
-		transitionDuration: "150ms",
-	},
-	select: {
-		gridTemplateColumns: `minmax(0, 1fr) ${px[16]}`,
-		columnGap: px[8],
-		paddingInlineStart: px[12],
-		paddingInlineEnd: px[12],
-		fontWeight: 400,
-		color: colors.textPrimary,
-	},
-	selectValue: { paddingInlineStart: 0 },
+const styles = stylex.create({
+	trigger: { gridTemplateColumns: "minmax(0, 1fr) auto" },
+	value: { paddingInlineStart: 0 },
 })
 
 export function ToolbarSelect<T extends string>(props: {
@@ -63,13 +40,13 @@ export function ToolbarSelect<T extends string>(props: {
 			}}
 		>
 			<Select.Trigger
-				styles={[toolbarStyles.control, toolbarStyles.select, props.styles]}
+				styles={[...toolbarFieldStyles, styles.trigger, props.styles]}
 				aria-label={props.ariaLabel}
 			>
-				<Select.Value styles={toolbarStyles.selectValue}>
+				<Select.Value styles={styles.value}>
 					{selectedOption()?.label}
 				</Select.Value>
-				<Select.Icon />
+				<Select.Icon styles={controlIconStyles.slot} />
 			</Select.Trigger>
 			<Select.Content />
 		</Select.Root>
