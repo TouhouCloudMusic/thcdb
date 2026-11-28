@@ -6,10 +6,7 @@ import * as stylex from "@stylexjs/stylex"
 import type { ParentProps } from "solid-js"
 import { createMemo, mergeProps, splitProps } from "solid-js"
 
-import {
-	buttonLayoutVars,
-	buttonVars,
-} from "~/component/atomic/button/button.stylex"
+import { buttonVars } from "~/component/atomic/button/button.stylex"
 import { palette } from "~/style/color/palette.stylex"
 import {
 	radius,
@@ -20,77 +17,54 @@ import {
 	px,
 } from "~/style/tokens.stylex"
 
-const hasContainerHeight = "@container (block-size > 0px)"
-const supportsFontMetricUnits = "@supports (padding-inline: calc(1lh - 1cap))"
+import { controlIconStyles, controlSizeStyles } from "../controlSpacing"
+import { controlLayoutVars } from "../controlSpacing.stylex"
+
 const borderedWidth = "1px"
-const defaultGap = px[8]
-const fallbackLineHeight = "1.5em"
-const fallbackCapHeight = "1em"
-const fallbackCapInset = `(${fallbackLineHeight} - ${fallbackCapHeight}) / 2`
-const capInset = "(1lh - 1cap) / 2"
-const innerHeight = `(${buttonLayoutVars.targetHeight} - 2 * ${buttonLayoutVars.borderWidth})`
-const fallbackBlockPadding = `max(0px, (${innerHeight} - ${fallbackLineHeight}) / 2)`
-const blockPadding = `max(0px, (${innerHeight} - 1lh) / 2)`
-const blockSpacing = {
-	default: fallbackBlockPadding,
-	[supportsFontMetricUnits]: blockPadding,
-} as const
-const inlineSpacing = {
-	default: `calc(${fallbackBlockPadding} + ${fallbackCapInset})`,
-	[supportsFontMetricUnits]: `calc(${blockPadding} + ${capInset})`,
-} as const
 const sizeStyles = stylex.create({
-	inferredHeight: {
-		[buttonLayoutVars.targetHeight]: {
-			default: buttonLayoutVars.presetHeight,
-			[hasContainerHeight]: "100cqb",
-		},
-	},
-	targetHeight: (height: string) => ({
-		[buttonLayoutVars.targetHeight]: height,
-	}),
-	spacing: {
-		minHeight: buttonLayoutVars.targetHeight,
-		paddingBlock: blockSpacing,
-		paddingInline: inlineSpacing,
-		gap: inlineSpacing,
-	},
-	containerSpacing: {
-		minHeight: {
-			default: null,
-			[hasContainerHeight]: buttonLayoutVars.targetHeight,
-		},
-		paddingBlock: { default: null, [hasContainerHeight]: blockSpacing },
-		paddingInline: { default: null, [hasContainerHeight]: inlineSpacing },
-		gap: { default: defaultGap, [hasContainerHeight]: inlineSpacing },
-	},
 	xs: {
-		[buttonLayoutVars.presetHeight]: controlHeights.xs,
+		[controlLayoutVars.presetHeight]: controlHeights.xs,
 		fontSize: fontSizes.xs,
 		lineHeight: lineHeights.xs,
 	},
 	sm: {
-		[buttonLayoutVars.presetHeight]: controlHeights.sm,
+		[controlLayoutVars.presetHeight]: controlHeights.sm,
 		fontSize: fontSizes.sm,
 		lineHeight: lineHeights.sm,
 	},
 	md: {
-		[buttonLayoutVars.presetHeight]: controlHeights.md,
+		[controlLayoutVars.presetHeight]: controlHeights.md,
 		fontSize: fontSizes.base,
 		lineHeight: lineHeights.base,
 	},
 	lg: {
-		[buttonLayoutVars.presetHeight]: controlHeights.lg,
+		[controlLayoutVars.presetHeight]: controlHeights.lg,
 		fontSize: fontSizes.xl,
 		lineHeight: lineHeights.xl,
 	},
 })
 
 export const buttonSizeStyles = {
-	xs: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.xs],
-	sm: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.sm],
-	md: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.md],
-	lg: [sizeStyles.spacing, sizeStyles.inferredHeight, sizeStyles.lg],
+	xs: [
+		controlSizeStyles.spacing,
+		controlSizeStyles.inferredHeight,
+		sizeStyles.xs,
+	],
+	sm: [
+		controlSizeStyles.spacing,
+		controlSizeStyles.inferredHeight,
+		sizeStyles.sm,
+	],
+	md: [
+		controlSizeStyles.spacing,
+		controlSizeStyles.inferredHeight,
+		sizeStyles.md,
+	],
+	lg: [
+		controlSizeStyles.spacing,
+		controlSizeStyles.inferredHeight,
+		sizeStyles.lg,
+	],
 } as const
 
 export const buttonStyles = stylex.create({
@@ -179,11 +153,11 @@ export const buttonStyles = stylex.create({
 		[buttonVars.borderHover]: palette.green[400],
 	},
 	base: {
-		[buttonLayoutVars.borderWidth]: "0px",
+		[controlLayoutVars.borderWidth]: "0px",
 		display: "inline-flex",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: defaultGap,
+		gap: px[8],
 		borderRadius: radius.sm,
 		fontWeight: 500,
 		userSelect: "none",
@@ -260,8 +234,8 @@ export const buttonStyles = stylex.create({
 		},
 	},
 	surface: {
-		[buttonLayoutVars.borderWidth]: borderedWidth,
-		borderWidth: buttonLayoutVars.borderWidth,
+		[controlLayoutVars.borderWidth]: borderedWidth,
+		borderWidth: controlLayoutVars.borderWidth,
 		borderStyle: "solid",
 		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
 		backgroundColor: {
@@ -276,8 +250,8 @@ export const buttonStyles = stylex.create({
 		color: buttonVars.tintText,
 	},
 	outline: {
-		[buttonLayoutVars.borderWidth]: borderedWidth,
-		borderWidth: buttonLayoutVars.borderWidth,
+		[controlLayoutVars.borderWidth]: borderedWidth,
+		borderWidth: controlLayoutVars.borderWidth,
 		borderStyle: "solid",
 		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
 		backgroundColor: {
@@ -304,27 +278,8 @@ export const buttonStyles = stylex.create({
 	},
 })
 
-const iconSlotSize = {
-	default: fallbackLineHeight,
-	[supportsFontMetricUnits]: "1lh",
-} as const
-const iconStyles = stylex.create({
-	slot: {
-		display: "grid",
-		flex: "none",
-		gridTemplate: "100% / 100%",
-		placeItems: "center",
-		inlineSize: iconSlotSize,
-		blockSize: iconSlotSize,
-		marginInline: {
-			default: `calc(-1 * (${fallbackCapInset}))`,
-			[supportsFontMetricUnits]: `calc(-1 * (${capInset}))`,
-		},
-	},
-})
-
 function Icon(props: ParentProps) {
-	return <span {...stylex.attrs(iconStyles.slot)}>{props.children}</span>
+	return <span {...stylex.attrs(controlIconStyles.slot)}>{props.children}</span>
 }
 
 export type ButtonProps = PolymorphicProps<
@@ -359,11 +314,11 @@ function Root(props: ButtonProps) {
 			buttonStyles[local.tone],
 			size && sizeStyles[size],
 			size !== undefined || targetHeight !== undefined
-				? sizeStyles.spacing
-				: sizeStyles.containerSpacing,
+				? controlSizeStyles.spacing
+				: controlSizeStyles.containerSpacing,
 			targetHeight === undefined
-				? sizeStyles.inferredHeight
-				: sizeStyles.targetHeight(targetHeight),
+				? controlSizeStyles.inferredHeight
+				: controlSizeStyles.targetHeight(targetHeight),
 			local.styles,
 		)
 	})

@@ -266,9 +266,9 @@ function SelectValue(props: { children?: JSX.Element; styles?: StyleXStyles }) {
 	)
 }
 
-function SelectIcon() {
+function SelectIcon(props: { styles?: StyleXStyles }) {
 	return (
-		<K_Select.Icon {...stylex.attrs(selectStyles.icon)}>
+		<K_Select.Icon {...stylex.attrs(selectStyles.icon, props.styles)}>
 			<CaretSortIcon {...stylex.attrs(selectStyles.caret)} />
 		</K_Select.Icon>
 	)

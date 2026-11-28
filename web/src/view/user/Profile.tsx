@@ -2,11 +2,19 @@ import { useLingui } from "@lingui/solid/macro"
 import * as stylex from "@stylexjs/stylex"
 import { Link } from "@tanstack/solid-router"
 import type { UserProfile, UserRoleEnum } from "@thc/api"
-import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
+import { BookmarkIcon, MixerHorizontalIcon, PlusIcon } from "@thc/icons/radix"
+import {
+	batch,
+	createMemo,
+	createSignal,
+	For,
+	Match,
+	Show,
+	Switch,
+} from "solid-js"
 
 import type { AppColor } from "~/component"
 import { Badge } from "~/component/atomic/Badge"
-import { inputStyles } from "~/component/atomic/Input"
 import { Tab } from "~/component/atomic/Tab"
 import { Avatar } from "~/component/atomic/avatar"
 import {
@@ -14,11 +22,11 @@ import {
 	buttonSizeStyles,
 	buttonStyles,
 } from "~/component/atomic/button"
+import { controlLayoutVars } from "~/component/atomic/controlSpacing.stylex"
+import { ToolbarSearch } from "~/component/atomic/form/ToolbarSearch"
 import type { ToolbarSelectOption } from "~/component/atomic/form/ToolbarSelect"
-import {
-	toolbarStyles,
-	ToolbarSelect,
-} from "~/component/atomic/form/ToolbarSelect"
+import { ToolbarSelect } from "~/component/atomic/form/ToolbarSelect"
+import { Dialog } from "~/component/dialog"
 import { Markdown } from "~/component/markdown"
 import { USER_ROLE_NAMES } from "~/domain/user/constants"
 import type { UserCollection } from "~/hey-api"
@@ -27,6 +35,7 @@ import { palette } from "~/style/color/palette.stylex"
 import { link } from "~/style/link"
 import {
 	colors,
+	controlHeights,
 	fonts,
 	lineHeights,
 	fontSizes,
@@ -68,98 +77,125 @@ const styles = stylex.create({
 		objectPosition: "center",
 	},
 	layout: {
-		marginInline: "auto",
-		maxWidth: "1200px",
+		display: "grid",
+		rowGap: px[32],
 		paddingInline: {
 			default: px[24],
 			"@media (min-width: 40rem)": px[32],
 			"@media (min-width: 64rem)": px[48],
 		},
-		display: "flex",
-		flexDirection: { default: "column", "@media (min-width: 64rem)": "row" },
-		gap: { default: px[48], "@media (min-width: 64rem)": px[64] },
-		paddingTop: { default: px[24], "@media (min-width: 64rem)": "0rem" },
 	},
-	sidebar: {
-		width: {
-			default: "100%",
-			"@media (min-width: 64rem)": px[256],
-			"@media (min-width: 80rem)": px[288],
+	header: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: `${px[96]} minmax(0, 1fr) auto`,
+			"@media (min-width: 44rem)": `${px[128]} 1px fit-content(45%) minmax(0, 1fr) auto`,
 		},
-		flexShrink: 0,
-		display: "flex",
-		flexDirection: "column",
+		gridTemplateAreas: {
+			default:
+				'"avatar . ." "name name action" "roles roles roles" "stats stats stats" "bio bio bio"',
+			"@media (min-width: 23rem)":
+				'"avatar name action" "avatar roles roles" "stats stats stats" "bio bio bio"',
+			"@media (min-width: 44rem)":
+				'"avatar . name roles action" "stats . bio bio bio"',
+		},
+		gridTemplateRows: {
+			default: "auto",
+			"@media (min-width: 44rem)": "minmax(3rem, auto) auto",
+		},
+		columnGap: { default: px[12], "@media (min-width: 44rem)": px[16] },
+		rowGap: { default: px[4], "@media (min-width: 44rem)": px[20] },
+		alignItems: "start",
+		paddingBlockStart: { default: px[12], "@media (min-width: 44rem)": px[16] },
 	},
 	avatarPosition: {
-		marginTop: {
-			default: null,
-			"@media (min-width: 40rem)": "-4rem",
-			"@media (min-width: 64rem)": "-6rem",
+		gridArea: "avatar",
+		marginBlockStart: {
+			default: "-3.75rem",
+			"@media (min-width: 44rem)": "-5rem",
 		},
-		marginBottom: px[20],
 	},
 	avatar: {
-		width: { default: px[128], "@media (min-width: 40rem)": px[160] },
-		height: { default: px[128], "@media (min-width: 40rem)": px[160] },
+		width: { default: px[96], "@media (min-width: 44rem)": px[128] },
+		height: { default: px[96], "@media (min-width: 44rem)": px[128] },
 		borderRadius: radius.full,
-		borderWidth: "4px",
+		borderWidth: { default: "3px", "@media (min-width: 44rem)": "4px" },
 		borderStyle: "solid",
 		borderColor: palette.white,
 		backgroundColor: palette.white,
 		boxShadow: `0 0 0 1px ${palette.slate[200]}`,
 	},
+	name: {
+		gridArea: "name",
+		alignSelf: "center",
+		fontSize: "clamp(1.125rem, 5cqw, 1.875rem)",
+		lineHeight: 1.2,
+		overflowWrap: "anywhere",
+	},
 	roles: {
-		marginTop: px[8],
+		gridArea: "roles",
+		alignSelf: "center",
 		display: "flex",
 		flexWrap: "wrap",
 		alignItems: "center",
 		gap: px[8],
 	},
 	actions: {
-		marginTop: px[24],
-		width: "100%",
-		maxWidth: { default: "240px", "@media (min-width: 64rem)": "none" },
+		gridArea: "action",
+		alignSelf: "center",
+		justifySelf: "end",
 	},
 	biography: {
-		marginTop: px[32],
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textSecondary,
+		gridArea: "bio",
+		minWidth: 0,
+		maxWidth: "68ch",
+		marginBlockStart: { default: px[12], "@media (min-width: 44rem)": 0 },
+		overflowWrap: "anywhere",
 	},
 	metrics: {
-		marginTop: px[32],
-		paddingTop: px[24],
-		borderTopWidth: "1px",
-		borderTopStyle: "solid",
-		borderColor: palette.slate[100],
+		gridArea: "stats",
+		minWidth: 0,
+		alignSelf: "stretch",
+		marginBlockStart: { default: px[12], "@media (min-width: 44rem)": 0 },
+	},
+	metricsDivider: {
+		display: { default: "none", "@media (min-width: 44rem)": "block" },
+		gridColumn: 2,
+		gridRow: 2,
+		alignSelf: "stretch",
+		backgroundColor: palette.slate[300],
 	},
 	main: {
-		marginTop: px[8],
 		display: "flex",
-		minWidth: "0rem",
-		flex: "1 1 0%",
+		minWidth: 0,
 		flexDirection: "column",
-		gap: px[56],
+		gap: px[32],
 	},
 	actionList: { display: "flex", flexDirection: "column", gap: px[8] },
 	actionError: { fontSize: fontSizes.sm, lineHeight: "1.25rem" },
-	about: { display: "flex", flexDirection: "column", gap: px[12] },
-	aboutTitle: {
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		color: colors.textPrimary,
-		letterSpacing: ".025em",
-	},
 	emptyBio: {
 		color: palette.slate[500],
 		fontSize: fontSizes.sm,
 		lineHeight: "1.25rem",
 	},
-	metricList: { display: "flex", flexDirection: "column", gap: px[12] },
+	metricList: {
+		display: "grid",
+		gridTemplateColumns: {
+			default: "repeat(auto-fit, minmax(min(5.5rem, 100%), 1fr))",
+			"@media (min-width: 44rem)": "repeat(2, minmax(0, 1fr))",
+		},
+		rowGap: px[8],
+		paddingBlock: { default: px[16], "@media (min-width: 44rem)": 0 },
+		borderBlockWidth: { default: "1px", "@media (min-width: 44rem)": 0 },
+		borderStyle: "solid",
+		borderColor: palette.slate[300],
+	},
 	metric: {
 		display: "flex",
+		flexDirection: "column",
 		alignItems: "center",
-		justifyContent: "space-between",
+		textAlign: "center",
+		overflowWrap: "anywhere",
 	},
 	metricLabel: {
 		fontSize: fontSizes.sm,
@@ -355,50 +391,50 @@ const styles = stylex.create({
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
 	roleBadge: {
-		borderRadius: radius.md,
-		borderWidth: "1px",
-		borderStyle: "solid",
-		borderColor: palette.slate[200],
-		backgroundColor: colors.backgroundPrimary,
-		boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-		paddingInline: px[8],
+		backgroundColor: "color-mix(in oklab, currentColor 9%, transparent)",
+		boxShadow: "none",
 		paddingBlock: px[2],
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
 		fontWeight: 500,
 	},
 	collections: { display: "flex", flexDirection: "column", gap: px[20] },
-	toolbar: {
-		display: "flex",
-		flexDirection: { default: "column", "@media (min-width: 80rem)": "row" },
-		gap: px[12],
-		borderBottomWidth: "1px",
-		borderBottomStyle: "solid",
-		borderColor: palette.slate[200],
-		paddingBottom: px[16],
-		alignItems: { default: null, "@media (min-width: 80rem)": "center" },
-		justifyContent: {
-			default: null,
-			"@media (min-width: 80rem)": "space-between",
-		},
-	},
-	filters: {
-		display: "flex",
-		flexDirection: { default: "column", "@media (min-width: 40rem)": "row" },
+	toolbar: { display: "flex", alignItems: "center", gap: px[8] },
+	desktopFilters: {
+		display: { default: "none", "@media (min-width: 44rem)": "flex" },
+		alignItems: "center",
 		gap: px[8],
-		flex: "1 1 0%",
-		minWidth: "0rem",
-		alignItems: { default: null, "@media (min-width: 40rem)": "center" },
+		flexShrink: 0,
 	},
-	typeFilter: {
-		width: { default: "100%", "@media (min-width: 40rem)": "auto" },
+	mobileOnly: {
+		display: { default: null, "@media (min-width: 44rem)": "none" },
 	},
-	visibilityFilter: {
-		width: { default: "100%", "@media (min-width: 40rem)": "auto" },
+	toolbarAction: { flexShrink: 0 },
+	toolbarIcon: { width: px[16], height: px[16] },
+	filterDialog: {
+		top: "auto",
+		bottom: 0,
+		left: 0,
+		width: "100%",
+		maxWidth: "none",
+		translate: "0 0",
+		maxHeight: "min(80dvh, 32rem)",
+		overflowY: "auto",
+		paddingInline: px[24],
+		paddingTop: px[24],
+		paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
 	},
-	sortFilter: {
-		width: { default: "100%", "@media (min-width: 40rem)": "auto" },
+	filterFields: { display: "grid", gap: px[16], marginTop: px[8] },
+	filterLabel: {
+		marginBottom: px[6],
+		color: colors.textSecondary,
+		fontSize: fontSizes.sm,
 	},
+	filterActions: {
+		display: "flex",
+		justifyContent: "flex-end",
+		gap: px[8],
+		marginTop: px[24],
+	},
+	filterSummary: { display: "flex", alignItems: "center", gap: px[4] },
 	collectionList: {
 		borderBlockWidth: "1px",
 		borderBlockStyle: "solid",
@@ -406,8 +442,11 @@ const styles = stylex.create({
 	},
 	activityList: { display: "flex", flexDirection: "column" },
 	collection: {
-		display: "grid",
-		gap: px[12],
+		display: "block",
+		fontFamily: fonts.sans,
+		fontSize: fontSizes.sm,
+		lineHeight: lineHeights.sm,
+		fontWeight: 400,
 		paddingInline: {
 			default: px[4],
 			"@media (min-width: 40rem)": px[12],
@@ -419,13 +458,7 @@ const styles = stylex.create({
 			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
 		transitionDuration: "150ms",
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-		gridTemplateColumns: {
-			default: null,
-			"@media (min-width: 40rem)": "minmax(0,1fr) auto",
-		},
-		alignItems: { default: null, "@media (min-width: 40rem)": "center" },
 	},
-	collectionContent: { minWidth: "0rem" },
 	collectionHeading: {
 		display: "flex",
 		minWidth: "0rem",
@@ -433,11 +466,13 @@ const styles = stylex.create({
 		gap: px[8],
 	},
 	collectionName: {
+		minWidth: 0,
 		overflow: "hidden",
 		textOverflow: "ellipsis",
 		whiteSpace: "nowrap",
-		fontSize: "15px",
-		fontWeight: 500,
+		fontSize: "inherit",
+		fontWeight: "inherit",
+		lineHeight: "inherit",
 		color: palette.slate[900],
 		transitionProperty:
 			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
@@ -445,8 +480,7 @@ const styles = stylex.create({
 		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
 	visibility: {
-		fontSize: fontSizes.xs,
-		lineHeight: "1rem",
+		flexShrink: 0,
 		color: colors.textTertiary,
 	},
 	collectionDescription: {
@@ -455,32 +489,13 @@ const styles = stylex.create({
 		display: "-webkit-box",
 		WebkitBoxOrient: "vertical",
 		WebkitLineClamp: 1,
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
 		color: palette.slate[500],
 	},
-	collectionMetadata: {
-		display: "flex",
-		alignItems: "center",
-		gap: px[16],
-		fontSize: fontSizes.xs,
-		lineHeight: lineHeights.xs,
+	itemCount: {
+		flexShrink: 0,
+		whiteSpace: "nowrap",
+		fontVariantNumeric: "tabular-nums",
 		color: palette.slate[500],
-		justifyContent: { default: null, "@media (min-width: 40rem)": "flex-end" },
-	},
-	itemCount: { fontVariantNumeric: "tabular-nums" },
-	collectionArrow: {
-		color: {
-			default: palette.slate[300],
-			"@media (hover: hover)": {
-				default: null,
-				[stylex.when.ancestor(":hover")]: palette.slate[500],
-			},
-		},
-		transitionProperty:
-			"color, background-color, border-color, outline-color, text-decoration-color, fill, stroke",
-		transitionDuration: "150ms",
-		transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
 	},
 })
 
@@ -490,15 +505,9 @@ const profileStyles = stylex.create({
 		borderBottomStyle: "solid",
 		borderBottomColor: palette.slate[100],
 	},
-	action: {
-		width: "100%",
-		justifyContent: "center",
-		fontSize: fontSizes.sm,
-		lineHeight: lineHeights.sm,
-		paddingInline: px[16],
-		paddingBlock: px[8],
-	},
-	bio: { lineHeight: 1.625, maxWidth: "none", color: colors.textSecondary },
+	action: { minWidth: "6rem", justifyContent: "center" },
+	editActionHeight: { [controlLayoutVars.targetHeight]: controlHeights.md },
+	bio: { lineHeight: 1.625, maxWidth: "none", color: colors.textPrimary },
 	parsing: { opacity: 0.5 },
 	activity: {
 		display: "flex",
@@ -512,31 +521,14 @@ const profileStyles = stylex.create({
 		borderColor: palette.slate[100],
 	},
 	tabs: {
-		display: "inline-grid",
-		width: "fit-content",
-		gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+		display: "grid",
+		gridTemplateColumns: "repeat(2, minmax(0, 6.25rem))",
 		/* Work around Firefox subpixel snapping differences
 		   between the list border and transformed indicator.
 		   See https://bugzilla.mozilla.org/show_bug.cgi?id=1852291 */
 		transform: "translateY(0px)",
 	},
-	search: {
-		width: "100%",
-		minWidth: "200px",
-		flex: "1 1 0%",
-		paddingInline: px[12],
-		color: {
-			default: colors.textPrimary,
-			"::placeholder": colors.textSecondary,
-		},
-	},
-	newCollection: {
-		paddingInline: px[12],
-		boxShadow: {
-			default: "0 0 #0000",
-			":hover": { default: null, "@media (hover: hover)": "0 0 #0000" },
-		},
-	},
+	search: { minWidth: 0, flex: "1 1 0%" },
 })
 
 type ProfileTabValue = "collections" | "activity"
@@ -689,7 +681,6 @@ export function Profile(props: Props) {
 
 	return (
 		<PageLayout styles={styles.page}>
-			{/* Simple banner without styling tricks */}
 			<div {...stylex.attrs(styles.banner)}>
 				<Show
 					when={bannerUrl()}
@@ -706,8 +697,7 @@ export function Profile(props: Props) {
 			</div>
 
 			<div {...stylex.attrs(styles.layout)}>
-				{/* Standard left sidebar */}
-				<aside {...stylex.attrs(styles.sidebar)}>
+				<aside {...stylex.attrs(styles.header)}>
 					<div {...stylex.attrs(styles.avatarPosition)}>
 						<Avatar
 							user={props.data}
@@ -716,7 +706,9 @@ export function Profile(props: Props) {
 						/>
 					</div>
 
-					<h1 {...stylex.attrs(typography.heading.lg)}>{props.data.name}</h1>
+					<h1 {...stylex.attrs(typography.heading.lg, styles.name)}>
+						{props.data.name}
+					</h1>
 
 					<div {...stylex.attrs(styles.roles)}>
 						<Show when={topRole()}>
@@ -736,16 +728,20 @@ export function Profile(props: Props) {
 						</div>
 					</Show>
 
-					<div {...stylex.attrs(styles.biography)}>
-						<AboutSection user={props.data} />
-					</div>
-
 					<div {...stylex.attrs(styles.metrics)}>
 						<MetricsSection metrics={metrics()} />
 					</div>
+
+					<div
+						{...stylex.attrs(styles.metricsDivider)}
+						aria-hidden="true"
+					></div>
+
+					<div {...stylex.attrs(styles.biography)}>
+						<AboutSection user={props.data} />
+					</div>
 				</aside>
 
-				{/* Main content */}
 				<main {...stylex.attrs(styles.main)}>
 					<CollectionsAndActivitySection
 						defaultValue={props.tab?.value ?? "activity"}
@@ -798,16 +794,15 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 				<Match when={props.userType === UserType.Current}>
 					<Link
 						to="/profile/edit"
-						class={
-							stylex.attrs(
-								link.base,
-								buttonStyles.base,
-								buttonStyles.outline,
-								buttonStyles.gray,
-								buttonSizeStyles.md,
-								profileStyles.action,
-							).class
-						}
+						{...stylex.attrs(
+							link.base,
+							buttonStyles.base,
+							buttonStyles.outline,
+							buttonStyles.slate,
+							buttonSizeStyles.sm,
+							profileStyles.editActionHeight,
+							profileStyles.action,
+						)}
 					>
 						Edit Profile
 					</Link>
@@ -819,7 +814,8 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 						onClick={props.onFollow}
 						appearance="outline"
 						tone="slate"
-						size="md"
+						size="sm"
+						targetHeight={controlHeights.md}
 						styles={profileStyles.action}
 					>
 						{props.pendingAction === "follow" ? t`Following...` : t`Follow`}
@@ -834,7 +830,8 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 						onClick={props.onUnfollow}
 						appearance="outline"
 						tone="slate"
-						size="md"
+						size="sm"
+						targetHeight={controlHeights.md}
 						styles={profileStyles.action}
 					>
 						<Switch>
@@ -863,28 +860,25 @@ function AboutSection(props: { user: Pick<ProfileData, "bio"> }) {
 	const onRendered = () => setMdParsing(false)
 
 	return (
-		<div {...stylex.attrs(styles.about)}>
-			<h2 {...stylex.attrs(styles.aboutTitle)}>{t`About`}</h2>
-			<div
-				{...stylex.attrs(
-					profileStyles.bio,
-					shouldPulse() && [animationStyles.pulse, profileStyles.parsing],
-				)}
+		<div
+			{...stylex.attrs(
+				profileStyles.bio,
+				shouldPulse() && [animationStyles.pulse, profileStyles.parsing],
+			)}
+		>
+			<Show
+				when={bio()}
+				fallback={
+					<span {...stylex.attrs(styles.emptyBio)}>
+						{t`No biography provided.`}
+					</span>
+				}
 			>
-				<Show
-					when={bio()}
-					fallback={
-						<span {...stylex.attrs(styles.emptyBio)}>
-							{t`No biography provided.`}
-						</span>
-					}
-				>
-					<Markdown
-						content={bio()}
-						onRendered={onRendered}
-					/>
-				</Show>
-			</div>
+				<Markdown
+					content={bio()}
+					onRendered={onRendered}
+				/>
+			</Show>
 		</div>
 	)
 }
@@ -1124,6 +1118,12 @@ function RoleBadge(props: { role: UserRoleEnum }) {
 	)
 }
 
+function collectionFilterLabels<T extends string>(
+	options: ToolbarSelectOption<T>[],
+) {
+	return options.map((option) => ({ ...option, label: option.itemLabel }))
+}
+
 function CollectionsPanel(props: {
 	items: readonly UserCollection[]
 	hasMoreItems: boolean
@@ -1146,6 +1146,46 @@ function CollectionsPanel(props: {
 	const [visibilityFilter, setVisibilityFilter] =
 		createSignal<CollectionVisibilityFilter>("all")
 	const [sortValue, setSortValue] = createSignal<CollectionSortValue>("newest")
+	const [draftType, setDraftType] = createSignal<CollectionType>("own")
+	const [draftVisibility, setDraftVisibility] =
+		createSignal<CollectionVisibilityFilter>("all")
+	const [draftSort, setDraftSort] = createSignal<CollectionSortValue>("newest")
+	const [filtersOpen, setFiltersOpen] = createSignal(false)
+	const canFilterVisibility = () =>
+		props.isCurrentUser && collectionType() === "own"
+
+	const onFiltersOpenChange = (open: boolean) => {
+		batch(() => {
+			if (open) {
+				setDraftType(collectionType())
+				setDraftVisibility(visibilityFilter())
+				setDraftSort(sortValue())
+			}
+			setFiltersOpen(open)
+		})
+	}
+	const applyFilters = () => {
+		batch(() => {
+			setCollectionType(draftType())
+			setVisibilityFilter(draftVisibility())
+			setSortValue(draftSort())
+			setFiltersOpen(false)
+		})
+	}
+	const changeCollectionType = (type: CollectionType) => {
+		batch(() => {
+			setCollectionType(type)
+			setVisibilityFilter("all")
+			setSortValue("newest")
+		})
+	}
+	const changeDraftType = (type: CollectionType) => {
+		batch(() => {
+			setDraftType(type)
+			setDraftVisibility("all")
+			setDraftSort("newest")
+		})
+	}
 	const collectionTypeOptions = (): ToolbarSelectOption<CollectionType>[] => [
 		{
 			value: "own",
@@ -1185,11 +1225,13 @@ function CollectionsPanel(props: {
 					}
 				}
 			})
-	const sortOptions = (): ToolbarSelectOption<CollectionSortValue>[] =>
+	const sortOptions = (
+		type: CollectionType,
+	): ToolbarSelectOption<CollectionSortValue>[] =>
 		COLLECTION_SORT_OPTIONS.map((option) => {
 			switch (option.value) {
 				case "newest": {
-					if (collectionType() === "followed") {
+					if (type === "followed") {
 						return {
 							value: option.value,
 							label: t`Sort: Followed time`,
@@ -1232,6 +1274,8 @@ function CollectionsPanel(props: {
 
 		const items = collections()
 			.filter((item) => {
+				if (!props.isCurrentUser) return item.is_public
+				if (!canFilterVisibility()) return true
 				if (visibility === "public") return item.is_public
 				if (visibility === "private") return !item.is_public
 				return true
@@ -1274,65 +1318,198 @@ function CollectionsPanel(props: {
 
 	return (
 		<div {...stylex.attrs(styles.collections)}>
-			<div {...stylex.attrs(styles.toolbar)}>
-				<div {...stylex.attrs(styles.filters)}>
-					<input
-						type="search"
+			<Dialog.Root
+				open={filtersOpen()}
+				onOpenChange={onFiltersOpenChange}
+			>
+				<div {...stylex.attrs(styles.toolbar)}>
+					<ToolbarSearch
 						value={searchQuery()}
-						placeholder={t`Search collections`}
-						aria-label={t`Search collections`}
-						onInput={(e) => setSearchQuery(e.currentTarget.value)}
-						{...stylex.attrs(
-							inputStyles.like,
-							inputStyles.input,
-							toolbarStyles.control,
-							profileStyles.search,
-						)}
+						placeholder={t`Search`}
+						ariaLabel={t`Search collections`}
+						onInput={setSearchQuery}
+						styles={profileStyles.search}
 					/>
 
-					<Show when={props.isCurrentUser}>
+					<div {...stylex.attrs(styles.desktopFilters)}>
+						<Show when={props.isCurrentUser}>
+							<ToolbarSelect
+								options={collectionTypeOptions()}
+								value={collectionType()}
+								placeholder={t`Type`}
+								ariaLabel={t`Collection type`}
+								onChange={changeCollectionType}
+							/>
+						</Show>
+
+						<Show when={canFilterVisibility()}>
+							<ToolbarSelect
+								options={visibilityOptions()}
+								value={visibilityFilter()}
+								placeholder={t`Visibility`}
+								ariaLabel={t`Filter collections by visibility`}
+								onChange={setVisibilityFilter}
+							/>
+						</Show>
+
 						<ToolbarSelect
-							options={collectionTypeOptions()}
-							value={collectionType()}
-							placeholder={t`Type`}
-							ariaLabel={t`Collection type`}
-							onChange={setCollectionType}
-							styles={styles.typeFilter}
+							options={sortOptions(collectionType())}
+							value={sortValue()}
+							placeholder={t`Sort`}
+							ariaLabel={t`Sort collections`}
+							onChange={setSortValue}
 						/>
-					</Show>
+					</div>
 
-					<ToolbarSelect
-						options={visibilityOptions()}
-						value={visibilityFilter()}
-						placeholder={t`Visibility`}
-						ariaLabel={t`Filter collections`}
-						onChange={setVisibilityFilter}
-						styles={styles.visibilityFilter}
-					/>
-
-					<ToolbarSelect
-						options={sortOptions()}
-						value={sortValue()}
-						placeholder={t`Sort`}
-						ariaLabel={t`Sort collections`}
-						onChange={setSortValue}
-						styles={styles.sortFilter}
-					/>
-
-					<Show when={props.isCurrentUser}>
+					<Show when={canFilterVisibility()}>
 						<Button
 							aria-label={t`New collection`}
+							title={t`New collection`}
+							aria-haspopup="dialog"
 							onClick={() => setCollectionFormOpen(true)}
-							appearance="outline"
+							appearance="ghost"
 							tone="slate"
 							size="sm"
-							styles={[toolbarStyles.control, profileStyles.newCollection]}
+							targetHeight={controlHeights.md}
+							styles={styles.toolbarAction}
 						>
-							{t({ message: "New", context: "Collection action" })}
+							<Button.Icon>
+								<PlusIcon
+									aria-hidden="true"
+									{...stylex.attrs(styles.toolbarIcon)}
+								/>
+							</Button.Icon>
 						</Button>
 					</Show>
+
+					<Dialog.Trigger
+						as={Button}
+						aria-label={t`Filters`}
+						title={t`Filters`}
+						appearance="ghost"
+						tone="slate"
+						size="sm"
+						targetHeight={controlHeights.md}
+						styles={[styles.toolbarAction, styles.mobileOnly]}
+					>
+						<Button.Icon>
+							<MixerHorizontalIcon
+								aria-hidden="true"
+								{...stylex.attrs(styles.toolbarIcon)}
+							/>
+						</Button.Icon>
+					</Dialog.Trigger>
 				</div>
-			</div>
+
+				<Dialog.Portal>
+					<Dialog.Overlay data-blur />
+					<Dialog.Content styles={styles.filterDialog}>
+						<Dialog.Title
+							styles={typography.heading.md}
+						>{t`Filters`}</Dialog.Title>
+
+						<div {...stylex.attrs(styles.filterFields)}>
+							<Show when={props.isCurrentUser}>
+								<div>
+									<p {...stylex.attrs(styles.filterLabel)}>{t`Source`}</p>
+									<ToolbarSelect
+										options={[
+											{
+												value: "own",
+												label: t`Created by me`,
+												itemLabel: t`Created by me`,
+											},
+											{
+												value: "followed",
+												label: t`Followed`,
+												itemLabel: t`Followed`,
+											},
+										]}
+										value={draftType()}
+										placeholder={t`Source`}
+										ariaLabel={t`Collection source`}
+										onChange={changeDraftType}
+									/>
+								</div>
+							</Show>
+
+							<Show when={props.isCurrentUser && draftType() === "own"}>
+								<div>
+									<p {...stylex.attrs(styles.filterLabel)}>{t`Visibility`}</p>
+									<ToolbarSelect
+										options={collectionFilterLabels(visibilityOptions())}
+										value={draftVisibility()}
+										placeholder={t`Visibility`}
+										ariaLabel={t`Filter collections by visibility`}
+										onChange={setDraftVisibility}
+									/>
+								</div>
+							</Show>
+
+							<div>
+								<p {...stylex.attrs(styles.filterLabel)}>{t`Sort`}</p>
+								<ToolbarSelect
+									options={collectionFilterLabels(sortOptions(draftType()))}
+									value={draftSort()}
+									placeholder={t`Sort`}
+									ariaLabel={t`Sort collections`}
+									onChange={setDraftSort}
+								/>
+							</div>
+						</div>
+
+						<div {...stylex.attrs(styles.filterActions)}>
+							<Dialog.CloseButton
+								aria-label={t`Cancel`}
+								appearance="soft"
+								tone="gray"
+								size="sm"
+							>
+								{t`Cancel`}
+							</Dialog.CloseButton>
+							<Button
+								appearance="solid"
+								tone="gray"
+								size="sm"
+								onClick={applyFilters}
+							>
+								{t`Apply`}
+							</Button>
+						</div>
+					</Dialog.Content>
+				</Dialog.Portal>
+			</Dialog.Root>
+
+			<Show when={collectionType() === "followed"}>
+				<Badge
+					color="Slate"
+					styles={styles.filterSummary}
+				>
+					<BookmarkIcon
+						aria-hidden="true"
+						{...stylex.attrs(styles.toolbarIcon)}
+					/>
+					{t`Followed`}
+				</Badge>
+			</Show>
+
+			<Show when={canFilterVisibility() && visibilityFilter() !== "all"}>
+				<Badge
+					color="Slate"
+					styles={styles.filterSummary}
+				>
+					{visibilityFilter() === "public" ? t`Public` : t`Private`}
+					<Button
+						appearance="ghost"
+						tone="gray"
+						size="xs"
+						aria-label={t`Clear visibility filter`}
+						onClick={() => setVisibilityFilter("all")}
+					>
+						×
+					</Button>
+				</Badge>
+			</Show>
 
 			<Show
 				when={visibleItems().length > 0}
@@ -1343,7 +1520,12 @@ function CollectionsPanel(props: {
 						{(item) => (
 							<Show
 								when={collectionType() === "followed"}
-								fallback={<CollectionRow item={item} />}
+								fallback={
+									<CollectionRow
+										item={item}
+										showVisibility={props.isCurrentUser}
+									/>
+								}
 							>
 								<FollowedCollectionRow
 									item={item}
@@ -1423,7 +1605,10 @@ function ActivityPanel(props: { items: readonly ActivityItem[] }) {
 	)
 }
 
-export function CollectionRow(props: { item: UserCollection }) {
+export function CollectionRow(props: {
+	item: UserCollection
+	showVisibility: boolean
+}) {
 	const { t } = useLingui()
 	return (
 		<li {...stylex.attrs(profileStyles.collectionRow)}>
@@ -1435,25 +1620,21 @@ export function CollectionRow(props: { item: UserCollection }) {
 						.class
 				}
 			>
-				<div {...stylex.attrs(styles.collectionContent)}>
-					<div {...stylex.attrs(styles.collectionHeading)}>
-						<h3 {...stylex.attrs(styles.collectionName)}>{props.item.name}</h3>
+				<div {...stylex.attrs(styles.collectionHeading)}>
+					<h3 {...stylex.attrs(styles.collectionName)}>{props.item.name}</h3>
+					<Show when={props.showVisibility}>
 						<span {...stylex.attrs(styles.visibility)}>
 							{props.item.is_public ? t`Public` : t`Private`}
 						</span>
-					</div>
-					<p {...stylex.attrs(styles.collectionDescription)}>
-						{props.item.description || t`No description`}
-					</p>
-				</div>
-
-				<div {...stylex.attrs(styles.collectionMetadata)}>
+					</Show>
 					<span {...stylex.attrs(styles.itemCount)}>
 						{props.item.item_count}{" "}
 						{props.item.item_count === 1 ? t`item` : t`items`}
 					</span>
-					<span {...stylex.attrs(styles.collectionArrow)}>&gt;</span>
 				</div>
+				<p {...stylex.attrs(styles.collectionDescription)}>
+					{props.item.description || t`No description`}
+				</p>
 			</Link>
 		</li>
 	)
